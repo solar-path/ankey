@@ -13,7 +13,13 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  origin: (origin) => {
+    // Allow localhost and local network IPs in development
+    if (!origin || origin.includes('localhost') || /http:\/\/192\.168\.\d+\.\d+:300\d/.test(origin)) {
+      return true;
+    }
+    return false;
+  },
   credentials: true,
 }));
 
@@ -35,7 +41,8 @@ app.use('*', async (c, next) => {
   // Check if it's a tenant request (has subdomain and not localhost/IP)
   const isLocalhost = subdomain === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(subdomain);
   
-  if (subdomain && !isLocalhost) {
+  // For tenant subdomains (not localhost or IP), check if tenant exists
+  if (!isLocalhost && subdomain && !['www', 'api'].includes(subdomain)) {
     const tenantService = new TenantService();
     const tenantResult = await tenantService.getTenantBySubdomain(subdomain);
     
@@ -56,6 +63,7 @@ app.use('*', async (c, next) => {
       return c.json({ success: false, error: 'Tenant not found' }, 404);
     }
   } else {
+    // This is core/localhost access
     c.set('isTenant', false);
   }
   
