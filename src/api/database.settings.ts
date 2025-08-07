@@ -56,7 +56,7 @@ export async function createTenantDatabase(tenantDatabase: string) {
 export async function runTenantMigrations(tenantDatabase: string) {
   // This would typically use drizzle-kit to run migrations
   // For now, we'll create tables directly
-  const db = createTenantConnection(tenantDatabase);
+  // const db = createTenantConnection(tenantDatabase);
   
   // You would typically run migration files here
   console.log(`Migrations completed for ${tenantDatabase}`);
@@ -79,11 +79,11 @@ export async function seedTenantDatabase(tenantDatabase: string, ownerData: {
       isSystem: true,
     }).returning();
 
-    const userRole = await db.insert(tenantSchema.roles).values({
+    await db.insert(tenantSchema.roles).values({
       name: 'User',
       description: 'Basic user access',
       isSystem: true,
-    }).returning();
+    });
 
     // Create owner user
     const owner = await db.insert(tenantSchema.users).values({

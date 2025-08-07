@@ -3,7 +3,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 
 // Tenant users table
-export const users = pgTable('users', {
+export const users: ReturnType<typeof pgTable> = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: text('email').notNull().unique(),
   fullName: text('full_name').notNull(),
@@ -12,11 +12,11 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').default(false),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: text('two_factor_secret'),
-  invitedBy: uuid('invited_by').references(() => users.id),
+  invitedBy: uuid('invited_by').references((): any => users.id),
   inviteToken: text('invite_token'),
   inviteExpiresAt: timestamp('invite_expires_at'),
   isApproved: boolean('is_approved').default(false),
-  approvedBy: uuid('approved_by').references(() => users.id),
+  approvedBy: uuid('approved_by').references((): any => users.id),
   approvedAt: timestamp('approved_at'),
   requestReason: text('request_reason'), // For "let me in" requests
   createdAt: timestamp('created_at').defaultNow(),

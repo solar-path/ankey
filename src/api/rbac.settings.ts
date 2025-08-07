@@ -5,10 +5,8 @@ import type { Permission, Role } from '@/shared';
 
 export class RBACService {
   private db;
-  private tenantDatabase: string;
 
   constructor(tenantDatabase: string) {
-    this.tenantDatabase = tenantDatabase;
     this.db = createTenantConnection(tenantDatabase);
   }
 
@@ -177,10 +175,9 @@ export class RBACService {
         return { success: false, error: 'Cannot delete system role' };
       }
 
-      const result = await this.db
+      await this.db
         .delete(tenantSchema.roles)
-        .where(eq(tenantSchema.roles.id, id))
-        .returning();
+        .where(eq(tenantSchema.roles.id, id));
 
       return { success: true };
     } catch (error) {
@@ -280,13 +277,15 @@ export class RBACService {
       const permissions: Permission[] = [];
       const permissionIds = new Set<string>();
 
-      userRoles.data?.forEach(userRole => {
-        userRole.role.rolePermissions.forEach(rolePermission => {
-          if (!permissionIds.has(rolePermission.permission.id)) {
-            permissions.push(rolePermission.permission);
-            permissionIds.add(rolePermission.permission.id);
-          }
-        });
+      userRoles.data?.forEach((userRole: any) => {
+        if (userRole.role && userRole.role.rolePermissions) {
+          userRole.role.rolePermissions.forEach((rolePermission: any) => {
+            if (rolePermission.permission && !permissionIds.has(rolePermission.permission.id)) {
+              permissions.push(rolePermission.permission as Permission);
+              permissionIds.add(rolePermission.permission.id);
+            }
+          });
+        }
       });
 
       // Also check for delegated permissions
@@ -302,12 +301,13 @@ export class RBACService {
       });
 
       // Add delegated permissions
-      delegations.forEach(delegation => {
+      delegations.forEach((delegation: any) => {
         if (
+          delegation.permission &&
           (!delegation.endDate || delegation.endDate > new Date()) &&
           !permissionIds.has(delegation.permission.id)
         ) {
-          permissions.push(delegation.permission);
+          permissions.push(delegation.permission as Permission);
           permissionIds.add(delegation.permission.id);
         }
       });

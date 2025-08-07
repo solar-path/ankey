@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { createCoreConnection, createTenantConnection } from './database.settings';
 import * as coreSchema from './db/schemas/core.drizzle';
 import * as tenantSchema from './db/schemas/tenant.drizzle';
-import type { LoginData,  ResetPasswordData } from '@/shared';
+import type { LoginData, ResetPasswordData } from '@/shared';
 
 // Core authentication for admin users
 export function createCoreAuth() {
@@ -238,10 +238,8 @@ export class CoreAuthService {
 export class TenantAuthService {
   private db;
   private lucia;
-  private tenantDatabase: string;
 
   constructor(tenantDatabase: string) {
-    this.tenantDatabase = tenantDatabase;
     this.db = createTenantConnection(tenantDatabase);
     this.lucia = createTenantAuth(tenantDatabase);
   }
