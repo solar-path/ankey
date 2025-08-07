@@ -1,5 +1,5 @@
 import { eq, like, count, and } from 'drizzle-orm';
-import { createCoreConnection, createTenantDatabase, runTenantMigrations, seedTenantDatabase } from './db/database.settings';
+import { createCoreConnection, createTenantDatabase, runTenantMigrations, seedTenantDatabase } from './database.settings';
 import * as coreSchema from './db/schemas/core';
 import { hashPassword, generateSecureToken } from './auth.settings';
 import { EmailService } from './email.settings';
@@ -334,8 +334,8 @@ export class TenantService {
       }
 
       const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      const monthlyRate = tenant.data!.monthlyRate;
-      const userCount = tenant.data!.userCount;
+      const monthlyRate = tenant.data!.monthlyRate ?? 25;
+      const userCount = tenant.data!.userCount ?? 0;
       const dailyRate = monthlyRate / 30;
       const totalAmount = dailyRate * days * userCount;
 
@@ -373,9 +373,9 @@ export class TenantService {
         })
       );
 
-      const validBillingData = billingData.filter(Boolean);
-      const totalRevenue = validBillingData.reduce((sum, data) => sum + (data?.totalAmount || 0), 0);
-      const totalUsers = validBillingData.reduce((sum, data) => sum + (data?.userCount || 0), 0);
+      const validBillingData = billingData.filter((data): data is NonNullable<typeof data> => data !== null);
+      const totalRevenue = validBillingData.reduce((sum, data) => sum + (data.totalAmount || 0), 0);
+      const totalUsers = validBillingData.reduce((sum, data) => sum + (data.userCount || 0), 0);
 
       return {
         success: true,

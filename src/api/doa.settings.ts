@@ -1,5 +1,5 @@
 import { eq, and, or, gte, lte } from 'drizzle-orm';
-import { createTenantConnection } from './db/database.settings';
+import { createTenantConnection } from './database.settings';
 import * as tenantSchema from './db/schemas/tenant';
 
 export interface CreateDelegationData {
@@ -20,8 +20,10 @@ export interface UpdateDelegationData {
 
 export class DOAService {
   private db;
+  private tenantDatabase: string;
 
-  constructor(private tenantDatabase: string) {
+  constructor(tenantDatabase: string) {
+    this.tenantDatabase = tenantDatabase;
     this.db = createTenantConnection(tenantDatabase);
   }
 

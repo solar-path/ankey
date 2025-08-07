@@ -28,8 +28,17 @@ app.use('*', async (c, next) => {
     const tenantResult = await tenantService.getTenantBySubdomain(subdomain);
     
     if (tenantResult.success && tenantResult.data) {
-      c.set('tenant', tenantResult.data);
-      c.set('tenantDatabase', tenantResult.data.database);
+      // Ensure tenant data has proper defaults
+      const tenant = {
+        ...tenantResult.data,
+        isActive: tenantResult.data.isActive ?? true,
+        userCount: tenantResult.data.userCount ?? 0,
+        monthlyRate: tenantResult.data.monthlyRate ?? 25,
+        createdAt: tenantResult.data.createdAt ?? new Date(),
+        updatedAt: tenantResult.data.updatedAt ?? new Date()
+      };
+      c.set('tenant', tenant);
+      c.set('tenantDatabase', tenant.database);
       c.set('isTenant', true);
     } else {
       return c.json({ success: false, error: 'Tenant not found' }, 404);

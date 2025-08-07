@@ -46,3 +46,4 @@
 13. define in package.json commands to debug, generate and migrate (core and tenant) drizzle models
 14. Implement PDF/Excel export functionality for reports and user data
 15. Create Excel import functionality to upload and sync new/changed records only 
+16. debug issues - do not create new files

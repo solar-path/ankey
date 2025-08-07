@@ -1,12 +1,14 @@
-import { eq, and, inArray } from 'drizzle-orm';
-import { createTenantConnection } from '@/api/db/database.settings';
+import { eq, and } from 'drizzle-orm';
+import { createTenantConnection } from '@/api/database.settings';
 import * as tenantSchema from '@/api/db/schemas/tenant';
 import type { Permission, Role } from '@/shared';
 
 export class RBACService {
   private db;
+  private tenantDatabase: string;
 
-  constructor(private tenantDatabase: string) {
+  constructor(tenantDatabase: string) {
+    this.tenantDatabase = tenantDatabase;
     this.db = createTenantConnection(tenantDatabase);
   }
 

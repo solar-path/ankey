@@ -157,18 +157,33 @@ export interface QPhoneProps {
   onChange?: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
+  id?: string;
 }
 
 export interface QCalendarPickProps {
+  label?: string;
   value?: Date;
   onChange?: (value: Date) => void;
   placeholder?: string;
   disabled?: boolean;
+  error?: string;
+  fromYear?: number;
+  toYear?: number;
+  className?: string;
 }
 
-export interface DataTableProps<TData> {
+export interface DataTableProps<TData, TValue = any> {
   data: TData[];
   columns: any[];
+  onDelete?: (rows: TData[]) => void;
+  onEdit?: (row: TData) => void;
+  onCreate?: () => void;
+  onExportPdf?: () => void;
+  onExportExcel?: () => void;
+  onImport?: () => void;
+  onSync?: () => void;
+  title?: string;
   searchColumn?: string;
   searchPlaceholder?: string;
 }

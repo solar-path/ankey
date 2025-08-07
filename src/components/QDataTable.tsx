@@ -45,7 +45,7 @@ import {
     UploadIcon,
 } from 'lucide-react';
 
-import { DataTableProps } from '@/shared';
+import type  { DataTableProps } from '@/shared';
 
 export function QDataTable<TData, TValue>({
     columns,

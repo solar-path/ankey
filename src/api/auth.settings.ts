@@ -1,12 +1,11 @@
 import { Lucia } from 'lucia';
 import { DrizzlePostgreSQLAdapter } from '@lucia-auth/adapter-drizzle';
 import { eq } from 'drizzle-orm';
-import { generateId } from 'lucia';
 import crypto from 'crypto';
-import { createCoreConnection, createTenantConnection } from './db/database.settings';
+import { createCoreConnection, createTenantConnection } from './database.settings';
 import * as coreSchema from './db/schemas/core';
 import * as tenantSchema from './db/schemas/tenant';
-import type { LoginData, RegisterData, ForgotPasswordData, ResetPasswordData } from '@/shared';
+import type { LoginData,  ResetPasswordData } from '@/shared';
 
 // Core authentication for admin users
 export function createCoreAuth() {
@@ -239,8 +238,10 @@ export class CoreAuthService {
 export class TenantAuthService {
   private db;
   private lucia;
+  private tenantDatabase: string;
 
-  constructor(private tenantDatabase: string) {
+  constructor(tenantDatabase: string) {
+    this.tenantDatabase = tenantDatabase;
     this.db = createTenantConnection(tenantDatabase);
     this.lucia = createTenantAuth(tenantDatabase);
   }

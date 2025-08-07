@@ -1,8 +1,7 @@
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
-import { createCoreConnection, createTenantConnection } from '@/api/db/database.settings';
+import { createCoreConnection, createTenantConnection } from '@/api/database.settings';
 import * as coreSchema from '@/api/db/schemas/core';
 import * as tenantSchema from '@/api/db/schemas/tenant';
-import type { AuditLog } from '@/shared';
 
 export interface AuditLogData {
   userId: string;

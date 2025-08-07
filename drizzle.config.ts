@@ -1,15 +1,12 @@
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: './src/db/schemas/*',
-  out: './src/db/migrations',
+  schema: './src/api/db/schemas/*',
+  out: './src/api/db/migrations',
   dialect: 'postgresql',
+  driver: 'postgres-js',
   dbCredentials: {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME || 'ankey_core',
+    url: `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'password'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || 'ankey_core'}`,
   },
   verbose: true,
   strict: true,

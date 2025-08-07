@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as coreSchema from './schemas/core';
-import * as tenantSchema from './schemas/tenant';
+import * as coreSchema from './db/schemas/core';
+import * as tenantSchema from './db/schemas/tenant';
 
 // Core database connection
 export function createCoreConnection() {
