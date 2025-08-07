@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import InputError from './input-error';
+import InputError from './QInputErrors';
 
 import { QCalendarPickProps } from '@/types';
 

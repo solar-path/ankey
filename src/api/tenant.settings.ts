@@ -1,10 +1,10 @@
 import { eq, like, count, and } from 'drizzle-orm';
-import { createCoreConnection, createTenantDatabase, runTenantMigrations, seedTenantDatabase } from '../api/db/connection';
-import * as coreSchema from '../api/db/schemas/core';
-import { hashPassword, generateSecureToken } from './authService';
-import { EmailService } from '../api/email.settings';
-import { AuditService } from '../lib/audit/audit.service';
-import type { RegisterData, Tenant } from '../types';
+import { createCoreConnection, createTenantDatabase, runTenantMigrations, seedTenantDatabase } from './db/connection';
+import * as coreSchema from './db/schemas/core';
+import { hashPassword, generateSecureToken } from './auth.settings';
+import { EmailService } from './email.settings';
+import { AuditService } from '@/lib/audit/audit.service';
+import type { RegisterData, Tenant } from '@/types';
 
 export class TenantService {
   private db = createCoreConnection();

@@ -1,4 +1,4 @@
-import { DrawerComponentMetadata, DrawerContent, DrawerState } from '@/types';
+import type { DrawerComponentMetadata, DrawerContent, DrawerState } from '@/types';
 import React from 'react';
 import { create } from 'zustand';
 

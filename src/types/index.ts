@@ -92,8 +92,8 @@ export const auditLogSchema = z.object({
   action: z.string(),
   resource: z.string(),
   resourceId: z.string().optional(),
-  oldValues: z.record(z.any()).optional(),
-  newValues: z.record(z.any()).optional(),
+  oldValues: z.record(z.string(), z.any()).optional(),
+  newValues: z.record(z.string(), z.any()).optional(),
   ipAddress: z.string().optional(),
   userAgent: z.string().optional(),
   createdAt: z.date(),
@@ -139,4 +139,36 @@ export interface DrawerState {
     content?: React.ReactNode
   ) => void;
   closeDrawer: () => void;
+}
+
+// Hono context types
+declare module 'hono' {
+  interface ContextVariableMap {
+    tenant?: Tenant;
+    tenantDatabase?: string;
+    isTenant?: boolean;
+    user?: User;
+  }
+}
+
+// Component prop types
+export interface QPhoneProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+export interface QCalendarPickProps {
+  value?: Date;
+  onChange?: (value: Date) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+export interface DataTableProps<TData> {
+  data: TData[];
+  columns: any[];
+  searchColumn?: string;
+  searchPlaceholder?: string;
 }

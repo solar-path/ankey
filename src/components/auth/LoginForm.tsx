@@ -1,9 +1,9 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../ui/button';
-import { useDrawer } from '../QDrawer/QDrawer.store';
-import { loginSchema, type LoginData } from '../../types';
+import { Button } from '@/components/ui/button';
+import { useDrawer } from '@/components/QDrawer/QDrawer.store';
+import { loginSchema, type LoginData } from '@/types';
 
 interface LoginFormProps {
   onSubmit: (data: LoginData) => Promise<void>;

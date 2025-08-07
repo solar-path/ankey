@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
-import { coreAuthRoutes } from '../routes/core/auth.routes';
-import { coreTenantsRoutes } from '../routes/core/tenants.routes';
-import { tenantAuthRoutes } from '../routes/tenant/auth.routes';
-import { tenantRBACRoutes } from '../routes/tenant/rbac.routes';
-import { TenantService } from '../services/tenantService';
-import { AuditService } from '../lib/audit/audit.service';
+import { coreAuthRoutes } from '@/routes/core/auth.routes';
+import { coreTenantsRoutes } from '@/routes/core/tenants.routes';
+import { tenantAuthRoutes } from '@/routes/tenant/auth.routes';
+import { tenantRBACRoutes } from '@/routes/tenant/rbac.routes';
+import { TenantService } from '@/api/tenant.settings';
+import { AuditService } from '@/lib/audit/audit.service';
 
 const app = new Hono();
 

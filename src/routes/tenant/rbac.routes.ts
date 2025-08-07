@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { RBACService } from '../../lib/rbac/rbac.settings';
-import { TenantAuthService } from '../../services/authService';
+import { RBACService } from '@/api/rbac.settings';
+import { TenantAuthService } from '@/api/auth.settings';
 
 const tenantRBACRoutes = new Hono();
 

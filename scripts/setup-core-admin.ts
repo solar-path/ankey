@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { TenantService } from '../src/services/tenantService';
+import { TenantService } from '../src/api/tenant.settings';
 
 async function setupCoreAdmin() {
   console.log('🚀 Setting up core admin user...');

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { TenantAuthService } from '../../services/authService';
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema, letMeInSchema } from '../../types';
+import { TenantAuthService } from '@/api/auth.settings';
+import { loginSchema, forgotPasswordSchema, resetPasswordSchema, letMeInSchema } from '@/types';
 
 const tenantAuthRoutes = new Hono();
 

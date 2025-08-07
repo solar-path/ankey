@@ -1,9 +1,9 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../ui/button';
-import { useDrawer } from '../QDrawer/QDrawer.store';
-import { registerSchema, type RegisterData } from '../../types';
+import { Button } from '@/components/ui/button';
+import { useDrawer } from '@/components/QDrawer/QDrawer.store';
+import { registerSchema, type RegisterData } from '@/types';
 
 interface RegisterWorkspaceFormProps {
   onSubmit: (data: RegisterData) => Promise<void>;
