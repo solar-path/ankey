@@ -21,9 +21,21 @@ app.use('*', cors({
 app.use('*', async (c, next) => {
   const host = c.req.header('host') || '';
   const subdomain = host.split('.')[0];
+  const url = new URL(c.req.url);
   
-  // Check if it's a tenant request (has subdomain and not localhost)
-  if (subdomain && subdomain !== 'localhost') {
+  // Skip tenant detection for development assets and internal routes
+  if (url.pathname.startsWith('/node_modules') || 
+      url.pathname.startsWith('/@') || 
+      url.pathname.includes('vite') ||
+      url.pathname.includes('favicon') ||
+      url.pathname.includes('apple-touch-icon')) {
+    return c.json({ success: false, error: 'Not found' }, 404);
+  }
+  
+  // Check if it's a tenant request (has subdomain and not localhost/IP)
+  const isLocalhost = subdomain === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(subdomain);
+  
+  if (subdomain && !isLocalhost) {
     const tenantService = new TenantService();
     const tenantResult = await tenantService.getTenantBySubdomain(subdomain);
     
