@@ -1,9 +1,8 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useDrawer } from '@/components/QDrawer/QDrawer.store';
-import { letMeInSchema, type LetMeInData } from '@/types';
+import { letMeInSchema, type LetMeInData } from '@/shared';
 
 interface LetMeInFormProps {
   onSubmit: (data: LetMeInData) => Promise<void>;

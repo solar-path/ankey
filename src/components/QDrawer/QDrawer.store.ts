@@ -1,4 +1,4 @@
-import type { DrawerComponentMetadata, DrawerContent, DrawerState } from '@/types';
+import type { DrawerComponentMetadata, DrawerContent, DrawerState } from '@/shared';
 import React from 'react';
 import { create } from 'zustand';
 

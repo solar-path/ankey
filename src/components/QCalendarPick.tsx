@@ -7,7 +7,7 @@ import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputError from './QInputErrors';
 
-import { QCalendarPickProps } from '@/types';
+import { QCalendarPickProps } from '@/shared';
 
 export default function QCalendarPick({
     label,

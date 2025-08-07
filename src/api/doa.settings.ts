@@ -1,5 +1,5 @@
 import { eq, and, or, gte, lte } from 'drizzle-orm';
-import { createTenantConnection } from './db/connection';
+import { createTenantConnection } from './db/database.settings';
 import * as tenantSchema from './db/schemas/tenant';
 
 export interface CreateDelegationData {

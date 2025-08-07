@@ -6,7 +6,7 @@ import { coreTenantsRoutes } from '@/routes/core/tenants.routes';
 import { tenantAuthRoutes } from '@/routes/tenant/auth.routes';
 import { tenantRBACRoutes } from '@/routes/tenant/rbac.routes';
 import { TenantService } from '@/api/tenant.settings';
-import { AuditService } from '@/lib/audit/audit.service';
+import { AuditService } from '@/api/audit.settings';
 
 const app = new Hono();
 

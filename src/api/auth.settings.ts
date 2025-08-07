@@ -3,10 +3,10 @@ import { DrizzlePostgreSQLAdapter } from '@lucia-auth/adapter-drizzle';
 import { eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import crypto from 'crypto';
-import { createCoreConnection, createTenantConnection } from './db/connection';
+import { createCoreConnection, createTenantConnection } from './db/database.settings';
 import * as coreSchema from './db/schemas/core';
 import * as tenantSchema from './db/schemas/tenant';
-import type { LoginData, RegisterData, ForgotPasswordData, ResetPasswordData } from '@/types';
+import type { LoginData, RegisterData, ForgotPasswordData, ResetPasswordData } from '@/shared';
 
 // Core authentication for admin users
 export function createCoreAuth() {

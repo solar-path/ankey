@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
-import { QPhoneProps } from '@/types';
+import { QPhoneProps } from '@/shared';
 
 export const QPhone = forwardRef<HTMLInputElement, QPhoneProps>(
     ({ value = '', onChange, placeholder = '+1 (123) 456 7890', className = '', id = 'phone', ...props }, ref) => {

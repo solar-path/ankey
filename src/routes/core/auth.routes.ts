@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { CoreAuthService } from '@/api/auth.settings';
 import { TenantService } from '@/api/tenant.settings';
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '@/types';
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '@/shared';
 
 const coreAuthRoutes = new Hono();
 const authService = new CoreAuthService();

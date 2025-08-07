@@ -1,7 +1,7 @@
 import { eq, and, inArray } from 'drizzle-orm';
-import { createTenantConnection } from '@/api/db/connection';
+import { createTenantConnection } from '@/api/db/database.settings';
 import * as tenantSchema from '@/api/db/schemas/tenant';
-import type { Permission, Role } from '@/types';
+import type { Permission, Role } from '@/shared';
 
 export class RBACService {
   private db;
