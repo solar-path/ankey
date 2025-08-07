@@ -1,104 +1,179 @@
-import InputError from '@/components/input-error'
-import { useDrawer } from '@/components/QDrawer.store'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Transition } from '@headlessui/react'
-import { Link, useForm } from '@inertiajs/react'
-import { FormEventHandler, useRef } from 'react'
-import { toast } from 'sonner'
+import { useCallback } from 'react'
+import { z } from 'zod'
+import { useDropzone } from 'react-dropzone'
+import { Upload, X, FileText } from 'lucide-react'
 
-export default function InquiryForm() {
-  // References to form elements for focus management
-  const emailInput = useRef<HTMLInputElement>(null)
-  const messageInput = useRef<HTMLTextAreaElement>(null)
+const inquirySchema = z.object({
+  email: z.string().email('Invalid email address'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+  attachments: z.array(z.instanceof(File)).optional(),
+})
+
+type InquiryData = z.infer<typeof inquirySchema>
+
+interface InquiryFormProps {
+  onSubmit?: (data: InquiryData) => Promise<void>
+  isLoading?: boolean
+}
+
+export default function InquiryForm({ onSubmit, isLoading = false }: InquiryFormProps) {
   const { closeDrawer } = useDrawer()
 
-  const { data, setData, errors, post, reset, processing, recentlySuccessful } = useForm({
-    email: '',
-    message: '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm<InquiryData>({
+    resolver: zodResolver(inquirySchema),
+    defaultValues: {
+      email: '',
+      message: '',
+      attachments: [],
+    },
   })
 
-  // We're now handling toast notifications directly in the onSuccess callback
+  const attachments = watch('attachments') || []
 
-  const submitInquiry: FormEventHandler = e => {
-    e.preventDefault()
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const currentAttachments = attachments || []
+      setValue('attachments', [...currentAttachments, ...acceptedFiles])
+    },
+    [attachments, setValue]
+  )
 
-    post(route('inquiry.create'), {
-      preserveScroll: true,
-      onSuccess: () => {
-        // Add direct toast notification
-        toast.success('Inquiry submitted successfully', {
-          description: 'Thank you for your inquiry!',
-        })
-        reset()
-        closeDrawer()
-      },
-      onError: errors => {
-        if (errors.email) {
-          emailInput.current?.focus()
-        }
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': [],
+      'application/pdf': [],
+      'text/*': [],
+      'application/msword': [],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
+    },
+    maxSize: 10 * 1024 * 1024, // 10MB
+  })
 
-        if (errors.message) {
-          messageInput.current?.focus()
-        }
+  const removeAttachment = (index: number) => {
+    const newAttachments = attachments.filter((_, i) => i !== index)
+    setValue('attachments', newAttachments)
+  }
 
-        toast.error('Error submitting inquiry', {
-          description: 'Please try again later.',
-        })
-      },
-    })
+  const handleFormSubmit = async (data: InquiryData) => {
+    try {
+      if (onSubmit) {
+        await onSubmit(data)
+      } else {
+        console.log('Inquiry data:', data)
+      }
+      reset()
+      closeDrawer()
+    } catch (error) {
+      console.error('Error submitting inquiry:', error)
+    }
   }
 
   return (
-    <div>
-      <form onSubmit={submitInquiry} className="flex flex-col space-y-4 p-4">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            type="email"
-            className="w-full"
-            placeholder="Email"
-            value={data.email}
-            onChange={e => setData('email', e.target.value)}
-          />
-          <InputError message={errors.email} />
-        </div>
-
-        <div>
-          <Label htmlFor="message">Message</Label>
-          <Textarea
-            className="w-full"
-            placeholder="Message"
-            value={data.message}
-            onChange={e => setData('message', e.target.value)}
-          />
-          <InputError message={errors.message} />
-        </div>
-        <div>
-          <Button type="submit" disabled={processing}>
-            {processing ? 'Submitting...' : 'Submit'}
-          </Button>
-
-          <Transition
-            show={recentlySuccessful}
-            enter="transition ease-in-out"
-            enterFrom="opacity-0"
-            leave="transition ease-in-out"
-            leaveTo="opacity-0"
-          >
-            <p className="text-sm text-neutral-600">Saved</p>
-          </Transition>
-        </div>
-      </form>
-
-      <div className="flex items-center justify-center space-x-2 pt-2 text-center">
-        <p className="text-sm">Already submitted an inquiry?</p>
-        <Button variant="ghost" type="button" size="sm">
-          <Link href="/inquiry/find">Find</Link>
-        </Button>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">Submit an Inquiry</h2>
+        <p className="text-gray-600 mt-2">Please provide your contact information and message</p>
       </div>
+
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div>
+          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            {...register('email')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter your email"
+          />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+            Message
+          </Label>
+          <Textarea
+            id="message"
+            {...register('message')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+            placeholder="Please describe your inquiry in detail"
+          />
+          {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
+        </div>
+
+        <div>
+          <Label className="block text-sm font-medium text-gray-700 mb-1">
+            Attachments (optional)
+          </Label>
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${
+              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <Upload className="mx-auto h-6 w-6 text-gray-400 mb-2" />
+            {isDragActive ? (
+              <p className="text-sm text-blue-600">Drop the files here...</p>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-600">
+                  Drag 'n' drop files here, or click to select
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Max file size: 10MB</p>
+              </div>
+            )}
+          </div>
+
+          {attachments.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {attachments.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                >
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm text-gray-700">{file.name}</span>
+                    <span className="text-xs text-gray-500">
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAttachment(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Submitting...' : 'Submit Inquiry'}
+        </Button>
+      </form>
     </div>
   )
 }

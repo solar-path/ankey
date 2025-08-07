@@ -1,6 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { letMeInSchema, type LetMeInData } from '@/shared'
 
@@ -17,16 +20,23 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<LetMeInData>({
     resolver: zodResolver(letMeInSchema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+      reason: '',
+    },
   })
 
   const handleFormSubmit = async (data: LetMeInData) => {
     try {
       await onSubmit(data)
+      reset()
       closeDrawer()
     } catch (error) {
-      // Error handling is done in the parent component
+      console.error('Error submitting access request:', error)
     }
   }
 
@@ -62,10 +72,10 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
             Full Name
-          </label>
-          <input
+          </Label>
+          <Input
             id="fullName"
             type="text"
             {...register('fullName')}
@@ -78,10 +88,10 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             {...register('email')}
@@ -92,10 +102,10 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
         </div>
 
         <div>
-          <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
             Reason for Access
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="reason"
             {...register('reason')}
             rows={4}

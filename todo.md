@@ -27,5 +27,41 @@
 ~~10. store types and zod models in shared folder~~
 ~~11. use react-hook-form in frontend~~
 ~~12. use @ alias to fix imports~~
-~~13. define in package.json commands to debug, generate and migrate (core and tenant) drizzle models~~ 14. Implement PDF/Excel export functionality for reports and user data. apply DRY principle (maybe do standalone service or "controller") 15. Create Excel import functionality to upload and sync new/changed records only 16. debug issues - do not create new files 17. where required always use lucide-react icons 18. core shall have publicly available pages: - index.tsx (update to resolve issues) - terms.mdx (draft content with respect to the current project) - privacy.mdx (draft content with respect to the current project) - cookies.mdx (draft content with respect to the current project) - learn, with: - md/mdx files that are guides and rendered - standalone layout: - left side - list of all _.mdx files - content - main - right side - table of content based on _.mdx file content - pricing.tsx - with hono controller. The key feature of pricing - application users might have access to fully functional tenant for 5 user for 1 week. CRUD - module (general - what would be implemented in tenant, accounting and reserved in core parts) - pricing plan per user per month - features - discount %, start, end. - etc - add what is usually required
-layout for pages is drafted at /(public)/publicLayout.tsx - refactor to comply with tanstack-router requirements 18. core shall have protected page /dashboard 19. core shall have the following forms that are accessable via QDrawer (/src/components/QDrawer/_): - inquiryForm.tsx - modify to add attachments (review at /src/components/inquiry/_) - findInquiryForm.tsx (review at /src/components/inquiry/\*) - loginForm - registerForm - forgotPassword 19. all forms shall be supported with core controllers. 20. define formatOnSave for eslinter and prettier in vscode settings
+~~13. define in package.json commands to debug, generate and migrate (core and tenant) drizzle models~~ 
+
+~~14. Implement PDF/Excel export functionality for reports and user data at hono (means executed on server and located in /src/api/* ). apply DRY principle (maybe do standalone service or "controller")~~
+
+~~15. Create Excel import functionality to upload and sync new/changed records only~~
+~~16. debug issues - do not create new files~~
+~~17. where required always use lucide-react icons~~ 
+~~18. core shall have publicly available pages:~~
+  - ~~index.tsx (update to resolve issues)~~
+  - ~~terms.mdx (draft content with respect to the current project)~~
+  - ~~privacy.mdx (draft content with respect to the current project)~~
+  - ~~cookies.mdx (draft content with respect to the current project)~~
+  - ~~learn, with:~~
+    - ~~md/mdx files that are guides and rendered~~
+    - ~~standalone layout:~~
+      - ~~left side - list of all _.mdx files~~
+      - ~~main of _.mdx files~~
+      - ~~right side - table of content based on _.mdx file content~~
+  - ~~pricing.tsx - with hono controller. Price shall be set in protected part of core~~
+    - ~~The key feature of pricing: application users might have access to fully functional tenant for 5 user for 1 week.~~
+    - ~~CRUD - module (general - what would be implemented in tenant, accounting and reserved in core parts).~~
+    - ~~on page i want to see~~
+      - ~~pricing plan per user per month~~
+      - ~~features~~
+      - ~~discount %, start, end.~~
+      - ~~etc - add what is usually required~~
+  - ~~layout for pages is drafted at /(public)/publicLayout.tsx - refactor to comply with tanstack-router requirements~~
+
+~~18. core shall have protected page /dashboard~~ 
+19. core shall have the following forms that are accessable via QDrawer (/src/components/QDrawer/_): 
+  - inquiryForm.tsx - modify to add attachments (review at /src/components/inquiry/_)
+  - findInquiryForm.tsx (review at /src/components/inquiry/\*) 
+  - loginForm 
+  - RegisterWorkspaceForm.tsx 
+  - forgotPassword 
+20. all forms shall be binded with backend controllser (routes) via Hono RPC. 
+~~21. define formatOnSave for eslinter and prettier in vscode settings~~
+~~22. style pages with tailwind and shadcn~~ 

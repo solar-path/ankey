@@ -96,7 +96,7 @@ export class DOAService {
     includeExpired?: boolean
   }) {
     try {
-      let whereConditions = []
+      const whereConditions = []
 
       if (filters?.delegatorId) {
         whereConditions.push(eq(tenantSchema.delegations.delegatorId, filters.delegatorId))
@@ -297,7 +297,7 @@ export class DOAService {
   // Get delegation summary for reporting
   async getDelegationSummary(startDate?: Date, endDate?: Date) {
     try {
-      let whereConditions = []
+      const whereConditions = []
 
       if (startDate) {
         whereConditions.push(gte(tenantSchema.delegations.createdAt, startDate))

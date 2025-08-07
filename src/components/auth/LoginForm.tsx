@@ -1,8 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { loginSchema, type LoginData } from '@/shared'
+import { ForgotPasswordForm } from './ForgotPasswordForm'
+import { LetMeInForm } from './LetMeInForm'
 
 interface LoginFormProps {
   onSubmit: (data: LoginData) => Promise<void>
@@ -11,24 +15,50 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: LoginFormProps) {
-  const { closeDrawer } = useDrawer()
+  const { closeDrawer, openDrawer } = useDrawer()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
+    reset,
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      twoFactorCode: '',
+    },
   })
 
   const handleFormSubmit = async (data: LoginData) => {
     try {
       await onSubmit(data)
+      reset()
       closeDrawer()
     } catch (error) {
-      // Error handling is done in the parent component
+      console.error('Login error:', error)
     }
+  }
+
+  const handleForgotPassword = () => {
+    openDrawer(
+      <ForgotPasswordForm
+        onSubmit={async data => {
+          console.log('Forgot password:', data)
+        }}
+      />
+    )
+  }
+
+  const handleLetMeIn = () => {
+    openDrawer(
+      <LetMeInForm
+        onSubmit={async data => {
+          console.log('Let me in:', data)
+        }}
+      />
+    )
   }
 
   return (
@@ -42,10 +72,10 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             {...register('email')}
@@ -56,10 +86,10 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
-          </label>
-          <input
+          </Label>
+          <Input
             id="password"
             type="password"
             {...register('password')}
@@ -72,10 +102,10 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
         </div>
 
         <div>
-          <label htmlFor="twoFactorCode" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="twoFactorCode" className="block text-sm font-medium text-gray-700 mb-1">
             Two-Factor Code (if enabled)
-          </label>
-          <input
+          </Label>
+          <Input
             id="twoFactorCode"
             type="text"
             {...register('twoFactorCode')}
@@ -89,14 +119,7 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
         </div>
 
         <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              // TODO: Open forgot password form
-              console.log('Open forgot password form')
-            }}
-          >
+          <Button type="button" variant="ghost" onClick={handleForgotPassword}>
             Forgot Password?
           </Button>
         </div>
@@ -107,14 +130,7 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
 
         {isTenant && (
           <div className="text-center">
-            <Button
-              type="button"
-              variant="link"
-              onClick={() => {
-                // TODO: Open "Let me in" form
-                console.log('Open let me in form')
-              }}
-            >
+            <Button type="button" variant="link" onClick={handleLetMeIn}>
               Don't have access? Request Access
             </Button>
           </div>

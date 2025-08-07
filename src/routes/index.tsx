@@ -1,3 +1,5 @@
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
 import { Button } from '@/components/ui/button'
 import { createFileRoute } from '@tanstack/react-router'
 import { Banknote, Container, Signature, Users } from 'lucide-react'
@@ -7,9 +9,17 @@ export const Route = createFileRoute('/')({
 })
 
 function Index() {
+  const { openDrawer } = useDrawer()
+
   const handleGetStarted = () => {
-    // TODO: Import RegisterForm component when available
-    console.warn('RegisterForm component not yet imported')
+    openDrawer(
+      <RegisterWorkspaceForm
+        onSubmit={async data => {
+          // TODO: Implement registration logic
+          console.log('Register:', data)
+        }}
+      />
+    )
   }
 
   return (

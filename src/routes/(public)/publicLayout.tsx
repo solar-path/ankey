@@ -1,30 +1,94 @@
+import { LoginForm } from '@/components/auth/LoginForm'
+import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
+import FindInquiryForm from '@/components/inquiry/findInquiryForm'
+import InquiryForm from '@/components/inquiry/inquiryForm'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Link } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+interface PublicLayoutProps {
+  children: React.ReactNode
+  user?: any // TODO: Define proper user type
+  openInquiry?: boolean
+  openLogin?: boolean
+  openRegister?: boolean
+  openFindInquiry?: boolean
+}
+
+export default function PublicLayout({
+  children,
+  user,
+  openInquiry,
+  openLogin,
+  openRegister,
+  openFindInquiry,
+}: PublicLayoutProps) {
   const { openDrawer } = useDrawer()
 
-  // TODO: These components need to be implemented
+  useEffect(() => {
+    if (openInquiry) {
+      handleContactSales()
+    } else if (openLogin) {
+      handleSignIn()
+    } else if (openRegister) {
+      handleSignUp()
+    } else if (openFindInquiry) {
+      handleFindInquiry()
+    }
+  }, [openInquiry, openLogin, openRegister, openFindInquiry])
+
   const handleSignUp = () => {
-    console.warn('RegisterForm component not yet implemented')
+    openDrawer(
+      <RegisterWorkspaceForm
+        onSubmit={async data => {
+          // TODO: Implement registration logic
+          console.log('Register:', data)
+        }}
+      />
+    )
   }
 
   const handleSignIn = () => {
-    console.warn('LoginForm component not yet implemented')
+    openDrawer(
+      <LoginForm
+        onSubmit={async data => {
+          // TODO: Implement login logic
+          console.log('Login:', data)
+        }}
+      />
+    )
   }
 
   const handleContactSales = () => {
-    console.warn('InquiryForm component not yet implemented')
+    openDrawer(
+      <InquiryForm
+        onSubmit={async data => {
+          // TODO: Implement inquiry submission
+          console.log('Inquiry:', data)
+        }}
+      />
+    )
+  }
+
+  const handleFindInquiry = () => {
+    openDrawer(
+      <FindInquiryForm
+        onSubmit={async data => {
+          // TODO: Implement inquiry lookup
+          console.log('Find inquiry:', data)
+        }}
+      />
+    )
   }
 
   return (
     <div className="flex min-h-screen flex-col">
       {/* HEADER SECTION */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between pt-6 pr-12 pb-6 pl-12">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold">
-            <Link to="/">Ankey</Link>
+            <Link to="/">Aneko, llc</Link>
           </h1>
         </div>
         <div className="flex items-center space-x-4 text-sm">
@@ -35,11 +99,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             Pricing
           </Link>
 
-          {/* TODO: Add authentication state management */}
-          <Button variant="ghost" onClick={handleSignUp}>
-            Sign Up
-          </Button>
-          <Button onClick={handleSignIn}>Sign In</Button>
+          {user ? (
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600">Welcome, {user.fullName}</span>
+              <Button variant="ghost" onClick={() => console.log('Logout')}>
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={handleSignUp}>
+                Sign Up
+              </Button>
+              <Button onClick={handleSignIn}>Sign In</Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -48,7 +122,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       {/* FOOTER SECTION  */}
       <footer className="flex items-center pt-6 pr-12 pb-6 pl-12 text-sm">
-        <p className="flex-1">© 2024 Ankey. All rights reserved.</p>
+        <p className="flex-1">© 2024 Aneko, llc. All rights reserved.</p>
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/cookies" className="[&.active]:font-bold">

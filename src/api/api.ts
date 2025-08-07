@@ -3,6 +3,9 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import { coreAuthRoutes } from '@/api/controllers/core/auth.hono'
 import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
+import coreExportRoutes from '@/api/controllers/core/export.hono'
+import coreImportRoutes from '@/api/controllers/core/import.hono'
+import { inquiryRoutes } from '@/api/controllers/core/inquiry.hono'
 import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
 import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
 import { TenantService } from '@/api/tenant.settings'
@@ -90,6 +93,9 @@ app.use('/api/*', (c, next) => {
 // Core routes (for localhost without subdomain)
 app.route('/api/core/auth', coreAuthRoutes)
 app.route('/api/core/tenants', coreTenantsRoutes)
+app.route('/api/core/export', coreExportRoutes)
+app.route('/api/core/import', coreImportRoutes)
+app.route('/api/core/inquiry', inquiryRoutes)
 
 // Tenant routes (for subdomain requests)
 app.use('/api/tenant/*', async (c, next) => {
@@ -110,6 +116,9 @@ const rpcRoutes = app
   .basePath('/api/rpc')
   .route('/core/auth', coreAuthRoutes)
   .route('/core/tenants', coreTenantsRoutes)
+  .route('/core/export', coreExportRoutes)
+  .route('/core/import', coreImportRoutes)
+  .route('/core/inquiry', inquiryRoutes)
   .route('/tenant/auth', tenantAuthRoutes)
   .route('/tenant/rbac', tenantRBACRoutes)
 

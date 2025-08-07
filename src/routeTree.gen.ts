@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as publicTermsRouteImport } from './routes/(public)/terms'
 import { Route as publicPrivacyRouteImport } from './routes/(public)/privacy'
@@ -16,6 +17,11 @@ import { Route as publicPricingRouteImport } from './routes/(public)/pricing'
 import { Route as publicLearnRouteImport } from './routes/(public)/learn'
 import { Route as publicCookiesRouteImport } from './routes/(public)/cookies'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const publicCookiesRoute = publicCookiesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/cookies': typeof publicCookiesRoute
   '/learn': typeof publicLearnRoute
   '/pricing': typeof publicPricingRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/cookies': typeof publicCookiesRoute
   '/learn': typeof publicLearnRoute
   '/pricing': typeof publicPricingRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/(public)/cookies': typeof publicCookiesRoute
   '/(public)/learn': typeof publicLearnRoute
   '/(public)/pricing': typeof publicPricingRoute
@@ -74,12 +83,27 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cookies' | '/learn' | '/pricing' | '/privacy' | '/terms'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/cookies'
+    | '/learn'
+    | '/pricing'
+    | '/privacy'
+    | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cookies' | '/learn' | '/pricing' | '/privacy' | '/terms'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/cookies'
+    | '/learn'
+    | '/pricing'
+    | '/privacy'
+    | '/terms'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/(public)/cookies'
     | '/(public)/learn'
     | '/(public)/pricing'
@@ -89,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   publicCookiesRoute: typeof publicCookiesRoute
   publicLearnRoute: typeof publicLearnRoute
   publicPricingRoute: typeof publicPricingRoute
@@ -98,6 +123,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -145,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   publicCookiesRoute: publicCookiesRoute,
   publicLearnRoute: publicLearnRoute,
   publicPricingRoute: publicPricingRoute,
