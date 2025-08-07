@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import { createTenantConnection } from '@/api/database.settings';
-import * as tenantSchema from '@/api/db/schemas/tenant';
+import * as tenantSchema from '@/api/db/schemas/tenant.drizzle';
 import type { Permission, Role } from '@/shared';
 
 export class RBACService {

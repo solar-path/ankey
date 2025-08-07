@@ -1,6 +1,6 @@
 import { eq, and, or, gte, lte } from 'drizzle-orm';
 import { createTenantConnection } from './database.settings';
-import * as tenantSchema from './db/schemas/tenant';
+import * as tenantSchema from './db/schemas/tenant.drizzle';
 
 export interface CreateDelegationData {
   delegatorId: string;
