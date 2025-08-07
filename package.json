@@ -11,6 +11,7 @@
     "debug": "DEBUG=vite:* bun vite"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",
     "class-variance-authority": "^0.7.1",
@@ -18,8 +19,10 @@
     "lucide-react": "^0.536.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hook-form": "^7.62.0",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
