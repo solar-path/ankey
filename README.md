@@ -5,6 +5,7 @@ A comprehensive multi-tenant SaaS application built with modern technologies, fe
 ## 🚀 Features
 
 ### Core Features
+
 - **Multi-tenancy**: Tenant-per-database isolation with subdomain routing
 - **Authentication**: Lucia-based auth with 2FA support
 - **RBAC**: Role-Based Access Control with permissions and delegation
@@ -13,6 +14,7 @@ A comprehensive multi-tenant SaaS application built with modern technologies, fe
 - **Safe Delete**: Soft delete approach for data integrity
 
 ### Workspace Management
+
 - **Core Admin**: Centralized tenant management and billing
 - **Tenant Isolation**: Each workspace gets its own database
 - **User Invitations**: Email-based user onboarding
@@ -22,6 +24,7 @@ A comprehensive multi-tenant SaaS application built with modern technologies, fe
 ## 🏗 Architecture
 
 ### Technology Stack
+
 - **Frontend**: React 19 + TanStack Router + Tailwind CSS v4
 - **Backend**: Hono.js + Bun runtime
 - **Database**: PostgreSQL + Drizzle ORM
@@ -30,6 +33,7 @@ A comprehensive multi-tenant SaaS application built with modern technologies, fe
 - **Validation**: Zod v4 for runtime validation
 
 ### Project Structure
+
 ```
 src/
 ├── api/                    # Main API routes and middleware
@@ -57,6 +61,7 @@ src/
 ## 🛠 Setup Instructions
 
 ### Prerequisites
+
 - Bun runtime
 - PostgreSQL database
 - Node.js (for compatibility)
@@ -64,24 +69,27 @@ src/
 ### Installation
 
 1. **Clone and install dependencies**:
+
    ```bash
    bun install
    ```
 
 2. **Environment Configuration**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your database and email settings
    ```
 
 3. **Database Setup**:
+
    ```bash
    # Generate database migrations
    bun run db:generate
-   
+
    # Push schema to database
    bun run db:push
-   
+
    # Create core admin user
    bun run setup-core
    ```
@@ -92,6 +100,7 @@ src/
    ```
 
 ### Default Core Admin
+
 - **Email**: itgroup.luck@gmail.com
 - **Password**: Mir@nd@32
 - **Access**: http://localhost:3000
@@ -99,17 +108,20 @@ src/
 ## 🌐 Multi-Tenant Architecture
 
 ### Core Application (localhost:3000)
+
 - Admin dashboard for managing tenants
 - User creation and billing management
 - System-wide configuration and monitoring
 
 ### Tenant Workspaces (subdomain.localhost:3000)
+
 - Isolated workspace for each tenant
 - Independent user management and RBAC
 - Custom roles and permissions per workspace
 - Audit logging and compliance features
 
 ### Reserved Subdomains
+
 - `shop.localhost` - E-commerce platform
 - `hunt.localhost` - Head hunting platform
 - `edu.localhost` - Education portal
@@ -118,12 +130,14 @@ src/
 ## 👥 User Management
 
 ### Core Admin Users
+
 - Manage all tenants and billing
 - Create and deactivate workspaces
 - Monitor system-wide metrics
 - Access compliance reports
 
 ### Tenant Users
+
 - **Owner**: Full workspace control (created during setup)
 - **Invited Users**: Email-based invitation workflow
 - **Access Requesters**: "Let me in" approval process
@@ -132,6 +146,7 @@ src/
 ## 🔐 Security & Compliance
 
 ### Authentication Features
+
 - Argon2 password hashing (industry standard)
 - Session-based authentication with secure cookies
 - Two-factor authentication support
@@ -139,12 +154,14 @@ src/
 - Email verification workflow
 
 ### RBAC System
+
 - Dynamic permission system based on routes
 - Role assignment and management
 - Permission delegation (Delegation of Authority)
 - Audit trail for all permission changes
 
 ### SOX Compliance
+
 - Complete audit logging for all actions
 - Safe delete (soft delete) approach
 - User action tracking with IP and user agent
@@ -154,6 +171,7 @@ src/
 ## 📧 Email System
 
 ### Template-based Emails
+
 - Welcome emails for new workspaces
 - User invitation emails
 - Password reset emails
@@ -161,11 +179,13 @@ src/
 - Two-factor authentication codes
 
 ### SMTP Configuration
+
 Supports any SMTP provider (Gmail, SendGrid, etc.)
 
 ## 🔗 API Endpoints
 
 ### Core Admin APIs
+
 ```
 POST /api/core/auth/login                    # Admin login
 POST /api/core/auth/register-workspace       # Create workspace
@@ -174,6 +194,7 @@ GET  /api/core/tenants/:id/billing           # Billing information
 ```
 
 ### Tenant APIs
+
 ```
 POST /api/tenant/auth/login                  # Tenant user login
 POST /api/tenant/auth/let-me-in              # Access request

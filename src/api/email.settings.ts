@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer'
+import type { Transporter } from 'nodemailer'
 
 export class EmailService {
-  private transporter: Transporter;
+  private transporter: Transporter
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -13,7 +13,7 @@ export class EmailService {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
-    });
+    })
   }
 
   private async sendEmail(to: string, subject: string, html: string, text?: string) {
@@ -24,12 +24,12 @@ export class EmailService {
         subject,
         html,
         text: text || this.htmlToText(html),
-      });
+      })
 
-      return { success: true, messageId: info.messageId };
+      return { success: true, messageId: info.messageId }
     } catch (error) {
-      console.error('Email send error:', error);
-      return { success: false, error: 'Failed to send email' };
+      console.error('Email send error:', error)
+      return { success: false, error: 'Failed to send email' }
     }
   }
 
@@ -40,17 +40,17 @@ export class EmailService {
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .trim();
+      .trim()
   }
 
   // Welcome email for new workspace
   async sendWorkspaceWelcome(data: {
-    to: string;
-    workspaceName: string;
-    workspaceUrl: string;
-    ownerName: string;
+    to: string
+    workspaceName: string
+    workspaceUrl: string
+    ownerName: string
   }) {
-    const subject = `🎉 Your ${data.workspaceName} workspace is ready!`;
+    const subject = `🎉 Your ${data.workspaceName} workspace is ready!`
     const html = `
       <!DOCTYPE html>
       <html>
@@ -90,22 +90,22 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // User invitation email
   async sendUserInvitation(data: {
-    to: string;
-    fullName: string;
-    workspaceName: string;
-    workspaceUrl: string;
-    inviterName: string;
-    inviteToken: string;
+    to: string
+    fullName: string
+    workspaceName: string
+    workspaceUrl: string
+    inviterName: string
+    inviteToken: string
   }) {
-    const inviteUrl = `${data.workspaceUrl}/invite?token=${data.inviteToken}`;
-    const subject = `You've been invited to join ${data.workspaceName}`;
+    const inviteUrl = `${data.workspaceUrl}/invite?token=${data.inviteToken}`
+    const subject = `You've been invited to join ${data.workspaceName}`
     const html = `
       <!DOCTYPE html>
       <html>
@@ -144,19 +144,19 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // Password reset email
   async sendPasswordReset(data: {
-    to: string;
-    fullName: string;
-    resetUrl: string;
-    isCore?: boolean;
+    to: string
+    fullName: string
+    resetUrl: string
+    isCore?: boolean
   }) {
-    const subject = 'Reset your password';
+    const subject = 'Reset your password'
     const html = `
       <!DOCTYPE html>
       <html>
@@ -198,18 +198,14 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // Email verification
-  async sendEmailVerification(data: {
-    to: string;
-    fullName: string;
-    verificationUrl: string;
-  }) {
-    const subject = 'Verify your email address';
+  async sendEmailVerification(data: { to: string; fullName: string; verificationUrl: string }) {
+    const subject = 'Verify your email address'
     const html = `
       <!DOCTYPE html>
       <html>
@@ -244,18 +240,14 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // Two-factor authentication code
-  async sendTwoFactorCode(data: {
-    to: string;
-    fullName: string;
-    code: string;
-  }) {
-    const subject = 'Your verification code';
+  async sendTwoFactorCode(data: { to: string; fullName: string; code: string }) {
+    const subject = 'Your verification code'
     const html = `
       <!DOCTYPE html>
       <html>
@@ -287,21 +279,21 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // Access request notification
   async sendAccessRequestNotification(data: {
-    to: string; // Admin email
-    requesterName: string;
-    requesterEmail: string;
-    workspaceName: string;
-    reason: string;
-    approvalUrl: string;
+    to: string // Admin email
+    requesterName: string
+    requesterEmail: string
+    workspaceName: string
+    reason: string
+    approvalUrl: string
   }) {
-    const subject = `New access request for ${data.workspaceName}`;
+    const subject = `New access request for ${data.workspaceName}`
     const html = `
       <!DOCTYPE html>
       <html>
@@ -345,19 +337,19 @@ export class EmailService {
           </div>
         </body>
       </html>
-    `;
+    `
 
-    return this.sendEmail(data.to, subject, html);
+    return this.sendEmail(data.to, subject, html)
   }
 
   // Test email connection
   async testConnection() {
     try {
-      await this.transporter.verify();
-      return { success: true, message: 'Email connection successful' };
+      await this.transporter.verify()
+      return { success: true, message: 'Email connection successful' }
     } catch (error) {
-      console.error('Email connection test failed:', error);
-      return { success: false, error: 'Email connection failed' };
+      console.error('Email connection test failed:', error)
+      return { success: false, error: 'Email connection failed' }
     }
   }
 }

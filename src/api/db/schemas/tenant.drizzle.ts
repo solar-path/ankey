@@ -1,6 +1,6 @@
-import { pgTable, text, timestamp, boolean, uuid, jsonb } from 'drizzle-orm/pg-core';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { relations } from 'drizzle-orm';
+import { pgTable, text, timestamp, boolean, uuid, jsonb } from 'drizzle-orm/pg-core'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+import { relations } from 'drizzle-orm'
 
 // Tenant users table
 export const users = pgTable('users', {
@@ -21,14 +21,16 @@ export const users = pgTable('users', {
   requestReason: text('request_reason'), // For "let me in" requests
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+})
 
 // Tenant sessions for authentication
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
   expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
-});
+})
 
 // Permissions table
 export const permissions = pgTable('permissions', {
@@ -39,7 +41,7 @@ export const permissions = pgTable('permissions', {
   description: text('description'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+})
 
 // Roles table
 export const roles = pgTable('roles', {
@@ -49,39 +51,55 @@ export const roles = pgTable('roles', {
   isSystem: boolean('is_system').default(false), // Cannot be deleted
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+})
 
 // Role-Permission junction table
 export const rolePermissions = pgTable('role_permissions', {
   id: uuid('id').defaultRandom().primaryKey(),
-  roleId: uuid('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
-  permissionId: uuid('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  roleId: uuid('role_id')
+    .notNull()
+    .references(() => roles.id, { onDelete: 'cascade' }),
+  permissionId: uuid('permission_id')
+    .notNull()
+    .references(() => permissions.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow(),
-});
+})
 
 // User-Role junction table
 export const userRoles = pgTable('user_roles', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  roleId: uuid('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  roleId: uuid('role_id')
+    .notNull()
+    .references(() => roles.id, { onDelete: 'cascade' }),
   assignedBy: uuid('assigned_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
-});
+})
 
 // Delegation of Authority (DOA) table
 export const delegations = pgTable('delegations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  delegatorId: uuid('delegator_id').notNull().references(() => users.id),
-  delegateeId: uuid('delegatee_id').notNull().references(() => users.id),
-  permissionId: uuid('permission_id').notNull().references(() => permissions.id),
+  delegatorId: uuid('delegator_id')
+    .notNull()
+    .references(() => users.id),
+  delegateeId: uuid('delegatee_id')
+    .notNull()
+    .references(() => users.id),
+  permissionId: uuid('permission_id')
+    .notNull()
+    .references(() => permissions.id),
   startDate: timestamp('start_date').defaultNow(),
   endDate: timestamp('end_date'),
   isActive: boolean('is_active').default(true),
   reason: text('reason'),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+})
 
 // Audit logs table for SOX compliance
 export const auditLogs = pgTable('audit_logs', {
@@ -96,27 +114,31 @@ export const auditLogs = pgTable('audit_logs', {
   userAgent: text('user_agent'),
   sessionId: text('session_id'),
   createdAt: timestamp('created_at').defaultNow(),
-});
+})
 
 // Password reset tokens for tenant users
 export const tenantPasswordResetTokens = pgTable('password_reset_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
   token: text('token').notNull().unique(),
   expiresAt: timestamp('expires_at').notNull(),
   used: boolean('used').default(false),
   createdAt: timestamp('created_at').defaultNow(),
-});
+})
 
 // Email verification tokens for tenant users
 export const tenantEmailVerificationTokens = pgTable('email_verification_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
   token: text('token').notNull().unique(),
   email: text('email').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
-});
+})
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -136,24 +158,24 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     references: [users.id],
     relationName: 'approver',
   }),
-}));
+}))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const rolesRelations = relations(roles, ({ many }) => ({
   rolePermissions: many(rolePermissions),
   userRoles: many(userRoles),
-}));
+}))
 
 export const permissionsRelations = relations(permissions, ({ many }) => ({
   rolePermissions: many(rolePermissions),
   delegations: many(delegations),
-}));
+}))
 
 export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
   role: one(roles, {
@@ -164,7 +186,7 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
     fields: [rolePermissions.permissionId],
     references: [permissions.id],
   }),
-}));
+}))
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(users, {
@@ -175,7 +197,7 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
     fields: [userRoles.roleId],
     references: [roles.id],
   }),
-}));
+}))
 
 export const delegationsRelations = relations(delegations, ({ one }) => ({
   delegator: one(users, {
@@ -192,21 +214,21 @@ export const delegationsRelations = relations(delegations, ({ one }) => ({
     fields: [delegations.permissionId],
     references: [permissions.id],
   }),
-}));
+}))
 
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   user: one(users, {
     fields: [auditLogs.userId],
     references: [users.id],
   }),
-}));
+}))
 
 // Zod schemas for validation
-export const insertUserSchema = createInsertSchema(users);
-export const selectUserSchema = createSelectSchema(users);
-export const insertSessionSchema = createInsertSchema(sessions);
-export const selectSessionSchema = createSelectSchema(sessions);
-export const insertPermissionSchema = createInsertSchema(permissions);
-export const selectPermissionSchema = createSelectSchema(permissions);
-export const insertRoleSchema = createInsertSchema(roles);
-export const selectRoleSchema = createSelectSchema(roles);
+export const insertUserSchema = createInsertSchema(users)
+export const selectUserSchema = createSelectSchema(users)
+export const insertSessionSchema = createInsertSchema(sessions)
+export const selectSessionSchema = createSelectSchema(sessions)
+export const insertPermissionSchema = createInsertSchema(permissions)
+export const selectPermissionSchema = createSelectSchema(permissions)
+export const insertRoleSchema = createInsertSchema(roles)
+export const selectRoleSchema = createSelectSchema(roles)

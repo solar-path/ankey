@@ -77,12 +77,8 @@
           "name": "core_audit_logs_user_id_core_users_id_fk",
           "tableFrom": "core_audit_logs",
           "tableTo": "core_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -122,12 +118,8 @@
           "name": "core_sessions_user_id_core_users_id_fk",
           "tableFrom": "core_sessions",
           "tableTo": "core_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -216,9 +208,7 @@
         "core_users_email_unique": {
           "name": "core_users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -274,12 +264,8 @@
           "name": "email_verification_tokens_user_id_core_users_id_fk",
           "tableFrom": "email_verification_tokens",
           "tableTo": "core_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -289,9 +275,7 @@
         "email_verification_tokens_token_unique": {
           "name": "email_verification_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -348,12 +332,8 @@
           "name": "password_reset_tokens_user_id_core_users_id_fk",
           "tableFrom": "password_reset_tokens",
           "tableTo": "core_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -363,9 +343,7 @@
         "password_reset_tokens_token_unique": {
           "name": "password_reset_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -450,16 +428,12 @@
         "tenants_subdomain_unique": {
           "name": "tenants_subdomain_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "subdomain"
-          ]
+          "columns": ["subdomain"]
         },
         "tenants_database_unique": {
           "name": "tenants_database_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "database"
-          ]
+          "columns": ["database"]
         }
       },
       "policies": {},

@@ -1,17 +1,17 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { useDrawer } from '@/components/QDrawer/QDrawer.store';
-import { registerSchema, type RegisterData } from '@/shared';
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { registerSchema, type RegisterData } from '@/shared'
 
 interface RegisterWorkspaceFormProps {
-  onSubmit: (data: RegisterData) => Promise<void>;
-  isLoading?: boolean;
+  onSubmit: (data: RegisterData) => Promise<void>
+  isLoading?: boolean
 }
 
 export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterWorkspaceFormProps) {
-  const { closeDrawer } = useDrawer();
-  
+  const { closeDrawer } = useDrawer()
+
   const {
     register,
     handleSubmit,
@@ -19,34 +19,32 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
     watch,
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-  });
+  })
 
-  const workspaceName = watch('workspace');
+  const workspaceName = watch('workspace')
 
   const handleFormSubmit = async (data: RegisterData) => {
     try {
-      await onSubmit(data);
-      closeDrawer();
+      await onSubmit(data)
+      closeDrawer()
     } catch (error) {
       // Error handling is done in the parent component
     }
-  };
+  }
 
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  };
+      .replace(/^-|-$/g, '')
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold">Create Your Workspace</h2>
-        <p className="text-gray-600 mt-2">
-          Set up your own workspace and start collaborating
-        </p>
+        <p className="text-gray-600 mt-2">Set up your own workspace and start collaborating</p>
       </div>
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -63,7 +61,8 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
           />
           {workspaceName && (
             <p className="text-sm text-gray-500 mt-1">
-              Your workspace will be available at: <strong>{generateSlug(workspaceName)}.localhost:3000</strong>
+              Your workspace will be available at:{' '}
+              <strong>{generateSlug(workspaceName)}.localhost:3000</strong>
             </p>
           )}
           {errors.workspace && (
@@ -98,9 +97,7 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="john@example.com"
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -133,11 +130,7 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
           </ul>
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Creating Workspace...' : 'Create Workspace'}
         </Button>
 
@@ -146,9 +139,9 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
         </div>
       </form>
     </div>
-  );
+  )
 }
 
 // Add metadata for QDrawer
-(RegisterWorkspaceForm as any).defaultTitle = 'Create Workspace';
-(RegisterWorkspaceForm as any).defaultDescription = 'Set up your new workspace in minutes';
+;(RegisterWorkspaceForm as any).defaultTitle = 'Create Workspace'
+;(RegisterWorkspaceForm as any).defaultDescription = 'Set up your new workspace in minutes'

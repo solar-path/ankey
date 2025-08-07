@@ -1,34 +1,34 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { useDrawer } from '@/components/QDrawer/QDrawer.store';
-import { letMeInSchema, type LetMeInData } from '@/shared';
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { letMeInSchema, type LetMeInData } from '@/shared'
 
 interface LetMeInFormProps {
-  onSubmit: (data: LetMeInData) => Promise<void>;
-  isLoading?: boolean;
-  workspaceName?: string;
+  onSubmit: (data: LetMeInData) => Promise<void>
+  isLoading?: boolean
+  workspaceName?: string
 }
 
 export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetMeInFormProps) {
-  const { closeDrawer } = useDrawer();
-  
+  const { closeDrawer } = useDrawer()
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LetMeInData>({
     resolver: zodResolver(letMeInSchema),
-  });
+  })
 
   const handleFormSubmit = async (data: LetMeInData) => {
     try {
-      await onSubmit(data);
-      closeDrawer();
+      await onSubmit(data)
+      closeDrawer()
     } catch (error) {
       // Error handling is done in the parent component
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -43,14 +43,18 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
         <div className="flex items-start">
           <div className="text-amber-600 mr-3">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div>
             <h3 className="text-sm font-medium text-amber-800">Access Request Process</h3>
             <div className="text-sm text-amber-700 mt-1">
-              Your request will be sent to workspace administrators for approval. 
-              You'll receive an email once your request is reviewed.
+              Your request will be sent to workspace administrators for approval. You'll receive an
+              email once your request is reviewed.
             </div>
           </div>
         </div>
@@ -84,9 +88,7 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="your.email@example.com"
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -103,9 +105,7 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
           <p className="text-sm text-gray-500 mt-1">
             Help administrators understand why you need access
           </p>
-          {errors.reason && (
-            <p className="text-red-500 text-sm mt-1">{errors.reason.message}</p>
-          )}
+          {errors.reason && <p className="text-red-500 text-sm mt-1">{errors.reason.message}</p>}
         </div>
 
         <div className="bg-gray-50 p-4 rounded-md">
@@ -118,11 +118,7 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
           </ol>
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Submitting Request...' : 'Submit Access Request'}
         </Button>
 
@@ -132,7 +128,7 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
             variant="link"
             onClick={() => {
               // TODO: Go back to login form
-              closeDrawer();
+              closeDrawer()
             }}
           >
             Back to Login
@@ -140,9 +136,9 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
         </div>
       </form>
     </div>
-  );
+  )
 }
 
 // Add metadata for QDrawer
-(LetMeInForm as any).defaultTitle = 'Request Access';
-(LetMeInForm as any).defaultDescription = 'Submit a request to join this workspace';
+;(LetMeInForm as any).defaultTitle = 'Request Access'
+;(LetMeInForm as any).defaultDescription = 'Submit a request to join this workspace'

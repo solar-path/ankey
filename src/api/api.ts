@@ -1,51 +1,60 @@
-import { Hono } from 'hono';
-import { logger } from 'hono/logger';
-import { cors } from 'hono/cors';
-import { coreAuthRoutes } from '@/api/controllers/core/auth.hono';
-import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono';
-import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono';
-import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono';
-import { TenantService } from '@/api/tenant.settings';
-import { AuditService } from '@/api/audit.settings';
+import { Hono } from 'hono'
+import { logger } from 'hono/logger'
+import { cors } from 'hono/cors'
+import { coreAuthRoutes } from '@/api/controllers/core/auth.hono'
+import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
+import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
+import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
+import { TenantService } from '@/api/tenant.settings'
+import { AuditService } from '@/api/audit.settings'
 
-const app = new Hono();
+const app = new Hono()
 
 // Middleware
-app.use('*', logger());
-app.use('*', cors({
-  origin: (origin) => {
-    // Allow localhost and local network IPs in development
-    if (!origin || origin.includes('localhost') || /http:\/\/192\.168\.\d+\.\d+:300\d/.test(origin)) {
-      return true;
-    }
-    return false;
-  },
-  credentials: true,
-}));
+app.use('*', logger())
+app.use(
+  '*',
+  cors({
+    origin: origin => {
+      // Allow localhost and local network IPs in development
+      if (
+        !origin ||
+        origin.includes('localhost') ||
+        /http:\/\/192\.168\.\d+\.\d+:300\d/.test(origin)
+      ) {
+        return true
+      }
+      return false
+    },
+    credentials: true,
+  })
+)
 
 // Tenant detection middleware
 app.use('*', async (c, next) => {
-  const host = c.req.header('host') || '';
-  const subdomain = host.split('.')[0];
-  const url = new URL(c.req.url);
-  
+  const host = c.req.header('host') || ''
+  const subdomain = host.split('.')[0]
+  const url = new URL(c.req.url)
+
   // Skip tenant detection for development assets and internal routes
-  if (url.pathname.startsWith('/node_modules') || 
-      url.pathname.startsWith('/@') || 
-      url.pathname.includes('vite') ||
-      url.pathname.includes('favicon') ||
-      url.pathname.includes('apple-touch-icon')) {
-    return c.json({ success: false, error: 'Not found' }, 404);
+  if (
+    url.pathname.startsWith('/node_modules') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.includes('vite') ||
+    url.pathname.includes('favicon') ||
+    url.pathname.includes('apple-touch-icon')
+  ) {
+    return c.json({ success: false, error: 'Not found' }, 404)
   }
-  
+
   // Check if it's a tenant request (has subdomain and not localhost/IP)
-  const isLocalhost = subdomain === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(subdomain);
-  
+  const isLocalhost = subdomain === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(subdomain)
+
   // For tenant subdomains (not localhost or IP), check if tenant exists
   if (!isLocalhost && subdomain && !['www', 'api'].includes(subdomain)) {
-    const tenantService = new TenantService();
-    const tenantResult = await tenantService.getTenantBySubdomain(subdomain);
-    
+    const tenantService = new TenantService()
+    const tenantResult = await tenantService.getTenantBySubdomain(subdomain)
+
     if (tenantResult.success && tenantResult.data) {
       // Ensure tenant data has proper defaults
       const tenant = {
@@ -54,90 +63,95 @@ app.use('*', async (c, next) => {
         userCount: tenantResult.data.userCount ?? 0,
         monthlyRate: tenantResult.data.monthlyRate ?? 25,
         createdAt: tenantResult.data.createdAt ?? new Date(),
-        updatedAt: tenantResult.data.updatedAt ?? new Date()
-      };
-      c.set('tenant', tenant);
-      c.set('tenantDatabase', tenant.database);
-      c.set('isTenant', true);
+        updatedAt: tenantResult.data.updatedAt ?? new Date(),
+      }
+      c.set('tenant', tenant)
+      c.set('tenantDatabase', tenant.database)
+      c.set('isTenant', true)
     } else {
-      return c.json({ success: false, error: 'Tenant not found' }, 404);
+      return c.json({ success: false, error: 'Tenant not found' }, 404)
     }
   } else {
     // This is core/localhost access
-    c.set('isTenant', false);
+    c.set('isTenant', false)
   }
-  
-  await next();
-});
+
+  await next()
+})
 
 // Add audit middleware
 app.use('/api/*', (c, next) => {
-  const isTenant = c.get('isTenant');
-  const tenantDatabase = c.get('tenantDatabase');
-  
-  return AuditService.createAuditMiddleware(isTenant ? tenantDatabase : undefined)(c, next);
-});
+  const isTenant = c.get('isTenant')
+  const tenantDatabase = c.get('tenantDatabase')
+
+  return AuditService.createAuditMiddleware(isTenant ? tenantDatabase : undefined)(c, next)
+})
 
 // Core routes (for localhost without subdomain)
-app.route('/api/core/auth', coreAuthRoutes);
-app.route('/api/core/tenants', coreTenantsRoutes);
+app.route('/api/core/auth', coreAuthRoutes)
+app.route('/api/core/tenants', coreTenantsRoutes)
 
 // Tenant routes (for subdomain requests)
 app.use('/api/tenant/*', async (c, next) => {
   if (!c.get('isTenant')) {
-    return c.json({ success: false, error: 'This endpoint is only available for tenant workspaces' }, 400);
+    return c.json(
+      { success: false, error: 'This endpoint is only available for tenant workspaces' },
+      400
+    )
   }
-  await next();
-});
+  await next()
+})
 
-app.route('/api/tenant/auth', tenantAuthRoutes);
-app.route('/api/tenant/rbac', tenantRBACRoutes);
+app.route('/api/tenant/auth', tenantAuthRoutes)
+app.route('/api/tenant/rbac', tenantRBACRoutes)
 
 // RPC Routes for type-safe client communication
 const rpcRoutes = app
   .basePath('/api/rpc')
   .route('/core/auth', coreAuthRoutes)
   .route('/core/tenants', coreTenantsRoutes)
-  .route('/tenant/auth', tenantAuthRoutes)  
-  .route('/tenant/rbac', tenantRBACRoutes);
+  .route('/tenant/auth', tenantAuthRoutes)
+  .route('/tenant/rbac', tenantRBACRoutes)
 
-export type AppType = typeof rpcRoutes;
+export type AppType = typeof rpcRoutes
 
 // Health check
-app.get('/api/health', (c) => {
-  const isTenant = c.get('isTenant');
-  const tenant = c.get('tenant');
-  
+app.get('/api/health', c => {
+  const isTenant = c.get('isTenant')
+  const tenant = c.get('tenant')
+
   return c.json({
     success: true,
     data: {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       type: isTenant ? 'tenant' : 'core',
-      tenant: isTenant ? { 
-        name: tenant?.name, 
-        subdomain: tenant?.subdomain 
-      } : null,
+      tenant: isTenant
+        ? {
+            name: tenant?.name,
+            subdomain: tenant?.subdomain,
+          }
+        : null,
     },
-  });
-});
+  })
+})
 
 // Root endpoint
-app.get('/', (c) => {
-  const isTenant = c.get('isTenant');
-  const tenant = c.get('tenant');
-  
+app.get('/', c => {
+  const isTenant = c.get('isTenant')
+  const tenant = c.get('tenant')
+
   return c.json({
     message: 'Ankey Multi-Tenant API',
     type: isTenant ? 'tenant' : 'core',
     tenant: isTenant ? tenant?.name : null,
     version: '1.0.0',
-  });
-});
+  })
+})
 
 // Export for Bun to handle server lifecycle
 export default {
   port: process.env.PORT || 3001,
   fetch: app.fetch,
   development: process.env.NODE_ENV !== 'production',
-};
+}

@@ -1,30 +1,30 @@
-import { eq, and, or, gte, lte, isNull } from 'drizzle-orm';
-import { createTenantConnection } from './database.settings';
-import * as tenantSchema from './db/schemas/tenant.drizzle';
+import { eq, and, or, gte, lte, isNull } from 'drizzle-orm'
+import { createTenantConnection } from './database.settings'
+import * as tenantSchema from './db/schemas/tenant.drizzle'
 
 export interface CreateDelegationData {
-  delegatorId: string;
-  delegateeId: string;
-  permissionId: string;
-  startDate?: Date;
-  endDate?: Date;
-  reason?: string;
-  createdBy: string;
+  delegatorId: string
+  delegateeId: string
+  permissionId: string
+  startDate?: Date
+  endDate?: Date
+  reason?: string
+  createdBy: string
 }
 
 export interface UpdateDelegationData {
-  endDate?: Date;
-  isActive?: boolean;
-  reason?: string;
+  endDate?: Date
+  isActive?: boolean
+  reason?: string
 }
 
 export class DOAService {
-  private db;
-  private tenantDatabase: string;
+  private db
+  private tenantDatabase: string
 
   constructor(tenantDatabase: string) {
-    this.tenantDatabase = tenantDatabase;
-    this.db = createTenantConnection(tenantDatabase);
+    this.tenantDatabase = tenantDatabase
+    this.db = createTenantConnection(tenantDatabase)
   }
 
   // Create new delegation
@@ -43,13 +43,13 @@ export class DOAService {
             eq(tenantSchema.userRoles.userId, data.delegatorId),
             eq(tenantSchema.rolePermissions.permissionId, data.permissionId)
           )
-        );
+        )
 
       if (delegatorPermissions.length === 0) {
         return {
           success: false,
           error: 'Delegator does not have this permission',
-        };
+        }
       }
 
       // Check for existing active delegation for same permission
@@ -64,13 +64,13 @@ export class DOAService {
             gte(tenantSchema.delegations.endDate, new Date())
           )
         ),
-      });
+      })
 
       if (existingDelegation) {
         return {
           success: false,
           error: 'Active delegation already exists for this permission',
-        };
+        }
       }
 
       const delegation = await this.db
@@ -79,35 +79,35 @@ export class DOAService {
           ...data,
           startDate: data.startDate || new Date(),
         })
-        .returning();
+        .returning()
 
-      return { success: true, data: delegation[0] };
+      return { success: true, data: delegation[0] }
     } catch (error) {
-      console.error('Create delegation error:', error);
-      return { success: false, error: 'Failed to create delegation' };
+      console.error('Create delegation error:', error)
+      return { success: false, error: 'Failed to create delegation' }
     }
   }
 
   // Get all delegations with filters
   async getDelegations(filters?: {
-    delegatorId?: string;
-    delegateeId?: string;
-    isActive?: boolean;
-    includeExpired?: boolean;
+    delegatorId?: string
+    delegateeId?: string
+    isActive?: boolean
+    includeExpired?: boolean
   }) {
     try {
-      let whereConditions = [];
+      let whereConditions = []
 
       if (filters?.delegatorId) {
-        whereConditions.push(eq(tenantSchema.delegations.delegatorId, filters.delegatorId));
+        whereConditions.push(eq(tenantSchema.delegations.delegatorId, filters.delegatorId))
       }
 
       if (filters?.delegateeId) {
-        whereConditions.push(eq(tenantSchema.delegations.delegateeId, filters.delegateeId));
+        whereConditions.push(eq(tenantSchema.delegations.delegateeId, filters.delegateeId))
       }
 
       if (filters?.isActive !== undefined) {
-        whereConditions.push(eq(tenantSchema.delegations.isActive, filters.isActive));
+        whereConditions.push(eq(tenantSchema.delegations.isActive, filters.isActive))
       }
 
       if (!filters?.includeExpired) {
@@ -116,7 +116,7 @@ export class DOAService {
             isNull(tenantSchema.delegations.endDate),
             gte(tenantSchema.delegations.endDate, new Date())
           )
-        );
+        )
       }
 
       const delegations = await this.db.query.delegations.findMany({
@@ -131,12 +131,12 @@ export class DOAService {
           permission: true,
         },
         orderBy: [tenantSchema.delegations.createdAt],
-      });
+      })
 
-      return { success: true, data: delegations };
+      return { success: true, data: delegations }
     } catch (error) {
-      console.error('Get delegations error:', error);
-      return { success: false, error: 'Failed to get delegations' };
+      console.error('Get delegations error:', error)
+      return { success: false, error: 'Failed to get delegations' }
     }
   }
 
@@ -154,16 +154,16 @@ export class DOAService {
           },
           permission: true,
         },
-      });
+      })
 
       if (!delegation) {
-        return { success: false, error: 'Delegation not found' };
+        return { success: false, error: 'Delegation not found' }
       }
 
-      return { success: true, data: delegation };
+      return { success: true, data: delegation }
     } catch (error) {
-      console.error('Get delegation error:', error);
-      return { success: false, error: 'Failed to get delegation' };
+      console.error('Get delegation error:', error)
+      return { success: false, error: 'Failed to get delegation' }
     }
   }
 
@@ -174,16 +174,16 @@ export class DOAService {
         .update(tenantSchema.delegations)
         .set({ ...data, updatedAt: new Date() })
         .where(eq(tenantSchema.delegations.id, id))
-        .returning();
+        .returning()
 
       if (delegation.length === 0) {
-        return { success: false, error: 'Delegation not found' };
+        return { success: false, error: 'Delegation not found' }
       }
 
-      return { success: true, data: delegation[0] };
+      return { success: true, data: delegation[0] }
     } catch (error) {
-      console.error('Update delegation error:', error);
-      return { success: false, error: 'Failed to update delegation' };
+      console.error('Update delegation error:', error)
+      return { success: false, error: 'Failed to update delegation' }
     }
   }
 
@@ -197,12 +197,12 @@ export class DOAService {
           endDate: new Date(),
         },
         revokedBy
-      );
+      )
 
-      return delegation;
+      return delegation
     } catch (error) {
-      console.error('Revoke delegation error:', error);
-      return { success: false, error: 'Failed to revoke delegation' };
+      console.error('Revoke delegation error:', error)
+      return { success: false, error: 'Failed to revoke delegation' }
     }
   }
 
@@ -213,12 +213,12 @@ export class DOAService {
         delegateeId: userId,
         isActive: true,
         includeExpired: false,
-      });
+      })
 
-      return delegations;
+      return delegations
     } catch (error) {
-      console.error('Get active delegations for user error:', error);
-      return { success: false, error: 'Failed to get active delegations' };
+      console.error('Get active delegations for user error:', error)
+      return { success: false, error: 'Failed to get active delegations' }
     }
   }
 
@@ -228,12 +228,12 @@ export class DOAService {
       const delegations = await this.getDelegations({
         delegatorId,
         includeExpired: true,
-      });
+      })
 
-      return delegations;
+      return delegations
     } catch (error) {
-      console.error('Get delegations by delegator error:', error);
-      return { success: false, error: 'Failed to get delegations' };
+      console.error('Get delegations by delegator error:', error)
+      return { success: false, error: 'Failed to get delegations' }
     }
   }
 
@@ -257,16 +257,15 @@ export class DOAService {
         with: {
           permission: true,
         },
-      });
+      })
 
       return delegations.some(
         delegation =>
-          delegation.permission.resource === resource &&
-          delegation.permission.action === action
-      );
+          delegation.permission.resource === resource && delegation.permission.action === action
+      )
     } catch (error) {
-      console.error('Check delegation permission error:', error);
-      return false;
+      console.error('Check delegation permission error:', error)
+      return false
     }
   }
 
@@ -282,30 +281,30 @@ export class DOAService {
             lte(tenantSchema.delegations.endDate, new Date())
           )
         )
-        .returning();
+        .returning()
 
       return {
         success: true,
         message: `Cleaned up ${result.length} expired delegations`,
         count: result.length,
-      };
+      }
     } catch (error) {
-      console.error('Cleanup expired delegations error:', error);
-      return { success: false, error: 'Failed to cleanup expired delegations' };
+      console.error('Cleanup expired delegations error:', error)
+      return { success: false, error: 'Failed to cleanup expired delegations' }
     }
   }
 
   // Get delegation summary for reporting
   async getDelegationSummary(startDate?: Date, endDate?: Date) {
     try {
-      let whereConditions = [];
+      let whereConditions = []
 
       if (startDate) {
-        whereConditions.push(gte(tenantSchema.delegations.createdAt, startDate));
+        whereConditions.push(gte(tenantSchema.delegations.createdAt, startDate))
       }
 
       if (endDate) {
-        whereConditions.push(lte(tenantSchema.delegations.createdAt, endDate));
+        whereConditions.push(lte(tenantSchema.delegations.createdAt, endDate))
       }
 
       const delegations = await this.db.query.delegations.findMany({
@@ -319,32 +318,36 @@ export class DOAService {
           },
           permission: true,
         },
-      });
+      })
 
       const summary = {
         total: delegations.length,
         active: delegations.filter(d => d.isActive).length,
-        expired: delegations.filter(
-          d => d.endDate && d.endDate < new Date()
-        ).length,
-        byPermission: delegations.reduce((acc, delegation: any) => {
-          if (delegation.permission) {
-            const key = `${delegation.permission.resource}:${delegation.permission.action}`;
-            acc[key] = (acc[key] || 0) + 1;
-          }
-          return acc;
-        }, {} as Record<string, number>),
-        byDelegator: delegations.reduce((acc, delegation: any) => {
-          const key = delegation.delegator?.email || 'unknown';
-          acc[key] = (acc[key] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-      };
+        expired: delegations.filter(d => d.endDate && d.endDate < new Date()).length,
+        byPermission: delegations.reduce(
+          (acc, delegation: any) => {
+            if (delegation.permission) {
+              const key = `${delegation.permission.resource}:${delegation.permission.action}`
+              acc[key] = (acc[key] || 0) + 1
+            }
+            return acc
+          },
+          {} as Record<string, number>
+        ),
+        byDelegator: delegations.reduce(
+          (acc, delegation: any) => {
+            const key = delegation.delegator?.email || 'unknown'
+            acc[key] = (acc[key] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>
+        ),
+      }
 
-      return { success: true, data: summary };
+      return { success: true, data: summary }
     } catch (error) {
-      console.error('Get delegation summary error:', error);
-      return { success: false, error: 'Failed to get delegation summary' };
+      console.error('Get delegation summary error:', error)
+      return { success: false, error: 'Failed to get delegation summary' }
     }
   }
 }

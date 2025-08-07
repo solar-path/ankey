@@ -1,27 +1,24 @@
-import { eq, and } from 'drizzle-orm';
-import { createTenantConnection } from '@/api/database.settings';
-import * as tenantSchema from '@/api/db/schemas/tenant.drizzle';
-import type { Permission, Role } from '@/shared';
+import { eq, and } from 'drizzle-orm'
+import { createTenantConnection } from '@/api/database.settings'
+import * as tenantSchema from '@/api/db/schemas/tenant.drizzle'
+import type { Permission, Role } from '@/shared'
 
 export class RBACService {
-  private db;
+  private db
 
   constructor(tenantDatabase: string) {
-    this.db = createTenantConnection(tenantDatabase);
+    this.db = createTenantConnection(tenantDatabase)
   }
 
   // Permission management
   async createPermission(data: Omit<Permission, 'id'>) {
     try {
-      const permission = await this.db
-        .insert(tenantSchema.permissions)
-        .values(data)
-        .returning();
+      const permission = await this.db.insert(tenantSchema.permissions).values(data).returning()
 
-      return { success: true, data: permission[0] };
+      return { success: true, data: permission[0] }
     } catch (error) {
-      console.error('Create permission error:', error);
-      return { success: false, error: 'Failed to create permission' };
+      console.error('Create permission error:', error)
+      return { success: false, error: 'Failed to create permission' }
     }
   }
 
@@ -29,12 +26,12 @@ export class RBACService {
     try {
       const permissions = await this.db.query.permissions.findMany({
         orderBy: [tenantSchema.permissions.resource, tenantSchema.permissions.action],
-      });
+      })
 
-      return { success: true, data: permissions };
+      return { success: true, data: permissions }
     } catch (error) {
-      console.error('Get permissions error:', error);
-      return { success: false, error: 'Failed to get permissions' };
+      console.error('Get permissions error:', error)
+      return { success: false, error: 'Failed to get permissions' }
     }
   }
 
@@ -44,16 +41,16 @@ export class RBACService {
         .update(tenantSchema.permissions)
         .set({ ...data, updatedAt: new Date() })
         .where(eq(tenantSchema.permissions.id, id))
-        .returning();
+        .returning()
 
       if (permission.length === 0) {
-        return { success: false, error: 'Permission not found' };
+        return { success: false, error: 'Permission not found' }
       }
 
-      return { success: true, data: permission[0] };
+      return { success: true, data: permission[0] }
     } catch (error) {
-      console.error('Update permission error:', error);
-      return { success: false, error: 'Failed to update permission' };
+      console.error('Update permission error:', error)
+      return { success: false, error: 'Failed to update permission' }
     }
   }
 
@@ -62,31 +59,28 @@ export class RBACService {
       const result = await this.db
         .delete(tenantSchema.permissions)
         .where(eq(tenantSchema.permissions.id, id))
-        .returning();
+        .returning()
 
       if (result.length === 0) {
-        return { success: false, error: 'Permission not found' };
+        return { success: false, error: 'Permission not found' }
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
-      console.error('Delete permission error:', error);
-      return { success: false, error: 'Failed to delete permission' };
+      console.error('Delete permission error:', error)
+      return { success: false, error: 'Failed to delete permission' }
     }
   }
 
   // Role management
   async createRole(data: Omit<Role, 'id'>) {
     try {
-      const role = await this.db
-        .insert(tenantSchema.roles)
-        .values(data)
-        .returning();
+      const role = await this.db.insert(tenantSchema.roles).values(data).returning()
 
-      return { success: true, data: role[0] };
+      return { success: true, data: role[0] }
     } catch (error) {
-      console.error('Create role error:', error);
-      return { success: false, error: 'Failed to create role' };
+      console.error('Create role error:', error)
+      return { success: false, error: 'Failed to create role' }
     }
   }
 
@@ -101,12 +95,12 @@ export class RBACService {
           },
         },
         orderBy: [tenantSchema.roles.name],
-      });
+      })
 
-      return { success: true, data: roles };
+      return { success: true, data: roles }
     } catch (error) {
-      console.error('Get roles error:', error);
-      return { success: false, error: 'Failed to get roles' };
+      console.error('Get roles error:', error)
+      return { success: false, error: 'Failed to get roles' }
     }
   }
 
@@ -121,16 +115,16 @@ export class RBACService {
             },
           },
         },
-      });
+      })
 
       if (!role) {
-        return { success: false, error: 'Role not found' };
+        return { success: false, error: 'Role not found' }
       }
 
-      return { success: true, data: role };
+      return { success: true, data: role }
     } catch (error) {
-      console.error('Get role error:', error);
-      return { success: false, error: 'Failed to get role' };
+      console.error('Get role error:', error)
+      return { success: false, error: 'Failed to get role' }
     }
   }
 
@@ -138,26 +132,26 @@ export class RBACService {
     try {
       const role = await this.db.query.roles.findFirst({
         where: eq(tenantSchema.roles.id, id),
-      });
+      })
 
       if (!role) {
-        return { success: false, error: 'Role not found' };
+        return { success: false, error: 'Role not found' }
       }
 
       if (role.isSystem) {
-        return { success: false, error: 'Cannot modify system role' };
+        return { success: false, error: 'Cannot modify system role' }
       }
 
       const updatedRole = await this.db
         .update(tenantSchema.roles)
         .set({ ...data, updatedAt: new Date() })
         .where(eq(tenantSchema.roles.id, id))
-        .returning();
+        .returning()
 
-      return { success: true, data: updatedRole[0] };
+      return { success: true, data: updatedRole[0] }
     } catch (error) {
-      console.error('Update role error:', error);
-      return { success: false, error: 'Failed to update role' };
+      console.error('Update role error:', error)
+      return { success: false, error: 'Failed to update role' }
     }
   }
 
@@ -165,24 +159,22 @@ export class RBACService {
     try {
       const role = await this.db.query.roles.findFirst({
         where: eq(tenantSchema.roles.id, id),
-      });
+      })
 
       if (!role) {
-        return { success: false, error: 'Role not found' };
+        return { success: false, error: 'Role not found' }
       }
 
       if (role.isSystem) {
-        return { success: false, error: 'Cannot delete system role' };
+        return { success: false, error: 'Cannot delete system role' }
       }
 
-      await this.db
-        .delete(tenantSchema.roles)
-        .where(eq(tenantSchema.roles.id, id));
+      await this.db.delete(tenantSchema.roles).where(eq(tenantSchema.roles.id, id))
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
-      console.error('Delete role error:', error);
-      return { success: false, error: 'Failed to delete role' };
+      console.error('Delete role error:', error)
+      return { success: false, error: 'Failed to delete role' }
     }
   }
 
@@ -192,24 +184,22 @@ export class RBACService {
       // Remove existing permissions
       await this.db
         .delete(tenantSchema.rolePermissions)
-        .where(eq(tenantSchema.rolePermissions.roleId, roleId));
+        .where(eq(tenantSchema.rolePermissions.roleId, roleId))
 
       // Add new permissions
       if (permissionIds.length > 0) {
         const rolePermissions = permissionIds.map(permissionId => ({
           roleId,
           permissionId,
-        }));
+        }))
 
-        await this.db
-          .insert(tenantSchema.rolePermissions)
-          .values(rolePermissions);
+        await this.db.insert(tenantSchema.rolePermissions).values(rolePermissions)
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
-      console.error('Assign permissions to role error:', error);
-      return { success: false, error: 'Failed to assign permissions to role' };
+      console.error('Assign permissions to role error:', error)
+      return { success: false, error: 'Failed to assign permissions to role' }
     }
   }
 
@@ -217,9 +207,7 @@ export class RBACService {
   async assignRolesToUser(userId: string, roleIds: string[], assignedBy: string) {
     try {
       // Remove existing roles
-      await this.db
-        .delete(tenantSchema.userRoles)
-        .where(eq(tenantSchema.userRoles.userId, userId));
+      await this.db.delete(tenantSchema.userRoles).where(eq(tenantSchema.userRoles.userId, userId))
 
       // Add new roles
       if (roleIds.length > 0) {
@@ -227,17 +215,15 @@ export class RBACService {
           userId,
           roleId,
           assignedBy,
-        }));
+        }))
 
-        await this.db
-          .insert(tenantSchema.userRoles)
-          .values(userRoles);
+        await this.db.insert(tenantSchema.userRoles).values(userRoles)
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
-      console.error('Assign roles to user error:', error);
-      return { success: false, error: 'Failed to assign roles to user' };
+      console.error('Assign roles to user error:', error)
+      return { success: false, error: 'Failed to assign roles to user' }
     }
   }
 
@@ -256,49 +242,49 @@ export class RBACService {
             },
           },
         },
-      });
+      })
 
-      return { success: true, data: userRoles };
+      return { success: true, data: userRoles }
     } catch (error) {
-      console.error('Get user roles error:', error);
-      return { success: false, error: 'Failed to get user roles' };
+      console.error('Get user roles error:', error)
+      return { success: false, error: 'Failed to get user roles' }
     }
   }
 
   async getUserPermissions(userId: string) {
     try {
-      const userRoles = await this.getUserRoles(userId);
-      
+      const userRoles = await this.getUserRoles(userId)
+
       if (!userRoles.success) {
-        return userRoles;
+        return userRoles
       }
 
       // Extract all permissions from user's roles
-      const permissions: Permission[] = [];
-      const permissionIds = new Set<string>();
+      const permissions: Permission[] = []
+      const permissionIds = new Set<string>()
 
       userRoles.data?.forEach((userRole: any) => {
         if (userRole.role && userRole.role.rolePermissions) {
           userRole.role.rolePermissions.forEach((rolePermission: any) => {
             if (rolePermission.permission && !permissionIds.has(rolePermission.permission.id)) {
-              permissions.push(rolePermission.permission as Permission);
-              permissionIds.add(rolePermission.permission.id);
+              permissions.push(rolePermission.permission as Permission)
+              permissionIds.add(rolePermission.permission.id)
             }
-          });
+          })
         }
-      });
+      })
 
       // Also check for delegated permissions
       const delegations = await this.db.query.delegations.findMany({
         where: and(
           eq(tenantSchema.delegations.delegateeId, userId),
-          eq(tenantSchema.delegations.isActive, true),
+          eq(tenantSchema.delegations.isActive, true)
           // Check if delegation is still valid (endDate not passed)
         ),
         with: {
           permission: true,
         },
-      });
+      })
 
       // Add delegated permissions
       delegations.forEach((delegation: any) => {
@@ -307,54 +293,56 @@ export class RBACService {
           (!delegation.endDate || delegation.endDate > new Date()) &&
           !permissionIds.has(delegation.permission.id)
         ) {
-          permissions.push(delegation.permission as Permission);
-          permissionIds.add(delegation.permission.id);
+          permissions.push(delegation.permission as Permission)
+          permissionIds.add(delegation.permission.id)
         }
-      });
+      })
 
-      return { success: true, data: permissions };
+      return { success: true, data: permissions }
     } catch (error) {
-      console.error('Get user permissions error:', error);
-      return { success: false, error: 'Failed to get user permissions' };
+      console.error('Get user permissions error:', error)
+      return { success: false, error: 'Failed to get user permissions' }
     }
   }
 
   // Permission checking
   async hasPermission(userId: string, resource: string, action: string): Promise<boolean> {
     try {
-      const userPermissions = await this.getUserPermissions(userId);
-      
+      const userPermissions = await this.getUserPermissions(userId)
+
       if (!userPermissions.success || !userPermissions.data) {
-        return false;
+        return false
       }
 
       return userPermissions.data.some(
         (permission: any) => permission.resource === resource && permission.action === action
-      );
+      )
     } catch (error) {
-      console.error('Check permission error:', error);
-      return false;
+      console.error('Check permission error:', error)
+      return false
     }
   }
 
   // Sync permissions from routes (implement based on your route structure)
-  async syncPermissionsFromRoutes(routes: Array<{ resource: string; action: string; description?: string }>) {
+  async syncPermissionsFromRoutes(
+    routes: Array<{ resource: string; action: string; description?: string }>
+  ) {
     try {
       // Get existing permissions
-      const existingPermissions = await this.getAllPermissions();
-      
+      const existingPermissions = await this.getAllPermissions()
+
       if (!existingPermissions.success) {
-        return existingPermissions;
+        return existingPermissions
       }
 
       const existingPermissionSet = new Set(
         existingPermissions.data?.map(p => `${p.resource}:${p.action}`)
-      );
+      )
 
       // Add new permissions
       const newPermissions = routes.filter(
         route => !existingPermissionSet.has(`${route.resource}:${route.action}`)
-      );
+      )
 
       if (newPermissions.length > 0) {
         const permissionsToInsert = newPermissions.map(route => ({
@@ -362,21 +350,19 @@ export class RBACService {
           resource: route.resource,
           action: route.action,
           description: route.description || `${route.action} ${route.resource}`,
-        }));
+        }))
 
-        await this.db
-          .insert(tenantSchema.permissions)
-          .values(permissionsToInsert);
+        await this.db.insert(tenantSchema.permissions).values(permissionsToInsert)
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: `Synced ${newPermissions.length} new permissions`,
-        addedCount: newPermissions.length 
-      };
+        addedCount: newPermissions.length,
+      }
     } catch (error) {
-      console.error('Sync permissions error:', error);
-      return { success: false, error: 'Failed to sync permissions' };
+      console.error('Sync permissions error:', error)
+      return { success: false, error: 'Failed to sync permissions' }
     }
   }
 }
