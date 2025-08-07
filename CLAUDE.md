@@ -104,3 +104,10 @@ UI components follow the shadcn/ui pattern:
 - Follow the variant pattern for consistent styling
 - Leverage path aliases for clean imports
 - Consider both light and dark mode in styling
+
+### Database & API Development
+- **Drizzle Kit** available for schema generation and migrations
+- Use `tsx` for running TypeScript files directly (useful for database scripts)
+- **Zod v4** schemas for API validation and TypeScript inference
+- **React Hook Form** with `@hookform/resolvers` for form validation
+- PostgreSQL connection through the `pg` library
