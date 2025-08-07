@@ -10,9 +10,14 @@
     "preview": "vite preview",
     "debug": "concurrently \"DEBUG=vite:* vite\" \"DEBUG=* tsx src/api/api.ts\"",
     "setup-core": "tsx scripts/setup-core-admin.ts",
+    "seed": "tsx scripts/seed-database.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:generate:core": "drizzle-kit generate --config=drizzle.config.core.ts",
+    "db:generate:tenant": "drizzle-kit generate --config=drizzle.config.tenant.ts",
+    "db:migrate:core": "drizzle-kit push --config=drizzle.config.core.ts",
+    "db:migrate:tenant": "drizzle-kit push --config=drizzle.config.tenant.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.2",
