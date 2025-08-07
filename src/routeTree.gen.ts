@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as publicTermsRouteImport } from './routes/(public)/terms'
+import { Route as publicPrivacyRouteImport } from './routes/(public)/privacy'
+import { Route as publicPricingRouteImport } from './routes/(public)/pricing'
+import { Route as publicLearnRouteImport } from './routes/(public)/learn'
+import { Route as publicCookiesRouteImport } from './routes/(public)/cookies'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +26,73 @@ const publicTermsRoute = publicTermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const publicPrivacyRoute = publicPrivacyRouteImport.update({
+  id: '/(public)/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicPricingRoute = publicPricingRouteImport.update({
+  id: '/(public)/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicLearnRoute = publicLearnRouteImport.update({
+  id: '/(public)/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicCookiesRoute = publicCookiesRouteImport.update({
+  id: '/(public)/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cookies': typeof publicCookiesRoute
+  '/learn': typeof publicLearnRoute
+  '/pricing': typeof publicPricingRoute
+  '/privacy': typeof publicPrivacyRoute
   '/terms': typeof publicTermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cookies': typeof publicCookiesRoute
+  '/learn': typeof publicLearnRoute
+  '/pricing': typeof publicPricingRoute
+  '/privacy': typeof publicPrivacyRoute
   '/terms': typeof publicTermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/(public)/cookies': typeof publicCookiesRoute
+  '/(public)/learn': typeof publicLearnRoute
+  '/(public)/pricing': typeof publicPricingRoute
+  '/(public)/privacy': typeof publicPrivacyRoute
   '/(public)/terms': typeof publicTermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/terms'
+  fullPaths: '/' | '/cookies' | '/learn' | '/pricing' | '/privacy' | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/terms'
-  id: '__root__' | '/' | '/(public)/terms'
+  to: '/' | '/cookies' | '/learn' | '/pricing' | '/privacy' | '/terms'
+  id:
+    | '__root__'
+    | '/'
+    | '/(public)/cookies'
+    | '/(public)/learn'
+    | '/(public)/pricing'
+    | '/(public)/privacy'
+    | '/(public)/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  publicCookiesRoute: typeof publicCookiesRoute
+  publicLearnRoute: typeof publicLearnRoute
+  publicPricingRoute: typeof publicPricingRoute
+  publicPrivacyRoute: typeof publicPrivacyRoute
   publicTermsRoute: typeof publicTermsRoute
 }
 
@@ -65,11 +112,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(public)/privacy': {
+      id: '/(public)/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof publicPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/pricing': {
+      id: '/(public)/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof publicPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/learn': {
+      id: '/(public)/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof publicLearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/cookies': {
+      id: '/(public)/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof publicCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  publicCookiesRoute: publicCookiesRoute,
+  publicLearnRoute: publicLearnRoute,
+  publicPricingRoute: publicPricingRoute,
+  publicPrivacyRoute: publicPrivacyRoute,
   publicTermsRoute: publicTermsRoute,
 }
 export const routeTree = rootRouteImport
