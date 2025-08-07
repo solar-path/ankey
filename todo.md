@@ -40,5 +40,7 @@
 8. roles is CRUD
 9. assignment of roles to users is crud
 
-
-
+10. store types and zod models in shared folder
+11. use react-hook-form in frontend
+12. use @ alias to fix imports
+13. define in package.json commands to debug, generate and migrate (core and tenant) drizzle models 
