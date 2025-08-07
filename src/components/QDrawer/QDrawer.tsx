@@ -18,7 +18,7 @@ export function QDrawer() {
     return (
         <Sheet
             open={state.isOpen}
-            onOpenChange={(open) => {
+            onOpenChange={(open: boolean) => {
                 console.log('Drawer open state changed:', open);
                 if (!open) closeDrawer();
             }}

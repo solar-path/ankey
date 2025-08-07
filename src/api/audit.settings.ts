@@ -82,10 +82,15 @@ export class AuditService {
       const db = createTenantConnection(tenantDatabase);
       
       // First, get the current record for audit trail
+      const table = tenantSchema[tableName as keyof typeof tenantSchema] as any;
+      if (!table || typeof table !== 'object' || !('id' in table)) {
+        return { success: false, error: 'Invalid table name' };
+      }
+      
       const currentRecord = await db
         .select()
-        .from(tenantSchema[tableName as keyof typeof tenantSchema])
-        .where(eq(tenantSchema[tableName as keyof typeof tenantSchema].id, recordId))
+        .from(table)
+        .where(eq(table.id, recordId))
         .limit(1);
 
       if (currentRecord.length === 0) {
@@ -94,13 +99,13 @@ export class AuditService {
 
       // Mark as deleted (assuming deletedAt field exists)
       const updatedRecord = await db
-        .update(tenantSchema[tableName as keyof typeof tenantSchema])
+        .update(table)
         .set({ 
           deletedAt: new Date(),
           isActive: false,
           ...additionalData 
         })
-        .where(eq(tenantSchema[tableName as keyof typeof tenantSchema].id, recordId))
+        .where(eq(table.id, recordId))
         .returning();
 
       // Log the safe deletion
@@ -201,7 +206,7 @@ export class AuditService {
             ipAddress,
             userAgent,
             sessionId,
-            newValues: { error: error.message },
+            newValues: { error: error instanceof Error ? error.message : String(error) },
           };
 
           if (tenantDatabase) {
@@ -233,9 +238,7 @@ export class AuditService {
       const db = tenantDatabase ? createTenantConnection(tenantDatabase) : createCoreConnection();
       const auditTable = tenantDatabase ? tenantSchema.auditLogs : coreSchema.coreAuditLogs;
       
-      let query = db.select().from(auditTable);
-      
-      // Apply filters
+      // Build query with filters
       const conditions = [];
       if (filters.userId) conditions.push(eq(auditTable.userId, filters.userId));
       if (filters.resource) conditions.push(eq(auditTable.resource, filters.resource));
@@ -243,21 +246,21 @@ export class AuditService {
       if (filters.startDate) conditions.push(gte(auditTable.createdAt, filters.startDate));
       if (filters.endDate) conditions.push(lte(auditTable.createdAt, filters.endDate));
       
+      let auditLogs;
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        auditLogs = await db.select()
+          .from(auditTable)
+          .where(and(...conditions))
+          .orderBy(desc(auditTable.createdAt))
+          .limit(filters.limit || 100)
+          .offset(filters.offset || 0);
+      } else {
+        auditLogs = await db.select()
+          .from(auditTable)
+          .orderBy(desc(auditTable.createdAt))
+          .limit(filters.limit || 100)
+          .offset(filters.offset || 0);
       }
-      
-      query = query.orderBy(desc(auditTable.createdAt));
-      
-      if (filters.limit) {
-        query = query.limit(filters.limit);
-      }
-      
-      if (filters.offset) {
-        query = query.offset(filters.offset);
-      }
-      
-      const auditLogs = await query;
       
       return { success: true, data: auditLogs };
     } catch (error) {
@@ -306,11 +309,12 @@ export class AuditService {
           log.action.endsWith('_FAILED')
         ),
         userActivity: auditLogs.data.reduce((acc, log) => {
-          if (!acc[log.userId]) {
-            acc[log.userId] = { count: 0, actions: [] };
+          const userId = log.userId || 'unknown';
+          if (!acc[userId]) {
+            acc[userId] = { count: 0, actions: [] };
           }
-          acc[log.userId].count++;
-          acc[log.userId].actions.push({
+          acc[userId].count++;
+          acc[userId].actions.push({
             action: log.action,
             resource: log.resource,
             timestamp: log.createdAt,

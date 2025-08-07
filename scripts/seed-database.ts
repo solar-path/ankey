@@ -4,7 +4,7 @@ import { TenantService } from '../src/api/tenant.settings';
 import { RBACService } from '../src/api/rbac.settings';
 import { createCoreConnection } from '../src/api/database.settings';
 import * as coreSchema from '../src/api/db/schemas/core.drizzle';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 async function seedDatabase() {
   console.log('🌱 Starting database seeding...');
@@ -94,8 +94,10 @@ async function seedDatabase() {
         try {
           // Check if role-permission exists
           const existing = await db.query.coreRolePermissions.findFirst({
-            where: eq(coreSchema.coreRolePermissions.roleId, superAdminRoleId) && 
-                   eq(coreSchema.coreRolePermissions.permissionId, permission.id),
+            where: and(
+              eq(coreSchema.coreRolePermissions.roleId, superAdminRoleId),
+              eq(coreSchema.coreRolePermissions.permissionId, permission.id)
+            ),
           });
 
           if (!existing) {
@@ -119,8 +121,10 @@ async function seedDatabase() {
       if (coreAdmin) {
         try {
           const existingUserRole = await db.query.coreUserRoles.findFirst({
-            where: eq(coreSchema.coreUserRoles.userId, coreAdmin.id) && 
-                   eq(coreSchema.coreUserRoles.roleId, superAdminRoleId),
+            where: and(
+              eq(coreSchema.coreUserRoles.userId, coreAdmin.id),
+              eq(coreSchema.coreUserRoles.roleId, superAdminRoleId)
+            ),
           });
 
           if (!existingUserRole) {

@@ -22,7 +22,6 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
     resolver: zodResolver(loginSchema),
   });
 
-  const showTwoFactor = watch('email') && watch('password');
 
   const handleFormSubmit = async (data: LoginData) => {
     try {

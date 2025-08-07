@@ -29,7 +29,7 @@ export const QPhone = forwardRef<HTMLInputElement, QPhoneProps>(
             const newFormattedValue = formatPhone(newRawValue);
 
             setFormattedValue(newFormattedValue);
-            onChange(newRawValue);
+            onChange?.(newRawValue);
 
             // Maintain cursor position
             requestAnimationFrame(() => {

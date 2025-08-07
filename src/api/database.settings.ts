@@ -105,8 +105,8 @@ export async function seedTenantDatabase(tenantDatabase: string, ownerData: {
 
     // Assign admin role to owner
     await db.insert(tenantSchema.userRoles).values({
-      userId: owner[0].id,
-      roleId: adminRole[0].id,
+      userId: owner[0].id as string,
+      roleId: adminRole[0].id as string,
     });
 
     console.log(`Tenant database ${tenantDatabase} seeded successfully`);

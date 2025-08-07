@@ -3,7 +3,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 
 // Tenant users table
-export const users: ReturnType<typeof pgTable> = pgTable('users', {
+export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: text('email').notNull().unique(),
   fullName: text('full_name').notNull(),

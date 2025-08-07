@@ -16,10 +16,10 @@ export const rpc = hc<AppType>(baseUrl, {
 });
 
 // Export individual API modules for easier imports
-export const coreAuth = rpc.api.rpc.core.auth;
-export const coreTenants = rpc.api.rpc.core.tenants;
-export const tenantAuth = rpc.api.rpc.tenant.auth;
-export const tenantRBAC = rpc.api.rpc.tenant.rbac;
+export const coreAuth = (rpc as any).api.rpc.core.auth;
+export const coreTenants = (rpc as any).api.rpc.core.tenants;
+export const tenantAuth = (rpc as any).api.rpc.tenant.auth;
+export const tenantRBAC = (rpc as any).api.rpc.tenant.rbac;
 
 // Helper function to handle API responses
 export const handleApiResponse = async <T>(response: Response): Promise<{

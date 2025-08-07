@@ -1,4 +1,4 @@
-import { eq, and, or, gte, lte } from 'drizzle-orm';
+import { eq, and, or, gte, lte, isNull } from 'drizzle-orm';
 import { createTenantConnection } from './database.settings';
 import * as tenantSchema from './db/schemas/tenant.drizzle';
 
@@ -60,7 +60,7 @@ export class DOAService {
           eq(tenantSchema.delegations.permissionId, data.permissionId),
           eq(tenantSchema.delegations.isActive, true),
           or(
-            eq(tenantSchema.delegations.endDate, null),
+            isNull(tenantSchema.delegations.endDate),
             gte(tenantSchema.delegations.endDate, new Date())
           )
         ),
@@ -113,7 +113,7 @@ export class DOAService {
       if (!filters?.includeExpired) {
         whereConditions.push(
           or(
-            eq(tenantSchema.delegations.endDate, null),
+            isNull(tenantSchema.delegations.endDate),
             gte(tenantSchema.delegations.endDate, new Date())
           )
         );
@@ -123,10 +123,10 @@ export class DOAService {
         where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
         with: {
           delegator: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           delegatee: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           permission: true,
         },
@@ -147,10 +147,10 @@ export class DOAService {
         where: eq(tenantSchema.delegations.id, id),
         with: {
           delegator: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           delegatee: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           permission: true,
         },
@@ -249,7 +249,7 @@ export class DOAService {
           eq(tenantSchema.delegations.delegateeId, userId),
           eq(tenantSchema.delegations.isActive, true),
           or(
-            eq(tenantSchema.delegations.endDate, null),
+            isNull(tenantSchema.delegations.endDate),
             gte(tenantSchema.delegations.endDate, new Date())
           ),
           lte(tenantSchema.delegations.startDate, new Date())
@@ -312,10 +312,10 @@ export class DOAService {
         where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
         with: {
           delegator: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           delegatee: {
-            columns: { id: true, fullName: true, email: true },
+            columns: { id: true, email: true },
           },
           permission: true,
         },
@@ -327,13 +327,15 @@ export class DOAService {
         expired: delegations.filter(
           d => d.endDate && d.endDate < new Date()
         ).length,
-        byPermission: delegations.reduce((acc, delegation) => {
-          const key = `${delegation.permission.resource}:${delegation.permission.action}`;
-          acc[key] = (acc[key] || 0) + 1;
+        byPermission: delegations.reduce((acc, delegation: any) => {
+          if (delegation.permission) {
+            const key = `${delegation.permission.resource}:${delegation.permission.action}`;
+            acc[key] = (acc[key] || 0) + 1;
+          }
           return acc;
         }, {} as Record<string, number>),
-        byDelegator: delegations.reduce((acc, delegation) => {
-          const key = delegation.delegator.email;
+        byDelegator: delegations.reduce((acc, delegation: any) => {
+          const key = delegation.delegator?.email || 'unknown';
           acc[key] = (acc[key] || 0) + 1;
           return acc;
         }, {} as Record<string, number>),

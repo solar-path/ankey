@@ -101,7 +101,7 @@ export class CoreAuthService {
         return { success: false, error: 'Invalid credentials' };
       }
 
-      const validPassword = await verifyPassword(data.password, user.passwordHash);
+      const validPassword = await verifyPassword(data.password, user.passwordHash!);
       if (!validPassword) {
         return { success: false, error: 'Invalid credentials' };
       }
@@ -120,7 +120,7 @@ export class CoreAuthService {
         // For now, we'll assume it's valid
       }
 
-      const session = await this.lucia.createSession(user.id, {});
+      const session = await this.lucia.createSession(user.id as string, {});
       const sessionCookie = this.lucia.createSessionCookie(session.id);
 
       return {
@@ -258,7 +258,7 @@ export class TenantAuthService {
         return { success: false, error: 'Account setup not completed' };
       }
 
-      const validPassword = await verifyPassword(data.password, user.passwordHash);
+      const validPassword = await verifyPassword(data.password, user.passwordHash!);
       if (!validPassword) {
         return { success: false, error: 'Invalid credentials' };
       }
@@ -272,7 +272,7 @@ export class TenantAuthService {
         return { success: false, error: 'Two-factor code required', requiresTwoFactor: true };
       }
 
-      const session = await this.lucia.createSession(user.id, {});
+      const session = await this.lucia.createSession(user.id as string, {});
       const sessionCookie = this.lucia.createSessionCookie(session.id);
 
       return {
@@ -334,7 +334,7 @@ export class TenantAuthService {
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
       await this.db.insert(tenantSchema.tenantPasswordResetTokens).values({
-        userId: user.id,
+        userId: user.id as string,
         token,
         expiresAt,
       });

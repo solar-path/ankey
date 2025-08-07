@@ -1,7 +1,7 @@
 import { eq, like, count, and } from 'drizzle-orm';
 import { createCoreConnection, createTenantDatabase, runTenantMigrations, seedTenantDatabase } from './database.settings';
 import * as coreSchema from './db/schemas/core.drizzle';
-import { hashPassword, generateSecureToken } from './auth.settings';
+import { hashPassword } from './auth.settings';
 import { EmailService } from './email.settings';
 import { AuditService } from '@/api/audit.settings';
 import type { RegisterData, Tenant } from '@/shared';
@@ -374,7 +374,7 @@ export class TenantService {
       );
 
       const validBillingData = billingData.filter((data): data is NonNullable<typeof data> => data !== null);
-      const totalRevenue = validBillingData.reduce((sum, data) => sum + (data.totalAmount || 0), 0);
+      const totalRevenue = validBillingData.reduce((sum, data: any) => sum + (data.totalAmount || 0), 0);
       const totalUsers = validBillingData.reduce((sum, data) => sum + (data.userCount || 0), 0);
 
       return {

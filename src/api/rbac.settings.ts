@@ -329,7 +329,7 @@ export class RBACService {
       }
 
       return userPermissions.data.some(
-        permission => permission.resource === resource && permission.action === action
+        (permission: any) => permission.resource === resource && permission.action === action
       );
     } catch (error) {
       console.error('Check permission error:', error);

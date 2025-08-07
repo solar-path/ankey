@@ -20,51 +20,23 @@ export default function QCalendarPick({
     toYear = new Date().getFullYear(),
     className,
 }: QCalendarPickProps) {
-    const [date, setDate] = useState<Date | undefined>(value ? parseDate(value) : undefined);
+    const [date, setDate] = useState<Date | undefined>(value);
 
     // Update date when value changes externally
     useEffect(() => {
-        const parsedDate = value ? parseDate(value) : undefined;
+        const parsedDate = value;
         setDate(parsedDate);
         // Debug date updates
         console.log('QCalendarPick value updated:', { value, parsedDate });
     }, [value]);
 
-    // Parse date string to Date object safely
-    function parseDate(dateStr: string): Date | undefined {
-        try {
-            if (!dateStr || dateStr.trim() === '') return undefined;
-
-            // Create date at noon to avoid timezone issues
-            const [year, month, day] = dateStr.split('-').map(Number);
-
-            // Validate date parts
-            if (!year || !month || !day) {
-                console.warn('Invalid date format:', dateStr);
-                return undefined;
-            }
-
-            const parsedDate = new Date(year, month - 1, day, 12, 0, 0);
-
-            // Validate the created date
-            if (isNaN(parsedDate.getTime())) {
-                console.warn('Invalid date created:', dateStr);
-                return undefined;
-            }
-
-            return parsedDate;
-        } catch (e) {
-            console.error('Error parsing date:', e);
-            return undefined;
-        }
-    }
-
     // Handle date selection
     const handleDateSelect = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
-        const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-        console.log('Date selected:', { selectedDate, formattedDate });
-        onChange(formattedDate);
+        console.log('Date selected:', { selectedDate });
+        if (onChange && selectedDate) {
+            onChange(selectedDate);
+        }
     };
 
     return (
@@ -100,7 +72,7 @@ export default function QCalendarPick({
                     />
                 </PopoverContent>
             </Popover>
-            <input type="hidden" name="dob" value={value} onChange={(e) => onChange(e.target.value)} />
+            <input type="hidden" name="dob" value={value ? format(value, 'yyyy-MM-dd') : ''} readOnly />
             {error && <InputError message={error} />}
         </div>
     );
