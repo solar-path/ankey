@@ -17,13 +17,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a **modern React application** built with:
+This is a **modern full-stack React application** built with:
 - **Vite** for fast development and building
 - **TanStack Router** for type-safe, file-based routing with automatic code splitting
 - **Tailwind CSS v4** (using the new Vite plugin `@tailwindcss/vite`)
 - **shadcn/ui** components with the "new-york" style
 - **Zustand** for state management
 - **Hono** as a lightweight API framework (embedded in `src/api/`)
+- **Drizzle ORM** for type-safe database operations with PostgreSQL
+- **Zod v4** for runtime validation and TypeScript inference
+- **React Hook Form** with Zod resolvers for form validation
 - **Bun** as the JavaScript runtime and package manager
 
 ### Key Architecture Patterns
@@ -45,9 +48,11 @@ The drawer component demonstrates the state management pattern:
 - Custom hook exports for easier component consumption
 - Support for both traditional and component-based drawer content
 
-#### API Integration
-- Hono API server embedded in `src/api/api.ts`
-- Simple setup with logger middleware
+#### API Integration & Database
+- **Hono API server** embedded in `src/api/api.ts` with logger middleware
+- **Drizzle ORM** integration for type-safe database operations
+- **PostgreSQL** as the primary database with `pg` driver
+- Database schemas and migrations managed through Drizzle Kit
 - API runs alongside the Vite development server
 
 ### Path Aliases
