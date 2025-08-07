@@ -5,7 +5,15 @@ import * as tenantSchema from './db/schemas/tenant.drizzle';
 
 // Core database connection
 export function createCoreConnection() {
+  const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env file.`);
+  }
+  
   const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+  console.log(`Connecting to core database: ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
   
   const client = postgres(connectionString, {
     max: 10,

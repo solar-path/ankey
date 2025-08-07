@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
-import { coreAuthRoutes } from '@/routes/core/auth.routes';
-import { coreTenantsRoutes } from '@/routes/core/tenants.routes';
-import { tenantAuthRoutes } from '@/routes/tenant/auth.routes';
-import { tenantRBACRoutes } from '@/routes/tenant/rbac.routes';
+import { coreAuthRoutes } from '@/api/controllers/core/auth.hono';
+import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono';
+import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono';
+import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono';
 import { TenantService } from '@/api/tenant.settings';
 import { AuditService } from '@/api/audit.settings';
 
@@ -13,7 +13,7 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
 }));
 
@@ -73,6 +73,16 @@ app.use('/api/tenant/*', async (c, next) => {
 app.route('/api/tenant/auth', tenantAuthRoutes);
 app.route('/api/tenant/rbac', tenantRBACRoutes);
 
+// RPC Routes for type-safe client communication
+const rpcRoutes = app
+  .basePath('/api/rpc')
+  .route('/core/auth', coreAuthRoutes)
+  .route('/core/tenants', coreTenantsRoutes)
+  .route('/tenant/auth', tenantAuthRoutes)  
+  .route('/tenant/rbac', tenantRBACRoutes);
+
+export type AppType = typeof rpcRoutes;
+
 // Health check
 app.get('/api/health', (c) => {
   const isTenant = c.get('isTenant');
@@ -104,5 +114,14 @@ app.get('/', (c) => {
     version: '1.0.0',
   });
 });
+
+// Configure server
+const server = Bun.serve({
+  port: process.env.PORT || 3001,
+  fetch: app.fetch,
+  development: process.env.NODE_ENV !== 'production',
+});
+
+console.log(`🚀 Server running on http://localhost:${server.port}`);
 
 export default app;
