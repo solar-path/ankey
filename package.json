@@ -14,13 +14,15 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:generate:core": "drizzle-kit generate --config=drizzle.core.config.ts",
-    "db:generate:tenant": "drizzle-kit generate --config=drizzle.tenant.config.ts",
-    "db:migrate:core": "drizzle-kit push --config=drizzle.core.config.ts",
-    "db:migrate:tenant": "drizzle-kit push --config=drizzle.tenant.config.ts",
+    "db:generate:core": "DRIZZLE_SCHEMA=core drizzle-kit generate",
+    "db:generate:tenant": "DRIZZLE_SCHEMA=tenant drizzle-kit generate",
+    "db:migrate:core": "tsx scripts/migrate-core.ts",
+    "db:migrate:tenant": "tsx scripts/migrate-tenant.ts",
     "db:migrate:tenant:all": "tsx scripts/migrate-all-tenants.ts",
-    "db:studio:core": "drizzle-kit studio --config=drizzle.core.config.ts",
-    "db:studio:tenant": "drizzle-kit studio --config=drizzle.tenant.config.ts"
+    "db:push:core": "DRIZZLE_SCHEMA=core drizzle-kit push",
+    "db:push:tenant": "DRIZZLE_SCHEMA=tenant drizzle-kit push",
+    "db:studio:core": "DRIZZLE_SCHEMA=core drizzle-kit studio",
+    "db:studio:tenant": "DRIZZLE_SCHEMA=tenant drizzle-kit studio"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.2",
