@@ -3,8 +3,16 @@ import postgres from 'postgres';
 import * as coreSchema from './db/schemas/core.drizzle';
 import * as tenantSchema from './db/schemas/tenant.drizzle';
 
+// Singleton instance for core database connection
+let coreDbInstance: ReturnType<typeof drizzle> | null = null;
+
 // Core database connection
 export function createCoreConnection() {
+  // Return existing instance if available
+  if (coreDbInstance) {
+    return coreDbInstance;
+  }
+
   const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
   
@@ -21,7 +29,8 @@ export function createCoreConnection() {
     connect_timeout: 10,
   });
   
-  return drizzle(client, { schema: coreSchema });
+  coreDbInstance = drizzle(client, { schema: coreSchema });
+  return coreDbInstance;
 }
 
 // Tenant database connection

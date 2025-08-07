@@ -13,7 +13,7 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:3001'],
+  origin: ['http://localhost:5173',  'http://localhost:3000'],
   credentials: true,
 }));
 
@@ -115,13 +115,9 @@ app.get('/', (c) => {
   });
 });
 
-// Configure server
-const server = Bun.serve({
+// Export for Bun to handle server lifecycle
+export default {
   port: process.env.PORT || 3001,
   fetch: app.fetch,
   development: process.env.NODE_ENV !== 'production',
-});
-
-console.log(`🚀 Server running on http://localhost:${server.port}`);
-
-export default app;
+};

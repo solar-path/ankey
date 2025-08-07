@@ -111,19 +111,29 @@ install_node() {
 setup_databases() {
     log_info "Setting up PostgreSQL databases..."
     
-    # Create postgres user if not exists and set password
+    # Create user 'ali' if not exists and set password
+    sudo -u postgres psql -c "CREATE USER ali WITH PASSWORD 'password';" 2>/dev/null || {
+        log_warning "User 'ali' might already exist"
+    }
+    
+    # Grant necessary privileges to ali user
+    sudo -u postgres psql -c "ALTER USER ali CREATEDB;" 2>/dev/null || {
+        log_warning "Could not grant CREATEDB privilege to ali"
+    }
+    
+    # Create postgres user password (for compatibility)
     sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" 2>/dev/null || {
         log_warning "Could not set postgres user password, might already be set"
     }
     
-    # Create core database
-    sudo -u postgres createdb ankey_core 2>/dev/null || {
+    # Create core database with ali as owner
+    sudo -u postgres createdb -O ali ankey_core 2>/dev/null || {
         log_warning "Database ankey_core might already exist"
     }
     
-    # Create reserved tenant databases
+    # Create reserved tenant databases with ali as owner
     for tenant in shop hunt edu swap; do
-        sudo -u postgres createdb "${tenant}" 2>/dev/null || {
+        sudo -u postgres createdb -O ali "${tenant}" 2>/dev/null || {
             log_warning "Database ${tenant} might already exist"
         }
     done
@@ -141,8 +151,8 @@ setup_environment() {
 # Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
+DB_USER=ali
+DB_PASSWORD=password
 DB_NAME=ankey_core
 
 # Email Configuration (configure with your SMTP settings)
@@ -181,13 +191,29 @@ install_dependencies() {
 setup_database_schema() {
     log_info "Setting up database schema..."
     
-    # Generate Drizzle migrations
+    # Generate Drizzle migrations for core and tenant
     if command_exists bun; then
-        bun run db:generate
-        bun run db:push
+        log_info "Generating core migrations..."
+        bun run db:generate:core
+        log_info "Generating tenant migrations..."
+        bun run db:generate:tenant
+        log_info "Applying core migrations..."
+        bun run db:migrate:core
+        log_info "Creating tenant template database..."
+        PGPASSWORD=password psql -U ali -h localhost -d postgres -c "CREATE DATABASE tenant_template;" 2>/dev/null || true
+        log_info "Applying tenant template migrations..."
+        TENANT_NAME=tenant_template bun run db:migrate:tenant
     else
-        npm run db:generate
-        npm run db:push
+        log_info "Generating core migrations..."
+        npm run db:generate:core
+        log_info "Generating tenant migrations..."
+        npm run db:generate:tenant
+        log_info "Applying core migrations..."
+        npm run db:migrate:core
+        log_info "Creating tenant template database..."
+        PGPASSWORD=password psql -U ali -h localhost -d postgres -c "CREATE DATABASE tenant_template;" 2>/dev/null || true
+        log_info "Applying tenant template migrations..."
+        TENANT_NAME=tenant_template npm run db:migrate:tenant
     fi
     
     log_success "Database schema setup complete"
@@ -214,7 +240,7 @@ test_installation() {
     log_info "Testing installation..."
     
     # Test database connection
-    if sudo -u postgres psql -d ankey_core -c "SELECT 1;" >/dev/null 2>&1; then
+    if PGPASSWORD=password psql -U ali -h localhost -d ankey_core -c "SELECT 1;" >/dev/null 2>&1; then
         log_success "Database connection: OK"
     else
         log_error "Database connection: FAILED"
@@ -268,11 +294,15 @@ start_dev_servers() {
     echo "Next steps:"
     echo "1. Frontend will be available at: http://localhost:5173"
     echo "2. Backend API will be available at: http://localhost:3001"
-    echo "3. Core admin login:"
+    echo "3. Database connection:"
+    echo "   User: ali"
+    echo "   Password: password"
+    echo "   Core DB: ankey_core"
+    echo "4. Core admin login:"
     echo "   Email: itgroup.luck@gmail.com"
     echo "   Password: Mir@nd@32"
     echo ""
-    echo "4. Test subdomains (add to /etc/hosts if needed):"
+    echo "5. Test subdomains (add to /etc/hosts if needed):"
     echo "   127.0.0.1 shop.localhost"
     echo "   127.0.0.1 hunt.localhost" 
     echo "   127.0.0.1 edu.localhost"
@@ -357,6 +387,19 @@ main() {
     
     # Setup database schema
     setup_database_schema
+    
+    # Setup core admin user
+    log_info "Setting up core admin user..."
+    if [[ -f "scripts/setup-core-admin.ts" ]]; then
+        if command_exists bun; then
+            bun run setup-core
+        else
+            npx tsx scripts/setup-core-admin.ts
+        fi
+        log_success "Core admin user created"
+    else
+        log_warning "setup-core-admin.ts script not found"
+    fi
     
     # Seed database with initial data
     seed_database
