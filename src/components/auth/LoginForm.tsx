@@ -7,15 +7,22 @@ import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { loginSchema, type LoginData } from '@/shared'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 import { LetMeInForm } from './LetMeInForm'
+import { useState } from 'react'
+import { coreAuth, tenantAuth, handleApiResponse } from '@/lib/rpc'
 
 interface LoginFormProps {
-  onSubmit: (data: LoginData) => Promise<void>
+  onSubmit?: (data: LoginData) => Promise<void>
   isLoading?: boolean
   isTenant?: boolean
 }
 
-export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: LoginFormProps) {
+export function LoginForm({
+  onSubmit,
+  isLoading: externalLoading = false,
+  isTenant = false,
+}: LoginFormProps) {
   const { closeDrawer, openDrawer } = useDrawer()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
     register,
@@ -32,12 +39,39 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
   })
 
   const handleFormSubmit = async (data: LoginData) => {
+    setIsSubmitting(true)
     try {
-      await onSubmit(data)
+      if (onSubmit) {
+        await onSubmit(data)
+      } else {
+        // Use RPC client for login
+        const authClient = isTenant ? tenantAuth : coreAuth
+        const response = await authClient.login.$post({
+          json: data,
+        })
+
+        const result = await handleApiResponse(response)
+
+        if (!result.success) {
+          throw new Error(result.error || 'Login failed')
+        }
+
+        console.log('Login successful:', result.data)
+
+        // In a real app, you'd handle the login success (redirect, etc.)
+        if (result.data && !(result.data as any).requiresTwoFactor) {
+          // Successful login - could redirect or update global state
+          window.location.reload() // Simple approach for now
+        }
+      }
+
       reset()
       closeDrawer()
     } catch (error) {
       console.error('Login error:', error)
+      // In a real app, you'd show a toast notification or inline error
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -124,8 +158,8 @@ export function LoginForm({ onSubmit, isLoading = false, isTenant = false }: Log
           </Button>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Signing In...' : 'Sign In'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+          {isSubmitting || externalLoading ? 'Signing In...' : 'Sign In'}
         </Button>
 
         {isTenant && (

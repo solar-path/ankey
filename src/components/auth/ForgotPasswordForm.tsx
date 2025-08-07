@@ -5,14 +5,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { forgotPasswordSchema, type ForgotPasswordData } from '@/shared'
+import { useState } from 'react'
+import { coreAuth, handleApiResponse } from '@/lib/rpc'
 
 interface ForgotPasswordFormProps {
   onSubmit?: (data: ForgotPasswordData) => Promise<void>
   isLoading?: boolean
 }
 
-export function ForgotPasswordForm({ onSubmit, isLoading = false }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+  onSubmit,
+  isLoading: externalLoading = false,
+}: ForgotPasswordFormProps) {
   const { closeDrawer } = useDrawer()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
     register,
@@ -27,16 +33,33 @@ export function ForgotPasswordForm({ onSubmit, isLoading = false }: ForgotPasswo
   })
 
   const handleFormSubmit = async (data: ForgotPasswordData) => {
+    setIsSubmitting(true)
     try {
       if (onSubmit) {
         await onSubmit(data)
       } else {
-        console.log('Forgot password data:', data)
+        // Use RPC client for forgot password
+        const response = await coreAuth['forgot-password'].$post({
+          json: data,
+        })
+
+        const result = await handleApiResponse(response)
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to send reset email')
+        }
+
+        console.log('Password reset email sent:', result.data)
+
+        // In a real app, you'd show a success message
       }
       reset()
       closeDrawer()
     } catch (error) {
       console.error('Error sending reset email:', error)
+      // In a real app, you'd show error toast or inline message
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -64,8 +87,8 @@ export function ForgotPasswordForm({ onSubmit, isLoading = false }: ForgotPasswo
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+          {isSubmitting || externalLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
         </Button>
 
         <div className="text-center">

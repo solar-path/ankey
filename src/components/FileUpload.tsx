@@ -12,7 +12,7 @@ interface FileUploadProps {
     required?: boolean
     type?: 'string' | 'number' | 'date' | 'boolean'
   }>
-  _acceptedFileTypes?: string[]
+  acceptedFileTypes?: string[]
   maxFileSize?: number
   className?: string
 }
@@ -20,7 +20,7 @@ interface FileUploadProps {
 export function FileUpload({
   onImportComplete,
   columns,
-  _acceptedFileTypes = ['.xlsx', '.xls', '.csv'],
+  acceptedFileTypes = ['.xlsx', '.xls', '.csv'],
   maxFileSize = 10 * 1024 * 1024, // 10MB
   className,
 }: FileUploadProps) {

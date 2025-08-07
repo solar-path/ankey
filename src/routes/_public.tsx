@@ -51,7 +51,7 @@ function PublicLayout() {
       <div className="flex items-center justify-between pt-6 pr-12 pb-6 pl-12">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold">
-            <Link to="/">Aneko, llc</Link>
+            <Link to="/">Solo</Link>
           </h1>
         </div>
         <div className="flex items-center space-x-4 text-sm">
@@ -82,17 +82,17 @@ function PublicLayout() {
         <p className="flex-1">© 2024 Aneko, llc. All rights reserved.</p>
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/cookies" className="[&.active]:font-bold">
+            <Link to="/learn/cookies" className="[&.active]:font-bold">
               Cookies
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/terms" className="[&.active]:font-bold">
+            <Link to="/learn/terms" className="[&.active]:font-bold">
               Terms of Service
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/privacy" className="[&.active]:font-bold">
+            <Link to="/learn/privacy" className="[&.active]:font-bold">
               Privacy Policy
             </Link>
           </Button>

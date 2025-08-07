@@ -1,0 +1,286 @@
+---
+  title: "Workspace Setup"
+  description: "Configure your workspace for optimal performance and security"
+  category: "Basics"
+  duration: "15 min read"
+  difficulty: "Beginner"
+  order: 2
+---
+
+# Workspace Setup
+
+Learn how to configure your Solo workspace for optimal performance and security.
+
+## Workspace Configuration
+
+### General Settings
+
+**Workspace Information**
+
+- **Name**: Your workspace display name
+- **Subdomain**: The URL prefix for your workspace
+- **Description**: Optional description of your workspace
+- **Logo**: Upload your company logo
+
+**Contact Information**
+
+- **Primary Contact**: Main administrator email
+- **Billing Contact**: For subscription and billing
+- **Support Contact**: For technical support requests
+
+### Security Settings
+
+**Authentication Requirements**
+
+- **Two-Factor Authentication**: Require 2FA for all users
+- **Password Policy**: Minimum requirements for user passwords
+- **Session Timeout**: Automatic logout after inactivity
+- **IP Restrictions**: Limit access to specific IP ranges
+
+**Access Controls**
+
+- **User Registration**: Allow/disallow new user requests
+- **Email Domains**: Restrict registration to specific domains
+- **Approval Process**: Require admin approval for new users
+
+## Database Configuration
+
+### Multi-Tenant Architecture
+
+Each workspace has its own isolated database:
+
+```
+Database Name: workspace_[subdomain]
+Schema: Complete tenant schema
+Isolation: Physical database separation
+```
+
+### Backup and Recovery
+
+- **Automated Backups**: Daily incremental backups
+- **Point-in-Time Recovery**: Restore to any point within retention period
+- **Cross-Region Replication**: For disaster recovery
+- **Export Options**: Download data in various formats
+
+## User Management Setup
+
+### Default Roles
+
+**Administrator**
+
+- Full workspace control
+- User management
+- Billing and subscription management
+- System configuration
+
+**Manager**
+
+- User oversight within assigned departments
+- Report generation and export
+- Limited configuration access
+
+**Standard User**
+
+- Basic platform access
+- Data entry and viewing
+- Personal profile management
+
+### Custom Roles
+
+Create roles tailored to your organization:
+
+1. **Define Permissions**: Select specific actions and resources
+2. **Set Boundaries**: Limit scope of access
+3. **Assign to Users**: Apply roles to team members
+4. **Review Regularly**: Audit and update permissions
+
+## Compliance Configuration
+
+### Audit Settings
+
+**Log Retention**
+
+- **Standard Logs**: 7 years for SOX compliance
+- **Security Logs**: 10 years for security analysis
+- **Performance Logs**: 1 year for optimization
+- **Export Formats**: CSV, JSON, XML
+
+**Audit Scope**
+
+- **User Actions**: All user interactions logged
+- **System Events**: Authentication, authorization, errors
+- **Data Changes**: Before/after values for all changes
+- **Administrative Actions**: Configuration changes, user management
+
+### Compliance Reports
+
+**SOX Compliance**
+
+- **Financial Data Access**: Who accessed financial data
+- **Change Controls**: Approval workflows for critical changes
+- **Segregation of Duties**: Prevent conflicts of interest
+- **Management Reporting**: Regular compliance status reports
+
+**SOC Compliance**
+
+- **System Availability**: Uptime and performance metrics
+- **Security Controls**: Authentication, authorization, encryption
+- **Change Management**: Documented change processes
+- **Incident Response**: Security event handling
+
+## Integration Setup
+
+### API Configuration
+
+**API Keys**
+
+- **Generate Keys**: Create API keys for integrations
+- **Scope Limitations**: Restrict API access to specific functions
+- **Rate Limiting**: Control API usage to prevent abuse
+- **Key Rotation**: Regular key updates for security
+
+**Webhook Configuration**
+
+- **Event Notifications**: Real-time notifications of important events
+- **Custom Endpoints**: Configure your systems to receive webhooks
+- **Retry Logic**: Automatic retry for failed deliveries
+- **Security Headers**: Verify webhook authenticity
+
+### Third-Party Integrations
+
+**Accounting Systems**
+
+- QuickBooks Online
+- Xero
+- Sage Business Cloud
+- Custom ERP systems
+
+**Communication Tools**
+
+- Slack notifications
+- Microsoft Teams integration
+- Email automation
+- SMS alerts
+
+## Customization Options
+
+### Branding
+
+**Visual Identity**
+
+- Upload company logo
+- Choose brand colors
+- Customize email templates
+- White-label options (Enterprise)
+
+**User Interface**
+
+- Dashboard layout preferences
+- Default views and filters
+- Custom fields and forms
+- Workflow automation
+
+### Notifications
+
+**Email Notifications**
+
+- User activity summaries
+- Security alerts
+- Compliance reminders
+- System maintenance notices
+
+**In-App Notifications**
+
+- Real-time alerts
+- Task assignments
+- Approval requests
+- System messages
+
+## Performance Optimization
+
+### Resource Allocation
+
+**Database Performance**
+
+- Connection pooling
+- Query optimization
+- Index management
+- Cache configuration
+
+**Application Performance**
+
+- CDN configuration
+- Static asset optimization
+- Lazy loading settings
+- Background job processing
+
+### Monitoring Setup
+
+**Performance Metrics**
+
+- Response time monitoring
+- Database query performance
+- User activity patterns
+- Resource utilization
+
+**Alerting Rules**
+
+- Threshold-based alerts
+- Anomaly detection
+- Escalation procedures
+- Integration with monitoring tools
+
+## Backup and Disaster Recovery
+
+### Backup Strategy
+
+**Automated Backups**
+
+- **Frequency**: Multiple daily snapshots
+- **Retention**: Configurable retention periods
+- **Verification**: Automatic backup integrity checks
+- **Encryption**: All backups encrypted at rest
+
+### Recovery Procedures
+
+**Recovery Time Objectives (RTO)**
+
+- **Critical Systems**: < 1 hour
+- **Standard Operations**: < 4 hours
+- **Historical Data**: < 24 hours
+
+**Recovery Point Objectives (RPO)**
+
+- **Financial Data**: < 15 minutes
+- **User Data**: < 1 hour
+- **Configuration**: < 4 hours
+
+## Best Practices
+
+### Security Best Practices
+
+1. **Enable two-factor authentication** for all users
+2. **Regularly review user permissions** and remove unused access
+3. **Monitor audit logs** for suspicious activity
+4. **Keep software updated** with latest security patches
+5. **Implement IP whitelisting** for sensitive operations
+
+### Operational Best Practices
+
+1. **Regular data backups** and recovery testing
+2. **Document processes** and maintain runbooks
+3. **Train users** on security awareness
+4. **Monitor system performance** and capacity
+5. **Maintain compliance** with regular audits
+
+### Data Management Best Practices
+
+1. **Classify data sensitivity** and apply appropriate controls
+2. **Implement data retention policies** per compliance requirements
+3. **Regular data quality checks** and cleanup procedures
+4. **Document data flows** and dependencies
+5. **Plan for data migration** and system changes
+
+---
+
+_Next: Learn about [User Management](/learn/user-management) to effectively manage your team._

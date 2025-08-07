@@ -1,0 +1,329 @@
+---
+  title: "User Management"
+  description: "Comprehensive guide to managing users, roles, and permissions"
+  category: "Administration"
+  duration: "20 min read"
+  difficulty: "Intermediate"
+  order: 3
+---
+
+# User Management
+
+Comprehensive guide to managing users, roles, and permissions in your Solo workspace.
+
+## User Lifecycle
+
+### User Invitation Process
+
+**Inviting New Users**
+
+1. Navigate to **Users** → **Invite User**
+2. Fill out the invitation form:
+   - **Email Address**: Must be valid business email
+   - **Full Name**: User's complete name
+   - **Roles**: Select appropriate roles (multiple allowed)
+   - **Department**: Optional organizational grouping
+   - **Start Date**: When access should begin
+
+3. **Send Invitation**: User receives email with setup instructions
+4. **Track Status**: Monitor invitation status in user dashboard
+
+**Invitation States**
+
+- **Pending**: Invitation sent, awaiting user response
+- **Accepted**: User completed setup, account active
+- **Expired**: Invitation expired (default 7 days)
+- **Revoked**: Invitation cancelled by administrator
+
+### User Onboarding
+
+**Account Setup Process**
+
+1. **Email Verification**: User clicks link in invitation email
+2. **Password Creation**: Strong password following policy
+3. **Profile Completion**: Personal information and preferences
+4. **Two-Factor Setup**: Configure authenticator app (if required)
+5. **Initial Training**: Platform orientation and role-specific training
+
+**Onboarding Checklist**
+
+- [ ] Profile information completed
+- [ ] Two-factor authentication enabled
+- [ ] Role permissions reviewed
+- [ ] Department assignments confirmed
+- [ ] Training materials reviewed
+- [ ] Emergency contact information provided
+
+## Role-Based Access Control (RBAC)
+
+### Understanding Roles
+
+**System Roles**
+
+- **Workspace Administrator**: Complete workspace control
+- **User Administrator**: User and role management only
+- **Compliance Officer**: Audit logs and compliance reports
+- **Standard User**: Basic platform access
+- **Read-Only User**: View-only access to assigned data
+
+**Custom Roles**
+Create roles tailored to your organizational structure:
+
+- **Department-Specific**: HR, Finance, IT, Operations
+- **Function-Specific**: Approver, Reviewer, Data Entry
+- **Temporary Roles**: Project-based or time-limited access
+
+### Permission System
+
+**Resource-Based Permissions**
+Each resource in the system has specific permissions:
+
+```
+Users:
+  - create: Add new users
+  - read: View user information
+  - update: Modify user profiles
+  - delete: Deactivate users
+  - invite: Send user invitations
+
+Financial Data:
+  - create: Enter financial transactions
+  - read: View financial reports
+  - update: Modify existing entries
+  - delete: Remove financial data
+  - approve: Approve financial entries
+
+Audit Logs:
+  - read: View audit information
+  - export: Download audit reports
+  - configure: Set audit parameters
+```
+
+**Permission Inheritance**
+
+- **Role Hierarchy**: Senior roles inherit junior permissions
+- **Departmental Inheritance**: Department heads inherit team permissions
+- **Project Inheritance**: Project leads inherit contributor permissions
+
+### Advanced RBAC Features
+
+**Conditional Access**
+
+- **Time-Based**: Access only during business hours
+- **Location-Based**: Restrict to specific IP ranges
+- **Device-Based**: Allow only registered devices
+- **Risk-Based**: Additional verification for high-risk actions
+
+**Delegation of Authority**
+
+- **Temporary Delegation**: Grant temporary permissions
+- **Emergency Access**: Break-glass access for critical situations
+- **Approval Workflows**: Multi-step approval processes
+- **Escalation Rules**: Automatic escalation for pending approvals
+
+## User Administration
+
+### User Profile Management
+
+**Profile Information**
+
+- **Personal Details**: Name, contact information, photo
+- **Employment Information**: Title, department, manager
+- **Security Settings**: Password, 2FA, recovery options
+- **Preferences**: Language, timezone, notification settings
+
+**Bulk Operations**
+
+- **Import Users**: CSV/Excel upload for mass user creation
+- **Bulk Role Assignment**: Apply roles to multiple users
+- **Batch Updates**: Modify multiple user profiles simultaneously
+- **Export User Data**: Generate user reports and directories
+
+### Account Status Management
+
+**User States**
+
+- **Active**: Full access to assigned resources
+- **Inactive**: Temporarily suspended access
+- **Locked**: Account locked due to security issues
+- **Pending**: Awaiting activation or approval
+- **Terminated**: Permanently deactivated account
+
+**Status Change Procedures**
+
+1. **Review Impact**: Assess effect on ongoing work
+2. **Notify Stakeholders**: Inform managers and team members
+3. **Update Status**: Change account status with reason
+4. **Document Changes**: Log status change in audit trail
+5. **Monitor Effects**: Ensure smooth transition
+
+### Password and Security Management
+
+**Password Policies**
+
+- **Minimum Length**: 8-12 characters required
+- **Complexity Requirements**: Mix of upper, lower, numbers, symbols
+- **History Restrictions**: Cannot reuse last 5 passwords
+- **Expiration Rules**: Regular password changes (30-90 days)
+- **Account Lockout**: Temporary lockout after failed attempts
+
+**Two-Factor Authentication**
+
+- **Supported Methods**:
+  - Authenticator apps (Google Authenticator, Authy)
+  - SMS codes (for users without smartphones)
+  - Hardware tokens (Enterprise feature)
+  - Backup codes for recovery
+
+**Security Monitoring**
+
+- **Login Monitoring**: Track successful and failed logins
+- **Unusual Activity Detection**: Flag suspicious behavior
+- **Geographic Anomalies**: Alert on logins from new locations
+- **Device Tracking**: Monitor device usage patterns
+
+## Team Organization
+
+### Departmental Structure
+
+**Department Management**
+
+- **Create Departments**: Organize users by business function
+- **Assign Department Heads**: Delegate management responsibilities
+- **Set Department Policies**: Custom rules per department
+- **Cross-Department Projects**: Temporary team formations
+
+**Common Department Structures**
+
+```
+Executive
+├── CEO Office
+└── Board Relations
+
+Operations
+├── Human Resources
+├── Information Technology
+├── Legal & Compliance
+└── Facilities Management
+
+Finance
+├── Accounting
+├── Financial Planning
+├── Audit & Risk
+└── Procurement
+
+Business Units
+├── Sales & Marketing
+├── Product Development
+├── Customer Success
+└── Operations
+```
+
+### Project-Based Teams
+
+**Project Team Creation**
+
+1. **Define Project Scope**: Clear objectives and deliverables
+2. **Identify Team Members**: Select users from various departments
+3. **Create Project Role**: Define project-specific permissions
+4. **Set Project Timeline**: Start and end dates for access
+5. **Monitor Progress**: Track team activity and milestones
+
+**Project Role Management**
+
+- **Project Lead**: Full project control and reporting
+- **Team Member**: Contribute to project deliverables
+- **Reviewer**: Review and approve project outputs
+- **Observer**: Read-only access to project information
+
+## Compliance and Auditing
+
+### User Activity Monitoring
+
+**Audit Trail Components**
+
+- **Authentication Events**: Login/logout activities
+- **Permission Changes**: Role assignments and modifications
+- **Data Access**: What data was viewed or modified
+- **Administrative Actions**: User management activities
+
+**Compliance Reporting**
+
+- **User Access Reports**: Who has access to what resources
+- **Permission Change Logs**: History of role and permission changes
+- **Inactive User Reports**: Users who haven't logged in recently
+- **Privileged User Monitoring**: Activities of high-privilege users
+
+### Data Privacy and Protection
+
+**Personal Data Handling**
+
+- **Data Minimization**: Collect only necessary user information
+- **Consent Management**: Track user consent for data processing
+- **Right to Access**: Users can request their personal data
+- **Right to Deletion**: Process data deletion requests
+
+**Cross-Border Considerations**
+
+- **Data Residency**: Where user data is stored
+- **Transfer Mechanisms**: Legal basis for international transfers
+- **Local Compliance**: Adherence to local data protection laws
+
+## Troubleshooting Common Issues
+
+### Access Problems
+
+**User Cannot Login**
+
+1. **Verify Credentials**: Check email and password
+2. **Check Account Status**: Ensure account is active
+3. **Review Lockout Status**: Clear security lockouts if needed
+4. **Validate 2FA**: Ensure authenticator is working properly
+5. **Network Connectivity**: Verify network access to platform
+
+**Permission Denied Errors**
+
+1. **Review User Roles**: Check assigned roles and permissions
+2. **Validate Resource Access**: Ensure resource is available
+3. **Check Time Restrictions**: Verify access during allowed hours
+4. **Review Approval Status**: Check if approval is required
+5. **Escalate if Needed**: Contact administrator for access review
+
+### Performance Issues
+
+**Slow User Operations**
+
+- **Database Performance**: Monitor query execution times
+- **Network Latency**: Check connection quality
+- **Resource Contention**: Review concurrent user load
+- **Cache Optimization**: Ensure proper caching configuration
+
+## Best Practices
+
+### Security Best Practices
+
+1. **Principle of Least Privilege**: Grant minimum necessary access
+2. **Regular Access Reviews**: Quarterly review of user permissions
+3. **Prompt Deactivation**: Immediately deactivate departing users
+4. **Strong Authentication**: Enforce 2FA for all users
+5. **Monitor Privileged Users**: Extra scrutiny for admin accounts
+
+### Operational Best Practices
+
+1. **Standardize Roles**: Create consistent role definitions
+2. **Document Procedures**: Maintain clear user management procedures
+3. **Automate When Possible**: Use automation for routine tasks
+4. **Regular Training**: Keep administrators updated on best practices
+5. **Backup Plans**: Maintain emergency access procedures
+
+### User Experience Best Practices
+
+1. **Clear Communication**: Explain role and permission changes
+2. **Self-Service Options**: Allow users to manage their own profiles
+3. **Helpful Error Messages**: Provide actionable error information
+4. **Regular Feedback**: Collect user experience feedback
+5. **Continuous Improvement**: Iterate based on user needs
+
+---
+
+_Continue with [RBAC Configuration](/learn/rbac-configuration) for advanced permission setup._

@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { z } from 'zod'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText } from 'lucide-react'
+import { coreInquiry, handleApiResponse } from '@/lib/rpc'
 
 const inquirySchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -23,8 +24,12 @@ interface InquiryFormProps {
   isLoading?: boolean
 }
 
-export default function InquiryForm({ onSubmit, isLoading = false }: InquiryFormProps) {
+export default function InquiryForm({
+  onSubmit,
+  isLoading: externalLoading = false,
+}: InquiryFormProps) {
   const { closeDrawer } = useDrawer()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
     register,
@@ -70,16 +75,36 @@ export default function InquiryForm({ onSubmit, isLoading = false }: InquiryForm
   }
 
   const handleFormSubmit = async (data: InquiryData) => {
+    setIsSubmitting(true)
     try {
       if (onSubmit) {
         await onSubmit(data)
       } else {
-        console.log('Inquiry data:', data)
+        // Use RPC client to submit inquiry
+        const response = await coreInquiry.submit.$post({
+          json: {
+            email: data.email,
+            message: data.message,
+            attachments: data.attachments?.map(f => f.name) || [],
+          },
+        })
+
+        const result = await handleApiResponse(response)
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to submit inquiry')
+        }
+
+        console.log('Inquiry submitted successfully:', result.data)
       }
+
       reset()
       closeDrawer()
     } catch (error) {
       console.error('Error submitting inquiry:', error)
+      // In a real app, you'd show a toast notification or inline error
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -170,8 +195,8 @@ export default function InquiryForm({ onSubmit, isLoading = false }: InquiryForm
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Submitting...' : 'Submit Inquiry'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+          {isSubmitting || externalLoading ? 'Submitting...' : 'Submit Inquiry'}
         </Button>
       </form>
     </div>

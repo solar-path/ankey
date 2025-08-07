@@ -6,6 +6,7 @@ import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
 import coreExportRoutes from '@/api/controllers/core/export.hono'
 import coreImportRoutes from '@/api/controllers/core/import.hono'
 import { inquiryRoutes } from '@/api/controllers/core/inquiry.hono'
+import { pricingRouter } from '@/api/controllers/core/pricing.hono'
 import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
 import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
 import { TenantService } from '@/api/tenant.settings'
@@ -96,6 +97,7 @@ app.route('/api/core/tenants', coreTenantsRoutes)
 app.route('/api/core/export', coreExportRoutes)
 app.route('/api/core/import', coreImportRoutes)
 app.route('/api/core/inquiry', inquiryRoutes)
+app.route('/api/core/pricing', pricingRouter)
 
 // Tenant routes (for subdomain requests)
 app.use('/api/tenant/*', async (c, next) => {
@@ -119,6 +121,7 @@ const rpcRoutes = app
   .route('/core/export', coreExportRoutes)
   .route('/core/import', coreImportRoutes)
   .route('/core/inquiry', inquiryRoutes)
+  .route('/core/pricing', pricingRouter)
   .route('/tenant/auth', tenantAuthRoutes)
   .route('/tenant/rbac', tenantRBACRoutes)
 

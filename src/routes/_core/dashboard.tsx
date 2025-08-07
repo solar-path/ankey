@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { ExportButton } from '@/components/ExportButton'
 import { FileUpload } from '@/components/FileUpload'
-import { ImportResult } from '@/lib/import.service'
+import type { ImportResult } from '@/lib/import.service'
 import {
   Users,
   Building,
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/_core/dashboard')({
   component: Dashboard,
 })
 

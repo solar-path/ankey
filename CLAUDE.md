@@ -136,3 +136,17 @@ UI components follow the shadcn/ui pattern:
 - **Zod v4** schemas for API validation and TypeScript inference
 - **React Hook Form** with `@hookform/resolvers` for form validation
 - PostgreSQL connection through the `pg` library
+
+## Predefined Settings Modules
+
+The following settings files in `src/api/` are **REQUIRED** and must be used for all related operations. These files provide standardized configurations and should be modified rather than creating new ones:
+
+- `audit.settings.ts` - Audit logging and compliance tracking
+- `auth.settings.ts` - Authentication and authorization logic
+- `database.settings.ts` - Database connections and configuration
+- `doa.settings.ts` - Delegation of authorities and approval matrix
+- `email.settings.ts` - Email service configuration
+- `rbac.settings.ts` - Role-Based Access Control
+- `tenant.settings.ts` - Multi-tenant architecture settings
+
+**Important**: Always use these predefined settings files for their respective functionalities. Do not create duplicate or alternative implementations.

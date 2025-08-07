@@ -86,13 +86,97 @@ export const coreUsersRelations = relations(coreUsers, ({ many }) => ({
 }))
 
 export const tenantsRelations = relations(tenants, ({ many }) => ({
-  // Will add tenant-specific relations when needed
+  subscriptions: many(tenantSubscriptions),
 }))
 
 export const coreSessionsRelations = relations(coreSessions, ({ one }) => ({
   user: one(coreUsers, {
     fields: [coreSessions.userId],
     references: [coreUsers.id],
+  }),
+}))
+
+// Pricing plans table
+export const pricingPlans = pgTable('pricing_plans', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  pricePerUserPerMonth: integer('price_per_user_per_month').notNull(),
+  minUsers: integer('min_users').default(1),
+  maxUsers: integer('max_users'),
+  features: text('features').notNull(), // JSON array of features
+  trialDays: integer('trial_days').default(0),
+  trialMaxUsers: integer('trial_max_users').default(5),
+  isActive: boolean('is_active').default(true),
+  displayOrder: integer('display_order').default(0),
+  badge: text('badge'), // e.g., "Popular", "Best Value"
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Pricing discounts table
+export const pricingDiscounts = pgTable('pricing_discounts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  planId: uuid('plan_id')
+    .notNull()
+    .references(() => pricingPlans.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  discountPercent: integer('discount_percent').notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  isActive: boolean('is_active').default(true),
+  promoCode: text('promo_code'),
+  minMonths: integer('min_months').default(1), // Minimum subscription months for discount
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// Tenant pricing subscriptions
+export const tenantSubscriptions = pgTable('tenant_subscriptions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  planId: uuid('plan_id')
+    .notNull()
+    .references(() => pricingPlans.id),
+  discountId: uuid('discount_id').references(() => pricingDiscounts.id),
+  status: text('status').notNull().default('active'), // active, trial, suspended, cancelled
+  userCount: integer('user_count').notNull().default(1),
+  pricePerUser: integer('price_per_user').notNull(),
+  totalMonthlyPrice: integer('total_monthly_price').notNull(),
+  billingCycle: text('billing_cycle').notNull().default('monthly'), // monthly, yearly
+  trialEndsAt: timestamp('trial_ends_at'),
+  nextBillingDate: timestamp('next_billing_date'),
+  cancelledAt: timestamp('cancelled_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relations for pricing
+export const pricingPlansRelations = relations(pricingPlans, ({ many }) => ({
+  discounts: many(pricingDiscounts),
+  subscriptions: many(tenantSubscriptions),
+}))
+
+export const pricingDiscountsRelations = relations(pricingDiscounts, ({ one }) => ({
+  plan: one(pricingPlans, {
+    fields: [pricingDiscounts.planId],
+    references: [pricingPlans.id],
+  }),
+}))
+
+export const tenantSubscriptionsRelations = relations(tenantSubscriptions, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [tenantSubscriptions.tenantId],
+    references: [tenants.id],
+  }),
+  plan: one(pricingPlans, {
+    fields: [tenantSubscriptions.planId],
+    references: [pricingPlans.id],
+  }),
+  discount: one(pricingDiscounts, {
+    fields: [tenantSubscriptions.discountId],
+    references: [pricingDiscounts.id],
   }),
 }))
 
@@ -103,3 +187,9 @@ export const insertTenantSchema = createInsertSchema(tenants)
 export const selectTenantSchema = createSelectSchema(tenants)
 export const insertCoreSessionSchema = createInsertSchema(coreSessions)
 export const selectCoreSessionSchema = createSelectSchema(coreSessions)
+export const insertPricingPlanSchema = createInsertSchema(pricingPlans)
+export const selectPricingPlanSchema = createSelectSchema(pricingPlans)
+export const insertPricingDiscountSchema = createInsertSchema(pricingDiscounts)
+export const selectPricingDiscountSchema = createSelectSchema(pricingDiscounts)
+export const insertTenantSubscriptionSchema = createInsertSchema(tenantSubscriptions)
+export const selectTenantSubscriptionSchema = createSelectSchema(tenantSubscriptions)

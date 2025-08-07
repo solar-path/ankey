@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { z } from 'zod'
+import { useState } from 'react'
+import { coreInquiry, handleApiResponse } from '@/lib/rpc'
 
 const findInquirySchema = z.object({
   id: z.string().min(1, 'Inquiry ID is required'),
@@ -17,14 +19,17 @@ interface FindInquiryFormProps {
   isLoading?: boolean
 }
 
-export default function FindInquiryForm({ onSubmit, isLoading = false }: FindInquiryFormProps) {
-  const { closeDrawer } = useDrawer()
+export default function FindInquiryForm({
+  onSubmit,
+  isLoading: externalLoading = false,
+}: FindInquiryFormProps) {
+  const [isSearching, setIsSearching] = useState(false)
+  const [foundInquiry, setFoundInquiry] = useState<any>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<FindInquiryData>({
     resolver: zodResolver(findInquirySchema),
     defaultValues: {
@@ -33,16 +38,33 @@ export default function FindInquiryForm({ onSubmit, isLoading = false }: FindInq
   })
 
   const handleFormSubmit = async (data: FindInquiryData) => {
+    setIsSearching(true)
+    setFoundInquiry(null)
+
     try {
       if (onSubmit) {
         await onSubmit(data)
       } else {
-        console.log('Find inquiry data:', data)
+        // Use RPC client to find inquiry
+        const response = await coreInquiry.find.$post({
+          json: { id: data.id },
+        })
+
+        const result = await handleApiResponse(response)
+
+        if (!result.success) {
+          throw new Error(result.error || 'Inquiry not found')
+        }
+
+        setFoundInquiry(result.data)
+        console.log('Found inquiry:', result.data)
       }
-      reset()
-      closeDrawer()
     } catch (error) {
       console.error('Error finding inquiry:', error)
+      setFoundInquiry(null)
+      // In a real app, you'd show a toast notification or inline error
+    } finally {
+      setIsSearching(false)
     }
   }
 
@@ -68,10 +90,38 @@ export default function FindInquiryForm({ onSubmit, isLoading = false }: FindInq
           {errors.id && <p className="text-red-500 text-sm mt-1">{errors.id.message}</p>}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Searching...' : 'Find Inquiry'}
+        <Button type="submit" className="w-full" disabled={isSearching || externalLoading}>
+          {isSearching || externalLoading ? 'Searching...' : 'Find Inquiry'}
         </Button>
       </form>
+
+      {foundInquiry && (
+        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">Inquiry Found</h3>
+          <div className="space-y-2 text-sm text-green-700">
+            <p>
+              <strong>ID:</strong> {foundInquiry.id}
+            </p>
+            <p>
+              <strong>Email:</strong> {foundInquiry.email}
+            </p>
+            <p>
+              <strong>Status:</strong> {foundInquiry.status}
+            </p>
+            <p>
+              <strong>Submitted:</strong> {new Date(foundInquiry.submittedAt).toLocaleDateString()}
+            </p>
+            {foundInquiry.response && (
+              <div>
+                <strong>Response:</strong>
+                <p className="mt-1 p-2 bg-white border rounded text-gray-800">
+                  {foundInquiry.response}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

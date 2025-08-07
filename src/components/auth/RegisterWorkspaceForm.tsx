@@ -3,14 +3,20 @@ import { Button } from '@/components/ui/button'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useState } from 'react'
+import { coreAuth, handleApiResponse } from '@/lib/rpc'
 
 interface RegisterWorkspaceFormProps {
-  onSubmit: (data: RegisterData) => Promise<void>
+  onSubmit?: (data: RegisterData) => Promise<void>
   isLoading?: boolean
 }
 
-export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterWorkspaceFormProps) {
+export function RegisterWorkspaceForm({
+  onSubmit,
+  isLoading: externalLoading = false,
+}: RegisterWorkspaceFormProps) {
   const { closeDrawer } = useDrawer()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
     register,
@@ -24,11 +30,32 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
   const workspaceName = watch('workspace')
 
   const handleFormSubmit = async (data: RegisterData) => {
+    setIsSubmitting(true)
     try {
-      await onSubmit(data)
+      if (onSubmit) {
+        await onSubmit(data)
+      } else {
+        // Use RPC client for workspace registration
+        const response = await coreAuth['register-workspace'].$post({
+          json: data,
+        })
+
+        const result = await handleApiResponse(response)
+
+        if (!result.success) {
+          throw new Error(result.error || 'Registration failed')
+        }
+
+        console.log('Workspace created successfully:', result.data)
+
+        // In a real app, you'd show a success message and redirect to confirmation
+      }
       closeDrawer()
     } catch (error) {
-      // Error handling is done in the parent component
+      console.error('Registration error:', error)
+      // Error handling would show inline errors or toast notifications
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -130,8 +157,8 @@ export function RegisterWorkspaceForm({ onSubmit, isLoading = false }: RegisterW
           </ul>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Creating Workspace...' : 'Create Workspace'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+          {isSubmitting || externalLoading ? 'Creating Workspace...' : 'Create Workspace'}
         </Button>
 
         <div className="text-center text-sm text-gray-500">

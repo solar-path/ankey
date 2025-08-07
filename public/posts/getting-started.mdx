@@ -1,0 +1,163 @@
+--- 
+  title: "Getting Started with Solo"
+  description: "Complete guide to set up your first workspace and start managing your business"
+  category: "Basics"
+  duration: "10 min read"
+  difficulty: "Beginner"
+  order: 1
+---
+
+# Getting Started with Solo
+
+Welcome to Solo's multi-tenant business management platform! This guide will help you get up and running quickly.
+
+## Overview
+
+Solo provides a comprehensive business management solution with:
+
+- **Multi-tenant architecture** for workspace isolation
+- **Role-based access control** (RBAC) for security
+- **Compliance tools** for SOX/SOC requirements
+- **Audit logging** for complete activity tracking
+
+## Quick Start
+
+### 1. Create Your Workspace
+
+1. Go to the [homepage](/) and click "Sign Up"
+2. Fill out the workspace registration form:
+   - **Workspace name**: This becomes your subdomain
+   - **Full name**: Your name as the administrator
+   - **Email**: Your business email address
+   - **Password**: Strong password with uppercase, lowercase, and numbers
+
+3. Click "Create Workspace" to submit
+
+### 2. Email Verification
+
+After registration:
+
+- Check your email for a verification link
+- Click the link to verify your account
+- You'll receive another email when your workspace is ready
+
+### 3. Access Your Workspace
+
+Your workspace will be available at:
+
+```
+https://[your-workspace-name].localhost:3000
+```
+
+### 4. Initial Setup
+
+When you first log in:
+
+1. **Review your profile** - Update your information if needed
+2. **Set up two-factor authentication** - Recommended for security
+3. **Invite your first users** - Add team members to your workspace
+4. **Configure roles** - Set up appropriate permissions
+
+## Core Concepts
+
+### Workspaces (Tenants)
+
+- Each workspace is completely isolated
+- Has its own database and subdomain
+- Workspace administrators control user access
+- Billing is per workspace
+
+### Users and Permissions
+
+- **Workspace Admin**: Full control over the workspace
+- **Standard Users**: Access based on assigned roles
+- **Role-based Access**: Granular permissions system
+- **Delegation of Authority**: Temporary permission delegation
+
+### Audit and Compliance
+
+- **Complete Audit Trail**: Every action is logged
+- **Safe Delete**: Data marked as deleted but retained for compliance
+- **SOX/SOC Compliance**: Built-in compliance reporting
+- **Data Retention**: Configurable retention policies
+
+## Next Steps
+
+After completing the initial setup:
+
+1. **[Workspace Setup](/learn/workspace-setup)** - Configure your workspace settings
+2. **[User Management](/learn/user-management)** - Learn to manage users and invitations
+3. **[RBAC Configuration](/learn/rbac-configuration)** - Set up roles and permissions
+4. **[Audit Logging](/learn/audit-logging)** - Understand the audit system
+
+## Common Tasks
+
+### Inviting Users
+
+1. Go to **Users** > **Invite User**
+2. Enter email and full name
+3. Select appropriate roles
+4. Send invitation
+
+### Creating Roles
+
+1. Navigate to **Settings** > **Roles**
+2. Click **Create Role**
+3. Set permissions for each resource
+4. Assign to users as needed
+
+### Viewing Audit Logs
+
+1. Go to **Compliance** > **Audit Logs**
+2. Filter by user, action, or date range
+3. Export reports for compliance review
+
+## Getting Help
+
+### Documentation
+
+- **[Complete Guide Index](/learn)** - All available guides
+- **Search Documentation** - Use the search box above
+- **Video Tutorials** - Visual guides for complex tasks
+
+### Support Channels
+
+- **In-App Help** - Click the ? icon in any section
+- **Email Support** - Contact through your workspace admin panel
+- **Knowledge Base** - Searchable help articles
+
+### Community
+
+- **User Forums** - Connect with other Solo users
+- **Feature Requests** - Suggest improvements
+- **Beta Program** - Test new features early
+
+## Troubleshooting
+
+### Common Issues
+
+**Can't access workspace**
+
+- Check that you're using the correct subdomain
+- Verify your email and password
+- Clear browser cache and cookies
+
+**Invitation emails not received**
+
+- Check spam/junk folders
+- Verify email address is correct
+- Contact workspace administrator
+
+**Permission denied errors**
+
+- Contact your workspace administrator
+- Submit a "Let Me In" request if appropriate
+- Review your assigned roles
+
+### System Status
+
+Check our [status page] for any ongoing issues or maintenance.
+
+---
+
+_Ready to dive deeper? Continue with [Workspace Setup](/learn/workspace-setup) to configure your workspace settings._
