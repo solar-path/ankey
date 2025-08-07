@@ -47,3 +47,30 @@
 14. Implement PDF/Excel export functionality for reports and user data
 15. Create Excel import functionality to upload and sync new/changed records only 
 16. debug issues - do not create new files
+17. where required always use lucide-react icons 
+18. core shall have publicly available pages: 
+    - index.tsx (update to resolve issues)
+    - terms.mdx (draft content with respect to the current project)
+    - privacy.mdx (draft content with respect to the current project)
+    - cookies.mdx (draft content with respect to the current project)
+    - learn, with:
+        - md/mdx files that are guides and rendered 
+        - standalone layout:
+            - left side - list of all *.mdx files
+            - content - main 
+            - right side - table of content based on *.mdx file content
+    - pricing.tsx - with hono controller. The key feature of pricing - application users might have access to fully functional tenant for 5 user for 1 week. CRUD
+        - module (general - what would be implemented in tenant, accounting and reserved in core parts) 
+        - pricing plan per user per month
+        - features
+        - discount %, start, end.
+        - etc - add what is usually required
+    layout for pages is drafted at /(public)/publicLayout.tsx - refactor to comply with tanstack-router requirements
+18. core shall have protected page /dashboard 
+19. core shall have the following forms that are accessable via QDrawer (/src/components/QDrawer/*):
+    - inquiryForm.tsx - modify to add attachments (review at /src/components/inquiry/*) 
+    - findInquiryForm.tsx (review at /src/components/inquiry/*)
+    - loginForm
+    - registerForm
+    - forgotPassword
+19. all forms shall be supported with core controllers.
