@@ -10,115 +10,124 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as publicTermsRouteImport } from './routes/(public)/terms'
-import { Route as publicPrivacyRouteImport } from './routes/(public)/privacy'
-import { Route as publicPricingRouteImport } from './routes/(public)/pricing'
-import { Route as publicLearnRouteImport } from './routes/(public)/learn'
-import { Route as publicCookiesRouteImport } from './routes/(public)/cookies'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
+import { Route as PublicPricingRouteImport } from './routes/_public/pricing'
+import { Route as PublicLearnRouteImport } from './routes/_public/learn'
+import { Route as PublicCookiesRouteImport } from './routes/_public/cookies'
+import { Route as PublicLayoutRouteImport } from './routes/_public/_layout'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const publicTermsRoute = publicTermsRouteImport.update({
-  id: '/(public)/terms',
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const publicPrivacyRoute = publicPrivacyRouteImport.update({
-  id: '/(public)/privacy',
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const publicPricingRoute = publicPricingRouteImport.update({
-  id: '/(public)/pricing',
+const PublicPricingRoute = PublicPricingRouteImport.update({
+  id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const publicLearnRoute = publicLearnRouteImport.update({
-  id: '/(public)/learn',
+const PublicLearnRoute = PublicLearnRouteImport.update({
+  id: '/learn',
   path: '/learn',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const publicCookiesRoute = publicCookiesRouteImport.update({
-  id: '/(public)/cookies',
+const PublicCookiesRoute = PublicCookiesRouteImport.update({
+  id: '/cookies',
   path: '/cookies',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLayoutRoute = PublicLayoutRouteImport.update({
+  id: '/_layout',
+  getParentRoute: () => PublicRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/cookies': typeof publicCookiesRoute
-  '/learn': typeof publicLearnRoute
-  '/pricing': typeof publicPricingRoute
-  '/privacy': typeof publicPrivacyRoute
-  '/terms': typeof publicTermsRoute
+  '/cookies': typeof PublicCookiesRoute
+  '/learn': typeof PublicLearnRoute
+  '/pricing': typeof PublicPricingRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/terms': typeof PublicTermsRoute
+  '/': typeof PublicIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/cookies': typeof publicCookiesRoute
-  '/learn': typeof publicLearnRoute
-  '/pricing': typeof publicPricingRoute
-  '/privacy': typeof publicPrivacyRoute
-  '/terms': typeof publicTermsRoute
+  '/cookies': typeof PublicCookiesRoute
+  '/learn': typeof PublicLearnRoute
+  '/pricing': typeof PublicPricingRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/terms': typeof PublicTermsRoute
+  '/': typeof PublicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_public': typeof PublicRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/(public)/cookies': typeof publicCookiesRoute
-  '/(public)/learn': typeof publicLearnRoute
-  '/(public)/pricing': typeof publicPricingRoute
-  '/(public)/privacy': typeof publicPrivacyRoute
-  '/(public)/terms': typeof publicTermsRoute
+  '/_public/_layout': typeof PublicLayoutRoute
+  '/_public/cookies': typeof PublicCookiesRoute
+  '/_public/learn': typeof PublicLearnRoute
+  '/_public/pricing': typeof PublicPricingRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
+  '/_public/terms': typeof PublicTermsRoute
+  '/_public/': typeof PublicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/dashboard'
     | '/cookies'
     | '/learn'
     | '/pricing'
     | '/privacy'
     | '/terms'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/dashboard'
     | '/cookies'
     | '/learn'
     | '/pricing'
     | '/privacy'
     | '/terms'
+    | '/'
   id:
     | '__root__'
-    | '/'
+    | '/_public'
     | '/dashboard'
-    | '/(public)/cookies'
-    | '/(public)/learn'
-    | '/(public)/pricing'
-    | '/(public)/privacy'
-    | '/(public)/terms'
+    | '/_public/_layout'
+    | '/_public/cookies'
+    | '/_public/learn'
+    | '/_public/pricing'
+    | '/_public/privacy'
+    | '/_public/terms'
+    | '/_public/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PublicRoute: typeof PublicRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  publicCookiesRoute: typeof publicCookiesRoute
-  publicLearnRoute: typeof publicLearnRoute
-  publicPricingRoute: typeof publicPricingRoute
-  publicPrivacyRoute: typeof publicPrivacyRoute
-  publicTermsRoute: typeof publicTermsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -130,59 +139,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/(public)/terms': {
-      id: '/(public)/terms'
+    '/_public/terms': {
+      id: '/_public/terms'
       path: '/terms'
       fullPath: '/terms'
-      preLoaderRoute: typeof publicTermsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/(public)/privacy': {
-      id: '/(public)/privacy'
+    '/_public/privacy': {
+      id: '/_public/privacy'
       path: '/privacy'
       fullPath: '/privacy'
-      preLoaderRoute: typeof publicPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicPrivacyRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/(public)/pricing': {
-      id: '/(public)/pricing'
+    '/_public/pricing': {
+      id: '/_public/pricing'
       path: '/pricing'
       fullPath: '/pricing'
-      preLoaderRoute: typeof publicPricingRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicPricingRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/(public)/learn': {
-      id: '/(public)/learn'
+    '/_public/learn': {
+      id: '/_public/learn'
       path: '/learn'
       fullPath: '/learn'
-      preLoaderRoute: typeof publicLearnRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicLearnRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/(public)/cookies': {
-      id: '/(public)/cookies'
+    '/_public/cookies': {
+      id: '/_public/cookies'
       path: '/cookies'
       fullPath: '/cookies'
-      preLoaderRoute: typeof publicCookiesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicCookiesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/_layout': {
+      id: '/_public/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicLayoutRouteImport
+      parentRoute: typeof PublicRoute
     }
   }
 }
 
+interface PublicRouteChildren {
+  PublicLayoutRoute: typeof PublicLayoutRoute
+  PublicCookiesRoute: typeof PublicCookiesRoute
+  PublicLearnRoute: typeof PublicLearnRoute
+  PublicPricingRoute: typeof PublicPricingRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
+  PublicTermsRoute: typeof PublicTermsRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicLayoutRoute: PublicLayoutRoute,
+  PublicCookiesRoute: PublicCookiesRoute,
+  PublicLearnRoute: PublicLearnRoute,
+  PublicPricingRoute: PublicPricingRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
+  PublicTermsRoute: PublicTermsRoute,
+  PublicIndexRoute: PublicIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PublicRoute: PublicRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  publicCookiesRoute: publicCookiesRoute,
-  publicLearnRoute: publicLearnRoute,
-  publicPricingRoute: publicPricingRoute,
-  publicPrivacyRoute: publicPrivacyRoute,
-  publicTermsRoute: publicTermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

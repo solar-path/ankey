@@ -1,14 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import PublicLayout from './publicLayout'
 
-export const Route = createFileRoute('/(public)/cookies')({
+export const Route = createFileRoute('/_public/cookies')({
   component: Cookies,
 })
 
 function Cookies() {
   return (
-    <PublicLayout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Cookie Policy</h1>
 
         <div className="prose prose-lg max-w-none">
@@ -149,6 +147,5 @@ function Cookies() {
           </section>
         </div>
       </div>
-    </PublicLayout>
   )
 }

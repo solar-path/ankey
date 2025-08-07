@@ -1,9 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import PublicLayout from './publicLayout'
 import { Button } from '@/components/ui/button'
 import { Check, X } from 'lucide-react'
 
-export const Route = createFileRoute('/(public)/pricing')({
+export const Route = createFileRoute('/_public/pricing')({
   component: Pricing,
 })
 
@@ -104,8 +103,7 @@ function Pricing() {
   }
 
   return (
-    <PublicLayout>
-      <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
@@ -246,6 +244,5 @@ function Pricing() {
           </div>
         </div>
       </div>
-    </PublicLayout>
   )
 }

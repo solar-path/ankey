@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { createFileRoute } from '@tanstack/react-router'
 import { Banknote, Container, Signature, Users } from 'lucide-react'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_public/')({
   component: Index,
 })
 
