@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"bun vite\" \"bun run --watch src/api/api.ts\"",
+    "dev": "concurrently \"bun vite --port 3000\" \"bun run --watch src/api/api.ts\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
