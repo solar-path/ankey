@@ -480,7 +480,7 @@ export class TenantService {
     try {
       const tenants = await this.db.query.tenants.findMany({
         limit,
-        orderBy: [coreSchema.tenants.createdAt],
+        orderBy: (tenants, { desc }) => [desc(tenants.createdAt)],
       })
 
       const recentTenants = tenants.map(tenant => ({
@@ -507,7 +507,7 @@ export class TenantService {
     try {
       const activities = await this.db.query.coreAuditLogs.findMany({
         limit,
-        orderBy: [coreSchema.coreAuditLogs.createdAt],
+        orderBy: (logs, { desc }) => [desc(logs.createdAt)],
         with: {
           user: {
             columns: {

@@ -47,13 +47,6 @@ coreTenantsRoutes.get('/', async c => {
   return c.json(result)
 })
 
-// Get tenant by ID
-coreTenantsRoutes.get('/:id', async c => {
-  const id = c.req.param('id')
-  const result = await tenantService.getTenantById(id)
-  return c.json(result, result.success ? 200 : 404)
-})
-
 // Update tenant
 const updateTenantSchema = z.object({
   name: z.string().optional(),
@@ -131,16 +124,45 @@ coreTenantsRoutes.get('/stats/dashboard', async c => {
 
 // Get recent tenants
 coreTenantsRoutes.get('/recent', async c => {
-  const limit = c.req.query('limit')
-  const result = await tenantService.getRecentTenants(limit ? parseInt(limit) : 5)
-  return c.json(result)
+  try {
+    const limit = c.req.query('limit')
+    const result = await tenantService.getRecentTenants(limit ? parseInt(limit) : 5)
+    
+    if (!result.success) {
+      console.error('Recent tenants service error:', result.error)
+      return c.json(result, 500)
+    }
+    
+    return c.json(result)
+  } catch (error) {
+    console.error('Recent tenants route error:', error)
+    return c.json({ success: false, error: 'Failed to get recent tenants' }, 500)
+  }
 })
 
 // Get system activity logs
 coreTenantsRoutes.get('/activity', async c => {
-  const limit = c.req.query('limit')
-  const result = await tenantService.getSystemActivity(limit ? parseInt(limit) : 10)
-  return c.json(result)
+  try {
+    const limit = c.req.query('limit')
+    const result = await tenantService.getSystemActivity(limit ? parseInt(limit) : 10)
+    
+    if (!result.success) {
+      console.error('System activity service error:', result.error)
+      return c.json(result, 500)
+    }
+    
+    return c.json(result)
+  } catch (error) {
+    console.error('System activity route error:', error)
+    return c.json({ success: false, error: 'Failed to get system activity' }, 500)
+  }
+})
+
+// Get tenant by ID - MUST come after all specific routes to avoid conflicts
+coreTenantsRoutes.get('/:id', async c => {
+  const id = c.req.param('id')
+  const result = await tenantService.getTenantById(id)
+  return c.json(result, result.success ? 200 : 404)
 })
 
 export { coreTenantsRoutes }

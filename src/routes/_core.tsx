@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { CoreSidebar } from '@/components/CoreSidebar'
+import { CoreSidebar } from '@/components/QSideBar/QSidebar'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
@@ -60,16 +61,11 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 
 function CoreLayout() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 flex-shrink-0">
-        <CoreSidebar />
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden">
+    <SidebarProvider>
+      <CoreSidebar />
+      <SidebarInset>
         <Outlet />
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
