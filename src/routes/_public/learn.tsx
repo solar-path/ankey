@@ -310,7 +310,7 @@ function LearnIndex() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button variant="outline" size="sm" onClick={() => setSidebarOpen(!sidebarOpen)}>

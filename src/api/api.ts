@@ -19,18 +19,33 @@ app.use('*', logger())
 app.use(
   '*',
   cors({
-    origin: origin => {
+    origin: (origin) => {
       // Allow localhost and local network IPs in development
       if (
         !origin ||
         origin.includes('localhost') ||
-        /http:\/\/192\.168\.\d+\.\d+:300\d/.test(origin)
+        origin.includes('127.0.0.1') ||
+        /http:\/\/192\.168\.\d+\.\d+:\d+/.test(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:')
       ) {
         return true
       }
+      
+      // In production, be more restrictive
+      if (process.env.NODE_ENV === 'production') {
+        const allowedOrigins = [
+          'https://ankey.com',
+          'https://www.ankey.com'
+        ]
+        return allowedOrigins.includes(origin)
+      }
+      
       return false
     },
     credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept'],
   })
 )
 
