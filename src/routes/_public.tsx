@@ -12,39 +12,6 @@ export const Route = createFileRoute('/_public')({
 function PublicLayout() {
   const { openDrawer } = useDrawer()
 
-  const handleSignUp = () => {
-    openDrawer(
-      <RegisterWorkspaceForm
-        onSubmit={async data => {
-          // TODO: Implement registration logic
-          console.log('Register:', data)
-        }}
-      />
-    )
-  }
-
-  const handleSignIn = () => {
-    openDrawer(
-      <LoginForm
-        onSubmit={async data => {
-          // TODO: Implement login logic
-          console.log('Login:', data)
-        }}
-      />
-    )
-  }
-
-  const handleContactSales = () => {
-    openDrawer(
-      <InquiryForm
-        onSubmit={async data => {
-          // TODO: Implement inquiry submission
-          console.log('Inquiry:', data)
-        }}
-      />
-    )
-  }
-
   return (
     <div className="flex min-h-screen flex-col">
       {/* HEADER SECTION */}
@@ -64,10 +31,10 @@ function PublicLayout() {
 
           {/* TODO: Add authentication state management */}
           <>
-            <Button variant="ghost" onClick={handleSignUp}>
+            <Button variant="ghost" onClick={() => openDrawer(<RegisterWorkspaceForm />)}>
               Sign Up
             </Button>
-            <Button onClick={handleSignIn}>Sign In</Button>
+            <Button onClick={() => openDrawer(<LoginForm />)}>Sign In</Button>
           </>
         </div>
       </div>
@@ -96,7 +63,7 @@ function PublicLayout() {
               Privacy Policy
             </Link>
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleContactSales}>
+          <Button variant="ghost" size="sm" onClick={() => openDrawer(<InquiryForm />)}>
             Contact sales
           </Button>
         </div>
