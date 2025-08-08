@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText } from 'lucide-react'
 import { coreInquiry, handleApiResponse } from '@/lib/rpc'
+import { toast } from 'sonner'
 
 const inquirySchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -95,6 +96,11 @@ export default function InquiryForm({
           throw new Error(result.error || 'Failed to submit inquiry')
         }
 
+        // Show success toast
+        toast.success('Inquiry submitted successfully!', {
+          description: 'We have received your inquiry and will respond as soon as possible.',
+        })
+
         console.log('Inquiry submitted successfully:', result.data)
       }
 
@@ -102,7 +108,11 @@ export default function InquiryForm({
       closeDrawer()
     } catch (error) {
       console.error('Error submitting inquiry:', error)
-      // In a real app, you'd show a toast notification or inline error
+
+      // Show error toast
+      toast.error('Failed to submit inquiry', {
+        description: error instanceof Error ? error.message : 'Please try again later.',
+      })
     } finally {
       setIsSubmitting(false)
     }

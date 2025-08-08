@@ -7,6 +7,7 @@ import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { z } from 'zod'
 import { useState } from 'react'
 import { coreInquiry, handleApiResponse } from '@/lib/rpc'
+import { toast } from 'sonner'
 
 const findInquirySchema = z.object({
   id: z.string().min(1, 'Inquiry ID is required'),
@@ -57,12 +58,23 @@ export default function FindInquiryForm({
         }
 
         setFoundInquiry(result.data)
+
+        // Show success toast
+        toast.success('Inquiry found!', {
+          description: `Found inquiry ${result.data.id} from ${result.data.email}`,
+        })
+
         console.log('Found inquiry:', result.data)
       }
     } catch (error) {
       console.error('Error finding inquiry:', error)
       setFoundInquiry(null)
-      // In a real app, you'd show a toast notification or inline error
+
+      // Show error toast
+      toast.error('Inquiry not found', {
+        description:
+          error instanceof Error ? error.message : 'Please check the inquiry ID and try again.',
+      })
     } finally {
       setIsSearching(false)
     }

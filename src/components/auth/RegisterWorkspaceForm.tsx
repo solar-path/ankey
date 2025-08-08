@@ -1,12 +1,13 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { coreAuth, handleApiResponse } from '@/lib/rpc'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { coreAuth, handleApiResponse } from '@/lib/rpc'
-import { Link } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 interface RegisterWorkspaceFormProps {
   onSubmit?: (data: RegisterData) => Promise<void>
@@ -19,6 +20,7 @@ export function RegisterWorkspaceForm({
 }: RegisterWorkspaceFormProps) {
   const { closeDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const navigate = useNavigate()
 
   const {
     register,
@@ -48,14 +50,26 @@ export function RegisterWorkspaceForm({
           throw new Error(result.error || 'Registration failed')
         }
 
+        // Show success toast
+        toast.success('Workspace created successfully!', {
+          description: 'Welcome to your new workspace. You can now start managing your team.',
+        })
+
         console.log('Workspace created successfully:', result.data)
 
-        // In a real app, you'd show a success message and redirect to confirmation
+        // Navigate to core dashboard after successful registration
+        navigate({ to: '/_core/dashboard' })
+        return // Early return to avoid duplicate closeDrawer
       }
       closeDrawer()
     } catch (error) {
       console.error('Registration error:', error)
-      // Error handling would show inline errors or toast notifications
+
+      // Show error toast
+      toast.error('Registration failed', {
+        description:
+          error instanceof Error ? error.message : 'Please check your information and try again.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -70,7 +84,7 @@ export function RegisterWorkspaceForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <label htmlFor="workspace" className="block text-sm font-medium text-gray-700 mb-1">

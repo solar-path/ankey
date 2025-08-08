@@ -63,15 +63,34 @@ export function createTenantAuth(tenantDatabase: string) {
 
 // Utility functions
 export const hashPassword = async (password: string): Promise<string> => {
-  return await Bun.password.hash(password, {
-    algorithm: 'argon2id',
-    memoryCost: 4096,
-    timeCost: 3,
-  })
+  // Use Bun if available, otherwise use a fallback for Node.js
+  if (typeof Bun !== 'undefined') {
+    return await Bun.password.hash(password, {
+      algorithm: 'argon2id',
+      memoryCost: 4096,
+      timeCost: 3,
+    })
+  } else {
+    // Fallback for Node.js - use crypto with a simple hash
+    // Note: In production, you should use a proper password hashing library like bcrypt or argon2
+    const crypto = await import('crypto')
+    const salt = crypto.randomBytes(16).toString('hex')
+    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex')
+    return `${salt}:${hash}`
+  }
 }
 
 export const verifyPassword = async (password: string, hash: string): Promise<boolean> => {
-  return await Bun.password.verify(password, hash)
+  // Use Bun if available, otherwise use a fallback for Node.js
+  if (typeof Bun !== 'undefined') {
+    return await Bun.password.verify(password, hash)
+  } else {
+    // Fallback for Node.js
+    const crypto = await import('crypto')
+    const [salt, storedHash] = hash.split(':')
+    const newHash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex')
+    return newHash === storedHash
+  }
 }
 
 export const generateSecureToken = (): string => {

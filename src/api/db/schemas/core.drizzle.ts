@@ -95,6 +95,13 @@ export const coreSessionsRelations = relations(coreSessions, ({ one }) => ({
   }),
 }))
 
+export const coreAuditLogsRelations = relations(coreAuditLogs, ({ one }) => ({
+  user: one(coreUsers, {
+    fields: [coreAuditLogs.userId],
+    references: [coreUsers.id],
+  }),
+}))
+
 // Pricing plans table
 export const pricingPlans = pgTable('pricing_plans', {
   id: uuid('id').defaultRandom().primaryKey(),

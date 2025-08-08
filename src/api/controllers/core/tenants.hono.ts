@@ -1,8 +1,8 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-import { TenantService } from '@/api/tenant.settings'
 import { CoreAuthService } from '@/api/auth.settings'
+import { TenantService } from '@/api/tenant.settings'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 
 const coreTenantsRoutes = new Hono()
 const tenantService = new TenantService()
@@ -121,6 +121,26 @@ coreTenantsRoutes.get('/reports/billing', zValidator('query', billingQuerySchema
 
   const result = await tenantService.generateBillingReport(startDate, endDate)
   return c.json(result, result.success ? 200 : 400)
+})
+
+// Get dashboard statistics
+coreTenantsRoutes.get('/stats/dashboard', async c => {
+  const result = await tenantService.getDashboardStats()
+  return c.json(result)
+})
+
+// Get recent tenants
+coreTenantsRoutes.get('/recent', async c => {
+  const limit = c.req.query('limit')
+  const result = await tenantService.getRecentTenants(limit ? parseInt(limit) : 5)
+  return c.json(result)
+})
+
+// Get system activity logs
+coreTenantsRoutes.get('/activity', async c => {
+  const limit = c.req.query('limit')
+  const result = await tenantService.getSystemActivity(limit ? parseInt(limit) : 10)
+  return c.json(result)
 })
 
 export { coreTenantsRoutes }

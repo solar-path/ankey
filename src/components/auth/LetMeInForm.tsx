@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { letMeInSchema, type LetMeInData } from '@/shared'
+import { toast } from 'sonner'
 
 interface LetMeInFormProps {
   onSubmit: (data: LetMeInData) => Promise<void>
@@ -33,10 +34,21 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
   const handleFormSubmit = async (data: LetMeInData) => {
     try {
       await onSubmit(data)
+
+      // Show success toast
+      toast.success('Access request submitted!', {
+        description: 'Your request has been sent to workspace administrators for review.',
+      })
+
       reset()
       closeDrawer()
     } catch (error) {
       console.error('Error submitting access request:', error)
+
+      // Show error toast
+      toast.error('Failed to submit request', {
+        description: error instanceof Error ? error.message : 'Please try again later.',
+      })
     }
   }
 

@@ -1,7 +1,7 @@
+import * as dotenv from 'dotenv'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Client } from 'pg'
-import { pricingPlans, pricingDiscounts } from '../src/api/db/schemas/core.drizzle'
-import * as dotenv from 'dotenv'
+import { pricingDiscounts, pricingPlans } from '../src/api/db/schemas/core.drizzle'
 
 dotenv.config()
 

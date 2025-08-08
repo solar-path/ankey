@@ -1,12 +1,14 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useDrawer } from '@/components/QDrawer/QDrawer.store'
-import { forgotPasswordSchema, type ForgotPasswordData } from '@/shared'
-import { useState } from 'react'
 import { coreAuth, handleApiResponse } from '@/lib/rpc'
+import { forgotPasswordSchema, type ForgotPasswordData } from '@/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { LoginForm } from './LoginForm'
 
 interface ForgotPasswordFormProps {
   onSubmit?: (data: ForgotPasswordData) => Promise<void>
@@ -17,7 +19,7 @@ export function ForgotPasswordForm({
   onSubmit,
   isLoading: externalLoading = false,
 }: ForgotPasswordFormProps) {
-  const { closeDrawer } = useDrawer()
+  const { openDrawer, closeDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -49,22 +51,29 @@ export function ForgotPasswordForm({
           throw new Error(result.error || 'Failed to send reset email')
         }
 
-        console.log('Password reset email sent:', result.data)
+        // Show success toast
+        toast.success('Reset email sent!', {
+          description: 'Check your email for password reset instructions.',
+        })
 
-        // In a real app, you'd show a success message
+        console.log('Password reset email sent:', result.data)
       }
       reset()
       closeDrawer()
     } catch (error) {
       console.error('Error sending reset email:', error)
-      // In a real app, you'd show error toast or inline message
+
+      // Show error toast
+      toast.error('Failed to send reset email', {
+        description: error instanceof Error ? error.message : 'Please try again later.',
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -91,9 +100,8 @@ export function ForgotPasswordForm({
               type="button"
               variant="link"
               className="p-0 h-auto text-sm"
-              onClick={() => {
-                // This will be handled by the parent component
-                console.log('Switch to login form')
+              onClick={() => {openDrawer(<LoginForm />)
+               
               }}
             >
               Sign in instead

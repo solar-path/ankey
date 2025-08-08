@@ -1,14 +1,16 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { coreAuth, handleApiResponse, tenantAuth } from '@/lib/rpc'
 import { loginSchema, type LoginData } from '@/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 import { LetMeInForm } from './LetMeInForm'
-import { useState } from 'react'
-import { coreAuth, tenantAuth, handleApiResponse } from '@/lib/rpc'
 
 interface LoginFormProps {
   onSubmit?: (data: LoginData) => Promise<void>
@@ -23,6 +25,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const { closeDrawer, openDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const navigate = useNavigate()
 
   const {
     register,
@@ -58,10 +61,24 @@ export function LoginForm({
 
         console.log('Login successful:', result.data)
 
-        // In a real app, you'd handle the login success (redirect, etc.)
+        // Show success toast
+        toast.success('Welcome back!', {
+          description: 'You have been successfully logged in.',
+        })
+
+        // Handle successful login
         if (result.data && !(result.data as any).requiresTwoFactor) {
-          // Successful login - could redirect or update global state
-          window.location.reload() // Simple approach for now
+          reset()
+
+          // Navigate to appropriate dashboard based on user type
+          if (isTenant) {
+            // For tenant users, navigate to root - they'll be handled by tenant subdomain routing
+            navigate({ to: '/' })
+          } else {
+            // For core admin users, navigate to core dashboard
+            navigate({ to: '/dashboard' })
+          }
+          return // Early return to avoid duplicate closeDrawer
         }
       }
 
@@ -69,7 +86,12 @@ export function LoginForm({
       closeDrawer()
     } catch (error) {
       console.error('Login error:', error)
-      // In a real app, you'd show a toast notification or inline error
+
+      // Show error toast
+      toast.error('Login failed', {
+        description:
+          error instanceof Error ? error.message : 'Please check your credentials and try again.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -96,7 +118,7 @@ export function LoginForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">

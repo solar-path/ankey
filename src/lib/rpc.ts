@@ -23,6 +23,15 @@ export const coreImport = (rpc as any).api.rpc.core.import
 export const tenantAuth = (rpc as any).api.rpc.tenant.auth
 export const tenantRBAC = (rpc as any).api.rpc.tenant.rbac
 
+// Dashboard-specific API calls
+export const dashboardApi = {
+  getStats: () => coreTenants.stats.dashboard.$get(),
+  getRecentTenants: (limit?: number) =>
+    coreTenants.recent.$get({ query: limit ? { limit: limit.toString() } : {} }),
+  getSystemActivity: (limit?: number) =>
+    coreTenants.activity.$get({ query: limit ? { limit: limit.toString() } : {} }),
+}
+
 // Helper function to handle API responses
 export const handleApiResponse = async <T>(
   response: Response

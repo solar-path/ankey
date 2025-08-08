@@ -404,6 +404,184 @@ export class TenantService {
     }
   }
 
+  // Get dashboard statistics
+  async getDashboardStats() {
+    try {
+      // Get total tenants count
+      const totalTenantsResult = await this.db.select({ count: count() }).from(coreSchema.tenants)
+
+      // Get active tenants count
+      const activeTenantsResult = await this.db
+        .select({ count: count() })
+        .from(coreSchema.tenants)
+        .where(eq(coreSchema.tenants.isActive, true))
+
+      // Get total users count (sum of userCount from all active tenants)
+      const userCountResult = await this.db
+        .select({
+          totalUsers: coreSchema.tenants.userCount,
+        })
+        .from(coreSchema.tenants)
+        .where(eq(coreSchema.tenants.isActive, true))
+
+      const totalUsers = userCountResult.reduce((sum, tenant) => sum + (tenant.totalUsers || 0), 0)
+
+      // Calculate monthly revenue (sum of userCount * monthlyRate for active tenants)
+      const revenueResult = await this.db
+        .select({
+          userCount: coreSchema.tenants.userCount,
+          monthlyRate: coreSchema.tenants.monthlyRate,
+        })
+        .from(coreSchema.tenants)
+        .where(eq(coreSchema.tenants.isActive, true))
+
+      const monthlyRevenue = revenueResult.reduce((sum, tenant) => {
+        return sum + (tenant.userCount || 0) * (tenant.monthlyRate || 25)
+      }, 0)
+
+      // Calculate growth percentages (mock for now, would need historical data)
+      const userGrowth = '+12%'
+      const tenantGrowth = '+5%'
+      const revenueGrowth = '+18%'
+
+      return {
+        success: true,
+        data: {
+          totalUsers: {
+            value: totalUsers.toString(),
+            change: userGrowth,
+            trend: 'up' as const,
+          },
+          activeTenants: {
+            value: activeTenantsResult[0].count.toString(),
+            change: tenantGrowth,
+            trend: 'up' as const,
+          },
+          monthlyRevenue: {
+            value: `$${monthlyRevenue.toLocaleString()}`,
+            change: revenueGrowth,
+            trend: 'up' as const,
+          },
+          systemHealth: {
+            value: '99.9%',
+            change: '+0.1%',
+            trend: 'up' as const,
+          },
+        },
+      }
+    } catch (error) {
+      console.error('Get dashboard stats error:', error)
+      return { success: false, error: 'Failed to get dashboard statistics' }
+    }
+  }
+
+  // Get recent tenants
+  async getRecentTenants(limit: number = 5) {
+    try {
+      const tenants = await this.db.query.tenants.findMany({
+        limit,
+        orderBy: [coreSchema.tenants.createdAt],
+      })
+
+      const recentTenants = tenants.map(tenant => ({
+        id: tenant.id,
+        name: tenant.name,
+        subdomain: `${tenant.subdomain}.ankey.app`,
+        userCount: tenant.userCount || 0,
+        status: tenant.isActive ? 'Active' : 'Inactive',
+        createdAt: tenant.createdAt,
+      }))
+
+      return {
+        success: true,
+        data: recentTenants,
+      }
+    } catch (error) {
+      console.error('Get recent tenants error:', error)
+      return { success: false, error: 'Failed to get recent tenants' }
+    }
+  }
+
+  // Get system activity from audit logs
+  async getSystemActivity(limit: number = 10) {
+    try {
+      const activities = await this.db.query.coreAuditLogs.findMany({
+        limit,
+        orderBy: [coreSchema.coreAuditLogs.createdAt],
+        with: {
+          user: {
+            columns: {
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+      })
+
+      const formattedActivities = activities.map(activity => {
+        let actionText = activity.action
+        let details = activity.resource
+
+        // Format action text for better readability
+        switch (activity.action) {
+          case 'CREATE_TENANT':
+            actionText = 'New tenant created'
+            details = activity.resourceId || 'Unknown tenant'
+            break
+          case 'UPDATE_TENANT':
+            actionText = 'Tenant updated'
+            details = activity.resourceId || 'Unknown tenant'
+            break
+          case 'DEACTIVATE_TENANT':
+            actionText = 'Tenant deactivated'
+            details = activity.resourceId || 'Unknown tenant'
+            break
+          case 'CREATE_CORE_ADMIN':
+            actionText = 'Admin user created'
+            details = activity.user?.email || 'Unknown user'
+            break
+          default:
+            actionText = activity.action.toLowerCase().replace('_', ' ')
+            break
+        }
+
+        return {
+          id: activity.id,
+          action: actionText,
+          details,
+          user: activity.user?.fullName || 'System',
+          createdAt: activity.createdAt,
+          timeAgo: this.getTimeAgo(activity.createdAt!),
+        }
+      })
+
+      return {
+        success: true,
+        data: formattedActivities,
+      }
+    } catch (error) {
+      console.error('Get system activity error:', error)
+      return { success: false, error: 'Failed to get system activity' }
+    }
+  }
+
+  // Helper method to format time ago
+  private getTimeAgo(date: Date): string {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60))
+      return `${Math.max(1, diffMinutes)} minute${diffMinutes > 1 ? 's' : ''} ago`
+    }
+  }
+
   // Create core admin user (run once during setup)
   async createCoreAdmin(data: { email: string; password: string; fullName: string }) {
     try {

@@ -118,3 +118,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Toast positioning fixes */
+@layer components {
+  .toaster {
+    position: fixed !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 100 !important;
+    pointer-events: none;
+  }
+
+  .toaster > * {
+    pointer-events: auto;
+  }
+
+  /* Ensure toast is above all other components */
+  [data-sonner-toast] {
+    z-index: 100 !important;
+  }
+}
