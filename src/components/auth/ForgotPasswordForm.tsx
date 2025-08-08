@@ -100,8 +100,8 @@ export function ForgotPasswordForm({
               type="button"
               variant="link"
               className="p-0 h-auto text-sm"
-              onClick={() => {openDrawer(<LoginForm />)
-               
+              onClick={() => {
+                openDrawer(<LoginForm />)
               }}
             >
               Sign in instead

@@ -9,12 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthContext'
-import { 
-  LayoutDashboard, 
-  DollarSign, 
-  Users, 
-  Building2, 
-  Settings, 
+import {
+  LayoutDashboard,
+  DollarSign,
+  Users,
+  Building2,
+  Settings,
   LogOut,
   User,
   Bell,
@@ -28,7 +28,7 @@ import {
   Activity,
   HelpCircle,
   Moon,
-  Sun
+  Sun,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -43,9 +43,7 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: FileText },
 ]
 
-const bottomNavigation = [
-  { name: 'Settings', href: '/settings', icon: Settings },
-]
+const bottomNavigation = [{ name: 'Settings', href: '/settings', icon: Settings }]
 
 export function CoreSidebar() {
   const { user, logout } = useAuth()
@@ -61,19 +59,19 @@ export function CoreSidebar() {
   }
 
   return (
-    <div className={cn(
-      "flex flex-col h-full bg-slate-900 text-white transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
-    )}>
+    <div
+      className={cn(
+        'flex flex-col h-full bg-slate-900 text-white transition-all duration-300',
+        isCollapsed ? 'w-16' : 'w-64'
+      )}
+    >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 bg-slate-800 border-b border-slate-700">
         <Link to="/dashboard" className="flex items-center min-w-0">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold">A</span>
           </div>
-          {!isCollapsed && (
-            <span className="ml-2 text-lg font-semibold truncate">Ankey</span>
-          )}
+          {!isCollapsed && <span className="ml-2 text-lg font-semibold truncate">Ankey</span>}
         </Link>
         <Button
           variant="ghost"
@@ -81,10 +79,12 @@ export function CoreSidebar() {
           onClick={toggleCollapse}
           className="text-slate-400 hover:text-white hover:bg-slate-700 flex-shrink-0"
         >
-          <ChevronDown className={cn(
-            "h-4 w-4 transition-transform duration-200",
-            isCollapsed ? "rotate-90" : "rotate-0"
-          )} />
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 transition-transform duration-200',
+              isCollapsed ? 'rotate-90' : 'rotate-0'
+            )}
+          />
         </Button>
       </div>
 
@@ -100,34 +100,39 @@ export function CoreSidebar() {
                 <div className="flex items-center space-x-3 min-w-0">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-medium text-white">
-                      {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                      {user.fullName
+                        ? user.fullName
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)
+                        : user.email
+                          ? user.email.slice(0, 2).toUpperCase()
+                          : 'U'}
                     </span>
                   </div>
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white truncate">
-                        {user.fullName}
+                        {user.fullName || user.email || 'User'}
                       </p>
-                      <p className="text-xs text-slate-400 truncate">
-                        {user.email}
-                      </p>
+                      <p className="text-xs text-slate-400 truncate">{user.email || 'No email'}</p>
                     </div>
                   )}
-                  {!isCollapsed && (
-                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  )}
+                  {!isCollapsed && <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="start" 
-              side={isCollapsed ? "right" : "bottom"}
+            <DropdownMenuContent
+              align="start"
+              side={isCollapsed ? 'right' : 'bottom'}
               className="w-64 bg-white border border-slate-200 shadow-lg"
             >
               <DropdownMenuLabel className="text-slate-900">
                 <div className="flex flex-col space-y-1">
-                  <span className="font-medium">{user.fullName}</span>
-                  <span className="text-xs text-slate-500">{user.email}</span>
+                  <span className="font-medium">{user.fullName || user.email || 'User'}</span>
+                  <span className="text-xs text-slate-500">{user.email || 'No email'}</span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -153,7 +158,7 @@ export function CoreSidebar() {
                 Help & Support
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleLogout}
                 className="text-red-600 hover:bg-red-50 focus:bg-red-50"
               >
@@ -167,7 +172,7 @@ export function CoreSidebar() {
 
       {/* Main Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {navigation.map((item) => {
+        {navigation.map(item => {
           const isActive = location.pathname === item.href
           return (
             <Link
@@ -188,9 +193,7 @@ export function CoreSidebar() {
                   isCollapsed ? 'mr-0' : 'mr-3'
                 )}
               />
-              {!isCollapsed && (
-                <span className="truncate">{item.name}</span>
-              )}
+              {!isCollapsed && <span className="truncate">{item.name}</span>}
               {isActive && !isCollapsed && (
                 <div className="ml-auto w-1 h-1 bg-white rounded-full" />
               )}
@@ -201,7 +204,7 @@ export function CoreSidebar() {
 
       {/* Bottom Navigation & Actions */}
       <div className="px-2 pb-4 space-y-2 border-t border-slate-700 pt-4">
-        {bottomNavigation.map((item) => {
+        {bottomNavigation.map(item => {
           const isActive = location.pathname === item.href
           return (
             <Link
@@ -222,9 +225,7 @@ export function CoreSidebar() {
                   isCollapsed ? 'mr-0' : 'mr-3'
                 )}
               />
-              {!isCollapsed && (
-                <span className="truncate">{item.name}</span>
-              )}
+              {!isCollapsed && <span className="truncate">{item.name}</span>}
             </Link>
           )
         })}
@@ -236,25 +237,25 @@ export function CoreSidebar() {
               Quick Actions
             </p>
             <div className="flex flex-wrap gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-slate-400 hover:text-white hover:bg-slate-700 flex-1"
                 title="Search"
               >
                 <Search className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-slate-400 hover:text-white hover:bg-slate-700 flex-1"
                 title="Notifications"
               >
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-slate-400 hover:text-white hover:bg-slate-700 flex-1"
                 title="Activity"
               >
@@ -269,25 +270,25 @@ export function CoreSidebar() {
       {isCollapsed && (
         <div className="px-1 py-3 bg-slate-800 border-t border-slate-700">
           <div className="flex flex-col space-y-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-slate-400 hover:text-white hover:bg-slate-700 w-full h-10"
               title="Search"
             >
               <Search className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-slate-400 hover:text-white hover:bg-slate-700 w-full h-10"
               title="Notifications"
             >
               <Bell className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-slate-400 hover:text-white hover:bg-slate-700 w-full h-10"
               title="Activity"
             >

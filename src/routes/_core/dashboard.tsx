@@ -207,9 +207,9 @@ function Dashboard() {
     } catch (error) {
       console.error('Error loading dashboard data:', error)
       toast.error('Failed to load dashboard data', {
-        description: 'Using demo data instead.'
+        description: 'Using demo data instead.',
       })
-      
+
       // Set demo data as final fallback
       setDashboardStats({
         totalUsers: { value: '12', change: '+12%', trend: 'up' },

@@ -58,7 +58,7 @@ export function RegisterWorkspaceForm({
         console.log('Workspace created successfully:', result.data)
 
         // Navigate to core dashboard after successful registration
-        navigate({ to: '/_core/dashboard' })
+        navigate({ to: '/dashboard' })
         return // Early return to avoid duplicate closeDrawer
       }
       closeDrawer()
@@ -173,7 +173,8 @@ export function RegisterWorkspaceForm({
           <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-5">
             I agree to the{' '}
             <Link
-              to="/learn/terms"
+              to="/learn"
+              search={{ doc: 'terms' }}
               className="text-blue-600 hover:text-blue-500 underline"
               onClick={e => e.stopPropagation()}
             >
@@ -181,7 +182,8 @@ export function RegisterWorkspaceForm({
             </Link>{' '}
             and{' '}
             <Link
-              to="/learn/privacy"
+              to="/learn"
+              search={{ doc: 'privacy' }}
               className="text-blue-600 hover:text-blue-500 underline"
               onClick={e => e.stopPropagation()}
             >

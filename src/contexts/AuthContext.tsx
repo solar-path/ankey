@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 interface User {
   id: string
   email: string
-  fullName: string
+  fullName: string | null
   isActive: boolean
   emailVerified: boolean
   twoFactorEnabled: boolean

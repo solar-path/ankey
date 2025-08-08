@@ -22,7 +22,7 @@ function PublicLayout() {
           </h1>
         </div>
         <div className="flex items-center space-x-4 text-sm">
-          <Link to="/learn" className="[&.active]:font-bold">
+          <Link to="/learn" search={{}} className="[&.active]:font-bold">
             Learn and support
           </Link>
           <Link to="/pricing" className="[&.active]:font-bold">
@@ -49,17 +49,17 @@ function PublicLayout() {
         <p className="flex-1">© 2024 Aneko, llc. All rights reserved.</p>
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/learn/cookies" className="[&.active]:font-bold">
+            <Link to="/learn" search={{ doc: 'cookies' }} className="[&.active]:font-bold">
               Cookies
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/learn/terms" className="[&.active]:font-bold">
+            <Link to="/learn" search={{ doc: 'terms' }} className="[&.active]:font-bold">
               Terms of Service
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/learn/privacy" className="[&.active]:font-bold">
+            <Link to="/learn" search={{ doc: 'privacy' }} className="[&.active]:font-bold">
               Privacy Policy
             </Link>
           </Button>
