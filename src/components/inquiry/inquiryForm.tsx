@@ -110,10 +110,7 @@ export default function InquiryForm({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Submit an Inquiry</h2>
-        <p className="text-gray-600 mt-2">Please provide your contact information and message</p>
-      </div>
+    
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>

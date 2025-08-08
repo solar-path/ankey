@@ -69,10 +69,7 @@ export function RegisterWorkspaceForm({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Create Your Workspace</h2>
-        <p className="text-gray-600 mt-2">Set up your own workspace and start collaborating</p>
-      </div>
+   
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>

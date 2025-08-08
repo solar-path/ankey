@@ -70,11 +70,7 @@ export default function FindInquiryForm({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Find Your Inquiry</h2>
-        <p className="text-gray-600 mt-2">Enter your inquiry ID to find your submission</p>
-      </div>
-
+   
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-1">

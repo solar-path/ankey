@@ -97,12 +97,7 @@ export function LoginForm({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Sign In {isTenant ? 'to Workspace' : 'as Admin'}</h2>
-        <p className="text-gray-600 mt-2">
-          {isTenant ? 'Access your workspace account' : 'Access the admin control panel'}
-        </p>
-      </div>
+     
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>

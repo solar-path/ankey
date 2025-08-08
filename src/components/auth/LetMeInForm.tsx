@@ -42,12 +42,7 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Request Access</h2>
-        <p className="text-gray-600 mt-2">
-          Request access to {workspaceName ? `the ${workspaceName} workspace` : 'this workspace'}
-        </p>
-      </div>
+      
 
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
         <div className="flex items-start">
