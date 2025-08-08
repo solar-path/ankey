@@ -1,5 +1,4 @@
 import { pgTable, text, timestamp, boolean, integer, uuid } from 'drizzle-orm/pg-core'
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
 // Core admin users table
@@ -180,16 +179,5 @@ export const tenantSubscriptionsRelations = relations(tenantSubscriptions, ({ on
   }),
 }))
 
-// Zod schemas for validation
-export const insertCoreUserSchema = createInsertSchema(coreUsers)
-export const selectCoreUserSchema = createSelectSchema(coreUsers)
-export const insertTenantSchema = createInsertSchema(tenants)
-export const selectTenantSchema = createSelectSchema(tenants)
-export const insertCoreSessionSchema = createInsertSchema(coreSessions)
-export const selectCoreSessionSchema = createSelectSchema(coreSessions)
-export const insertPricingPlanSchema = createInsertSchema(pricingPlans)
-export const selectPricingPlanSchema = createSelectSchema(pricingPlans)
-export const insertPricingDiscountSchema = createInsertSchema(pricingDiscounts)
-export const selectPricingDiscountSchema = createSelectSchema(pricingDiscounts)
-export const insertTenantSubscriptionSchema = createInsertSchema(tenantSubscriptions)
-export const selectTenantSubscriptionSchema = createSelectSchema(tenantSubscriptions)
+// Note: Zod schemas temporarily disabled due to Zod v4 + Bun compatibility issues
+// TODO: Re-enable validation once Zod v4/Bun issue is resolved

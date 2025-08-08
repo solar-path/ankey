@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileText, ChevronRight, Menu, X, Clock, BookOpen, Hash } from 'lucide-react'
@@ -6,8 +6,13 @@ import matter from 'gray-matter'
 import { remark } from 'remark'
 import html from 'remark-html'
 
-export const Route = createFileRoute('/_public/learn/')({
+export const Route = createFileRoute('/_public/learn')({
   component: LearnIndex,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      doc: (search.doc as string) || undefined,
+    }
+  },
 })
 
 // MDX file metadata interface
@@ -39,6 +44,9 @@ function LearnIndex() {
   const [activeSection, setActiveSection] = useState<string>('')
   const contentRef = useRef<HTMLDivElement>(null)
 
+  // Get search params to determine which document to show
+  const searchParams = useSearch({ from: '/_public/learn' })
+
   // List of MDX files in /public/posts/
   const mdxFilesList = [
     'getting-started.mdx',
@@ -53,6 +61,16 @@ function LearnIndex() {
   useEffect(() => {
     loadMDXFiles()
   }, [])
+
+  // Handle changes to the search params
+  useEffect(() => {
+    if (mdxFiles.length > 0 && searchParams.doc) {
+      const targetFile = mdxFiles.find(file => file.filename === `${searchParams.doc}.mdx`)
+      if (targetFile && targetFile !== selectedFile) {
+        selectFile(targetFile)
+      }
+    }
+  }, [searchParams.doc, mdxFiles, selectedFile])
 
   // Track active section on scroll
   useEffect(() => {
@@ -122,8 +140,19 @@ function LearnIndex() {
     files.sort((a, b) => (a.order || 999) - (b.order || 999))
 
     setMdxFiles(files)
+
+    // Check if we should select a specific file based on search params
     if (files.length > 0) {
-      selectFile(files[0])
+      if (searchParams.doc) {
+        const targetFile = files.find(file => file.filename === `${searchParams.doc}.mdx`)
+        if (targetFile) {
+          selectFile(targetFile)
+        } else {
+          selectFile(files[0])
+        }
+      } else {
+        selectFile(files[0])
+      }
     }
     setLoading(false)
   }

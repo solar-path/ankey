@@ -37,8 +37,10 @@ app.use(
 // Tenant detection middleware
 app.use('*', async (c, next) => {
   const host = c.req.header('host') || ''
-  const subdomain = host.split('.')[0]
+  const subdomain = host.split('.')[0].split(':')[0] // Remove port number
   const url = new URL(c.req.url)
+
+  console.log(`[TENANT DEBUG] Host: ${host}, Subdomain: ${subdomain}, Path: ${url.pathname}`)
 
   // Skip tenant detection for development assets and internal routes
   if (

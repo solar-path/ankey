@@ -1,15 +1,8 @@
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
-import {
-  pricingPlans,
-  pricingDiscounts,
-  tenantSubscriptions,
-  insertPricingPlanSchema,
-  insertPricingDiscountSchema,
-  insertTenantSubscriptionSchema,
-} from '../../db/schemas/core.drizzle'
+import { pricingPlans, pricingDiscounts, tenantSubscriptions } from '../../db/schemas/core.drizzle'
 import { eq, desc, and, gte, lte } from 'drizzle-orm'
-import { zValidator } from '@hono/zod-validator'
+// import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 
 const pricingRouter = new Hono()
@@ -37,7 +30,10 @@ pricingRouter.get('/plans/:id', async c => {
   try {
     // Get database connection
     const planId = c.req.param('id')
-    const [plan] = await createCoreConnection().select().from(pricingPlans).where(eq(pricingPlans.id, planId))
+    const [plan] = await createCoreConnection()
+      .select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.id, planId))
 
     if (!plan) {
       return c.json({ error: 'Pricing plan not found' }, 404)
@@ -50,59 +46,48 @@ pricingRouter.get('/plans/:id', async c => {
 })
 
 // Create pricing plan
-pricingRouter.post(
-  '/plans',
-  zValidator('json', insertPricingPlanSchema.omit({ id: true, createdAt: true, updatedAt: true })),
-  async c => {
-    try {
-      const planData = c.req.valid('json')
+pricingRouter.post('/plans', async c => {
+  try {
+    const planData = await c.req.json()
 
-      const [newPlan] = await createCoreConnection()
-        .insert(pricingPlans)
-        .values({
-          ...planData,
-          updatedAt: new Date(),
-        })
-        .returning()
+    const [newPlan] = await createCoreConnection()
+      .insert(pricingPlans)
+      .values({
+        ...planData,
+        updatedAt: new Date(),
+      })
+      .returning()
 
-      return c.json({ plan: newPlan }, 201)
-    } catch (error) {
-      return c.json({ error: 'Failed to create pricing plan' }, 500)
-    }
+    return c.json({ plan: newPlan }, 201)
+  } catch (error) {
+    return c.json({ error: 'Failed to create pricing plan' }, 500)
   }
-)
+})
 
 // Update pricing plan
-pricingRouter.put(
-  '/plans/:id',
-  zValidator(
-    'json',
-    insertPricingPlanSchema.omit({ id: true, createdAt: true, updatedAt: true }).partial()
-  ),
-  async c => {
-    try {
-      const planId = c.req.param('id')
-      const updateData = c.req.valid('json')
+pricingRouter.put('/plans/:id', async c => {
+  try {
+    const planId = c.req.param('id')
+    const updateData = await c.req.json()
 
-      const [updatedPlan] = await createCoreConnection()
-        .update(pricingPlans)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-        })
-        .where(eq(pricingPlans.id, planId))
-        .returning()
+    const [updatedPlan] = await createCoreConnection()
+      .update(pricingPlans)
+      .set({
+        ...updateData,
+        updatedAt: new Date(),
+      })
+      .where(eq(pricingPlans.id, planId))
+      .returning()
 
-      if (!updatedPlan) {
-        return c.json({ error: 'Pricing plan not found' }, 404)
-      }
-
-      return c.json({ plan: updatedPlan })
-    } catch (error) {
-      return c.json({ error: 'Failed to update pricing plan' }, 500)
+    if (!updatedPlan) {
+      return c.json({ error: 'Pricing plan not found' }, 404)
     }
+
+    return c.json({ plan: updatedPlan })
+  } catch (error) {
+    return c.json({ error: 'Failed to update pricing plan' }, 500)
   }
-)
+})
 
 // Delete pricing plan (soft delete by setting isActive = false)
 pricingRouter.delete('/plans/:id', async c => {
@@ -172,30 +157,29 @@ pricingRouter.get('/plans/:planId/discounts/active', async c => {
 })
 
 // Create discount
-pricingRouter.post(
-  '/discounts',
-  zValidator('json', insertPricingDiscountSchema.omit({ id: true, createdAt: true })),
-  async c => {
-    try {
-      const discountData = c.req.valid('json')
+pricingRouter.post('/discounts', async c => {
+  try {
+    const discountData = await c.req.json()
 
-      const [newDiscount] = await createCoreConnection().insert(pricingDiscounts).values(discountData).returning()
+    const [newDiscount] = await createCoreConnection()
+      .insert(pricingDiscounts)
+      .values(discountData)
+      .returning()
 
-      return c.json({ discount: newDiscount }, 201)
-    } catch (error) {
-      return c.json({ error: 'Failed to create discount' }, 500)
-    }
+    return c.json({ discount: newDiscount }, 201)
+  } catch (error) {
+    return c.json({ error: 'Failed to create discount' }, 500)
   }
-)
+})
 
 // Update discount
 pricingRouter.put(
   '/discounts/:id',
-  zValidator('json', insertPricingDiscountSchema.omit({ id: true, createdAt: true }).partial()),
+
   async c => {
     try {
       const discountId = c.req.param('id')
-      const updateData = c.req.valid('json')
+      const updateData = await c.req.json()
 
       const [updatedDiscount] = await createCoreConnection()
         .update(pricingDiscounts)
@@ -305,62 +289,48 @@ pricingRouter.get('/subscriptions/tenant/:tenantId', async c => {
 })
 
 // Create subscription
-pricingRouter.post(
-  '/subscriptions',
-  zValidator(
-    'json',
-    insertTenantSubscriptionSchema.omit({ id: true, createdAt: true, updatedAt: true })
-  ),
-  async c => {
-    try {
-      const subscriptionData = c.req.valid('json')
+pricingRouter.post('/subscriptions', async c => {
+  try {
+    const subscriptionData = await c.req.json()
 
-      const [newSubscription] = await createCoreConnection()
-        .insert(tenantSubscriptions)
-        .values({
-          ...subscriptionData,
-          updatedAt: new Date(),
-        })
-        .returning()
+    const [newSubscription] = await createCoreConnection()
+      .insert(tenantSubscriptions)
+      .values({
+        ...subscriptionData,
+        updatedAt: new Date(),
+      })
+      .returning()
 
-      return c.json({ subscription: newSubscription }, 201)
-    } catch (error) {
-      return c.json({ error: 'Failed to create subscription' }, 500)
-    }
+    return c.json({ subscription: newSubscription }, 201)
+  } catch (error) {
+    return c.json({ error: 'Failed to create subscription' }, 500)
   }
-)
+})
 
 // Update subscription
-pricingRouter.put(
-  '/subscriptions/:id',
-  zValidator(
-    'json',
-    insertTenantSubscriptionSchema.omit({ id: true, createdAt: true, updatedAt: true }).partial()
-  ),
-  async c => {
-    try {
-      const subscriptionId = c.req.param('id')
-      const updateData = c.req.valid('json')
+pricingRouter.put('/subscriptions/:id', async c => {
+  try {
+    const subscriptionId = c.req.param('id')
+    const updateData = await c.req.json()
 
-      const [updatedSubscription] = await createCoreConnection()
-        .update(tenantSubscriptions)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-        })
-        .where(eq(tenantSubscriptions.id, subscriptionId))
-        .returning()
+    const [updatedSubscription] = await createCoreConnection()
+      .update(tenantSubscriptions)
+      .set({
+        ...updateData,
+        updatedAt: new Date(),
+      })
+      .where(eq(tenantSubscriptions.id, subscriptionId))
+      .returning()
 
-      if (!updatedSubscription) {
-        return c.json({ error: 'Subscription not found' }, 404)
-      }
-
-      return c.json({ subscription: updatedSubscription })
-    } catch (error) {
-      return c.json({ error: 'Failed to update subscription' }, 500)
+    if (!updatedSubscription) {
+      return c.json({ error: 'Subscription not found' }, 404)
     }
+
+    return c.json({ subscription: updatedSubscription })
+  } catch (error) {
+    return c.json({ error: 'Failed to update subscription' }, 500)
   }
-)
+})
 
 // Cancel subscription
 pricingRouter.post('/subscriptions/:id/cancel', async c => {
@@ -388,99 +358,87 @@ pricingRouter.post('/subscriptions/:id/cancel', async c => {
 })
 
 // Calculate pricing for a given plan and user count
-pricingRouter.post(
-  '/calculate',
-  zValidator(
-    'json',
-    z.object({
-      planId: z.string().uuid(),
-      userCount: z.number().int().min(1),
-      discountCode: z.string().optional(),
-      billingCycle: z.enum(['monthly', 'yearly']).default('monthly'),
-    })
-  ),
-  async c => {
-    try {
-      const { planId, userCount, discountCode, billingCycle } = c.req.valid('json')
+pricingRouter.post('/calculate', async c => {
+  try {
+    const { planId, userCount, discountCode, billingCycle } = await c.req.json()
 
-      // Get plan details
-      const [plan] = await createCoreConnection()
+    // Get plan details
+    const [plan] = await createCoreConnection()
+      .select()
+      .from(pricingPlans)
+      .where(and(eq(pricingPlans.id, planId), eq(pricingPlans.isActive, true)))
+
+    if (!plan) {
+      return c.json({ error: 'Plan not found' }, 404)
+    }
+
+    // Check user count limits
+    if (plan.minUsers && userCount < plan.minUsers) {
+      return c.json({ error: `Minimum ${plan.minUsers} users required` }, 400)
+    }
+    if (plan.maxUsers && userCount > plan.maxUsers) {
+      return c.json({ error: `Maximum ${plan.maxUsers} users allowed` }, 400)
+    }
+
+    let basePrice = plan.pricePerUserPerMonth * userCount
+    let discountPercent = 0
+    let discountAmount = 0
+    let appliedDiscount = null
+
+    // Apply yearly discount
+    if (billingCycle === 'yearly') {
+      discountPercent = 15 // 15% discount for yearly billing
+      discountAmount = Math.round(basePrice * 12 * 0.15)
+      basePrice = Math.round(basePrice * 12 * 0.85)
+    }
+
+    // Check for promo code discount
+    if (discountCode) {
+      const now = new Date()
+      const [discount] = await createCoreConnection()
         .select()
-        .from(pricingPlans)
-        .where(and(eq(pricingPlans.id, planId), eq(pricingPlans.isActive, true)))
-
-      if (!plan) {
-        return c.json({ error: 'Plan not found' }, 404)
-      }
-
-      // Check user count limits
-      if (plan.minUsers && userCount < plan.minUsers) {
-        return c.json({ error: `Minimum ${plan.minUsers} users required` }, 400)
-      }
-      if (plan.maxUsers && userCount > plan.maxUsers) {
-        return c.json({ error: `Maximum ${plan.maxUsers} users allowed` }, 400)
-      }
-
-      let basePrice = plan.pricePerUserPerMonth * userCount
-      let discountPercent = 0
-      let discountAmount = 0
-      let appliedDiscount = null
-
-      // Apply yearly discount
-      if (billingCycle === 'yearly') {
-        discountPercent = 15 // 15% discount for yearly billing
-        discountAmount = Math.round(basePrice * 12 * 0.15)
-        basePrice = Math.round(basePrice * 12 * 0.85)
-      }
-
-      // Check for promo code discount
-      if (discountCode) {
-        const now = new Date()
-        const [discount] = await createCoreConnection()
-          .select()
-          .from(pricingDiscounts)
-          .where(
-            and(
-              eq(pricingDiscounts.planId, planId),
-              eq(pricingDiscounts.promoCode, discountCode),
-              eq(pricingDiscounts.isActive, true),
-              lte(pricingDiscounts.startDate, now),
-              gte(pricingDiscounts.endDate, now)
-            )
+        .from(pricingDiscounts)
+        .where(
+          and(
+            eq(pricingDiscounts.planId, planId),
+            eq(pricingDiscounts.promoCode, discountCode),
+            eq(pricingDiscounts.isActive, true),
+            lte(pricingDiscounts.startDate, now),
+            gte(pricingDiscounts.endDate, now)
           )
+        )
 
-        if (discount) {
-          const promoDiscountAmount = Math.round((basePrice * discount.discountPercent) / 100)
-          if (promoDiscountAmount > discountAmount) {
-            discountPercent = discount.discountPercent
-            discountAmount = promoDiscountAmount
-            basePrice = basePrice - promoDiscountAmount
-            appliedDiscount = discount
-          }
+      if (discount) {
+        const promoDiscountAmount = Math.round((basePrice * discount.discountPercent) / 100)
+        if (promoDiscountAmount > discountAmount) {
+          discountPercent = discount.discountPercent
+          discountAmount = promoDiscountAmount
+          basePrice = basePrice - promoDiscountAmount
+          appliedDiscount = discount
         }
       }
-
-      const finalPrice = billingCycle === 'yearly' ? basePrice : basePrice
-      const periodicPrice = billingCycle === 'yearly' ? finalPrice / 12 : finalPrice
-
-      return c.json({
-        planId,
-        planName: plan.name,
-        userCount,
-        billingCycle,
-        pricePerUser: plan.pricePerUserPerMonth,
-        basePrice: plan.pricePerUserPerMonth * userCount,
-        discountPercent,
-        discountAmount,
-        finalPrice,
-        periodicPrice: Math.round(periodicPrice * 100) / 100,
-        appliedDiscount,
-        trialDays: plan.trialDays,
-      })
-    } catch (error) {
-      return c.json({ error: 'Failed to calculate pricing' }, 500)
     }
+
+    const finalPrice = billingCycle === 'yearly' ? basePrice : basePrice
+    const periodicPrice = billingCycle === 'yearly' ? finalPrice / 12 : finalPrice
+
+    return c.json({
+      planId,
+      planName: plan.name,
+      userCount,
+      billingCycle,
+      pricePerUser: plan.pricePerUserPerMonth,
+      basePrice: plan.pricePerUserPerMonth * userCount,
+      discountPercent,
+      discountAmount,
+      finalPrice,
+      periodicPrice: Math.round(periodicPrice * 100) / 100,
+      appliedDiscount,
+      trialDays: plan.trialDays,
+    })
+  } catch (error) {
+    return c.json({ error: 'Failed to calculate pricing' }, 500)
   }
-)
+})
 
 export { pricingRouter }

@@ -223,12 +223,12 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   }),
 }))
 
-// Zod schemas for validation
-export const insertUserSchema = createInsertSchema(users)
-export const selectUserSchema = createSelectSchema(users)
-export const insertSessionSchema = createInsertSchema(sessions)
-export const selectSessionSchema = createSelectSchema(sessions)
-export const insertPermissionSchema = createInsertSchema(permissions)
-export const selectPermissionSchema = createSelectSchema(permissions)
-export const insertRoleSchema = createInsertSchema(roles)
-export const selectRoleSchema = createSelectSchema(roles)
+// Zod schemas for validation - temporarily disabled due to Zod v4 + Bun compatibility issues
+// // export const insertUserSchema = createInsertSchema(users)
+// // export const selectUserSchema = createSelectSchema(users)
+// // export const insertSessionSchema = createInsertSchema(sessions)
+// export const selectSessionSchema = createSelectSchema(sessions)
+// export const insertPermissionSchema = createInsertSchema(permissions)
+// export const selectPermissionSchema = createSelectSchema(permissions)
+// export const insertRoleSchema = createInsertSchema(roles)
+// export const selectRoleSchema = createSelectSchema(roles)

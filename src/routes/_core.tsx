@@ -34,14 +34,14 @@ function CoreLayout() {
                 <Link to="/dashboard">Solo Admin</Link>
               </h1>
               <nav className="flex items-center space-x-4">
-                <Link 
-                  to="/dashboard" 
+                <Link
+                  to="/dashboard"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium [&.active]:bg-gray-100 [&.active]:text-gray-900"
                 >
                   Dashboard
                 </Link>
-                <Link 
-                  to="/pricing-admin" 
+                <Link
+                  to="/pricing-admin"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium [&.active]:bg-gray-100 [&.active]:text-gray-900"
                 >
                   Pricing Admin

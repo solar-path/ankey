@@ -13,9 +13,12 @@ import { Route as PublicRouteImport } from './routes/_public'
 import { Route as CoreRouteImport } from './routes/_core'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicPricingRouteImport } from './routes/_public/pricing'
+import { Route as PublicLearnRouteImport } from './routes/_public/learn'
 import { Route as CorePricingAdminRouteImport } from './routes/_core/pricing-admin'
 import { Route as CoreDashboardRouteImport } from './routes/_core/dashboard'
-import { Route as PublicLearnIndexRouteImport } from './routes/_public/learn/index'
+import { Route as PublicLearnTermsRouteImport } from './routes/_public/learn/terms'
+import { Route as PublicLearnPrivacyRouteImport } from './routes/_public/learn/privacy'
+import { Route as PublicLearnCookiesRouteImport } from './routes/_public/learn/cookies'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -35,6 +38,11 @@ const PublicPricingRoute = PublicPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicLearnRoute = PublicLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => PublicRoute,
+} as any)
 const CorePricingAdminRoute = CorePricingAdminRouteImport.update({
   id: '/pricing-admin',
   path: '/pricing-admin',
@@ -45,25 +53,41 @@ const CoreDashboardRoute = CoreDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CoreRoute,
 } as any)
-const PublicLearnIndexRoute = PublicLearnIndexRouteImport.update({
-  id: '/learn/',
-  path: '/learn/',
-  getParentRoute: () => PublicRoute,
+const PublicLearnTermsRoute = PublicLearnTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicLearnRoute,
+} as any)
+const PublicLearnPrivacyRoute = PublicLearnPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicLearnRoute,
+} as any)
+const PublicLearnCookiesRoute = PublicLearnCookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => PublicLearnRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/dashboard': typeof CoreDashboardRoute
   '/pricing-admin': typeof CorePricingAdminRoute
+  '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
-  '/learn': typeof PublicLearnIndexRoute
+  '/learn/cookies': typeof PublicLearnCookiesRoute
+  '/learn/privacy': typeof PublicLearnPrivacyRoute
+  '/learn/terms': typeof PublicLearnTermsRoute
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof CoreDashboardRoute
   '/pricing-admin': typeof CorePricingAdminRoute
+  '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
-  '/learn': typeof PublicLearnIndexRoute
+  '/learn/cookies': typeof PublicLearnCookiesRoute
+  '/learn/privacy': typeof PublicLearnPrivacyRoute
+  '/learn/terms': typeof PublicLearnTermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,24 +95,46 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteWithChildren
   '/_core/dashboard': typeof CoreDashboardRoute
   '/_core/pricing-admin': typeof CorePricingAdminRoute
+  '/_public/learn': typeof PublicLearnRouteWithChildren
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/': typeof PublicIndexRoute
-  '/_public/learn/': typeof PublicLearnIndexRoute
+  '/_public/learn/cookies': typeof PublicLearnCookiesRoute
+  '/_public/learn/privacy': typeof PublicLearnPrivacyRoute
+  '/_public/learn/terms': typeof PublicLearnTermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/dashboard' | '/pricing-admin' | '/pricing' | '/' | '/learn'
+  fullPaths:
+    | '/dashboard'
+    | '/pricing-admin'
+    | '/learn'
+    | '/pricing'
+    | '/'
+    | '/learn/cookies'
+    | '/learn/privacy'
+    | '/learn/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/dashboard' | '/pricing-admin' | '/pricing' | '/' | '/learn'
+  to:
+    | '/dashboard'
+    | '/pricing-admin'
+    | '/learn'
+    | '/pricing'
+    | '/'
+    | '/learn/cookies'
+    | '/learn/privacy'
+    | '/learn/terms'
   id:
     | '__root__'
     | '/_core'
     | '/_public'
     | '/_core/dashboard'
     | '/_core/pricing-admin'
+    | '/_public/learn'
     | '/_public/pricing'
     | '/_public/'
-    | '/_public/learn/'
+    | '/_public/learn/cookies'
+    | '/_public/learn/privacy'
+    | '/_public/learn/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -126,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPricingRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/learn': {
+      id: '/_public/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof PublicLearnRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_core/pricing-admin': {
       id: '/_core/pricing-admin'
       path: '/pricing-admin'
@@ -140,12 +193,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoreDashboardRouteImport
       parentRoute: typeof CoreRoute
     }
-    '/_public/learn/': {
-      id: '/_public/learn/'
-      path: '/learn'
-      fullPath: '/learn'
-      preLoaderRoute: typeof PublicLearnIndexRouteImport
-      parentRoute: typeof PublicRoute
+    '/_public/learn/terms': {
+      id: '/_public/learn/terms'
+      path: '/terms'
+      fullPath: '/learn/terms'
+      preLoaderRoute: typeof PublicLearnTermsRouteImport
+      parentRoute: typeof PublicLearnRoute
+    }
+    '/_public/learn/privacy': {
+      id: '/_public/learn/privacy'
+      path: '/privacy'
+      fullPath: '/learn/privacy'
+      preLoaderRoute: typeof PublicLearnPrivacyRouteImport
+      parentRoute: typeof PublicLearnRoute
+    }
+    '/_public/learn/cookies': {
+      id: '/_public/learn/cookies'
+      path: '/cookies'
+      fullPath: '/learn/cookies'
+      preLoaderRoute: typeof PublicLearnCookiesRouteImport
+      parentRoute: typeof PublicLearnRoute
     }
   }
 }
@@ -162,16 +229,32 @@ const CoreRouteChildren: CoreRouteChildren = {
 
 const CoreRouteWithChildren = CoreRoute._addFileChildren(CoreRouteChildren)
 
+interface PublicLearnRouteChildren {
+  PublicLearnCookiesRoute: typeof PublicLearnCookiesRoute
+  PublicLearnPrivacyRoute: typeof PublicLearnPrivacyRoute
+  PublicLearnTermsRoute: typeof PublicLearnTermsRoute
+}
+
+const PublicLearnRouteChildren: PublicLearnRouteChildren = {
+  PublicLearnCookiesRoute: PublicLearnCookiesRoute,
+  PublicLearnPrivacyRoute: PublicLearnPrivacyRoute,
+  PublicLearnTermsRoute: PublicLearnTermsRoute,
+}
+
+const PublicLearnRouteWithChildren = PublicLearnRoute._addFileChildren(
+  PublicLearnRouteChildren,
+)
+
 interface PublicRouteChildren {
+  PublicLearnRoute: typeof PublicLearnRouteWithChildren
   PublicPricingRoute: typeof PublicPricingRoute
   PublicIndexRoute: typeof PublicIndexRoute
-  PublicLearnIndexRoute: typeof PublicLearnIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicLearnRoute: PublicLearnRouteWithChildren,
   PublicPricingRoute: PublicPricingRoute,
   PublicIndexRoute: PublicIndexRoute,
-  PublicLearnIndexRoute: PublicLearnIndexRoute,
 }
 
 const PublicRouteWithChildren =
