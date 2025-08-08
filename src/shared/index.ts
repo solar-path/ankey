@@ -64,6 +64,9 @@ export const registerSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
       'Password must contain uppercase, lowercase, and number'
     ),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: 'You must accept the terms and conditions',
+  }),
 })
 
 export const forgotPasswordSchema = z.object({

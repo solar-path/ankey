@@ -42,8 +42,6 @@ export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetM
 
   return (
     <div className="space-y-6">
-      
-
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
         <div className="flex items-start">
           <div className="text-amber-600 mr-3">

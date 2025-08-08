@@ -40,7 +40,6 @@ app.use('*', async (c, next) => {
   const subdomain = host.split('.')[0].split(':')[0] // Remove port number
   const url = new URL(c.req.url)
 
-
   // Skip tenant detection for development assets and internal routes
   if (
     url.pathname.startsWith('/node_modules') ||

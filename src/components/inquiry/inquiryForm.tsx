@@ -110,8 +110,6 @@ export default function InquiryForm({
 
   return (
     <div className="space-y-6">
-    
-
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">

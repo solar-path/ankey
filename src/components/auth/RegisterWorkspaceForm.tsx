@@ -1,10 +1,12 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
 import { coreAuth, handleApiResponse } from '@/lib/rpc'
+import { Link } from '@tanstack/react-router'
 
 interface RegisterWorkspaceFormProps {
   onSubmit?: (data: RegisterData) => Promise<void>
@@ -69,8 +71,6 @@ export function RegisterWorkspaceForm({
 
   return (
     <div className="space-y-6">
-   
-
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div>
           <label htmlFor="workspace" className="block text-sm font-medium text-gray-700 mb-1">
@@ -154,13 +154,32 @@ export function RegisterWorkspaceForm({
           </ul>
         </div>
 
+        <div className="flex items-start space-x-3">
+          <Checkbox id="acceptTerms" {...register('acceptTerms')} className="mt-1" />
+          <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-5">
+            I agree to the{' '}
+            <Link
+              to="/learn/terms"
+              className="text-blue-600 hover:text-blue-500 underline"
+              onClick={e => e.stopPropagation()}
+            >
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link
+              to="/learn/privacy"
+              className="text-blue-600 hover:text-blue-500 underline"
+              onClick={e => e.stopPropagation()}
+            >
+              Privacy Policy
+            </Link>
+          </label>
+        </div>
+        {errors.acceptTerms && <p className="text-red-500 text-sm">{errors.acceptTerms.message}</p>}
+
         <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
           {isSubmitting || externalLoading ? 'Creating Workspace...' : 'Create Workspace'}
         </Button>
-
-        <div className="text-center text-sm text-gray-500">
-          By creating a workspace, you agree to our terms of service and privacy policy.
-        </div>
       </form>
     </div>
   )
