@@ -1,9 +1,9 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-import { ServerImportService, ImportColumn } from '../../services/import.service'
+import { Hono } from 'hono'
+import { z } from 'zod/v4'
+import { type ImportColumn, ServerImportService } from '../../services/import.service'
 
-const app = new Hono()
+
 
 const ImportConfigSchema = z.object({
   columns: z.array(
@@ -24,7 +24,7 @@ const ImportConfigSchema = z.object({
 })
 
 // Parse uploaded file for import preview
-app.post('/import/parse', async c => {
+export const coreImportRoutes = new Hono().post('/import/parse', async c => {
   try {
     const body = await c.req.parseBody()
     const file = body['file'] as File
@@ -87,7 +87,7 @@ app.post('/import/parse', async c => {
 })
 
 // Sync imported data with existing records
-app.post(
+.post(
   '/import/sync',
   zValidator(
     'json',
@@ -132,7 +132,7 @@ app.post(
 )
 
 // Get import templates for different data types
-app.get('/import/templates/:type', async c => {
+.get('/import/templates/:type', async c => {
   const { type } = c.req.param()
 
   const templates: Record<string, { columns: ImportColumn[] }> = {
@@ -175,7 +175,7 @@ app.get('/import/templates/:type', async c => {
 })
 
 // Generate sample CSV for download
-app.get('/import/templates/:type/download', async c => {
+.get('/import/templates/:type/download', async c => {
   const { type } = c.req.param()
   const format = c.req.query('format') || 'csv'
 
@@ -230,4 +230,3 @@ app.get('/import/templates/:type/download', async c => {
   return c.json({ error: 'Unsupported format' }, 400)
 })
 
-export default app

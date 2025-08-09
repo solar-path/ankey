@@ -1,10 +1,9 @@
-import { Hono } from 'hono'
-import { eq, and, isNull, isNotNull, desc, asc, ilike, count } from 'drizzle-orm'
 import { createTenantConnection } from '@/api/database.settings'
 import { products } from '@/api/db/schemas/tenant.drizzle'
-import { z } from 'zod'
+import { and, asc, count, desc, eq, ilike, isNotNull, isNull } from 'drizzle-orm'
+import { Hono } from 'hono'
+import { z } from 'zod/v4'
 
-const app = new Hono()
 
 // Validation schema
 const productSchema = z.object({
@@ -23,8 +22,9 @@ const querySchema = z.object({
   view: z.enum(['active', 'trashed', 'all']).default('active'),
 })
 
+export const productRoutes = new Hono()
 // Get all products with pagination and filters
-app.get('/', async c => {
+.get('/', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const query = querySchema.parse(c.req.query())
@@ -89,7 +89,7 @@ app.get('/', async c => {
 })
 
 // Get single product by ID
-app.get('/:id', async c => {
+.get('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
@@ -112,7 +112,7 @@ app.get('/:id', async c => {
 })
 
 // Create new product
-app.post('/', async c => {
+.post('/', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const body = await c.req.json()
@@ -138,7 +138,7 @@ app.post('/', async c => {
 })
 
 // Update product
-app.patch('/:id', async c => {
+.patch('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
@@ -173,7 +173,7 @@ app.patch('/:id', async c => {
 })
 
 // Soft delete product
-app.delete('/:id', async c => {
+.delete('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
@@ -196,7 +196,7 @@ app.delete('/:id', async c => {
 })
 
 // Restore product
-app.patch('/:id/restore', async c => {
+.patch('/:id/restore', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
@@ -219,7 +219,7 @@ app.patch('/:id/restore', async c => {
 })
 
 // Force delete product (permanent)
-app.delete('/:id/force', async c => {
+.delete('/:id/force', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
@@ -238,7 +238,7 @@ app.delete('/:id/force', async c => {
 })
 
 // Bulk operations
-app.post('/bulk', async c => {
+.post('/bulk', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const { ids, action } = await c.req.json()
@@ -279,4 +279,3 @@ app.post('/bulk', async c => {
   }
 })
 
-export const productRoutes = app

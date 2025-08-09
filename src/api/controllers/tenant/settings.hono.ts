@@ -1,19 +1,21 @@
-import { Hono } from 'hono'
-import { eq } from 'drizzle-orm'
 import { createTenantConnection } from '@/api/database.settings'
 import { users, userSettings } from '@/api/db/schemas/tenant.drizzle'
 import {
-  profileSettingsSchema,
-  personalSettingsSchema,
+  appearanceSettingsSchema,
   contactSettingsSchema,
   passwordChangeSchema,
-  appearanceSettingsSchema,
+  personalSettingsSchema,
+  profileSettingsSchema,
 } from '@/shared'
+import { eq } from 'drizzle-orm'
+import { Hono } from 'hono'
 
-const app = new Hono()
+
+
+export const tenantSettingsRoutes = new Hono()
 
 // Get current user's settings
-app.get('/me', async c => {
+.get('/me', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -84,7 +86,7 @@ app.get('/me', async c => {
 })
 
 // Get profile settings
-app.get('/profile', async c => {
+.get('/profile', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -99,7 +101,7 @@ app.get('/profile', async c => {
 
     const userId = user.id
     const tenantDb = createTenantConnection(tenantDatabase)
-    
+
     const userRecord = await tenantDb
       .select()
       .from(users)
@@ -124,7 +126,7 @@ app.get('/profile', async c => {
 })
 
 // Update profile settings
-app.patch('/profile', async c => {
+.patch('/profile', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -170,7 +172,7 @@ app.patch('/profile', async c => {
 })
 
 // Update personal settings
-app.patch('/personal', async c => {
+.patch('/personal', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -233,7 +235,7 @@ app.patch('/personal', async c => {
 })
 
 // Update contact settings
-app.patch('/contact', async c => {
+.patch('/contact', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -290,7 +292,7 @@ app.patch('/contact', async c => {
 })
 
 // Update appearance settings
-app.patch('/appearance', async c => {
+.patch('/appearance', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -347,7 +349,7 @@ app.patch('/appearance', async c => {
 })
 
 // Change password
-app.patch('/password', async c => {
+.patch('/password', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
@@ -415,4 +417,3 @@ app.patch('/password', async c => {
   }
 })
 
-export const tenantSettingsRoutes = app

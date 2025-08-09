@@ -1,7 +1,7 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
 import { AuditService } from '@/api/audit.settings'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod/v4'
 
 const inquirySchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -13,11 +13,11 @@ const findInquirySchema = z.object({
   id: z.string().min(1, 'Inquiry ID is required'),
 })
 
-const inquiryRoutes = new Hono()
 const auditService = new AuditService()
 
 // Submit inquiry
-inquiryRoutes.post('/submit', zValidator('json', inquirySchema), async c => {
+export const inquiryRoutes = new Hono()
+.post('/submit', zValidator('json', inquirySchema), async c => {
   const data = c.req.valid('json')
 
   try {
@@ -75,7 +75,7 @@ inquiryRoutes.post('/submit', zValidator('json', inquirySchema), async c => {
 })
 
 // Find inquiry by ID
-inquiryRoutes.post('/find', zValidator('json', findInquirySchema), async c => {
+.post('/find', zValidator('json', findInquirySchema), async c => {
   const { id } = c.req.valid('json')
 
   try {
@@ -120,7 +120,7 @@ inquiryRoutes.post('/find', zValidator('json', findInquirySchema), async c => {
 })
 
 // Get all inquiries (admin only)
-inquiryRoutes.get('/list', async c => {
+.get('/list', async c => {
   try {
     // In a real app, you would:
     // 1. Check admin authentication
@@ -161,7 +161,7 @@ inquiryRoutes.get('/list', async c => {
 })
 
 // Update inquiry status (admin only)
-inquiryRoutes.put(
+.put(
   '/:id/status',
   zValidator(
     'json',
@@ -216,4 +216,3 @@ inquiryRoutes.put(
   }
 )
 
-export { inquiryRoutes }

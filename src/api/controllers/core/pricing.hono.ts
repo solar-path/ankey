@@ -1,16 +1,14 @@
+import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
-import { pricingPlans, pricingDiscounts, tenantSubscriptions } from '../../db/schemas/core.drizzle'
-import { eq, desc, and, gte, lte } from 'drizzle-orm'
+import { pricingDiscounts, pricingPlans, tenantSubscriptions } from '../../db/schemas/core.drizzle'
 // import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
 
-const pricingRouter = new Hono()
 
 // PRICING PLANS CRUD
 
 // Get all pricing plans
-pricingRouter.get('/plans', async c => {
+export const pricingRouter = new Hono().get('/plans', async c => {
   try {
     // Get database connection
     const plans = await createCoreConnection()
@@ -26,7 +24,7 @@ pricingRouter.get('/plans', async c => {
 })
 
 // Get single pricing plan
-pricingRouter.get('/plans/:id', async c => {
+.get('/plans/:id', async c => {
   try {
     // Get database connection
     const planId = c.req.param('id')
@@ -46,7 +44,7 @@ pricingRouter.get('/plans/:id', async c => {
 })
 
 // Create pricing plan
-pricingRouter.post('/plans', async c => {
+.post('/plans', async c => {
   try {
     const planData = await c.req.json()
 
@@ -65,7 +63,7 @@ pricingRouter.post('/plans', async c => {
 })
 
 // Update pricing plan
-pricingRouter.put('/plans/:id', async c => {
+.put('/plans/:id', async c => {
   try {
     const planId = c.req.param('id')
     const updateData = await c.req.json()
@@ -90,7 +88,7 @@ pricingRouter.put('/plans/:id', async c => {
 })
 
 // Delete pricing plan (soft delete by setting isActive = false)
-pricingRouter.delete('/plans/:id', async c => {
+.delete('/plans/:id', async c => {
   try {
     const planId = c.req.param('id')
 
@@ -116,7 +114,7 @@ pricingRouter.delete('/plans/:id', async c => {
 // PRICING DISCOUNTS CRUD
 
 // Get all discounts
-pricingRouter.get('/discounts', async c => {
+.get('/discounts', async c => {
   try {
     const discounts = await createCoreConnection()
       .select()
@@ -131,7 +129,7 @@ pricingRouter.get('/discounts', async c => {
 })
 
 // Get all discounts for a plan
-pricingRouter.get('/plans/:planId/discounts', async c => {
+.get('/plans/:planId/discounts', async c => {
   try {
     const planId = c.req.param('planId')
     const discounts = await createCoreConnection()
@@ -147,7 +145,7 @@ pricingRouter.get('/plans/:planId/discounts', async c => {
 })
 
 // Get active discounts for a plan (current date within range)
-pricingRouter.get('/plans/:planId/discounts/active', async c => {
+.get('/plans/:planId/discounts/active', async c => {
   try {
     const planId = c.req.param('planId')
     const now = new Date()
@@ -172,7 +170,7 @@ pricingRouter.get('/plans/:planId/discounts/active', async c => {
 })
 
 // Create discount
-pricingRouter.post('/discounts', async c => {
+.post('/discounts', async c => {
   try {
     const discountData = await c.req.json()
 
@@ -188,7 +186,7 @@ pricingRouter.post('/discounts', async c => {
 })
 
 // Update discount
-pricingRouter.put(
+.put(
   '/discounts/:id',
 
   async c => {
@@ -214,7 +212,7 @@ pricingRouter.put(
 )
 
 // Delete discount (soft delete)
-pricingRouter.delete('/discounts/:id', async c => {
+.delete('/discounts/:id', async c => {
   try {
     const discountId = c.req.param('id')
 
@@ -237,7 +235,7 @@ pricingRouter.delete('/discounts/:id', async c => {
 // TENANT SUBSCRIPTIONS CRUD
 
 // Get all subscriptions
-pricingRouter.get('/subscriptions', async c => {
+.get('/subscriptions', async c => {
   try {
     const subscriptions = await createCoreConnection()
       .select({
@@ -265,7 +263,7 @@ pricingRouter.get('/subscriptions', async c => {
 })
 
 // Get subscription by tenant ID
-pricingRouter.get('/subscriptions/tenant/:tenantId', async c => {
+.get('/subscriptions/tenant/:tenantId', async c => {
   try {
     const tenantId = c.req.param('tenantId')
 
@@ -304,7 +302,7 @@ pricingRouter.get('/subscriptions/tenant/:tenantId', async c => {
 })
 
 // Create subscription
-pricingRouter.post('/subscriptions', async c => {
+.post('/subscriptions', async c => {
   try {
     const subscriptionData = await c.req.json()
 
@@ -323,7 +321,7 @@ pricingRouter.post('/subscriptions', async c => {
 })
 
 // Update subscription
-pricingRouter.put('/subscriptions/:id', async c => {
+.put('/subscriptions/:id', async c => {
   try {
     const subscriptionId = c.req.param('id')
     const updateData = await c.req.json()
@@ -348,7 +346,7 @@ pricingRouter.put('/subscriptions/:id', async c => {
 })
 
 // Cancel subscription
-pricingRouter.post('/subscriptions/:id/cancel', async c => {
+.post('/subscriptions/:id/cancel', async c => {
   try {
     const subscriptionId = c.req.param('id')
 
@@ -373,7 +371,7 @@ pricingRouter.post('/subscriptions/:id/cancel', async c => {
 })
 
 // Calculate pricing for a given plan and user count
-pricingRouter.post('/calculate', async c => {
+.post('/calculate', async c => {
   try {
     const { planId, userCount, discountCode, billingCycle } = await c.req.json()
 
@@ -455,5 +453,3 @@ pricingRouter.post('/calculate', async c => {
     return c.json({ error: 'Failed to calculate pricing' }, 500)
   }
 })
-
-export { pricingRouter }

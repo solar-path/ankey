@@ -1,9 +1,8 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
 import { TenantAuthService } from '@/api/auth.settings'
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema, letMeInSchema } from '@/shared'
+import { forgotPasswordSchema, letMeInSchema, loginSchema, resetPasswordSchema } from '@/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 
-const tenantAuthRoutes = new Hono()
 
 // Middleware to get tenant database from request context
 const getTenantDatabase = (c: any): string => {
@@ -13,9 +12,10 @@ const getTenantDatabase = (c: any): string => {
   }
   return tenantDatabase
 }
+export const tenantAuthRoutes = new Hono()
 
 // Tenant user login
-tenantAuthRoutes.post('/login', zValidator('json', loginSchema), async c => {
+.post('/login', zValidator('json', loginSchema), async c => {
   try {
     const data = c.req.valid('json')
     const tenantDatabase = getTenantDatabase(c)
@@ -38,7 +38,7 @@ tenantAuthRoutes.post('/login', zValidator('json', loginSchema), async c => {
 })
 
 // Tenant user logout
-tenantAuthRoutes.post('/logout', async c => {
+.post('/logout', async c => {
   try {
     const tenantDatabase = getTenantDatabase(c)
     const authService = new TenantAuthService(tenantDatabase)
@@ -58,7 +58,7 @@ tenantAuthRoutes.post('/logout', async c => {
 })
 
 // Get current user
-tenantAuthRoutes.get('/me', async c => {
+.get('/me', async c => {
   try {
     const tenantDatabase = getTenantDatabase(c)
     const authService = new TenantAuthService(tenantDatabase)
@@ -81,7 +81,7 @@ tenantAuthRoutes.get('/me', async c => {
 })
 
 // Forgot password
-tenantAuthRoutes.post('/forgot-password', zValidator('json', forgotPasswordSchema), async c => {
+.post('/forgot-password', zValidator('json', forgotPasswordSchema), async c => {
   try {
     const { email } = c.req.valid('json')
     const tenantDatabase = getTenantDatabase(c)
@@ -105,7 +105,7 @@ tenantAuthRoutes.post('/forgot-password', zValidator('json', forgotPasswordSchem
 })
 
 // Reset password
-tenantAuthRoutes.post('/reset-password', zValidator('json', resetPasswordSchema), async c => {
+.post('/reset-password', zValidator('json', resetPasswordSchema), async c => {
   try {
     const data = c.req.valid('json')
     const tenantDatabase = getTenantDatabase(c)
@@ -120,7 +120,7 @@ tenantAuthRoutes.post('/reset-password', zValidator('json', resetPasswordSchema)
 })
 
 // "Let me in" form - for users requesting access
-tenantAuthRoutes.post('/let-me-in', zValidator('json', letMeInSchema), async c => {
+.post('/let-me-in', zValidator('json', letMeInSchema), async c => {
   try {
     const data = c.req.valid('json')
     const tenantDatabase = getTenantDatabase(c)
@@ -139,5 +139,3 @@ tenantAuthRoutes.post('/let-me-in', zValidator('json', letMeInSchema), async c =
     return c.json({ success: false, error: 'Request submission failed' }, 500)
   }
 })
-
-export { tenantAuthRoutes }

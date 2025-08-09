@@ -3,7 +3,6 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 
-const app = new Hono()
 
 const ExportRequestSchema = z.object({
   title: z.string(),
@@ -26,7 +25,7 @@ const ExportRequestSchema = z.object({
 })
 
 // Export data to various formats
-app.post('/export', zValidator('json', ExportRequestSchema), async c => {
+export const coreExportRoutes =new Hono().post('/export', zValidator('json', ExportRequestSchema), async c => {
   try {
     const { title, format, columns, data, metadata } = c.req.valid('json')
 
@@ -74,7 +73,7 @@ app.post('/export', zValidator('json', ExportRequestSchema), async c => {
 })
 
 // Get export templates for different data types
-app.get('/export/templates/:type', async c => {
+.get('/export/templates/:type', async c => {
   const { type } = c.req.param()
 
   const templates: Record<string, any> = {
@@ -117,4 +116,3 @@ app.get('/export/templates/:type', async c => {
   return c.json(template)
 })
 
-export default app

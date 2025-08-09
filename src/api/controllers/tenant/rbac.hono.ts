@@ -1,10 +1,9 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-import { RBACService } from '@/api/rbac.settings'
 import { TenantAuthService } from '@/api/auth.settings'
+import { RBACService } from '@/api/rbac.settings'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod/v4'
 
-const tenantRBACRoutes = new Hono()
 
 // Middleware to check authentication
 const requireAuth = async (c: any, next: any) => {
@@ -48,18 +47,6 @@ const requirePermission = (resource: string, action: string) => {
   }
 }
 
-tenantRBACRoutes.use('*', requireAuth)
-
-// === PERMISSIONS ===
-
-// Get all permissions
-tenantRBACRoutes.get('/permissions', requirePermission('permissions', 'read'), async c => {
-  const tenantDatabase = c.get('tenantDatabase')
-  const rbacService = new RBACService(tenantDatabase)
-
-  const result = await rbacService.getAllPermissions()
-  return c.json(result)
-})
 
 // Create permission
 const createPermissionSchema = z.object({
@@ -69,7 +56,41 @@ const createPermissionSchema = z.object({
   description: z.string().optional(),
 })
 
-tenantRBACRoutes.post(
+
+// Create role
+const createRoleSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+})
+
+
+// Assign permissions to role
+const assignPermissionsSchema = z.object({
+  permissionIds: z.array(z.string()),
+})
+
+
+// Assign roles to user
+const assignRolesSchema = z.object({
+  roleIds: z.array(z.string()),
+})
+
+
+export const tenantRBACRoutes = new Hono()
+.use('*', requireAuth)
+
+// === PERMISSIONS ===
+
+// Get all permissions
+.get('/permissions', requirePermission('permissions', 'read'), async c => {
+  const tenantDatabase = c.get('tenantDatabase')
+  const rbacService = new RBACService(tenantDatabase)
+
+  const result = await rbacService.getAllPermissions()
+  return c.json(result)
+})
+
+.post(
   '/permissions',
   requirePermission('permissions', 'create'),
   zValidator('json', createPermissionSchema),
@@ -84,7 +105,7 @@ tenantRBACRoutes.post(
 )
 
 // Update permission
-tenantRBACRoutes.put(
+.put(
   '/permissions/:id',
   requirePermission('permissions', 'update'),
   zValidator('json', createPermissionSchema.partial()),
@@ -100,7 +121,7 @@ tenantRBACRoutes.put(
 )
 
 // Delete permission
-tenantRBACRoutes.delete('/permissions/:id', requirePermission('permissions', 'delete'), async c => {
+.delete('/permissions/:id', requirePermission('permissions', 'delete'), async c => {
   const id = c.req.param('id')
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
@@ -110,7 +131,7 @@ tenantRBACRoutes.delete('/permissions/:id', requirePermission('permissions', 'de
 })
 
 // Sync permissions from routes
-tenantRBACRoutes.post('/permissions/sync', requirePermission('permissions', 'sync'), async c => {
+.post('/permissions/sync', requirePermission('permissions', 'sync'), async c => {
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
 
@@ -143,7 +164,7 @@ tenantRBACRoutes.post('/permissions/sync', requirePermission('permissions', 'syn
 // === ROLES ===
 
 // Get all roles
-tenantRBACRoutes.get('/roles', requirePermission('roles', 'read'), async c => {
+.get('/roles', requirePermission('roles', 'read'), async c => {
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
 
@@ -152,7 +173,7 @@ tenantRBACRoutes.get('/roles', requirePermission('roles', 'read'), async c => {
 })
 
 // Get role by ID
-tenantRBACRoutes.get('/roles/:id', requirePermission('roles', 'read'), async c => {
+.get('/roles/:id', requirePermission('roles', 'read'), async c => {
   const id = c.req.param('id')
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
@@ -161,13 +182,8 @@ tenantRBACRoutes.get('/roles/:id', requirePermission('roles', 'read'), async c =
   return c.json(result, result.success ? 200 : 404)
 })
 
-// Create role
-const createRoleSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-})
 
-tenantRBACRoutes.post(
+.post(
   '/roles',
   requirePermission('roles', 'create'),
   zValidator('json', createRoleSchema),
@@ -182,7 +198,7 @@ tenantRBACRoutes.post(
 )
 
 // Update role
-tenantRBACRoutes.put(
+.put(
   '/roles/:id',
   requirePermission('roles', 'update'),
   zValidator('json', createRoleSchema.partial()),
@@ -198,7 +214,7 @@ tenantRBACRoutes.put(
 )
 
 // Delete role
-tenantRBACRoutes.delete('/roles/:id', requirePermission('roles', 'delete'), async c => {
+.delete('/roles/:id', requirePermission('roles', 'delete'), async c => {
   const id = c.req.param('id')
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
@@ -207,12 +223,8 @@ tenantRBACRoutes.delete('/roles/:id', requirePermission('roles', 'delete'), asyn
   return c.json(result, result.success ? 200 : 400)
 })
 
-// Assign permissions to role
-const assignPermissionsSchema = z.object({
-  permissionIds: z.array(z.string()),
-})
 
-tenantRBACRoutes.post(
+.post(
   '/roles/:id/permissions',
   requirePermission('roles', 'update'),
   zValidator('json', assignPermissionsSchema),
@@ -229,12 +241,8 @@ tenantRBACRoutes.post(
 
 // === USER ROLES ===
 
-// Assign roles to user
-const assignRolesSchema = z.object({
-  roleIds: z.array(z.string()),
-})
 
-tenantRBACRoutes.post(
+.post(
   '/users/:userId/roles',
   requirePermission('users', 'update'),
   zValidator('json', assignRolesSchema),
@@ -251,7 +259,7 @@ tenantRBACRoutes.post(
 )
 
 // Get user roles
-tenantRBACRoutes.get('/users/:userId/roles', requirePermission('users', 'read'), async c => {
+.get('/users/:userId/roles', requirePermission('users', 'read'), async c => {
   const userId = c.req.param('userId')
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
@@ -261,7 +269,7 @@ tenantRBACRoutes.get('/users/:userId/roles', requirePermission('users', 'read'),
 })
 
 // Get user permissions
-tenantRBACRoutes.get('/users/:userId/permissions', requirePermission('users', 'read'), async c => {
+.get('/users/:userId/permissions', requirePermission('users', 'read'), async c => {
   const userId = c.req.param('userId')
   const tenantDatabase = c.get('tenantDatabase')
   const rbacService = new RBACService(tenantDatabase)
@@ -270,4 +278,3 @@ tenantRBACRoutes.get('/users/:userId/permissions', requirePermission('users', 'r
   return c.json(result)
 })
 
-export { tenantRBACRoutes }

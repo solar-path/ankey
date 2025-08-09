@@ -2,11 +2,11 @@ import { CoreAuthService } from '@/api/auth.settings'
 import { TenantService } from '@/api/tenant.settings'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
-const coreTenantsRoutes = new Hono()
 const tenantService = new TenantService()
 const authService = new CoreAuthService()
+
 
 // Middleware to check core admin authentication
 const requireCoreAuth = async (c: any, next: any) => {
@@ -27,10 +27,32 @@ const requireCoreAuth = async (c: any, next: any) => {
   await next()
 }
 
-coreTenantsRoutes.use('*', requireCoreAuth)
 
+// Update tenant
+const updateTenantSchema = z.object({
+  name: z.string().optional(),
+  isActive: z.boolean().optional(),
+  billingEmail: z.string().email().optional(),
+  monthlyRate: z.number().min(0).optional(),
+})
+
+
+// Deactivate tenant
+const deactivateTenantSchema = z.object({
+  reason: z.string().optional(),
+})
+
+
+// Get billing for tenant
+const billingQuerySchema = z.object({
+  startDate: z.string().transform(str => new Date(str)),
+  endDate: z.string().transform(str => new Date(str)),
+})
+
+export const coreTenantsRoutes = new Hono()
+.use('*', requireCoreAuth)
 // Get all tenants
-coreTenantsRoutes.get('/', async c => {
+.get('/', async c => {
   const search = c.req.query('search')
   const isActive = c.req.query('isActive')
   const limit = c.req.query('limit')
@@ -47,15 +69,8 @@ coreTenantsRoutes.get('/', async c => {
   return c.json(result)
 })
 
-// Update tenant
-const updateTenantSchema = z.object({
-  name: z.string().optional(),
-  isActive: z.boolean().optional(),
-  billingEmail: z.string().email().optional(),
-  monthlyRate: z.number().min(0).optional(),
-})
 
-coreTenantsRoutes.put('/:id', zValidator('json', updateTenantSchema), async c => {
+.put('/:id', zValidator('json', updateTenantSchema), async c => {
   const id = c.req.param('id')
   const data = c.req.valid('json')
   const user = c.get('user')
@@ -64,12 +79,8 @@ coreTenantsRoutes.put('/:id', zValidator('json', updateTenantSchema), async c =>
   return c.json(result, result.success ? 200 : 400)
 })
 
-// Deactivate tenant
-const deactivateTenantSchema = z.object({
-  reason: z.string().optional(),
-})
 
-coreTenantsRoutes.post('/:id/deactivate', zValidator('json', deactivateTenantSchema), async c => {
+.post('/:id/deactivate', zValidator('json', deactivateTenantSchema), async c => {
   const id = c.req.param('id')
   const { reason } = c.req.valid('json')
   const user = c.get('user')
@@ -79,7 +90,7 @@ coreTenantsRoutes.post('/:id/deactivate', zValidator('json', deactivateTenantSch
 })
 
 // Reactivate tenant
-coreTenantsRoutes.post('/:id/reactivate', async c => {
+.post('/:id/reactivate', async c => {
   const id = c.req.param('id')
   const user = c.get('user')
 
@@ -88,19 +99,14 @@ coreTenantsRoutes.post('/:id/reactivate', async c => {
 })
 
 // Update user count for tenant
-coreTenantsRoutes.post('/:id/update-user-count', async c => {
+.post('/:id/update-user-count', async c => {
   const id = c.req.param('id')
   const result = await tenantService.updateUserCount(id)
   return c.json(result, result.success ? 200 : 400)
 })
 
-// Get billing for tenant
-const billingQuerySchema = z.object({
-  startDate: z.string().transform(str => new Date(str)),
-  endDate: z.string().transform(str => new Date(str)),
-})
 
-coreTenantsRoutes.get('/:id/billing', zValidator('query', billingQuerySchema), async c => {
+.get('/:id/billing', zValidator('query', billingQuerySchema), async c => {
   const id = c.req.param('id')
   const { startDate, endDate } = c.req.valid('query')
 
@@ -109,7 +115,7 @@ coreTenantsRoutes.get('/:id/billing', zValidator('query', billingQuerySchema), a
 })
 
 // Generate billing report for all tenants
-coreTenantsRoutes.get('/reports/billing', zValidator('query', billingQuerySchema), async c => {
+.get('/reports/billing', zValidator('query', billingQuerySchema), async c => {
   const { startDate, endDate } = c.req.valid('query')
 
   const result = await tenantService.generateBillingReport(startDate, endDate)
@@ -117,13 +123,13 @@ coreTenantsRoutes.get('/reports/billing', zValidator('query', billingQuerySchema
 })
 
 // Get dashboard statistics
-coreTenantsRoutes.get('/stats/dashboard', async c => {
+.get('/stats/dashboard', async c => {
   const result = await tenantService.getDashboardStats()
   return c.json(result)
 })
 
 // Get recent tenants
-coreTenantsRoutes.get('/recent', async c => {
+.get('/recent', async c => {
   try {
     const limit = c.req.query('limit')
     const result = await tenantService.getRecentTenants(limit ? parseInt(limit) : 5)
@@ -141,7 +147,7 @@ coreTenantsRoutes.get('/recent', async c => {
 })
 
 // Get system activity logs
-coreTenantsRoutes.get('/activity', async c => {
+.get('/activity', async c => {
   try {
     const limit = c.req.query('limit')
     const result = await tenantService.getSystemActivity(limit ? parseInt(limit) : 10)
@@ -159,10 +165,9 @@ coreTenantsRoutes.get('/activity', async c => {
 })
 
 // Get tenant by ID - MUST come after all specific routes to avoid conflicts
-coreTenantsRoutes.get('/:id', async c => {
+.get('/:id', async c => {
   const id = c.req.param('id')
   const result = await tenantService.getTenantById(id)
   return c.json(result, result.success ? 200 : 404)
 })
 
-export { coreTenantsRoutes }

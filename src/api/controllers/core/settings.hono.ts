@@ -1,19 +1,19 @@
-import { Hono } from 'hono'
-import { eq } from 'drizzle-orm'
 import { createCoreConnection } from '@/api/database.settings'
 import { coreUsers, coreUserSettings } from '@/api/db/schemas/core.drizzle'
 import {
-  profileSettingsSchema,
-  personalSettingsSchema,
+  appearanceSettingsSchema,
   contactSettingsSchema,
   passwordChangeSchema,
-  appearanceSettingsSchema,
+  personalSettingsSchema,
+  profileSettingsSchema,
 } from '@/shared'
+import { eq } from 'drizzle-orm'
+import { Hono } from 'hono'
 
-const app = new Hono()
+export const coreSettingsRoutes = new Hono()
 
 // Get current user's settings
-app.get('/me', async c => {
+.get('/me', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any // Get user from context
@@ -77,7 +77,7 @@ app.get('/me', async c => {
 })
 
 // Get profile settings
-app.get('/profile', async c => {
+.get('/profile', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -110,7 +110,7 @@ app.get('/profile', async c => {
 })
 
 // Update profile settings
-app.patch('/profile', async c => {
+.patch('/profile', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -150,7 +150,7 @@ app.patch('/profile', async c => {
 })
 
 // Update personal settings
-app.patch('/personal', async c => {
+.patch('/personal', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -207,7 +207,7 @@ app.patch('/personal', async c => {
 })
 
 // Update contact settings
-app.patch('/contact', async c => {
+.patch('/contact', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -261,7 +261,7 @@ app.patch('/contact', async c => {
 })
 
 // Update appearance settings
-app.patch('/appearance', async c => {
+.patch('/appearance', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -315,7 +315,7 @@ app.patch('/appearance', async c => {
 })
 
 // Change password
-app.patch('/password', async c => {
+.patch('/password', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -373,4 +373,3 @@ app.patch('/password', async c => {
   }
 })
 
-export const coreSettingsRoutes = app
