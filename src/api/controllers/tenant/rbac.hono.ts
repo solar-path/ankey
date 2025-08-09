@@ -1,4 +1,4 @@
-import { TenantAuthService } from '@/api/auth.settings'
+import { requireTenantAuth } from '@/api/middleware'
 import { RBACService } from '@/api/rbac.settings'
 import {
   assignPermissionsSchema,
@@ -8,35 +8,6 @@ import {
 } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod/v4'
-
-// Middleware to check authentication
-const requireAuth = async (c: any, next: any) => {
-  const tenantDatabase = c.get('tenantDatabase')
-  if (!tenantDatabase) {
-    return c.json({ success: false, message: 'Tenant database not found' }, 400)
-  }
-  if (!tenantDatabase) {
-    return c.json({ success: false, error: 'Tenant not found' }, 400)
-  }
-
-  const authService = new TenantAuthService(tenantDatabase)
-  const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
-
-  if (!sessionId) {
-    return c.json({ success: false, error: 'Authentication required' }, 401)
-  }
-
-  const { session, user } = await authService.validateSession(sessionId)
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Invalid session' }, 401)
-  }
-
-  c.set('user', user)
-  c.set('sessionId', sessionId)
-  await next()
-}
 
 // Middleware to check permissions
 const requirePermission = (resource: string, action: string) => {
@@ -61,7 +32,7 @@ const requirePermission = (resource: string, action: string) => {
 // Schemas are now imported from @/shared
 
 export const tenantRBACRoutes = new Hono()
-  .use('*', requireAuth)
+  .use('*', requireTenantAuth)
 
   // === PERMISSIONS ===
 

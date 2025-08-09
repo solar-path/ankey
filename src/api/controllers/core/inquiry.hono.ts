@@ -2,10 +2,12 @@ import { AuditService } from '@/api/audit.settings'
 import { findInquirySchema, inquiryStatusUpdateSchema, inquirySubmitSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { optionalCoreAuth, requireCoreAuth } from '@/api/middleware'
 
 // Submit inquiry
 export const inquiryRoutes = new Hono()
-  .post('/submit', zValidator('json', inquirySubmitSchema), async c => {
+  // Public route for inquiry submission
+  .post('/submit', optionalCoreAuth, zValidator('json', inquirySubmitSchema), async c => {
     const data = c.req.valid('json')
 
     try {
@@ -111,7 +113,7 @@ export const inquiryRoutes = new Hono()
   })
 
   // Get all inquiries (admin only)
-  .get('/list', async c => {
+  .get('/list', requireCoreAuth, async c => {
     try {
       // In a real app, you would:
       // 1. Check admin authentication
@@ -152,7 +154,7 @@ export const inquiryRoutes = new Hono()
   })
 
   // Update inquiry status (admin only)
-  .put('/:id/status', zValidator('json', inquiryStatusUpdateSchema), async c => {
+  .put('/:id/status', requireCoreAuth, zValidator('json', inquiryStatusUpdateSchema), async c => {
     const inquiryId = c.req.param('id')
     const { status, response } = c.req.valid('json')
 

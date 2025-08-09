@@ -10,17 +10,16 @@ import {
 import { zValidator } from '@hono/zod-validator'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { requireCoreAuth } from '@/api/middleware'
 
 export const coreSettingsRoutes = new Hono()
+  .use('*', requireCoreAuth)
 
   // Get current user's settings
   .get('/me', async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any // Get user from context
-      if (!user) {
-        return c.json({ success: false, error: 'Unauthorized' }, 401)
-      }
 
       const userId = user.id
       const userWithSettings = await coreDb

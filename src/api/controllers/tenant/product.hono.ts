@@ -1,12 +1,13 @@
 import { createTenantConnection } from '@/api/database.settings'
 import { products } from '@/api/db/schemas/tenant.drizzle'
+import { requireTenantAuth } from '@/api/middleware'
 import { productCreateSchema, productQuerySchema, productUpdateSchema } from '@/shared'
-import { zValidator } from '@hono/zod-validator'
 import { and, asc, count, desc, eq, ilike, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod/v4'
 
 export const productRoutes = new Hono()
+  .use('*', requireTenantAuth)
   // Get all products with pagination and filters
   .get('/', async c => {
     try {
@@ -127,7 +128,7 @@ export const productRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: error.flatten().fieldErrors,
+            details: error.issues,
           },
           400
         )
@@ -166,7 +167,7 @@ export const productRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: error.flatten().fieldErrors,
+            details: error.issues,
           },
           400
         )

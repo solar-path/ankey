@@ -4,6 +4,7 @@ import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
 import { pricingDiscounts, pricingPlans, tenantSubscriptions } from '../../db/schemas/core.drizzle'
+import { requireCoreAuth, optionalCoreAuth } from '@/api/middleware'
 
 // Define schemas based on database structure
 const createPricingPlanSchema = z.object({
@@ -53,7 +54,8 @@ const _updateSubscriptionSchema = createSubscriptionSchema.partial() // Reserved
 
 // Get all pricing plans
 export const pricingRouter = new Hono()
-  .get('/plans', async c => {
+  // Public routes for pricing display
+  .get('/plans', optionalCoreAuth, async c => {
     try {
       // Get database connection
       const plans = await createCoreConnection()
@@ -88,8 +90,8 @@ export const pricingRouter = new Hono()
     }
   })
 
-  // Create pricing plan
-  .post('/plans', zValidator('json', createPricingPlanSchema), async c => {
+  // Create pricing plan - Admin only
+  .post('/plans', requireCoreAuth, zValidator('json', createPricingPlanSchema), async c => {
     try {
       const planData = c.req.valid('json')
 
@@ -104,8 +106,8 @@ export const pricingRouter = new Hono()
     }
   })
 
-  // Update pricing plan
-  .put('/plans/:id', zValidator('json', updatePricingPlanSchema), async c => {
+  // Update pricing plan - Admin only
+  .put('/plans/:id', requireCoreAuth, zValidator('json', updatePricingPlanSchema), async c => {
     try {
       const planId = c.req.param('id')
       const updateData = c.req.valid('json')
@@ -126,8 +128,8 @@ export const pricingRouter = new Hono()
     }
   })
 
-  // Delete pricing plan (soft delete by setting isActive = false)
-  .delete('/plans/:id', async c => {
+  // Delete pricing plan (soft delete by setting isActive = false) - Admin only
+  .delete('/plans/:id', requireCoreAuth, async c => {
     try {
       const planId = c.req.param('id')
 
@@ -208,8 +210,8 @@ export const pricingRouter = new Hono()
     }
   })
 
-  // Create discount
-  .post('/discounts', zValidator('json', createDiscountSchema), async c => {
+  // Create discount - Admin only
+  .post('/discounts', requireCoreAuth, zValidator('json', createDiscountSchema), async c => {
     try {
       const discountData = c.req.valid('json')
 

@@ -9,8 +9,10 @@ import {
 } from '@/shared'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { requireTenantAuth } from '@/api/middleware'
 
 export const tenantSettingsRoutes = new Hono()
+  .use('*', requireTenantAuth)
 
   // Get current user's settings
   .get('/me', async c => {
@@ -146,7 +148,7 @@ export const tenantSettingsRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
+            details: result.error.issues,
           },
           400
         )
@@ -196,7 +198,7 @@ export const tenantSettingsRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
+            details: result.error.issues,
           },
           400
         )
@@ -263,7 +265,7 @@ export const tenantSettingsRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
+            details: result.error.issues,
           },
           400
         )
@@ -324,7 +326,7 @@ export const tenantSettingsRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
+            details: result.error.issues,
           },
           400
         )
@@ -385,7 +387,7 @@ export const tenantSettingsRoutes = new Hono()
           {
             success: false,
             error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
+            details: result.error.issues,
           },
           400
         )

@@ -1,30 +1,10 @@
-import { CoreAuthService } from '@/api/auth.settings'
 import { TenantService } from '@/api/tenant.settings'
 import { billingQuerySchema, deactivateTenantSchema, updateTenantSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { requireCoreAuth } from '@/api/middleware'
 
 const tenantService = new TenantService()
-const authService = new CoreAuthService()
-
-// Middleware to check core admin authentication
-const requireCoreAuth = async (c: any, next: any) => {
-  const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
-
-  if (!sessionId) {
-    return c.json({ success: false, error: 'Authentication required' }, 401)
-  }
-
-  const { session, user } = await authService.validateSession(sessionId)
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Invalid session' }, 401)
-  }
-
-  c.set('user', user)
-  c.set('sessionId', sessionId)
-  await next()
-}
 
 // Schemas are now imported from @/shared
 
