@@ -1,4 +1,4 @@
-import { coreAuth, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 interface User {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     setIsLoading(true)
     try {
-      const response = await coreAuth.me.$get()
+      const response = await client.auth.me.$get()
       const result = await handleApiResponse(response)
 
       if (result.success && result.data) {
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, twoFactorCode?: string) => {
     try {
-      const response = await coreAuth.login.$post({
+      const response = await client.auth.login.$post({
         json: { email, password, twoFactorCode: twoFactorCode || '' },
       })
 
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await coreAuth.logout.$post()
+      await client.auth.logout.$post()
     } catch (error) {
       console.error('Logout error:', error)
     } finally {

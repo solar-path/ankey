@@ -2,7 +2,7 @@ import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { coreAuth, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { forgotPasswordSchema, type ForgotPasswordData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
@@ -41,7 +41,7 @@ export function ForgotPasswordForm({
         await onSubmit(data)
       } else {
         // Use RPC client for forgot password
-        const response = await coreAuth['forgot-password'].$post({
+        const response = await client.auth['forgot-password'].$post({
           json: data,
         })
 

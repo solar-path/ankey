@@ -1,15 +1,13 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
 import { CoreAuthService } from '@/api/auth.settings'
 import { TenantService } from '@/api/tenant.settings'
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '@/shared'
+import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 
-const coreAuthRoutes = new Hono()
 const authService = new CoreAuthService()
 const tenantService = new TenantService()
 
-// Core admin login
-coreAuthRoutes.post('/login', zValidator('json', loginSchema), async c => {
+export const coreAuthRoutes = new Hono().post('/login', zValidator('json', loginSchema), async c => {
   const data = c.req.valid('json')
   const result = await authService.login(data)
 
@@ -22,10 +20,7 @@ coreAuthRoutes.post('/login', zValidator('json', loginSchema), async c => {
   }
 
   return c.json(result, result.requiresTwoFactor ? 200 : 401)
-})
-
-// Core admin logout
-coreAuthRoutes.post('/logout', async c => {
+}).post('/logout', async c => {
   const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
 
   if (sessionId) {
@@ -36,18 +31,12 @@ coreAuthRoutes.post('/logout', async c => {
   }
 
   return c.json({ success: true })
-})
-
-// Create workspace (tenant registration)
-coreAuthRoutes.post('/register-workspace', zValidator('json', registerSchema), async c => {
+}).post('/register-workspace', zValidator('json', registerSchema), async c => {
   const data = c.req.valid('json')
   const result = await tenantService.createTenant(data)
 
   return c.json(result, result.success ? 201 : 400)
-})
-
-// Get current user
-coreAuthRoutes.get('/me', async c => {
+}).get('/me', async c => {
   const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
 
   if (!sessionId) {
@@ -61,10 +50,7 @@ coreAuthRoutes.get('/me', async c => {
   }
 
   return c.json({ success: true, data: user })
-})
-
-// Forgot password
-coreAuthRoutes.post('/forgot-password', zValidator('json', forgotPasswordSchema), async c => {
+}).post('/forgot-password', zValidator('json', forgotPasswordSchema), async c => {
   const { email } = c.req.valid('json')
   const result = await authService.createPasswordResetToken(email)
 
@@ -79,14 +65,9 @@ coreAuthRoutes.post('/forgot-password', zValidator('json', forgotPasswordSchema)
     success: true,
     message: 'If the email exists, a reset link has been sent',
   })
-})
-
-// Reset password
-coreAuthRoutes.post('/reset-password', zValidator('json', resetPasswordSchema), async c => {
+}).post('/reset-password', zValidator('json', resetPasswordSchema), async c => {
   const data = c.req.valid('json')
   const result = await authService.resetPassword(data)
 
   return c.json(result, result.success ? 200 : 400)
 })
-
-export { coreAuthRoutes }

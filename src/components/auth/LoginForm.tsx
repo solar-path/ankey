@@ -2,7 +2,7 @@ import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { coreAuth, handleApiResponse, tenantAuth } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { loginSchema, type LoginData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
@@ -49,7 +49,7 @@ export function LoginForm({
       } else {
         console.log(data)
         // Use RPC client for login
-        const authClient = isTenant ? tenantAuth : coreAuth
+        const authClient = isTenant ? client['tenant-auth'] : client.auth
         const response = await authClient.login.$post({
           json: data,
         })

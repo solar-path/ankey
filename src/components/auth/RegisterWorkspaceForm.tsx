@@ -1,7 +1,7 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { coreAuth, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
@@ -40,7 +40,7 @@ export function RegisterWorkspaceForm({
         await onSubmit(data)
       } else {
         // Use RPC client for workspace registration
-        const response = await coreAuth['register-workspace'].$post({
+        const response = await client.auth['register-workspace'].$post({
           json: data,
         })
 
