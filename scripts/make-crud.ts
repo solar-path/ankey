@@ -10,10 +10,10 @@ import { TypeGenerator } from './generators/type-generator'
 
 // Simple console-based prompts
 function prompt(message: string): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     process.stdout.write(message + ' ')
     process.stdin.setEncoding('utf8')
-    process.stdin.once('data', (data) => {
+    process.stdin.once('data', data => {
       resolve(data.toString().trim())
     })
   })
@@ -102,12 +102,11 @@ class CrudGenerator {
       }
 
       console.log(`\n✅ CRUD for ${this.options.name} generated successfully!`)
-      
+
       console.log(`\nNext steps:
 • Update your database by running: bun run db:push:${this.options.schema}
 • Register the new routes in src/api/api.ts if not already done
 • Add navigation links to your sidebar/menu if needed`)
-
     } catch (error) {
       console.error('❌ Error generating CRUD:', error)
       process.exit(1)
@@ -143,19 +142,21 @@ async function promptForOptions(): Promise<CrudOptions> {
   }
 
   let schema: 'core' | 'tenant' = 'tenant'
-  const schemaChoice = await prompt('Which database schema? (1) Tenant (multi-tenant data) (2) Core (system-wide) [1]:')
+  const schemaChoice = await prompt(
+    'Which database schema? (1) Tenant (multi-tenant data) (2) Core (system-wide) [1]:'
+  )
   if (schemaChoice === '2') {
     schema = 'core'
   }
 
   const fields: Field[] = []
-  
+
   // Always add a title field by default
   fields.push({
     name: 'title',
     type: 'text',
     nullable: false,
-    unique: false
+    unique: false,
   })
 
   console.log('ℹ️  Default field "title" added. Add more fields:')
@@ -173,23 +174,37 @@ async function promptForOptions(): Promise<CrudOptions> {
       console.log('❌ Field name must be valid identifier (letters, numbers, underscore)')
       continue
     }
-    
+
     if (fields.some(f => f.name === fieldName)) {
       console.log('❌ Field name already exists')
       continue
     }
 
-    console.log('Field types: (1) Text (2) Boolean (3) Integer (4) Decimal (5) Timestamp (6) UUID (7) JSON')
+    console.log(
+      'Field types: (1) Text (2) Boolean (3) Integer (4) Decimal (5) Timestamp (6) UUID (7) JSON'
+    )
     const typeChoice = await prompt(`Type for field "${fieldName}" [1]:`)
-    
+
     let fieldType: Field['type'] = 'text'
     switch (typeChoice) {
-      case '2': fieldType = 'boolean'; break
-      case '3': fieldType = 'integer'; break
-      case '4': fieldType = 'decimal'; break
-      case '5': fieldType = 'timestamp'; break
-      case '6': fieldType = 'uuid'; break
-      case '7': fieldType = 'jsonb'; break
+      case '2':
+        fieldType = 'boolean'
+        break
+      case '3':
+        fieldType = 'integer'
+        break
+      case '4':
+        fieldType = 'decimal'
+        break
+      case '5':
+        fieldType = 'timestamp'
+        break
+      case '6':
+        fieldType = 'uuid'
+        break
+      case '7':
+        fieldType = 'jsonb'
+        break
     }
 
     const nullable = await confirm(`Should "${fieldName}" be nullable?`, false)
@@ -199,7 +214,7 @@ async function promptForOptions(): Promise<CrudOptions> {
       name: fieldName,
       type: fieldType,
       nullable,
-      unique
+      unique,
     })
 
     const continueAdding = await confirm('Add another field?', true)
@@ -218,19 +233,19 @@ async function promptForOptions(): Promise<CrudOptions> {
     generateController,
     generateRoutes,
     generateComponents,
-    runMigrations
+    runMigrations,
   }
 }
 
 async function parseFieldsString(fieldsString: string): Promise<Field[]> {
   const fields: Field[] = []
-  
+
   // Always add title field
   fields.push({
     name: 'title',
     type: 'text',
     nullable: false,
-    unique: false
+    unique: false,
   })
 
   if (!fieldsString) return fields
@@ -239,14 +254,14 @@ async function parseFieldsString(fieldsString: string): Promise<Field[]> {
   for (const fieldDef of fieldDefs) {
     const [nameAndType, ...options] = fieldDef.trim().split(':')
     const [name, type = 'text'] = nameAndType.split(':')
-    
+
     if (!name) continue
 
     const field: Field = {
       name: name.trim(),
       type: type.trim() as Field['type'],
       nullable: options.includes('nullable'),
-      unique: options.includes('unique')
+      unique: options.includes('unique'),
     }
 
     fields.push(field)
@@ -262,8 +277,8 @@ async function main() {
       name: { type: 'string', short: 'n' },
       schema: { type: 'string', short: 's' },
       fields: { type: 'string', short: 'f' },
-      help: { type: 'boolean', short: 'h' }
-    }
+      help: { type: 'boolean', short: 'h' },
+    },
   })
 
   if (args.help) {
@@ -291,9 +306,9 @@ Field types: text, boolean, integer, decimal, timestamp, uuid, jsonb
 
   if (args.name) {
     // Non-interactive mode
-    const fields = args.fields ? await parseFieldsString(args.fields) : [
-      { name: 'title', type: 'text' as const, nullable: false, unique: false }
-    ]
+    const fields = args.fields
+      ? await parseFieldsString(args.fields)
+      : [{ name: 'title', type: 'text' as const, nullable: false, unique: false }]
 
     options = {
       name: args.name,
@@ -302,7 +317,7 @@ Field types: text, boolean, integer, decimal, timestamp, uuid, jsonb
       generateController: true,
       generateRoutes: true,
       generateComponents: true,
-      runMigrations: false
+      runMigrations: false,
     }
   } else {
     // Interactive mode

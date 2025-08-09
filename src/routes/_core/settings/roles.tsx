@@ -30,7 +30,7 @@ function RolesSettings() {
   const [isLoading, setIsLoading] = useState(true)
 
   const toggleRole = (roleId: number) => {
-    setOpenRoles((prev) => ({
+    setOpenRoles(prev => ({
       ...prev,
       [roleId]: !prev[roleId],
     }))
@@ -41,13 +41,13 @@ function RolesSettings() {
     const loadRoles = async () => {
       try {
         setIsLoading(true)
-        
+
         // TODO: Replace with actual API call to /api/tenant/rbac/roles
         const response = await fetch('/api/tenant/rbac/roles')
         if (!response.ok) {
           throw new Error('Failed to load roles')
         }
-        
+
         const result = await response.json()
         if (result.success) {
           setRoles(result.data)
@@ -186,11 +186,17 @@ function RolesSettings() {
             <Shield className="h-5 w-5" />
             System Roles
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">Expand each role to view its assigned permissions</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Expand each role to view its assigned permissions
+          </p>
 
           <div className="mt-6 space-y-2">
             {roles.map((role, index) => (
-              <Collapsible key={role.id} open={openRoles[index]} onOpenChange={() => toggleRole(index)}>
+              <Collapsible
+                key={role.id}
+                open={openRoles[index]}
+                onOpenChange={() => toggleRole(index)}
+              >
                 <CollapsibleTrigger asChild>
                   <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
                     <div className="flex items-center gap-3">
@@ -233,8 +239,8 @@ function RolesSettings() {
                               acc[key].push(permission)
                               return acc
                             },
-                            {} as Record<string, typeof role.permissions>,
-                          ),
+                            {} as Record<string, typeof role.permissions>
+                          )
                         ).map(([controller, perms]) => (
                           <div key={controller} className="space-y-2">
                             <h5 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -242,13 +248,18 @@ function RolesSettings() {
                               {controller} ({perms?.length || 0})
                             </h5>
                             <ul className="ml-5 space-y-2">
-                              {perms?.map((permission) => (
-                                <li key={permission.id} className="flex items-start justify-between">
+                              {perms?.map(permission => (
+                                <li
+                                  key={permission.id}
+                                  className="flex items-start justify-between"
+                                >
                                   <div className="min-w-0 flex-1">
                                     <div className="text-sm font-medium">
                                       {permission.title || permission.name}
                                     </div>
-                                    <div className="text-xs text-muted-foreground">{permission.name}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {permission.name}
+                                    </div>
                                     {permission.description && (
                                       <div className="mt-1 text-xs text-muted-foreground">
                                         {permission.description}

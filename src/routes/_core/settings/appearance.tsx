@@ -3,7 +3,13 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -35,7 +41,7 @@ function AppearanceSettingsComponent() {
   const onSubmit = async (data: AppearanceSettings) => {
     try {
       setIsLoading(true)
-      
+
       // TODO: Replace with actual API call to /api/core/settings/appearance or /api/tenant/settings/appearance
       const response = await fetch('/api/core/settings/appearance', {
         method: 'PATCH',
@@ -65,7 +71,10 @@ function AppearanceSettingsComponent() {
         <p className="text-muted-foreground">Customize your app's appearance and theme</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+      >
         <div className="space-y-4">
           <div className="grid gap-2">
             <Label className="text-sm leading-none font-medium">Theme</Label>
@@ -85,9 +94,7 @@ function AppearanceSettingsComponent() {
                 </Select>
               )}
             />
-            {errors.theme && (
-              <p className="text-xs text-red-600">{errors.theme.message}</p>
-            )}
+            {errors.theme && <p className="text-xs text-red-600">{errors.theme.message}</p>}
           </div>
 
           <div className="grid gap-2">
@@ -108,9 +115,7 @@ function AppearanceSettingsComponent() {
                 </Select>
               )}
             />
-            {errors.density && (
-              <p className="text-xs text-red-600">{errors.density.message}</p>
-            )}
+            {errors.density && <p className="text-xs text-red-600">{errors.density.message}</p>}
           </div>
 
           <div className="grid gap-2">
@@ -131,9 +136,7 @@ function AppearanceSettingsComponent() {
                 </Select>
               )}
             />
-            {errors.fontSize && (
-              <p className="text-xs text-red-600">{errors.fontSize.message}</p>
-            )}
+            {errors.fontSize && <p className="text-xs text-red-600">{errors.fontSize.message}</p>}
           </div>
 
           <div className="grid gap-2">

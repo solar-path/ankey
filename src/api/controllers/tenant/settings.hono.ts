@@ -2,16 +2,22 @@ import { Hono } from 'hono'
 import { eq } from 'drizzle-orm'
 import { createTenantConnection } from '@/api/database.settings'
 import { users, userSettings } from '@/api/db/schemas/tenant.drizzle'
-import { profileSettingsSchema, personalSettingsSchema, contactSettingsSchema, passwordChangeSchema, appearanceSettingsSchema } from '@/shared'
+import {
+  profileSettingsSchema,
+  personalSettingsSchema,
+  contactSettingsSchema,
+  passwordChangeSchema,
+  appearanceSettingsSchema,
+} from '@/shared'
 
 const app = new Hono()
 
 // Get current user's settings
-app.get('/me', async (c) => {
+app.get('/me', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -37,7 +43,7 @@ app.get('/me', async (c) => {
     // Return settings with defaults
     const userInfo = userWithSettings.users
     const settingsInfo = userWithSettings.user_settings
-    
+
     const settings = {
       profile: {
         fullName: userInfo.fullName,
@@ -53,11 +59,13 @@ app.get('/me', async (c) => {
       contact: {
         phone: settingsInfo?.phone || null,
         address: settingsInfo?.address || null,
-        emergencyContact: settingsInfo?.emergencyContactName ? {
-          name: settingsInfo.emergencyContactName,
-          phone: settingsInfo.emergencyContactPhone || '',
-          relationship: settingsInfo.emergencyContactRelationship || '',
-        } : null,
+        emergencyContact: settingsInfo?.emergencyContactName
+          ? {
+              name: settingsInfo.emergencyContactName,
+              phone: settingsInfo.emergencyContactPhone || '',
+              relationship: settingsInfo.emergencyContactRelationship || '',
+            }
+          : null,
       },
       appearance: {
         theme: settingsInfo?.theme || 'system',
@@ -76,11 +84,11 @@ app.get('/me', async (c) => {
 })
 
 // Update profile settings
-app.patch('/profile', async (c) => {
+app.patch('/profile', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -92,9 +100,12 @@ app.patch('/profile', async (c) => {
 
     const body = await c.req.json()
     const result = profileSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { fullName, email, avatar } = result.data
@@ -103,11 +114,11 @@ app.patch('/profile', async (c) => {
     // Update user profile
     await tenantDb
       .update(users)
-      .set({ 
-        fullName, 
-        email, 
+      .set({
+        fullName,
+        email,
         avatar,
-        updatedAt: new Date() 
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
 
@@ -119,11 +130,11 @@ app.patch('/profile', async (c) => {
 })
 
 // Update personal settings
-app.patch('/personal', async (c) => {
+app.patch('/personal', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -135,9 +146,12 @@ app.patch('/personal', async (c) => {
 
     const body = await c.req.json()
     const result = personalSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { gender, dateOfBirth, timezone, language } = result.data
@@ -153,24 +167,22 @@ app.patch('/personal', async (c) => {
     if (existingSettings) {
       await tenantDb
         .update(userSettings)
-        .set({ 
-          gender, 
-          dateOfBirth, 
-          timezone, 
+        .set({
+          gender,
+          dateOfBirth,
+          timezone,
           language,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         })
         .where(eq(userSettings.userId, userId))
     } else {
-      await tenantDb
-        .insert(userSettings)
-        .values({ 
-          userId, 
-          gender, 
-          dateOfBirth, 
-          timezone, 
-          language 
-        })
+      await tenantDb.insert(userSettings).values({
+        userId,
+        gender,
+        dateOfBirth,
+        timezone,
+        language,
+      })
     }
 
     return c.json({ success: true, message: 'Personal settings updated successfully' })
@@ -181,11 +193,11 @@ app.patch('/personal', async (c) => {
 })
 
 // Update contact settings
-app.patch('/contact', async (c) => {
+app.patch('/contact', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -197,9 +209,12 @@ app.patch('/contact', async (c) => {
 
     const body = await c.req.json()
     const result = contactSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { phone, address, emergencyContact } = result.data
@@ -222,14 +237,9 @@ app.patch('/contact', async (c) => {
     }
 
     if (existingSettings) {
-      await tenantDb
-        .update(userSettings)
-        .set(updateData)
-        .where(eq(userSettings.userId, userId))
+      await tenantDb.update(userSettings).set(updateData).where(eq(userSettings.userId, userId))
     } else {
-      await tenantDb
-        .insert(userSettings)
-        .values({ userId, ...updateData })
+      await tenantDb.insert(userSettings).values({ userId, ...updateData })
     }
 
     return c.json({ success: true, message: 'Contact settings updated successfully' })
@@ -240,11 +250,11 @@ app.patch('/contact', async (c) => {
 })
 
 // Update appearance settings
-app.patch('/appearance', async (c) => {
+app.patch('/appearance', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -256,9 +266,12 @@ app.patch('/appearance', async (c) => {
 
     const body = await c.req.json()
     const result = appearanceSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { theme, density, primaryColor, fontSize, sidebarCollapsed } = result.data
@@ -281,14 +294,9 @@ app.patch('/appearance', async (c) => {
     }
 
     if (existingSettings) {
-      await tenantDb
-        .update(userSettings)
-        .set(updateData)
-        .where(eq(userSettings.userId, userId))
+      await tenantDb.update(userSettings).set(updateData).where(eq(userSettings.userId, userId))
     } else {
-      await tenantDb
-        .insert(userSettings)
-        .values({ userId, ...updateData })
+      await tenantDb.insert(userSettings).values({ userId, ...updateData })
     }
 
     return c.json({ success: true, message: 'Appearance settings updated successfully' })
@@ -299,11 +307,11 @@ app.patch('/appearance', async (c) => {
 })
 
 // Change password
-app.patch('/password', async (c) => {
+app.patch('/password', async c => {
   try {
     const user = c.get('user') as any
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (!user) {
       return c.json({ success: false, error: 'Unauthorized' }, 401)
     }
@@ -315,9 +323,12 @@ app.patch('/password', async (c) => {
 
     const body = await c.req.json()
     const result = passwordChangeSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { currentPassword, newPassword } = result.data
@@ -351,9 +362,9 @@ app.patch('/password', async (c) => {
     // Update password
     await tenantDb
       .update(users)
-      .set({ 
+      .set({
         passwordHash: hashedPassword,
-        updatedAt: new Date() 
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
 

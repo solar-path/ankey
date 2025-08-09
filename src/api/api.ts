@@ -146,6 +146,7 @@ const rpcRoutes = app
   .route('/tenant/auth', tenantAuthRoutes)
   .route('/tenant/rbac', tenantRBACRoutes)
   .route('/tenant/settings', tenantSettingsRoutes)
+  .route('/tenant/products', productRoutes)
 
 export type AppType = typeof rpcRoutes
 

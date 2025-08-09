@@ -11,39 +11,35 @@ export class SchemaGenerator {
   async generate() {
     const schemaPath = `src/api/db/schemas/${this.options.schema}.drizzle.ts`
     const schemaContent = readFileSync(schemaPath, 'utf-8')
-    
+
     // Generate table definition
     const tableDefinition = this.generateTableDefinition()
     const relationDefinition = this.generateRelationDefinition()
-    
+
     // Find insertion point for table definition
     const tableInsertionPoint = this.findTableInsertionPoint(schemaContent)
     const relationInsertionPoint = this.findRelationInsertionPoint(schemaContent)
-    
+
     // Insert table definition
-    let newContent = this.insertAtPosition(
-      schemaContent, 
-      tableInsertionPoint, 
-      tableDefinition
-    )
-    
+    let newContent = this.insertAtPosition(schemaContent, tableInsertionPoint, tableDefinition)
+
     // Insert relation definition
     newContent = this.insertAtPosition(
       newContent,
       relationInsertionPoint + tableDefinition.length,
       relationDefinition
     )
-    
+
     // Update imports if needed
     newContent = this.updateImports(newContent)
-    
+
     writeFileSync(schemaPath, newContent)
   }
 
   private generateTableDefinition(): string {
     const tableName = this.getTableName()
     const fields = this.generateFieldDefinitions()
-    
+
     return `
 // ${this.options.name} table
 export const ${this.getTableVariableName()} = pgTable('${tableName}', {
@@ -59,7 +55,7 @@ ${fields}
   private generateRelationDefinition(): string {
     const tableVariable = this.getTableVariableName()
     const relationName = `${tableVariable}Relations`
-    
+
     return `
 export const ${relationName} = relations(${tableVariable}, ({ one, many }) => ({
   // Add relations here as needed
@@ -68,36 +64,34 @@ export const ${relationName} = relations(${tableVariable}, ({ one, many }) => ({
   }
 
   private generateFieldDefinitions(): string {
-    return this.options.fields
-      .map(field => this.generateFieldDefinition(field))
-      .join('')
+    return this.options.fields.map(field => this.generateFieldDefinition(field)).join('')
   }
 
   private generateFieldDefinition(field: Field): string {
     const drizzleType = this.getDrizzleType(field.type)
     const fieldName = field.name
     let definition = `  ${fieldName}: ${drizzleType}('${fieldName}')`
-    
+
     // Add constraints
     if (!field.nullable) {
       definition += '.notNull()'
     }
-    
+
     if (field.unique) {
       definition += '.unique()'
     }
-    
+
     // Add default values for specific types
     if (field.type === 'boolean' && !field.nullable) {
       definition += '.default(false)'
     }
-    
+
     if (field.defaultValue) {
       definition += `.default(${field.defaultValue})`
     }
-    
+
     definition += ',\n'
-    
+
     return definition
   }
 
@@ -187,16 +181,20 @@ export const ${relationName} = relations(${tableVariable}, ({ one, many }) => ({
 
   private updateImports(content: string): string {
     // Check if we need to add any new imports
-    const currentImports = content.match(/import\s*{\s*([^}]+)\s*}\s*from\s*['"]drizzle-orm\/pg-core['"]/)?.[1] || ''
+    const currentImports =
+      content.match(/import\s*{\s*([^}]+)\s*}\s*from\s*['"]drizzle-orm\/pg-core['"]/)?.[1] || ''
     const requiredTypes = new Set(['pgTable', 'text', 'timestamp', 'uuid'])
-    
+
     // Add required types based on fields
     this.options.fields.forEach(field => {
       const drizzleType = this.getDrizzleType(field.type)
       requiredTypes.add(drizzleType)
     })
 
-    const currentImportsArray = currentImports.split(',').map(s => s.trim()).filter(s => s)
+    const currentImportsArray = currentImports
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s)
     const missingImports = [...requiredTypes].filter(type => !currentImportsArray.includes(type))
 
     if (missingImports.length > 0) {
@@ -224,7 +222,13 @@ export const ${relationName} = relations(${tableVariable}, ({ one, many }) => ({
     if (word.endsWith('y')) {
       return word.slice(0, -1) + 'ies'
     }
-    if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
+    if (
+      word.endsWith('s') ||
+      word.endsWith('sh') ||
+      word.endsWith('ch') ||
+      word.endsWith('x') ||
+      word.endsWith('z')
+    ) {
       return word + 'es'
     }
     return word + 's'

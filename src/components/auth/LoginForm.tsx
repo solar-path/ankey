@@ -99,7 +99,6 @@ export function LoginForm({
     }
   }
 
-
   return (
     <div className="space-y-6 p-2">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -151,7 +150,7 @@ export function LoginForm({
         </div>
 
         <div className="flex items-center justify-between">
-          <Button type="button" variant="ghost" onClick={() => openDrawer(<ForgotPasswordForm/>)}>
+          <Button type="button" variant="ghost" onClick={() => openDrawer(<ForgotPasswordForm />)}>
             Forgot Password?
           </Button>
         </div>
@@ -162,19 +161,21 @@ export function LoginForm({
 
         {isTenant && (
           <div className="text-center">
-            <Button 
-              type="button" 
-              variant="link" 
-              onClick={() => openDrawer(
-                <LetMeInForm 
-                  onSubmit={async (data) => {
-                    // TODO: Implement actual API call for access request
-                    console.log('Access request submitted:', data)
-                    // This would typically call a tenant API endpoint
-                    // await tenantAuth.requestAccess.$post({ json: data })
-                  }} 
-                />
-              )}
+            <Button
+              type="button"
+              variant="link"
+              onClick={() =>
+                openDrawer(
+                  <LetMeInForm
+                    onSubmit={async data => {
+                      // TODO: Implement actual API call for access request
+                      console.log('Access request submitted:', data)
+                      // This would typically call a tenant API endpoint
+                      // await tenantAuth.requestAccess.$post({ json: data })
+                    }}
+                  />
+                )
+              }
             >
               Don't have access? Request Access
             </Button>

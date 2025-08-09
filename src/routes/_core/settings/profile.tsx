@@ -15,7 +15,6 @@ export const Route = createFileRoute('/_core/settings/profile')({
 })
 
 function ProfileSettings() {
-
   const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -70,7 +69,7 @@ function ProfileSettings() {
   const onSubmit = async (data: ProfileSettings) => {
     try {
       setIsLoading(true)
-      
+
       // TODO: Replace with actual API call to /api/core/settings/profile or /api/tenant/settings/profile
       const response = await fetch('/api/core/settings/profile', {
         method: 'PATCH',
@@ -100,7 +99,10 @@ function ProfileSettings() {
         <p className="text-muted-foreground">Update your name, email, and profile picture</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+      >
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -135,12 +137,12 @@ function ProfileSettings() {
                   </Button>
                 )}
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
-                accept="image/*" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*"
               />
             </div>
             <div>
@@ -177,9 +179,7 @@ function ProfileSettings() {
                 placeholder="Email address"
                 autoComplete="email"
               />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
             <div className="flex items-center justify-end pt-4">
@@ -200,4 +200,3 @@ function ProfileSettings() {
     </div>
   )
 }
-

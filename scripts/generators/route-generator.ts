@@ -12,10 +12,10 @@ export class RouteGenerator {
   async generate() {
     const routesDir = this.getRoutesDirectory()
     mkdirSync(routesDir, { recursive: true })
-    
+
     // Generate index route (data table)
     await this.generateIndexRoute()
-    
+
     // Generate individual item route if needed
     await this.generateItemRoute()
   }
@@ -29,7 +29,7 @@ export class RouteGenerator {
   private async generateIndexRoute() {
     const routePath = `${this.getRoutesDirectory()}/index.tsx`
     const content = this.generateIndexRouteContent()
-    
+
     mkdirSync(dirname(routePath), { recursive: true })
     writeFileSync(routePath, content)
   }
@@ -37,7 +37,7 @@ export class RouteGenerator {
   private async generateItemRoute() {
     const routePath = `${this.getRoutesDirectory()}/$id.tsx`
     const content = this.generateItemRouteContent()
-    
+
     writeFileSync(routePath, content)
   }
 
@@ -46,7 +46,7 @@ export class RouteGenerator {
     const pluralModelName = this.pluralize(modelName)
     const apiPath = `/api/${this.options.schema}/${this.camelToKebab(pluralModelName)}`
     const componentName = `${pluralModelName}Page`
-    
+
     return `import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -467,7 +467,7 @@ ${this.generateFormFields()}
   private generateItemRouteContent(): string {
     const modelName = this.options.name
     const apiPath = `/api/${this.options.schema}/${this.camelToKebab(this.pluralize(modelName))}`
-    
+
     return `import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
@@ -570,9 +570,7 @@ ${this.generateDetailFields()}
   }
 
   private generateEditFormData(): string {
-    return this.options.fields
-      .map(field => `      ${field.name}: item.${field.name}`)
-      .join(',\n')
+    return this.options.fields.map(field => `      ${field.name}: item.${field.name}`).join(',\n')
   }
 
   private generateTableHeaders(): string {
@@ -597,7 +595,7 @@ ${this.generateDetailFields()}
       .slice(0, 3) // Limit to first 3 additional fields
       .map(field => {
         let cellContent = `item.${field.name}`
-        
+
         // Format different field types
         if (field.type === 'boolean') {
           cellContent = `item.${field.name} ? 'Yes' : 'No'`
@@ -606,7 +604,7 @@ ${this.generateDetailFields()}
         } else if (field.type === 'decimal' || field.type === 'integer') {
           cellContent = `item.${field.name}?.toString() || '-'`
         }
-        
+
         return `                  <TableCell>{${cellContent}}</TableCell>`
       })
       .join('\n')
@@ -617,7 +615,7 @@ ${this.generateDetailFields()}
       .map(field => {
         const label = this.fieldNameToLabel(field.name)
         const fieldId = field.name
-        
+
         if (field.type === 'boolean') {
           return `            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="${fieldId}" className="text-right">
@@ -665,13 +663,13 @@ ${this.generateDetailFields()}
       .map(field => {
         const label = this.fieldNameToLabel(field.name)
         let valueExpression = `item.${field.name}`
-        
+
         if (field.type === 'boolean') {
           valueExpression = `item.${field.name} ? 'Yes' : 'No'`
         } else if (field.type === 'timestamp') {
           valueExpression = `item.${field.name} ? new Date(item.${field.name}).toLocaleString() : 'Not set'`
         }
-        
+
         return `          <div>
             <dt className="text-sm font-medium text-muted-foreground">${label}</dt>
             <dd className="mt-1 text-sm">{${valueExpression} || 'Not set'}</dd>
@@ -682,7 +680,7 @@ ${this.generateDetailFields()}
 
   private getTypeScriptType(field: Field): string {
     let baseType: string
-    
+
     switch (field.type) {
       case 'boolean':
         baseType = 'boolean'
@@ -697,13 +695,13 @@ ${this.generateDetailFields()}
       default:
         baseType = 'string'
     }
-    
+
     return field.nullable ? `${baseType} | null` : baseType
   }
 
   private getDefaultValue(field: Field): string {
     if (field.nullable) return 'null'
-    
+
     switch (field.type) {
       case 'boolean':
         return 'false'
@@ -739,7 +737,13 @@ ${this.generateDetailFields()}
     if (word.endsWith('y')) {
       return word.slice(0, -1) + 'ies'
     }
-    if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
+    if (
+      word.endsWith('s') ||
+      word.endsWith('sh') ||
+      word.endsWith('ch') ||
+      word.endsWith('x') ||
+      word.endsWith('z')
+    ) {
       return word + 'es'
     }
     return word + 's'

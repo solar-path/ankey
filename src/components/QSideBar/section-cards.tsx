@@ -1,14 +1,14 @@
-import { TrendingDown, TrendingUp } from "lucide-react"
+import { TrendingDown, TrendingUp } from 'lucide-react'
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from '@/components/ui/badge'
 import {
-    Card,
-    CardAction,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+  Card,
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 export function SectionCards() {
   return (
@@ -30,9 +30,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Trending up this month <TrendingUp className="h-4 w-4" />
           </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
+          <div className="text-muted-foreground">Visitors for the last 6 months</div>
         </CardFooter>
       </Card>
       <Card className="@container/card">
@@ -52,9 +50,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Down 20% this period <TrendingDown className="h-4 w-4" />
           </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
+          <div className="text-muted-foreground">Acquisition needs attention</div>
         </CardFooter>
       </Card>
       <Card className="@container/card">

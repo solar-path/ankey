@@ -1,7 +1,13 @@
 import QCalendarPick from '@/components/QCalendarPick'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { personalSettingsSchema, type PersonalSettings } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute } from '@tanstack/react-router'
@@ -33,7 +39,7 @@ function PersonalSettingsComponent() {
   const onSubmit = async (data: PersonalSettings) => {
     try {
       setIsLoading(true)
-      
+
       // TODO: Replace with actual API call to /api/core/settings/personal or /api/tenant/settings/personal
       const response = await fetch('/api/core/settings/personal', {
         method: 'PATCH',
@@ -63,7 +69,10 @@ function PersonalSettingsComponent() {
         <p className="text-muted-foreground">Update your gender and date of birth</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+      >
         <div className="space-y-4">
           <div className="grid gap-2">
             <Label className="text-sm leading-none font-medium">Gender</Label>
@@ -84,9 +93,7 @@ function PersonalSettingsComponent() {
                 </Select>
               )}
             />
-            {errors.gender && (
-              <p className="text-xs text-red-600">{errors.gender.message}</p>
-            )}
+            {errors.gender && <p className="text-xs text-red-600">{errors.gender.message}</p>}
           </div>
 
           <Controller
@@ -96,7 +103,7 @@ function PersonalSettingsComponent() {
               <QCalendarPick
                 label="Date of Birth"
                 value={field.value ? new Date(field.value) : undefined}
-                onChange={(date) => field.onChange(date?.toISOString() || '')}
+                onChange={date => field.onChange(date?.toISOString() || '')}
                 error={errors.dateOfBirth?.message}
                 disabled={isSubmitting || isLoading}
                 fromYear={1900}

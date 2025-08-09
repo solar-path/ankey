@@ -35,7 +35,7 @@ function PasswordSettings() {
   const onSubmit = async (data: PasswordChange) => {
     try {
       setIsLoading(true)
-      
+
       // TODO: Replace with actual API call to /api/core/settings/password or /api/tenant/settings/password
       const response = await fetch('/api/core/settings/password', {
         method: 'PATCH',
@@ -58,7 +58,7 @@ function PasswordSettings() {
     } catch (error: any) {
       console.error('Change password error:', error)
       toast.error(error.message || 'Failed to change password')
-      
+
       // Focus appropriate field based on error
       if (error.message?.includes('current password')) {
         currentPasswordInput.current?.focus()
@@ -74,22 +74,27 @@ function PasswordSettings() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Change Password</h2>
-        <p className="text-muted-foreground">Ensure your account is using a long, random password to stay secure</p>
+        <p className="text-muted-foreground">
+          Ensure your account is using a long, random password to stay secure
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+      >
         <div className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="currentPassword">Current password</Label>
             <Input
               id="currentPassword"
-              {...register('currentPassword', { 
-                setValueAs: (value) => {
+              {...register('currentPassword', {
+                setValueAs: value => {
                   if (currentPasswordInput.current) {
-                    currentPasswordInput.current.value = value;
+                    currentPasswordInput.current.value = value
                   }
-                  return value;
-                }
+                  return value
+                },
               })}
               ref={currentPasswordInput}
               type="password"
@@ -106,13 +111,13 @@ function PasswordSettings() {
             <Label htmlFor="newPassword">New password</Label>
             <Input
               id="newPassword"
-              {...register('newPassword', { 
-                setValueAs: (value) => {
+              {...register('newPassword', {
+                setValueAs: value => {
                   if (passwordInput.current) {
-                    passwordInput.current.value = value;
+                    passwordInput.current.value = value
                   }
-                  return value;
-                }
+                  return value
+                },
               })}
               ref={passwordInput}
               type="password"

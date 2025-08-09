@@ -12,13 +12,13 @@ export class ControllerGenerator {
 
   async generate() {
     const controllerPath = this.getControllerPath()
-    
+
     // Ensure directory exists
     mkdirSync(dirname(controllerPath), { recursive: true })
-    
+
     const controllerContent = this.generateControllerContent()
     writeFileSync(controllerPath, controllerContent)
-    
+
     // Update the main API file to register routes
     await this.updateApiRoutes()
   }
@@ -32,9 +32,10 @@ export class ControllerGenerator {
     const tableName = this.getTableVariableName()
     const modelName = this.options.name
     const schemaImport = this.options.schema === 'core' ? 'core.drizzle' : 'tenant.drizzle'
-    const dbConnection = this.options.schema === 'core' ? 'createCoreConnection' : 'createTenantConnection'
+    const dbConnection =
+      this.options.schema === 'core' ? 'createCoreConnection' : 'createTenantConnection'
     const validationSchema = `${this.camelCase(modelName)}Schema`
-    
+
     return `import { Hono } from 'hono'
 import { eq, and, isNull, isNotNull, desc, asc, ilike, count } from 'drizzle-orm'
 import { ${dbConnection} } from '@/api/database.settings'
@@ -320,52 +321,57 @@ export const ${this.camelCase(modelName)}Routes = app`
   private async updateApiRoutes() {
     const apiPath = 'src/api/api.ts'
     if (!existsSync(apiPath)) return
-    
+
     const apiContent = readFileSync(apiPath, 'utf-8')
     const importName = `${this.camelCase(this.options.name)}Routes`
     const fileName = this.camelToKebab(this.options.name)
-    
+
     // Add import
     const importLine = `import { ${importName} } from '@/api/controllers/${this.options.schema}/${fileName}.hono'`
-    
+
     // Add route registration
     const routeLine = `app.route('/api/${this.options.schema}/${this.camelToKebab(this.pluralize(this.options.name))}', ${importName})`
-    
+
     // Check if already exists
     if (apiContent.includes(importLine)) return
-    
+
     // Find insertion points
-    const lastImportPattern = new RegExp(`import.*from '@/api/controllers/${this.options.schema}/.*'`)
+    const lastImportPattern = new RegExp(
+      `import.*from '@/api/controllers/${this.options.schema}/.*'`
+    )
     const matches = [...apiContent.matchAll(new RegExp(lastImportPattern, 'g'))]
-    
+
     if (matches.length > 0) {
       const lastMatch = matches[matches.length - 1]
       const insertionPoint = lastMatch.index! + lastMatch[0].length
-      let newContent = apiContent.slice(0, insertionPoint) + '\n' + importLine + apiContent.slice(insertionPoint)
-      
+      let newContent =
+        apiContent.slice(0, insertionPoint) + '\n' + importLine + apiContent.slice(insertionPoint)
+
       // Find route registration insertion point
       const routePattern = new RegExp(`app\\.route\\('/api/${this.options.schema}/.*'.*\\)`)
       const routeMatches = [...newContent.matchAll(new RegExp(routePattern, 'g'))]
-      
+
       if (routeMatches.length > 0) {
         const lastRouteMatch = routeMatches[routeMatches.length - 1]
         const routeInsertionPoint = lastRouteMatch.index! + lastRouteMatch[0].length
-        newContent = newContent.slice(0, routeInsertionPoint) + '\n' + routeLine + newContent.slice(routeInsertionPoint)
+        newContent =
+          newContent.slice(0, routeInsertionPoint) +
+          '\n' +
+          routeLine +
+          newContent.slice(routeInsertionPoint)
       }
-      
+
       writeFileSync(apiPath, newContent)
     }
   }
 
   private generateValidationFields(): string {
-    return this.options.fields
-      .map(field => this.generateValidationField(field))
-      .join('')
+    return this.options.fields.map(field => this.generateValidationField(field)).join('')
   }
 
   private generateValidationField(field: Field): string {
     let validation = `  ${field.name}: `
-    
+
     switch (field.type) {
       case 'text':
         validation += 'z.string()'
@@ -391,11 +397,11 @@ export const ${this.camelCase(modelName)}Routes = app`
       default:
         validation += 'z.string()'
     }
-    
+
     if (field.nullable) {
       validation += '.nullable()'
     }
-    
+
     validation += ',\n'
     return validation
   }
@@ -416,7 +422,13 @@ export const ${this.camelCase(modelName)}Routes = app`
     if (word.endsWith('y')) {
       return word.slice(0, -1) + 'ies'
     }
-    if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
+    if (
+      word.endsWith('s') ||
+      word.endsWith('sh') ||
+      word.endsWith('ch') ||
+      word.endsWith('x') ||
+      word.endsWith('z')
+    ) {
       return word + 'es'
     }
     return word + 's'

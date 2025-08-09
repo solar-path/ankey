@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { corePricing, handleApiResponse } from '@/lib/rpc'
 
 export const Route = createFileRoute('/_public/pricing')({
   component: Pricing,
@@ -61,17 +62,22 @@ function Pricing() {
 
   const fetchPricingPlans = async () => {
     try {
-      const response = await fetch('/api/core/pricing/plans')
-      const data = await response.json()
-      const plans = data.plans || []
-      setPricingPlans(plans)
+      const response = await corePricing.plans.$get()
+      const result = await handleApiResponse(response)
 
-      // Set default user counts
-      const defaultCounts: Record<string, number> = {}
-      plans.forEach((plan: PricingPlan) => {
-        defaultCounts[plan.id] = plan.minUsers || 1
-      })
-      setUserCounts(defaultCounts)
+      if (result.success) {
+        const plans = result.data?.plans || []
+        setPricingPlans(plans)
+
+        // Set default user counts
+        const defaultCounts: Record<string, number> = {}
+        plans.forEach((plan: PricingPlan) => {
+          defaultCounts[plan.id] = plan.minUsers || 1
+        })
+        setUserCounts(defaultCounts)
+      } else {
+        console.error('Error fetching pricing plans:', result.error)
+      }
     } catch (error) {
       console.error('Error fetching pricing plans:', error)
     } finally {
@@ -86,20 +92,18 @@ function Pricing() {
       const userCount = userCounts[plan.id] || plan.minUsers || 1
 
       try {
-        const response = await fetch('/api/core/pricing/calculate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const response = await corePricing.calculate.$post({
+          json: {
             planId: plan.id,
             userCount,
             billingCycle,
             discountCode: promoCode || undefined,
-          }),
+          },
         })
 
-        if (response.ok) {
-          const calculation = await response.json()
-          newCalculations[plan.id] = calculation
+        const result = await handleApiResponse(response)
+        if (result.success) {
+          newCalculations[plan.id] = result.data
         }
       } catch (error) {
         console.error(`Error calculating pricing for plan ${plan.id}:`, error)

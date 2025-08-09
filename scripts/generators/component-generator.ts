@@ -12,13 +12,13 @@ export class ComponentGenerator {
   async generate() {
     const componentsDir = this.getComponentsDirectory()
     mkdirSync(componentsDir, { recursive: true })
-    
+
     // Generate data table component
     await this.generateDataTableComponent()
-    
+
     // Generate form component
     await this.generateFormComponent()
-    
+
     // Generate list item component
     await this.generateListItemComponent()
   }
@@ -31,7 +31,7 @@ export class ComponentGenerator {
   private async generateDataTableComponent() {
     const componentPath = `${this.getComponentsDirectory()}/${this.options.name}DataTable.tsx`
     const content = this.generateDataTableContent()
-    
+
     mkdirSync(dirname(componentPath), { recursive: true })
     writeFileSync(componentPath, content)
   }
@@ -39,21 +39,21 @@ export class ComponentGenerator {
   private async generateFormComponent() {
     const componentPath = `${this.getComponentsDirectory()}/${this.options.name}Form.tsx`
     const content = this.generateFormContent()
-    
+
     writeFileSync(componentPath, content)
   }
 
   private async generateListItemComponent() {
     const componentPath = `${this.getComponentsDirectory()}/${this.options.name}ListItem.tsx`
     const content = this.generateListItemContent()
-    
+
     writeFileSync(componentPath, content)
   }
 
   private generateDataTableContent(): string {
     const modelName = this.options.name
     const pluralModelName = this.pluralize(modelName)
-    
+
     return `import { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
@@ -184,7 +184,7 @@ ${this.generateColumnDefinitions()}
 
   private generateFormContent(): string {
     const modelName = this.options.name
-    
+
     return `import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -281,7 +281,7 @@ ${this.generateFormFields()}
 
   private generateListItemContent(): string {
     const modelName = this.options.name
-    
+
     return `import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -399,13 +399,13 @@ ${this.generatePreviewFields()}
       .slice(0, 3) // Limit columns to prevent overflow
       .map(field => {
         let cellContent = "row.getValue('" + field.name + "')"
-        
+
         if (field.type === 'boolean') {
           cellContent = `(${cellContent} as boolean) ? 'Yes' : 'No'`
         } else if (field.type === 'timestamp') {
           cellContent = `new Date(${cellContent} as string).toLocaleDateString()`
         }
-        
+
         return `    {
       accessorKey: '${field.name}',
       header: '${this.fieldNameToLabel(field.name)}',
@@ -419,7 +419,7 @@ ${this.generatePreviewFields()}
     return this.options.fields
       .map(field => {
         let validation = `  ${field.name}: `
-        
+
         switch (field.type) {
           case 'text':
             validation += 'z.string().min(1, "This field is required")'
@@ -445,11 +445,11 @@ ${this.generatePreviewFields()}
           default:
             validation += 'z.string()'
         }
-        
+
         if (field.nullable) {
           validation += '.nullable().optional()'
         }
-        
+
         validation += ','
         return validation
       })
@@ -466,15 +466,13 @@ ${this.generatePreviewFields()}
   }
 
   private generateFormFields(): string {
-    return this.options.fields
-      .map(field => this.generateFormField(field))
-      .join('\n')
+    return this.options.fields.map(field => this.generateFormField(field)).join('\n')
   }
 
   private generateFormField(field: Field): string {
     const label = this.fieldNameToLabel(field.name)
     const fieldName = field.name
-    
+
     if (field.type === 'boolean') {
       return `        <FormField
           control={form.control}
@@ -535,13 +533,13 @@ ${this.generatePreviewFields()}
       .slice(0, 2) // Limit to prevent clutter
       .map(field => {
         let valueExpression = `item.${field.name}`
-        
+
         if (field.type === 'boolean') {
           valueExpression = `item.${field.name} ? 'Yes' : 'No'`
         } else if (field.type === 'timestamp') {
           valueExpression = `item.${field.name} ? new Date(item.${field.name}).toLocaleDateString() : 'Not set'`
         }
-        
+
         return `          <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">${this.fieldNameToLabel(field.name)}:</span>
             <span>{${valueExpression} || 'Not set'}</span>
@@ -552,7 +550,7 @@ ${this.generatePreviewFields()}
 
   private getTypeScriptType(field: Field): string {
     let baseType: string
-    
+
     switch (field.type) {
       case 'boolean':
         baseType = 'boolean'
@@ -567,13 +565,13 @@ ${this.generatePreviewFields()}
       default:
         baseType = 'string'
     }
-    
+
     return field.nullable ? `${baseType} | null` : baseType
   }
 
   private getDefaultValue(field: Field): string {
     if (field.nullable) return 'null'
-    
+
     switch (field.type) {
       case 'boolean':
         return 'false'
@@ -600,7 +598,13 @@ ${this.generatePreviewFields()}
     if (word.endsWith('y')) {
       return word.slice(0, -1) + 'ies'
     }
-    if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
+    if (
+      word.endsWith('s') ||
+      word.endsWith('sh') ||
+      word.endsWith('ch') ||
+      word.endsWith('x') ||
+      word.endsWith('z')
+    ) {
       return word + 'es'
     }
     return word + 's'

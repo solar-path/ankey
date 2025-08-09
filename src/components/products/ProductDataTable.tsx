@@ -37,15 +37,13 @@ export function ProductDataTable({
   onEdit,
   onDelete,
   onRestore,
-  view = 'active'
+  view = 'active',
 }: ProductDataTableProps) {
   const columns: ColumnDef<ProductItem>[] = [
     {
       accessorKey: 'title',
       header: 'Title',
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue('title')}</div>
-      ),
+      cell: ({ row }) => <div className="font-medium">{row.getValue('title')}</div>,
     },
     {
       accessorKey: 'description',
@@ -107,7 +105,7 @@ export function ProductDataTable({
                     </DropdownMenuItem>
                   )}
                   {onDelete && (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => onDelete(item.id)}
                       className="text-destructive"
                     >

@@ -43,7 +43,7 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: FileText },
 ]
 
-const bottomNavigation = [{ name: 'Settings', href: '/settings', icon: Settings }]
+const bottomNavigation = [{ name: 'Settings', href: '/settings/profile', icon: Settings }]
 
 export function CoreSidebar() {
   const { user, logout } = useAuth()
@@ -61,7 +61,7 @@ export function CoreSidebar() {
     const handleAuthLogout = () => {
       navigate({ to: '/' })
     }
-    
+
     window.addEventListener('auth:logout', handleAuthLogout)
     return () => window.removeEventListener('auth:logout', handleAuthLogout)
   }, [navigate])

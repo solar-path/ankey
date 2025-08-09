@@ -44,7 +44,7 @@ function ContactSettings() {
   const onSubmit = async (data: ContactSettings) => {
     try {
       setIsLoading(true)
-      
+
       // TODO: Replace with actual API call to /api/core/settings/contact or /api/tenant/settings/contact
       const response = await fetch('/api/core/settings/contact', {
         method: 'PATCH',
@@ -74,18 +74,19 @@ function ContactSettings() {
         <p className="text-muted-foreground">Update your phone number and address</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+      >
         <div className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="phone">Phone</Label>
-            <QPhone 
+            <QPhone
               value={watchedValues.phone || ''}
               onChange={handlePhoneChange}
               className="mt-1 block w-full"
             />
-            {errors.phone && (
-              <p className="text-xs text-red-600">{errors.phone.message}</p>
-            )}
+            {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
           </div>
 
           <div className="grid gap-2">
@@ -97,14 +98,12 @@ function ContactSettings() {
               autoComplete="address"
               placeholder="Address"
             />
-            {errors.address && (
-              <p className="text-xs text-red-600">{errors.address.message}</p>
-            )}
+            {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
           </div>
 
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Emergency Contact (Optional)</h3>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="emergencyContact.name">Name</Label>
               <Input
@@ -140,7 +139,9 @@ function ContactSettings() {
                 placeholder="Relationship (e.g., Spouse, Parent, Sibling)"
               />
               {errors.emergencyContact?.relationship && (
-                <p className="text-xs text-red-600">{errors.emergencyContact.relationship.message}</p>
+                <p className="text-xs text-red-600">
+                  {errors.emergencyContact.relationship.message}
+                </p>
               )}
             </div>
           </div>

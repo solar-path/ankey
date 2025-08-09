@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
 import { Link, useLocation } from '@tanstack/react-router'
-import { Mail, PlusCircle, type LucideIcon } from "lucide-react"
+import { Mail, PlusCircle, type LucideIcon } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar'
 
 export function NavMain({
   items,
@@ -45,7 +45,7 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
-          {items.map((item) => {
+          {items.map(item => {
             const isActive = location.pathname === item.url
             return (
               <SidebarMenuItem key={item.title}>

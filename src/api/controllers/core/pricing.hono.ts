@@ -115,6 +115,21 @@ pricingRouter.delete('/plans/:id', async c => {
 
 // PRICING DISCOUNTS CRUD
 
+// Get all discounts
+pricingRouter.get('/discounts', async c => {
+  try {
+    const discounts = await createCoreConnection()
+      .select()
+      .from(pricingDiscounts)
+      .where(eq(pricingDiscounts.isActive, true))
+      .orderBy(desc(pricingDiscounts.createdAt))
+
+    return c.json({ discounts })
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch discounts' }, 500)
+  }
+})
+
 // Get all discounts for a plan
 pricingRouter.get('/plans/:planId/discounts', async c => {
   try {

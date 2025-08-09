@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Edit } from 'lucide-react'
+import { tenantProducts, handleApiResponse } from '@/lib/rpc'
 
 export const Route = createFileRoute('/_tenant/products/$id')({
-  component: ProductDetail
+  component: ProductDetail,
 })
 
 interface ProductItem {
@@ -23,17 +24,18 @@ interface ProductItem {
 function ProductDetail() {
   const { id } = Route.useParams()
   const navigate = Route.useNavigate()
-  
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
-      const response = await fetch(`/api/tenant/products/${id}`)
-      if (!response.ok) throw new Error('Failed to fetch product')
-      return response.json()
-    }
+      const response = await tenantProducts[':id'].$get({ param: { id } })
+      const result = await handleApiResponse(response)
+      if (!result.success) throw new Error(result.error || 'Failed to fetch product')
+      return result.data
+    },
   })
 
-  const item: ProductItem = data?.data
+  const item: ProductItem = data
 
   if (isLoading) {
     return <div className="p-4">Loading...</div>
@@ -46,10 +48,7 @@ function ProductDetail() {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate({ to: '/_tenant/products' })}
-        >
+        <Button variant="ghost" onClick={() => navigate({ to: '/_tenant/products' })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>

@@ -63,6 +63,9 @@ The drawer component demonstrates the state management pattern:
 #### API Integration & Database
 
 - **Hono API server** embedded in `src/api/api.ts` with logger middleware
+- **Hono RPC Client** for type-safe frontend-to-backend communication
+- **NEVER use `fetch()` or `axios`** - always use Hono RPC client from `src/lib/rpc.ts`
+- All API calls must use the typed RPC approach: `coreAuth.login.$post()`, `dashboardApi.getStats()`, etc.
 - **Drizzle ORM** integration for type-safe database operations
 - **PostgreSQL** as the primary database with `pg` driver
 - Database schemas and migrations managed through Drizzle Kit
@@ -130,6 +133,15 @@ UI components follow the shadcn/ui pattern:
 - Follow the variant pattern for consistent styling
 - Leverage path aliases for clean imports
 - Consider both light and dark mode in styling
+
+### API Communication
+
+- **NEVER use `fetch()`, `axios`, or any other HTTP client** - always use Hono RPC client
+- All API calls must use the typed RPC client from `src/lib/rpc.ts`
+- Use pre-defined RPC clients: `coreAuth`, `tenantAuth`, `dashboardApi`, etc.
+- Follow the pattern: `const response = await coreAuth.login.$post({ json: data })`
+- Always use `handleApiResponse()` helper for consistent response handling
+- Type safety is enforced through Hono's RPC system - leverage this for better DX
 
 ### Database & API Development
 

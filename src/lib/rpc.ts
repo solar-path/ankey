@@ -16,12 +16,15 @@ export const rpc = hc<AppType>(baseUrl, {
 // Export individual API modules for easier imports
 export const coreAuth = (rpc as any).api.rpc.core.auth
 export const coreTenants = (rpc as any).api.rpc.core.tenants
+export const coreSettings = (rpc as any).api.rpc.core.settings
 export const coreInquiry = (rpc as any).api.rpc.core.inquiry
 export const corePricing = (rpc as any).api.rpc.core.pricing
 export const coreExport = (rpc as any).api.rpc.core.export
 export const coreImport = (rpc as any).api.rpc.core.import
 export const tenantAuth = (rpc as any).api.rpc.tenant.auth
 export const tenantRBAC = (rpc as any).api.rpc.tenant.rbac
+export const tenantSettings = (rpc as any).api.rpc.tenant.settings
+export const tenantProducts = (rpc as any).api.rpc.tenant.products
 
 // Dashboard-specific API calls
 export const dashboardApi = {

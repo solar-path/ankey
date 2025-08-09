@@ -180,27 +180,31 @@ export const personalSettingsSchema = z.object({
 export const contactSettingsSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
-  emergencyContact: z.object({
-    name: z.string(),
-    phone: z.string(),
-    relationship: z.string(),
-  }).optional(),
+  emergencyContact: z
+    .object({
+      name: z.string(),
+      phone: z.string(),
+      relationship: z.string(),
+    })
+    .optional(),
 })
 
-export const passwordChangeSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain uppercase, lowercase, and number'
-    ),
-  confirmPassword: z.string().min(1, 'Password confirmation is required'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain uppercase, lowercase, and number'
+      ),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine(data => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  })
 
 export const appearanceSettingsSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']).default('system'),

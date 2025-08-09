@@ -33,7 +33,7 @@ export function ProductListItem({
   onEdit,
   onDelete,
   onRestore,
-  onView
+  onView,
 }: ProductListItemProps) {
   const isDeleted = !!item.deletedAt
 
@@ -41,7 +41,7 @@ export function ProductListItem({
     <Card className="transition-colors hover:bg-muted/50">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="space-y-1">
-          <CardTitle 
+          <CardTitle
             className="text-base cursor-pointer hover:text-primary"
             onClick={() => onView?.(item)}
           >
@@ -75,7 +75,7 @@ export function ProductListItem({
                     </DropdownMenuItem>
                   )}
                   {onDelete && (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => onDelete(item.id)}
                       className="text-destructive"
                     >

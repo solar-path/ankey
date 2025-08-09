@@ -18,10 +18,10 @@ import {
 import { LoaderCircle } from 'lucide-react'
 
 const formSchema = z.object({
-  title: z.string().min(1, "This field is required"),
-  description: z.string().min(1, "This field is required").nullable().optional(),
-  price: z.string().min(1, "This field is required"),
-  isActive: z.string().min(1, "This field is required"),
+  title: z.string().min(1, 'This field is required'),
+  description: z.string().min(1, 'This field is required').nullable().optional(),
+  price: z.string().min(1, 'This field is required'),
+  isActive: z.string().min(1, 'This field is required'),
 })
 
 export type ProductFormData = z.infer<typeof formSchema>
@@ -50,7 +50,7 @@ export function ProductForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  submitText = 'Save'
+  submitText = 'Save',
 }: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
@@ -58,7 +58,7 @@ export function ProductForm({
       title: initialData?.title ?? '',
       description: initialData?.description ?? null,
       price: initialData?.price ?? '',
-      isActive: initialData?.isActive ?? ''
+      isActive: initialData?.isActive ?? '',
     },
   })
 
@@ -83,10 +83,7 @@ export function ProductForm({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input
-                  {...formField}
-                  value={formField.value || ''}
-                />
+                <Input {...formField} value={formField.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,7 +98,9 @@ export function ProductForm({
               <FormControl>
                 <Textarea
                   {...formField}
-                  value={formField.value || ''} placeholder="Enter description..." rows={3}
+                  value={formField.value || ''}
+                  placeholder="Enter description..."
+                  rows={3}
                 />
               </FormControl>
               <FormMessage />
@@ -115,10 +114,7 @@ export function ProductForm({
             <FormItem>
               <FormLabel>Price</FormLabel>
               <FormControl>
-                <Input
-                  {...formField}
-                  value={formField.value || ''}
-                />
+                <Input {...formField} value={formField.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -131,16 +127,13 @@ export function ProductForm({
             <FormItem>
               <FormLabel>Is Active</FormLabel>
               <FormControl>
-                <Input
-                  {...formField}
-                  value={formField.value || ''}
-                />
+                <Input {...formField} value={formField.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <div className="flex items-center justify-end gap-4 pt-4">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>

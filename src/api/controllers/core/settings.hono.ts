@@ -2,12 +2,18 @@ import { Hono } from 'hono'
 import { eq } from 'drizzle-orm'
 import { createCoreConnection } from '@/api/database.settings'
 import { coreUsers, coreUserSettings } from '@/api/db/schemas/core.drizzle'
-import { profileSettingsSchema, personalSettingsSchema, contactSettingsSchema, passwordChangeSchema, appearanceSettingsSchema } from '@/shared'
+import {
+  profileSettingsSchema,
+  personalSettingsSchema,
+  contactSettingsSchema,
+  passwordChangeSchema,
+  appearanceSettingsSchema,
+} from '@/shared'
 
 const app = new Hono()
 
 // Get current user's settings
-app.get('/me', async (c) => {
+app.get('/me', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any // Get user from context
@@ -30,7 +36,7 @@ app.get('/me', async (c) => {
     // Return settings with defaults
     const userInfo = userWithSettings.core_users
     const settingsInfo = userWithSettings.core_user_settings
-    
+
     const settings = {
       profile: {
         fullName: userInfo.fullName,
@@ -46,11 +52,13 @@ app.get('/me', async (c) => {
       contact: {
         phone: settingsInfo?.phone || null,
         address: settingsInfo?.address || null,
-        emergencyContact: settingsInfo?.emergencyContactName ? {
-          name: settingsInfo.emergencyContactName,
-          phone: settingsInfo.emergencyContactPhone || '',
-          relationship: settingsInfo.emergencyContactRelationship || '',
-        } : null,
+        emergencyContact: settingsInfo?.emergencyContactName
+          ? {
+              name: settingsInfo.emergencyContactName,
+              phone: settingsInfo.emergencyContactPhone || '',
+              relationship: settingsInfo.emergencyContactRelationship || '',
+            }
+          : null,
       },
       appearance: {
         theme: settingsInfo?.theme || 'system',
@@ -69,7 +77,7 @@ app.get('/me', async (c) => {
 })
 
 // Update profile settings
-app.patch('/profile', async (c) => {
+app.patch('/profile', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -80,9 +88,12 @@ app.patch('/profile', async (c) => {
 
     const body = await c.req.json()
     const result = profileSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { fullName, email, avatar } = result.data
@@ -90,11 +101,11 @@ app.patch('/profile', async (c) => {
     // Update user profile
     await coreDb
       .update(coreUsers)
-      .set({ 
-        fullName, 
-        email, 
+      .set({
+        fullName,
+        email,
         avatar,
-        updatedAt: new Date() 
+        updatedAt: new Date(),
       })
       .where(eq(coreUsers.id, userId))
 
@@ -106,7 +117,7 @@ app.patch('/profile', async (c) => {
 })
 
 // Update personal settings
-app.patch('/personal', async (c) => {
+app.patch('/personal', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -117,9 +128,12 @@ app.patch('/personal', async (c) => {
 
     const body = await c.req.json()
     const result = personalSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { gender, dateOfBirth, timezone, language } = result.data
@@ -134,24 +148,22 @@ app.patch('/personal', async (c) => {
     if (existingSettings) {
       await coreDb
         .update(coreUserSettings)
-        .set({ 
-          gender, 
-          dateOfBirth, 
-          timezone, 
+        .set({
+          gender,
+          dateOfBirth,
+          timezone,
           language,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         })
         .where(eq(coreUserSettings.userId, userId))
     } else {
-      await coreDb
-        .insert(coreUserSettings)
-        .values({ 
-          userId, 
-          gender, 
-          dateOfBirth, 
-          timezone, 
-          language 
-        })
+      await coreDb.insert(coreUserSettings).values({
+        userId,
+        gender,
+        dateOfBirth,
+        timezone,
+        language,
+      })
     }
 
     return c.json({ success: true, message: 'Personal settings updated successfully' })
@@ -162,7 +174,7 @@ app.patch('/personal', async (c) => {
 })
 
 // Update contact settings
-app.patch('/contact', async (c) => {
+app.patch('/contact', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -173,9 +185,12 @@ app.patch('/contact', async (c) => {
 
     const body = await c.req.json()
     const result = contactSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { phone, address, emergencyContact } = result.data
@@ -202,9 +217,7 @@ app.patch('/contact', async (c) => {
         .set(updateData)
         .where(eq(coreUserSettings.userId, userId))
     } else {
-      await coreDb
-        .insert(coreUserSettings)
-        .values({ userId, ...updateData })
+      await coreDb.insert(coreUserSettings).values({ userId, ...updateData })
     }
 
     return c.json({ success: true, message: 'Contact settings updated successfully' })
@@ -215,7 +228,7 @@ app.patch('/contact', async (c) => {
 })
 
 // Update appearance settings
-app.patch('/appearance', async (c) => {
+app.patch('/appearance', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -226,9 +239,12 @@ app.patch('/appearance', async (c) => {
 
     const body = await c.req.json()
     const result = appearanceSettingsSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { theme, density, primaryColor, fontSize, sidebarCollapsed } = result.data
@@ -255,9 +271,7 @@ app.patch('/appearance', async (c) => {
         .set(updateData)
         .where(eq(coreUserSettings.userId, userId))
     } else {
-      await coreDb
-        .insert(coreUserSettings)
-        .values({ userId, ...updateData })
+      await coreDb.insert(coreUserSettings).values({ userId, ...updateData })
     }
 
     return c.json({ success: true, message: 'Appearance settings updated successfully' })
@@ -268,7 +282,7 @@ app.patch('/appearance', async (c) => {
 })
 
 // Change password
-app.patch('/password', async (c) => {
+app.patch('/password', async c => {
   try {
     const coreDb = createCoreConnection()
     const user = c.get('user') as any
@@ -279,9 +293,12 @@ app.patch('/password', async (c) => {
 
     const body = await c.req.json()
     const result = passwordChangeSchema.safeParse(body)
-    
+
     if (!result.success) {
-      return c.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, 400)
+      return c.json(
+        { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        400
+      )
     }
 
     const { currentPassword, newPassword } = result.data
@@ -310,9 +327,9 @@ app.patch('/password', async (c) => {
     // Update password
     await coreDb
       .update(coreUsers)
-      .set({ 
+      .set({
         passwordHash: hashedPassword,
-        updatedAt: new Date() 
+        updatedAt: new Date(),
       })
       .where(eq(coreUsers.id, userId))
 

@@ -2,9 +2,16 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
+import { tenantProducts, handleApiResponse } from '@/lib/rpc'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -14,13 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -30,16 +37,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   RotateCcw,
   Download,
   Upload,
-  Filter
+  Filter,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -50,12 +57,12 @@ const searchSchema = z.object({
   search: z.string().catch(''),
   sortBy: z.string().catch('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).catch('desc'),
-  view: z.enum(['active', 'trashed', 'all']).catch('active')
+  view: z.enum(['active', 'trashed', 'all']).catch('active'),
 })
 
-export const Route = createFileRoute('/_tenant/products/')(({
+export const Route = createFileRoute('/_tenant/products/')({
   component: ProductsPage,
-  validateSearch: searchSchema
+  validateSearch: searchSchema,
 })
 
 interface ProductItem {
@@ -79,14 +86,14 @@ interface ProductFormData {
 function ProductsPage() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ProductItem | null>(null)
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     description: null,
     price: '',
-    isActive: ''
+    isActive: '',
   })
 
   // Fetch products
@@ -99,26 +106,27 @@ function ProductsPage() {
         search: search.search,
         sortBy: search.sortBy,
         sortOrder: search.sortOrder,
-        view: search.view
+        view: search.view,
       })
-      
-      const response = await fetch(`/api/tenant/products?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch products')
-      return response.json()
-    }
+
+      const response = await tenantProducts.$get({ query: Object.fromEntries(params) })
+      const result = await handleApiResponse(response)
+      if (!result.success) throw new Error(result.error || 'Failed to fetch products')
+      return result.data
+    },
   })
 
   // Handle search
   const handleSearch = (newSearch: string) => {
     navigate({
-      search: { ...search, search: newSearch, page: 1 }
+      search: { ...search, search: newSearch, page: 1 },
     })
   }
 
   // Handle view change
   const handleViewChange = (newView: 'active' | 'trashed' | 'all') => {
     navigate({
-      search: { ...search, view: newView, page: 1 }
+      search: { ...search, view: newView, page: 1 },
     })
   }
 
@@ -126,28 +134,25 @@ function ProductsPage() {
   const handleSort = (sortBy: string) => {
     const sortOrder = search.sortBy === sortBy && search.sortOrder === 'asc' ? 'desc' : 'asc'
     navigate({
-      search: { ...search, sortBy, sortOrder }
+      search: { ...search, sortBy, sortOrder },
     })
   }
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     navigate({
-      search: { ...search, page: newPage }
+      search: { ...search, page: newPage },
     })
   }
 
   // Create product
   const handleCreate = async () => {
     try {
-      const response = await fetch('/api/tenant/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-      
-      if (!response.ok) throw new Error('Failed to create product')
-      
+      const response = await tenantProducts.$post({ json: formData })
+      const result = await handleApiResponse(response)
+
+      if (!result.success) throw new Error(result.error || 'Failed to create product')
+
       toast.success('Product created successfully')
       setIsCreateDialogOpen(false)
       resetForm()
@@ -161,16 +166,16 @@ function ProductsPage() {
   // Update product
   const handleUpdate = async () => {
     if (!editingItem) return
-    
+
     try {
-      const response = await fetch(`/api/tenant/products/${editingItem.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      const response = await tenantProducts[':id'].$patch({
+        param: { id: editingItem.id },
+        json: formData,
       })
-      
-      if (!response.ok) throw new Error('Failed to update product')
-      
+      const result = await handleApiResponse(response)
+
+      if (!result.success) throw new Error(result.error || 'Failed to update product')
+
       toast.success('Product updated successfully')
       setEditingItem(null)
       resetForm()
@@ -184,12 +189,11 @@ function ProductsPage() {
   // Delete product
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/tenant/products/${id}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) throw new Error('Failed to delete product')
-      
+      const response = await tenantProducts[':id'].$delete({ param: { id } })
+      const result = await handleApiResponse(response)
+
+      if (!result.success) throw new Error(result.error || 'Failed to delete product')
+
       toast.success('Product deleted successfully')
       refetch()
     } catch (error) {
@@ -201,12 +205,11 @@ function ProductsPage() {
   // Restore product
   const handleRestore = async (id: string) => {
     try {
-      const response = await fetch(`/api/tenant/products/${id}/restore`, {
-        method: 'PATCH'
-      })
-      
-      if (!response.ok) throw new Error('Failed to restore product')
-      
+      const response = await tenantProducts[':id'].restore.$patch({ param: { id } })
+      const result = await handleApiResponse(response)
+
+      if (!result.success) throw new Error(result.error || 'Failed to restore product')
+
       toast.success('Product restored successfully')
       refetch()
     } catch (error) {
@@ -218,10 +221,10 @@ function ProductsPage() {
   // Reset form
   const resetForm = () => {
     setFormData({
-    title: '',
-    description: null,
-    price: '',
-    isActive: ''
+      title: '',
+      description: null,
+      price: '',
+      isActive: '',
     })
   }
 
@@ -232,7 +235,7 @@ function ProductsPage() {
       title: item.title,
       description: item.description,
       price: item.price,
-      isActive: item.isActive
+      isActive: item.isActive,
     })
   }
 
@@ -258,11 +261,11 @@ function ProductsPage() {
           <Input
             placeholder="Search products..."
             value={search.search}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             className="pl-8"
           />
         </div>
-        
+
         <Select value={search.view} onValueChange={handleViewChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue />
@@ -280,31 +283,32 @@ function ProductsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('title')}
               >
                 Title {search.sortBy === 'title' && (search.sortOrder === 'asc' ? '↑' : '↓')}
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('description')}
               >
-                Description {search.sortBy === 'description' && (search.sortOrder === 'asc' ? '↑' : '↓')}
+                Description{' '}
+                {search.sortBy === 'description' && (search.sortOrder === 'asc' ? '↑' : '↓')}
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('price')}
               >
                 Price {search.sortBy === 'price' && (search.sortOrder === 'asc' ? '↑' : '↓')}
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('isActive')}
               >
                 Is Active {search.sortBy === 'isActive' && (search.sortOrder === 'asc' ? '↑' : '↓')}
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('createdAt')}
               >
@@ -317,11 +321,15 @@ function ProductsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Loading...</TableCell>
+                <TableCell colSpan={6} className="text-center">
+                  Loading...
+                </TableCell>
               </TableRow>
             ) : data?.data?.items?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">No products found</TableCell>
+                <TableCell colSpan={6} className="text-center">
+                  No products found
+                </TableCell>
               </TableRow>
             ) : (
               data?.data?.items?.map((item: ProductItem) => (
@@ -350,7 +358,7 @@ function ProductsPage() {
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDelete(item.id)}
                               className="text-destructive"
                             >
@@ -378,7 +386,7 @@ function ProductsPage() {
       {data?.data?.pagination && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {((search.page - 1) * search.limit) + 1} to{' '}
+            Showing {(search.page - 1) * search.limit + 1} to{' '}
             {Math.min(search.page * search.limit, data.data.pagination.total)} of{' '}
             {data.data.pagination.total} results
           </div>
@@ -408,9 +416,7 @@ function ProductsPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create Product</DialogTitle>
-            <DialogDescription>
-              Add a new product to your collection.
-            </DialogDescription>
+            <DialogDescription>Add a new product to your collection.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -421,7 +427,7 @@ function ProductsPage() {
                 id="title"
                 type="text"
                 value={formData.title || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -433,7 +439,7 @@ function ProductsPage() {
                 id="description"
                 type="text"
                 value={formData.description || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -445,7 +451,7 @@ function ProductsPage() {
                 id="price"
                 type="text"
                 value={formData.price || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -457,7 +463,7 @@ function ProductsPage() {
                 id="isActive"
                 type="text"
                 value={formData.isActive || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -472,13 +478,11 @@ function ProductsPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+      <Dialog open={!!editingItem} onOpenChange={open => !open && setEditingItem(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
-            <DialogDescription>
-              Make changes to the product here.
-            </DialogDescription>
+            <DialogDescription>Make changes to the product here.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -489,7 +493,7 @@ function ProductsPage() {
                 id="title"
                 type="text"
                 value={formData.title || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -501,7 +505,7 @@ function ProductsPage() {
                 id="description"
                 type="text"
                 value={formData.description || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -513,7 +517,7 @@ function ProductsPage() {
                 id="price"
                 type="text"
                 value={formData.price || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 className="col-span-3"
               />
             </div>
@@ -525,7 +529,7 @@ function ProductsPage() {
                 id="isActive"
                 type="text"
                 value={formData.isActive || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.value }))}
                 className="col-span-3"
               />
             </div>

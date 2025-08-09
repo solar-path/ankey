@@ -12,7 +12,6 @@ const productSchema = z.object({
   description: z.string().nullable(),
   price: z.string(),
   isActive: z.string(),
-
 })
 
 const querySchema = z.object({
@@ -21,19 +20,19 @@ const querySchema = z.object({
   search: z.string().optional(),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  view: z.enum(['active', 'trashed', 'all']).default('active')
+  view: z.enum(['active', 'trashed', 'all']).default('active'),
 })
 
 // Get all products with pagination and filters
-app.get('/', async (c) => {
+app.get('/', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const query = querySchema.parse(c.req.query())
-    
+
     // Build base query
     let baseQuery = db.select().from(products)
     let countQuery = db.select({ count: count() }).from(products)
-    
+
     // Apply filters based on view
     const whereConditions = []
     if (query.view === 'active') {
@@ -42,33 +41,34 @@ app.get('/', async (c) => {
       whereConditions.push(isNotNull(products.deletedAt))
     }
     // 'all' view shows both active and trashed
-    
+
     // Apply search filter
     if (query.search) {
       whereConditions.push(ilike(products.title, `%${query.search}%`))
     }
-    
+
     if (whereConditions.length > 0) {
       baseQuery = baseQuery.where(and(...whereConditions))
       countQuery = countQuery.where(and(...whereConditions))
     }
-    
+
     // Apply sorting
     const sortColumn = products[query.sortBy as keyof typeof products] || products.createdAt
-    baseQuery = query.sortOrder === 'asc' 
-      ? baseQuery.orderBy(asc(sortColumn))
-      : baseQuery.orderBy(desc(sortColumn))
-    
+    baseQuery =
+      query.sortOrder === 'asc'
+        ? baseQuery.orderBy(asc(sortColumn))
+        : baseQuery.orderBy(desc(sortColumn))
+
     // Apply pagination
     const offset = (query.page - 1) * query.limit
     baseQuery = baseQuery.limit(query.limit).offset(offset)
-    
+
     // Execute queries
     const [items, totalCount] = await Promise.all([
       baseQuery,
-      countQuery.then(result => result[0]?.count || 0)
+      countQuery.then(result => result[0]?.count || 0),
     ])
-    
+
     return c.json({
       success: true,
       data: {
@@ -77,10 +77,10 @@ app.get('/', async (c) => {
           page: query.page,
           limit: query.limit,
           total: Number(totalCount),
-          totalPages: Math.ceil(Number(totalCount) / query.limit)
+          totalPages: Math.ceil(Number(totalCount) / query.limit),
         },
-        view: query.view
-      }
+        view: query.view,
+      },
     })
   } catch (error) {
     console.error('Get products error:', error)
@@ -89,21 +89,21 @@ app.get('/', async (c) => {
 })
 
 // Get single product by ID
-app.get('/:id', async (c) => {
+app.get('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
-    
+
     const item = await db
       .select()
       .from(products)
       .where(eq(products.id, id))
       .then(rows => rows[0])
-    
+
     if (!item) {
       return c.json({ success: false, error: 'Product not found' }, 404)
     }
-    
+
     return c.json({ success: true, data: item })
   } catch (error) {
     console.error('Get product error:', error)
@@ -112,79 +112,82 @@ app.get('/:id', async (c) => {
 })
 
 // Create new product
-app.post('/', async (c) => {
+app.post('/', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const body = await c.req.json()
     const validatedData = productSchema.parse(body)
-    
-    const [newItem] = await db
-      .insert(products)
-      .values(validatedData)
-      .returning()
-    
+
+    const [newItem] = await db.insert(products).values(validatedData).returning()
+
     return c.json({ success: true, data: newItem }, 201)
   } catch (error) {
     console.error('Create product error:', error)
     if (error instanceof z.ZodError) {
-      return c.json({
-        success: false,
-        error: 'Validation failed',
-        details: error.flatten().fieldErrors
-      }, 400)
+      return c.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          details: error.flatten().fieldErrors,
+        },
+        400
+      )
     }
     return c.json({ success: false, error: 'Failed to create product' }, 500)
   }
 })
 
 // Update product
-app.patch('/:id', async (c) => {
+app.patch('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
     const body = await c.req.json()
     const validatedData = productSchema.partial().parse(body)
-    
+
     const [updatedItem] = await db
       .update(products)
       .set({ ...validatedData, updatedAt: new Date() })
       .where(eq(products.id, id))
       .returning()
-    
+
     if (!updatedItem) {
       return c.json({ success: false, error: 'Product not found' }, 404)
     }
-    
+
     return c.json({ success: true, data: updatedItem })
   } catch (error) {
     console.error('Update product error:', error)
     if (error instanceof z.ZodError) {
-      return c.json({
-        success: false,
-        error: 'Validation failed',
-        details: error.flatten().fieldErrors
-      }, 400)
+      return c.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          details: error.flatten().fieldErrors,
+        },
+        400
+      )
     }
     return c.json({ success: false, error: 'Failed to update product' }, 500)
   }
 })
 
 // Soft delete product
-app.delete('/:id', async (c) => {
+app.delete('/:id', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
-    
+
     const [deletedItem] = await db
       .update(products)
       .set({ deletedAt: new Date() })
       .where(and(eq(products.id, id), isNull(products.deletedAt)))
       .returning()
-    
+
     if (!deletedItem) {
       return c.json({ success: false, error: 'Product not found or already deleted' }, 404)
     }
-    
+
     return c.json({ success: true, message: 'Product deleted successfully' })
   } catch (error) {
     console.error('Delete product error:', error)
@@ -193,21 +196,21 @@ app.delete('/:id', async (c) => {
 })
 
 // Restore product
-app.patch('/:id/restore', async (c) => {
+app.patch('/:id/restore', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
-    
+
     const [restoredItem] = await db
       .update(products)
       .set({ deletedAt: null, updatedAt: new Date() })
       .where(and(eq(products.id, id), isNotNull(products.deletedAt)))
       .returning()
-    
+
     if (!restoredItem) {
       return c.json({ success: false, error: 'Product not found or not deleted' }, 404)
     }
-    
+
     return c.json({ success: true, data: restoredItem, message: 'Product restored successfully' })
   } catch (error) {
     console.error('Restore product error:', error)
@@ -216,20 +219,17 @@ app.patch('/:id/restore', async (c) => {
 })
 
 // Force delete product (permanent)
-app.delete('/:id/force', async (c) => {
+app.delete('/:id/force', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const id = c.req.param('id')
-    
-    const [deletedItem] = await db
-      .delete(products)
-      .where(eq(products.id, id))
-      .returning()
-    
+
+    const [deletedItem] = await db.delete(products).where(eq(products.id, id)).returning()
+
     if (!deletedItem) {
       return c.json({ success: false, error: 'Product not found' }, 404)
     }
-    
+
     return c.json({ success: true, message: 'Product permanently deleted' })
   } catch (error) {
     console.error('Force delete product error:', error)
@@ -238,15 +238,15 @@ app.delete('/:id/force', async (c) => {
 })
 
 // Bulk operations
-app.post('/bulk', async (c) => {
+app.post('/bulk', async c => {
   try {
     const db = createTenantConnection(c.get('tenantDatabase'))
     const { ids, action } = await c.req.json()
-    
+
     if (!Array.isArray(ids) || ids.length === 0) {
       return c.json({ success: false, error: 'Invalid or empty IDs array' }, 400)
     }
-    
+
     let result
     switch (action) {
       case 'delete':
@@ -256,24 +256,22 @@ app.post('/bulk', async (c) => {
           .where(and(eq(products.id, ids[0]), isNull(products.deletedAt)))
         // Note: Bulk operations would need more complex handling for multiple IDs
         break
-      
+
       case 'restore':
         result = await db
           .update(products)
           .set({ deletedAt: null, updatedAt: new Date() })
           .where(and(eq(products.id, ids[0]), isNotNull(products.deletedAt)))
         break
-      
+
       case 'force-delete':
-        result = await db
-          .delete(products)
-          .where(eq(products.id, ids[0]))
+        result = await db.delete(products).where(eq(products.id, ids[0]))
         break
-      
+
       default:
         return c.json({ success: false, error: 'Invalid action' }, 400)
     }
-    
+
     return c.json({ success: true, message: `Bulk ${action} completed` })
   } catch (error) {
     console.error('Bulk operation error:', error)

@@ -15,7 +15,7 @@ export class TypeGenerator {
   private async generateTypes() {
     const typesPath = 'src/shared/index.ts'
     let content = ''
-    
+
     // Read existing content if file exists
     try {
       content = readFileSync(typesPath, 'utf-8')
@@ -23,20 +23,20 @@ export class TypeGenerator {
       // File doesn't exist, start with empty content
       content = '// Generated types\n\n'
     }
-    
+
     // Generate types
     const modelTypes = this.generateModelTypes()
-    
+
     // Append new types (you could be smarter about checking for duplicates)
     const newContent = content + '\n' + modelTypes
-    
+
     writeFileSync(typesPath, newContent)
   }
 
   private generateModelTypes(): string {
     const modelName = this.options.name
     const pluralModelName = this.pluralize(modelName)
-    
+
     return `// ${modelName} types
 export interface ${modelName} {
   id: string
@@ -108,7 +108,7 @@ export interface ${modelName}BulkActionResponse {
 
   private getTypeScriptType(field: Field): string {
     let baseType: string
-    
+
     switch (field.type) {
       case 'boolean':
         baseType = 'boolean'
@@ -129,7 +129,7 @@ export interface ${modelName}BulkActionResponse {
       default:
         baseType = 'string'
     }
-    
+
     return field.nullable ? `${baseType} | null` : baseType
   }
 
@@ -137,7 +137,13 @@ export interface ${modelName}BulkActionResponse {
     if (word.endsWith('y')) {
       return word.slice(0, -1) + 'ies'
     }
-    if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
+    if (
+      word.endsWith('s') ||
+      word.endsWith('sh') ||
+      word.endsWith('ch') ||
+      word.endsWith('x') ||
+      word.endsWith('z')
+    ) {
       return word + 'es'
     }
     return word + 's'

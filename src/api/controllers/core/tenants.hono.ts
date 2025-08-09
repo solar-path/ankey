@@ -127,12 +127,12 @@ coreTenantsRoutes.get('/recent', async c => {
   try {
     const limit = c.req.query('limit')
     const result = await tenantService.getRecentTenants(limit ? parseInt(limit) : 5)
-    
+
     if (!result.success) {
       console.error('Recent tenants service error:', result.error)
       return c.json(result, 500)
     }
-    
+
     return c.json(result)
   } catch (error) {
     console.error('Recent tenants route error:', error)
@@ -145,12 +145,12 @@ coreTenantsRoutes.get('/activity', async c => {
   try {
     const limit = c.req.query('limit')
     const result = await tenantService.getSystemActivity(limit ? parseInt(limit) : 10)
-    
+
     if (!result.success) {
       console.error('System activity service error:', result.error)
       return c.json(result, 500)
     }
-    
+
     return c.json(result)
   } catch (error) {
     console.error('System activity route error:', error)
