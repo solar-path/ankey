@@ -1,5 +1,6 @@
 import { CoreAuthService } from '@/api/auth.settings'
 import { TenantService } from '@/api/tenant.settings'
+import { billingQuerySchema, deactivateTenantSchema, updateTenantSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod/v4'
@@ -26,24 +27,7 @@ const requireCoreAuth = async (c: any, next: any) => {
   await next()
 }
 
-// Update tenant
-const updateTenantSchema = z.object({
-  name: z.string().optional(),
-  isActive: z.boolean().optional(),
-  billingEmail: z.string().email().optional(),
-  monthlyRate: z.number().min(0).optional(),
-})
-
-// Deactivate tenant
-const deactivateTenantSchema = z.object({
-  reason: z.string().optional(),
-})
-
-// Get billing for tenant
-const billingQuerySchema = z.object({
-  startDate: z.string().transform(str => new Date(str)),
-  endDate: z.string().transform(str => new Date(str)),
-})
+// Schemas are now imported from @/shared
 
 export const coreTenantsRoutes = new Hono()
   .use('*', requireCoreAuth)

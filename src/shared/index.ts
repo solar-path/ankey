@@ -325,3 +325,506 @@ export interface ProductBulkActionResponse {
   message: string
   count?: number
 }
+
+// ===== CORE ROUTES TYPE DEFINITIONS =====
+
+// Export types
+export const exportRequestSchema = z.object({
+  title: z.string(),
+  format: z.enum(['pdf', 'xlsx', 'csv']),
+  columns: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      width: z.number().optional(),
+    })
+  ),
+  data: z.array(z.record(z.string(), z.any())),
+  metadata: z
+    .object({
+      exportedBy: z.string().optional(),
+      company: z.string().optional(),
+      description: z.string().optional(),
+    })
+    .optional(),
+})
+
+export type ExportRequest = z.infer<typeof exportRequestSchema>
+
+export interface ExportColumn {
+  key: string
+  label: string
+  width?: number
+}
+
+export interface ExportTemplate {
+  columns: ExportColumn[]
+}
+
+export interface ExportTemplateResponse {
+  success?: boolean
+  error?: string
+  columns?: ExportColumn[]
+}
+
+// Import types
+export const importConfigSchema = z.object({
+  columns: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      required: z.boolean().optional(),
+      type: z.enum(['string', 'number', 'date', 'boolean']).optional(),
+    })
+  ),
+  options: z
+    .object({
+      delimiter: z.string().optional(),
+      skipFirstRow: z.boolean().optional(),
+      syncMode: z.enum(['create-only', 'update-only', 'create-update']).optional(),
+      keyColumn: z.string().optional(),
+    })
+    .optional(),
+})
+
+export const importSyncSchema = z.object({
+  importedData: z.array(z.record(z.string(), z.any())),
+  existingData: z.array(z.record(z.string(), z.any())),
+  keyColumn: z.string(),
+  syncMode: z.enum(['create-only', 'update-only', 'create-update']).optional(),
+})
+
+export type ImportConfig = z.infer<typeof importConfigSchema>
+export type ImportSync = z.infer<typeof importSyncSchema>
+
+export interface ImportColumn {
+  key: string
+  label: string
+  required?: boolean
+  type?: 'string' | 'number' | 'date' | 'boolean'
+}
+
+export interface ImportTemplate {
+  columns: ImportColumn[]
+  sampleData?: any[]
+}
+
+export interface ImportParseResponse {
+  success: boolean
+  result?: {
+    data: any[]
+    errors: string[]
+    totalRows: number
+    validRows: number
+  }
+  fileInfo?: {
+    name: string
+    size: number
+    type: string
+  }
+  error?: string
+}
+
+export interface ImportSyncResponse {
+  success: boolean
+  syncResult?: {
+    toCreate: any[]
+    toUpdate: any[]
+    unchanged: any[]
+  }
+  summary?: {
+    totalImported: number
+    toCreate: number
+    toUpdate: number
+    unchanged: number
+  }
+  error?: string
+}
+
+// Inquiry types
+export const inquirySubmitSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+  attachments: z.array(z.string()).optional(),
+})
+
+export const findInquirySchema = z.object({
+  id: z.string().min(1, 'Inquiry ID is required'),
+})
+
+export const inquiryStatusUpdateSchema = z.object({
+  status: z.enum(['open', 'in-progress', 'resolved', 'closed']),
+  response: z.string().optional(),
+})
+
+export type InquirySubmit = z.infer<typeof inquirySubmitSchema>
+export type FindInquiry = z.infer<typeof findInquirySchema>
+export type InquiryStatusUpdate = z.infer<typeof inquiryStatusUpdateSchema>
+
+export interface Inquiry {
+  id: string
+  email: string
+  message: string
+  attachments?: string[]
+  status: 'open' | 'in-progress' | 'resolved' | 'closed' | 'submitted'
+  response?: string
+  submittedAt: Date
+  updatedAt?: Date
+}
+
+export interface InquiryResponse {
+  success: boolean
+  data?: {
+    inquiryId?: string
+    inquiry?: Inquiry
+    message?: string
+  }
+  error?: string
+}
+
+export interface InquiryListResponse {
+  success: boolean
+  data?: Inquiry[]
+  error?: string
+}
+
+// Pricing types
+export interface PricingPlan {
+  id: string
+  name: string
+  description?: string
+  basePrice: number
+  billingCycle: 'monthly' | 'yearly'
+  features: string[]
+  isActive: boolean
+  displayOrder: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface PricingDiscount {
+  id: string
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  maxUses?: number
+  usedCount: number
+  expiresAt?: Date
+  isActive: boolean
+  createdAt: Date
+}
+
+export interface TenantSubscription {
+  id: string
+  tenantId: string
+  planId: string
+  status: 'active' | 'cancelled' | 'expired' | 'trial'
+  startDate: Date
+  endDate?: Date
+  lastBillingDate?: Date
+  nextBillingDate?: Date
+  monthlyRate: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface PricingPlansResponse {
+  success?: boolean
+  plans?: PricingPlan[]
+  error?: string
+}
+
+export interface PricingDiscountsResponse {
+  success?: boolean
+  discounts?: PricingDiscount[]
+  error?: string
+}
+
+export interface SubscriptionsResponse {
+  success?: boolean
+  subscriptions?: TenantSubscription[]
+  error?: string
+}
+
+// Tenant management types
+export const updateTenantSchema = z.object({
+  name: z.string().optional(),
+  isActive: z.boolean().optional(),
+  billingEmail: z.string().email().optional(),
+  monthlyRate: z.number().min(0).optional(),
+})
+
+export const deactivateTenantSchema = z.object({
+  reason: z.string().optional(),
+})
+
+export const billingQuerySchema = z.object({
+  startDate: z.string().transform(str => new Date(str)),
+  endDate: z.string().transform(str => new Date(str)),
+})
+
+export type UpdateTenant = z.infer<typeof updateTenantSchema>
+export type DeactivateTenant = z.infer<typeof deactivateTenantSchema>
+export type BillingQuery = z.infer<typeof billingQuerySchema>
+
+export interface TenantFilters {
+  search?: string
+  isActive?: boolean
+  limit?: number
+  offset?: number
+}
+
+export interface TenantListResponse {
+  success: boolean
+  data?: {
+    tenants: Tenant[]
+    total?: number
+    pagination?: {
+      page: number
+      limit: number
+      total: number
+    }
+  }
+  error?: string
+}
+
+export interface TenantBillingResponse {
+  success: boolean
+  data?: {
+    tenantId: string
+    billingPeriod: {
+      startDate: Date
+      endDate: Date
+    }
+    usage: {
+      userCount: number
+      storageUsed: number
+      apiCalls: number
+    }
+    charges: {
+      baseRate: number
+      overages: number
+      total: number
+    }
+  }
+  error?: string
+}
+
+export interface DashboardStats {
+  success: boolean
+  data?: {
+    totalTenants: number
+    activeTenants: number
+    totalUsers: number
+    totalRevenue: number
+    recentActivity: any[]
+  }
+  error?: string
+}
+
+// ===== TENANT ROUTES TYPE DEFINITIONS =====
+
+// RBAC types
+export const createPermissionSchema = z.object({
+  name: z.string().min(1),
+  resource: z.string().min(1),
+  action: z.string().min(1),
+  description: z.string().optional(),
+})
+
+export const createRoleSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+})
+
+export const assignPermissionsSchema = z.object({
+  permissionIds: z.array(z.string()),
+})
+
+export const assignRolesSchema = z.object({
+  roleIds: z.array(z.string()),
+})
+
+export type CreatePermission = z.infer<typeof createPermissionSchema>
+export type CreateRole = z.infer<typeof createRoleSchema>
+export type AssignPermissions = z.infer<typeof assignPermissionsSchema>
+export type AssignRoles = z.infer<typeof assignRolesSchema>
+
+export interface PermissionResponse {
+  success: boolean
+  data?: Permission
+  error?: string
+}
+
+export interface PermissionsResponse {
+  success: boolean
+  data?: Permission[]
+  error?: string
+}
+
+export interface RoleResponse {
+  success: boolean
+  data?: Role
+  error?: string
+}
+
+export interface RolesResponse {
+  success: boolean
+  data?: Role[]
+  error?: string
+}
+
+export interface UserRolesResponse {
+  success: boolean
+  data?: {
+    userId: string
+    roles: Role[]
+  }
+  error?: string
+}
+
+export interface UserPermissionsResponse {
+  success: boolean
+  data?: {
+    userId: string
+    permissions: Permission[]
+  }
+  error?: string
+}
+
+export interface PermissionSyncRoute {
+  resource: string
+  action: string
+  description: string
+}
+
+export interface PermissionSyncResponse {
+  success: boolean
+  data?: {
+    created: number
+    updated: number
+    total: number
+  }
+  message?: string
+  error?: string
+}
+
+// Product query types (to complement existing Product types)
+export const productQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  sortBy: z.string().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  view: z.enum(['active', 'trashed', 'all']).default('active'),
+})
+
+export const productCreateSchema = z.object({
+  title: z.string(),
+  description: z.string().nullable(),
+  price: z.string(),
+  isActive: z.string(),
+})
+
+export const productUpdateSchema = productCreateSchema.partial()
+
+export type ProductQuery = z.infer<typeof productQuerySchema>
+export type ProductCreate = z.infer<typeof productCreateSchema>
+export type ProductUpdate = z.infer<typeof productUpdateSchema>
+
+// Tenant Settings types
+export interface TenantSettingsResponse {
+  success: boolean
+  data?: {
+    profile?: ProfileSettings
+    personal?: PersonalSettings
+    contact?: ContactSettings
+    appearance?: AppearanceSettings
+  }
+  error?: string
+}
+
+// Core Auth types (additional to existing login/register schemas)
+export interface CoreAuthResponse {
+  success: boolean
+  data?: {
+    user?: User
+    sessionCookie?: string
+    requiresTwoFactor?: boolean
+  }
+  message?: string
+  error?: string
+}
+
+// Tenant Auth types
+export interface TenantAuthResponse {
+  success: boolean
+  data?: {
+    user?: User
+    sessionCookie?: string
+    requiresTwoFactor?: boolean
+  }
+  message?: string
+  error?: string
+}
+
+export interface SessionValidationResponse {
+  success: boolean
+  data?: {
+    user: User
+    session: {
+      id: string
+      expiresAt: Date
+    }
+  }
+  error?: string
+}
+
+// Pricing schemas for POST/PUT requests
+export const createPricingPlanSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  basePrice: z.number().min(0),
+  billingCycle: z.enum(['monthly', 'yearly']),
+  features: z.array(z.string()),
+  displayOrder: z.number().default(0),
+  isActive: z.boolean().default(true),
+})
+
+export const updatePricingPlanSchema = createPricingPlanSchema.partial()
+
+export const createDiscountSchema = z.object({
+  code: z.string().min(1),
+  type: z.enum(['percentage', 'fixed']),
+  value: z.number().min(0),
+  maxUses: z.number().optional(),
+  expiresAt: z.date().optional(),
+  isActive: z.boolean().default(true),
+})
+
+export const updateDiscountSchema = createDiscountSchema.partial()
+
+export const createSubscriptionSchema = z.object({
+  tenantId: z.string(),
+  planId: z.string(),
+  startDate: z.date(),
+  endDate: z.date().optional(),
+  monthlyRate: z.number().min(0),
+})
+
+export const updateSubscriptionSchema = createSubscriptionSchema.partial()
+
+export const billingCalculationSchema = z.object({
+  tenantId: z.string(),
+  startDate: z.date(),
+  endDate: z.date(),
+  userCount: z.number().min(0),
+})
+
+export type CreatePricingPlan = z.infer<typeof createPricingPlanSchema>
+export type UpdatePricingPlan = z.infer<typeof updatePricingPlanSchema>
+export type CreateDiscount = z.infer<typeof createDiscountSchema>
+export type UpdateDiscount = z.infer<typeof updateDiscountSchema>
+export type CreateSubscription = z.infer<typeof createSubscriptionSchema>
+export type UpdateSubscription = z.infer<typeof updateSubscriptionSchema>
+export type BillingCalculation = z.infer<typeof billingCalculationSchema>

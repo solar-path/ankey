@@ -1,25 +1,10 @@
 import { createTenantConnection } from '@/api/database.settings'
 import { products } from '@/api/db/schemas/tenant.drizzle'
+import { productCreateSchema, productQuerySchema, productUpdateSchema } from '@/shared'
+import { zValidator } from '@hono/zod-validator'
 import { and, asc, count, desc, eq, ilike, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod/v4'
-
-// Validation schema
-const productSchema = z.object({
-  title: z.string(),
-  description: z.string().nullable(),
-  price: z.string(),
-  isActive: z.string(),
-})
-
-const querySchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
-  search: z.string().optional(),
-  sortBy: z.string().default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  view: z.enum(['active', 'trashed', 'all']).default('active'),
-})
 
 export const productRoutes = new Hono()
   // Get all products with pagination and filters
@@ -30,7 +15,7 @@ export const productRoutes = new Hono()
         return c.json({ success: false, message: 'Tenant database not found' }, 400)
       }
       const db = createTenantConnection(tenantDatabase)
-      const query = querySchema.parse(c.req.query())
+      const query = productQuerySchema.parse(c.req.query())
 
       // Build conditions array
       const whereConditions = []
@@ -55,13 +40,19 @@ export const productRoutes = new Hono()
       const baseQueryBuilder = db.select().from(products)
       const countQueryBuilder = db.select({ count: count() }).from(products)
 
-      const finalBaseQuery = whereConditions.length > 0 
-        ? baseQueryBuilder.where(and(...whereConditions)).orderBy(orderByClause).limit(query.limit).offset(offset)
-        : baseQueryBuilder.orderBy(orderByClause).limit(query.limit).offset(offset)
+      const finalBaseQuery =
+        whereConditions.length > 0
+          ? baseQueryBuilder
+              .where(and(...whereConditions))
+              .orderBy(orderByClause)
+              .limit(query.limit)
+              .offset(offset)
+          : baseQueryBuilder.orderBy(orderByClause).limit(query.limit).offset(offset)
 
-      const finalCountQuery = whereConditions.length > 0
-        ? countQueryBuilder.where(and(...whereConditions))
-        : countQueryBuilder
+      const finalCountQuery =
+        whereConditions.length > 0
+          ? countQueryBuilder.where(and(...whereConditions))
+          : countQueryBuilder
 
       // Execute queries
       const [items, totalCount] = await Promise.all([
@@ -124,7 +115,7 @@ export const productRoutes = new Hono()
       }
       const db = createTenantConnection(tenantDatabase)
       const body = await c.req.json()
-      const validatedData = productSchema.parse(body)
+      const validatedData = productCreateSchema.parse(body)
 
       const [newItem] = await db.insert(products).values(validatedData).returning()
 
@@ -155,7 +146,7 @@ export const productRoutes = new Hono()
       const db = createTenantConnection(tenantDatabase)
       const id = c.req.param('id')
       const body = await c.req.json()
-      const validatedData = productSchema.partial().parse(body)
+      const validatedData = productUpdateSchema.parse(body)
 
       const [updatedItem] = await db
         .update(products)

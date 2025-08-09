@@ -1,21 +1,11 @@
 import { AuditService } from '@/api/audit.settings'
+import { findInquirySchema, inquiryStatusUpdateSchema, inquirySubmitSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod/v4'
-
-const inquirySchema = z.object({
-  email: z.string().email('Invalid email address'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-  attachments: z.array(z.string()).optional(),
-})
-
-const findInquirySchema = z.object({
-  id: z.string().min(1, 'Inquiry ID is required'),
-})
 
 // Submit inquiry
 export const inquiryRoutes = new Hono()
-  .post('/submit', zValidator('json', inquirySchema), async c => {
+  .post('/submit', zValidator('json', inquirySubmitSchema), async c => {
     const data = c.req.valid('json')
 
     try {
@@ -162,58 +152,48 @@ export const inquiryRoutes = new Hono()
   })
 
   // Update inquiry status (admin only)
-  .put(
-    '/:id/status',
-    zValidator(
-      'json',
-      z.object({
-        status: z.enum(['open', 'in-progress', 'resolved', 'closed']),
-        response: z.string().optional(),
-      })
-    ),
-    async c => {
-      const inquiryId = c.req.param('id')
-      const { status, response } = c.req.valid('json')
+  .put('/:id/status', zValidator('json', inquiryStatusUpdateSchema), async c => {
+    const inquiryId = c.req.param('id')
+    const { status, response } = c.req.valid('json')
 
-      try {
-        // In a real app, you would:
-        // 1. Check admin authentication
-        // 2. Update in database
-        // 3. Send email notification to customer
+    try {
+      // In a real app, you would:
+      // 1. Check admin authentication
+      // 2. Update in database
+      // 3. Send email notification to customer
 
-        console.log(`Updating inquiry ${inquiryId} status to ${status}`)
+      console.log(`Updating inquiry ${inquiryId} status to ${status}`)
 
-        const updatedInquiry = {
-          id: inquiryId,
-          status,
-          response,
-          updatedAt: new Date(),
-        }
-
-        // Log the status update
-        await AuditService.logCore({
-          userId: 'system',
-          action: 'inquiry.status_update',
-          resource: 'inquiry',
-          resourceId: inquiryId,
-          newValues: updatedInquiry,
-          ipAddress: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown',
-          userAgent: c.req.header('user-agent') || 'unknown',
-        })
-
-        return c.json({
-          success: true,
-          data: updatedInquiry,
-        })
-      } catch (error) {
-        console.error('Error updating inquiry status:', error)
-        return c.json(
-          {
-            success: false,
-            error: 'Failed to update inquiry status.',
-          },
-          500
-        )
+      const updatedInquiry = {
+        id: inquiryId,
+        status,
+        response,
+        updatedAt: new Date(),
       }
+
+      // Log the status update
+      await AuditService.logCore({
+        userId: 'system',
+        action: 'inquiry.status_update',
+        resource: 'inquiry',
+        resourceId: inquiryId,
+        newValues: updatedInquiry,
+        ipAddress: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown',
+        userAgent: c.req.header('user-agent') || 'unknown',
+      })
+
+      return c.json({
+        success: true,
+        data: updatedInquiry,
+      })
+    } catch (error) {
+      console.error('Error updating inquiry status:', error)
+      return c.json(
+        {
+          success: false,
+          error: 'Failed to update inquiry status.',
+        },
+        500
+      )
     }
-  )
+  })

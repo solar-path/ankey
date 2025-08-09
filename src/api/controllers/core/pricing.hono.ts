@@ -1,8 +1,17 @@
+import {
+  billingCalculationSchema,
+  createDiscountSchema,
+  createPricingPlanSchema,
+  createSubscriptionSchema,
+  updateDiscountSchema,
+  updatePricingPlanSchema,
+  updateSubscriptionSchema,
+} from '@/shared'
+import { zValidator } from '@hono/zod-validator'
 import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
 import { pricingDiscounts, pricingPlans, tenantSubscriptions } from '../../db/schemas/core.drizzle'
-// import { zValidator } from '@hono/zod-validator'
 
 // PRICING PLANS CRUD
 
@@ -44,9 +53,9 @@ export const pricingRouter = new Hono()
   })
 
   // Create pricing plan
-  .post('/plans', async c => {
+  .post('/plans', zValidator('json', createPricingPlanSchema), async c => {
     try {
-      const planData = await c.req.json()
+      const planData = c.req.valid('json')
 
       const [newPlan] = await createCoreConnection()
         .insert(pricingPlans)
@@ -63,10 +72,10 @@ export const pricingRouter = new Hono()
   })
 
   // Update pricing plan
-  .put('/plans/:id', async c => {
+  .put('/plans/:id', zValidator('json', updatePricingPlanSchema), async c => {
     try {
       const planId = c.req.param('id')
-      const updateData = await c.req.json()
+      const updateData = c.req.valid('json')
 
       const [updatedPlan] = await createCoreConnection()
         .update(pricingPlans)
@@ -170,9 +179,9 @@ export const pricingRouter = new Hono()
   })
 
   // Create discount
-  .post('/discounts', async c => {
+  .post('/discounts', zValidator('json', createDiscountSchema), async c => {
     try {
-      const discountData = await c.req.json()
+      const discountData = c.req.valid('json')
 
       const [newDiscount] = await createCoreConnection()
         .insert(pricingDiscounts)
@@ -186,13 +195,10 @@ export const pricingRouter = new Hono()
   })
 
   // Update discount
-  .put(
-    '/discounts/:id',
-
-    async c => {
+  .put('/discounts/:id', zValidator('json', updateDiscountSchema), async c => {
       try {
         const discountId = c.req.param('id')
-        const updateData = await c.req.json()
+        const updateData = c.req.valid('json')
 
         const [updatedDiscount] = await createCoreConnection()
           .update(pricingDiscounts)

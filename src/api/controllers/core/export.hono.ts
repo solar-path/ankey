@@ -1,31 +1,11 @@
 import { type ExportData, ServerExportService } from '@/api/services/export.service'
+import { exportRequestSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod/v4'
-
-const ExportRequestSchema = z.object({
-  title: z.string(),
-  format: z.enum(['pdf', 'xlsx', 'csv']),
-  columns: z.array(
-    z.object({
-      key: z.string(),
-      label: z.string(),
-      width: z.number().optional(),
-    })
-  ),
-  data: z.array(z.record(z.string(), z.any())),
-  metadata: z
-    .object({
-      exportedBy: z.string().optional(),
-      company: z.string().optional(),
-      description: z.string().optional(),
-    })
-    .optional(),
-})
 
 // Export data to various formats
 export const coreExportRoutes = new Hono()
-  .post('/export', zValidator('json', ExportRequestSchema), async c => {
+  .post('/export', zValidator('json', exportRequestSchema), async c => {
     try {
       const { title, format, columns, data, metadata } = c.req.valid('json')
 

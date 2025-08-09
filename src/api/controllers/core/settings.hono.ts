@@ -7,6 +7,7 @@ import {
   personalSettingsSchema,
   profileSettingsSchema,
 } from '@/shared'
+import { zValidator } from '@hono/zod-validator'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 
@@ -110,7 +111,7 @@ export const coreSettingsRoutes = new Hono()
   })
 
   // Update profile settings
-  .patch('/profile', async c => {
+  .patch('/profile', zValidator('json', profileSettingsSchema), async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any
@@ -119,21 +120,7 @@ export const coreSettingsRoutes = new Hono()
       }
       const userId = user.id
 
-      const body = await c.req.json()
-      const result = profileSettingsSchema.safeParse(body)
-
-      if (!result.success) {
-        return c.json(
-          {
-            success: false,
-            error: 'Validation failed',
-            details: result.error.flatten().fieldErrors,
-          },
-          400
-        )
-      }
-
-      const { fullName, email, avatar } = result.data
+      const { fullName, email, avatar } = c.req.valid('json')
 
       // Update user profile
       await coreDb
@@ -154,7 +141,7 @@ export const coreSettingsRoutes = new Hono()
   })
 
   // Update personal settings
-  .patch('/personal', async c => {
+  .patch('/personal', zValidator('json', personalSettingsSchema), async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any
@@ -215,7 +202,7 @@ export const coreSettingsRoutes = new Hono()
   })
 
   // Update contact settings
-  .patch('/contact', async c => {
+  .patch('/contact', zValidator('json', contactSettingsSchema), async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any
@@ -273,7 +260,7 @@ export const coreSettingsRoutes = new Hono()
   })
 
   // Update appearance settings
-  .patch('/appearance', async c => {
+  .patch('/appearance', zValidator('json', appearanceSettingsSchema), async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any
@@ -331,7 +318,7 @@ export const coreSettingsRoutes = new Hono()
   })
 
   // Change password
-  .patch('/password', async c => {
+  .patch('/password', zValidator('json', passwordChangeSchema), async c => {
     try {
       const coreDb = createCoreConnection()
       const user = c.get('user') as any

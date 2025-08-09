@@ -1,25 +1,8 @@
+import { importConfigSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod/v4'
 import { type ImportColumn, ServerImportService } from '../../services/import.service'
-
-const ImportConfigSchema = z.object({
-  columns: z.array(
-    z.object({
-      key: z.string(),
-      label: z.string(),
-      required: z.boolean().optional(),
-      type: z.enum(['string', 'number', 'date', 'boolean']).optional(),
-    })
-  ),
-  options: z
-    .object({
-      skipFirstRow: z.boolean().optional(),
-      syncMode: z.enum(['create-only', 'update-only', 'create-update']).optional(),
-      keyColumn: z.string().optional(),
-    })
-    .optional(),
-})
 
 // Parse uploaded file for import preview
 export const coreImportRoutes = new Hono()
@@ -45,7 +28,7 @@ export const coreImportRoutes = new Hono()
       }
 
       // Validate configuration
-      const validatedConfig = ImportConfigSchema.safeParse(parsedConfig)
+      const validatedConfig = importConfigSchema.safeParse(parsedConfig)
       if (!validatedConfig.success) {
         return c.json({ error: 'Invalid configuration', details: validatedConfig.error }, 400)
       }

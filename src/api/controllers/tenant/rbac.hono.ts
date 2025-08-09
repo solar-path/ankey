@@ -1,5 +1,11 @@
 import { TenantAuthService } from '@/api/auth.settings'
 import { RBACService } from '@/api/rbac.settings'
+import {
+  assignPermissionsSchema,
+  assignRolesSchema,
+  createPermissionSchema,
+  createRoleSchema,
+} from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod/v4'
@@ -52,29 +58,7 @@ const requirePermission = (resource: string, action: string) => {
   }
 }
 
-// Create permission
-const createPermissionSchema = z.object({
-  name: z.string().min(1),
-  resource: z.string().min(1),
-  action: z.string().min(1),
-  description: z.string().optional(),
-})
-
-// Create role
-const createRoleSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-})
-
-// Assign permissions to role
-const assignPermissionsSchema = z.object({
-  permissionIds: z.array(z.string()),
-})
-
-// Assign roles to user
-const assignRolesSchema = z.object({
-  roleIds: z.array(z.string()),
-})
+// Schemas are now imported from @/shared
 
 export const tenantRBACRoutes = new Hono()
   .use('*', requireAuth)
