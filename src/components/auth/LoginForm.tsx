@@ -47,6 +47,7 @@ export function LoginForm({
       if (onSubmit) {
         await onSubmit(data)
       } else {
+        console.log(data)
         // Use RPC client for login
         const authClient = isTenant ? tenantAuth : coreAuth
         const response = await authClient.login.$post({
@@ -69,6 +70,7 @@ export function LoginForm({
         // Handle successful login
         if (result.data && !(result.data as any).requiresTwoFactor) {
           reset()
+          closeDrawer() // Close drawer before navigation
 
           // Navigate to appropriate dashboard based on user type
           if (isTenant) {
@@ -78,7 +80,7 @@ export function LoginForm({
             // For core admin users, navigate to core dashboard
             navigate({ to: '/dashboard' })
           }
-          return // Early return to avoid duplicate closeDrawer
+          return
         }
       }
 
@@ -97,25 +99,6 @@ export function LoginForm({
     }
   }
 
-  const handleForgotPassword = () => {
-    openDrawer(
-      <ForgotPasswordForm
-        onSubmit={async data => {
-          console.log('Forgot password:', data)
-        }}
-      />
-    )
-  }
-
-  const handleLetMeIn = () => {
-    openDrawer(
-      <LetMeInForm
-        onSubmit={async data => {
-          console.log('Let me in:', data)
-        }}
-      />
-    )
-  }
 
   return (
     <div className="space-y-6 p-2">
@@ -168,7 +151,7 @@ export function LoginForm({
         </div>
 
         <div className="flex items-center justify-between">
-          <Button type="button" variant="ghost" onClick={handleForgotPassword}>
+          <Button type="button" variant="ghost" onClick={() => openDrawer(<ForgotPasswordForm/>)}>
             Forgot Password?
           </Button>
         </div>
@@ -179,7 +162,20 @@ export function LoginForm({
 
         {isTenant && (
           <div className="text-center">
-            <Button type="button" variant="link" onClick={handleLetMeIn}>
+            <Button 
+              type="button" 
+              variant="link" 
+              onClick={() => openDrawer(
+                <LetMeInForm 
+                  onSubmit={async (data) => {
+                    // TODO: Implement actual API call for access request
+                    console.log('Access request submitted:', data)
+                    // This would typically call a tenant API endpoint
+                    // await tenantAuth.requestAccess.$post({ json: data })
+                  }} 
+                />
+              )}
+            >
               Don't have access? Request Access
             </Button>
           </div>

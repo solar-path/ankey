@@ -19,6 +19,12 @@ import { Route as CoreDashboardRouteImport } from './routes/_core/dashboard'
 import { Route as PublicLearnTermsRouteImport } from './routes/_public/learn/terms'
 import { Route as PublicLearnPrivacyRouteImport } from './routes/_public/learn/privacy'
 import { Route as PublicLearnCookiesRouteImport } from './routes/_public/learn/cookies'
+import { Route as CoreSettingsRolesRouteImport } from './routes/_core/settings/roles'
+import { Route as CoreSettingsProfileRouteImport } from './routes/_core/settings/profile'
+import { Route as CoreSettingsPersonalRouteImport } from './routes/_core/settings/personal'
+import { Route as CoreSettingsPasswordRouteImport } from './routes/_core/settings/password'
+import { Route as CoreSettingsContactsRouteImport } from './routes/_core/settings/contacts'
+import { Route as CoreSettingsAppearanceRouteImport } from './routes/_core/settings/appearance'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -68,6 +74,36 @@ const PublicLearnCookiesRoute = PublicLearnCookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => PublicLearnRoute,
 } as any)
+const CoreSettingsRolesRoute = CoreSettingsRolesRouteImport.update({
+  id: '/settings/roles',
+  path: '/settings/roles',
+  getParentRoute: () => CoreRoute,
+} as any)
+const CoreSettingsProfileRoute = CoreSettingsProfileRouteImport.update({
+  id: '/settings/profile',
+  path: '/settings/profile',
+  getParentRoute: () => CoreRoute,
+} as any)
+const CoreSettingsPersonalRoute = CoreSettingsPersonalRouteImport.update({
+  id: '/settings/personal',
+  path: '/settings/personal',
+  getParentRoute: () => CoreRoute,
+} as any)
+const CoreSettingsPasswordRoute = CoreSettingsPasswordRouteImport.update({
+  id: '/settings/password',
+  path: '/settings/password',
+  getParentRoute: () => CoreRoute,
+} as any)
+const CoreSettingsContactsRoute = CoreSettingsContactsRouteImport.update({
+  id: '/settings/contacts',
+  path: '/settings/contacts',
+  getParentRoute: () => CoreRoute,
+} as any)
+const CoreSettingsAppearanceRoute = CoreSettingsAppearanceRouteImport.update({
+  id: '/settings/appearance',
+  path: '/settings/appearance',
+  getParentRoute: () => CoreRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/dashboard': typeof CoreDashboardRoute
@@ -75,6 +111,12 @@ export interface FileRoutesByFullPath {
   '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
+  '/settings/appearance': typeof CoreSettingsAppearanceRoute
+  '/settings/contacts': typeof CoreSettingsContactsRoute
+  '/settings/password': typeof CoreSettingsPasswordRoute
+  '/settings/personal': typeof CoreSettingsPersonalRoute
+  '/settings/profile': typeof CoreSettingsProfileRoute
+  '/settings/roles': typeof CoreSettingsRolesRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
@@ -85,6 +127,12 @@ export interface FileRoutesByTo {
   '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
+  '/settings/appearance': typeof CoreSettingsAppearanceRoute
+  '/settings/contacts': typeof CoreSettingsContactsRoute
+  '/settings/password': typeof CoreSettingsPasswordRoute
+  '/settings/personal': typeof CoreSettingsPersonalRoute
+  '/settings/profile': typeof CoreSettingsProfileRoute
+  '/settings/roles': typeof CoreSettingsRolesRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
@@ -98,6 +146,12 @@ export interface FileRoutesById {
   '/_public/learn': typeof PublicLearnRouteWithChildren
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/': typeof PublicIndexRoute
+  '/_core/settings/appearance': typeof CoreSettingsAppearanceRoute
+  '/_core/settings/contacts': typeof CoreSettingsContactsRoute
+  '/_core/settings/password': typeof CoreSettingsPasswordRoute
+  '/_core/settings/personal': typeof CoreSettingsPersonalRoute
+  '/_core/settings/profile': typeof CoreSettingsProfileRoute
+  '/_core/settings/roles': typeof CoreSettingsRolesRoute
   '/_public/learn/cookies': typeof PublicLearnCookiesRoute
   '/_public/learn/privacy': typeof PublicLearnPrivacyRoute
   '/_public/learn/terms': typeof PublicLearnTermsRoute
@@ -110,6 +164,12 @@ export interface FileRouteTypes {
     | '/learn'
     | '/pricing'
     | '/'
+    | '/settings/appearance'
+    | '/settings/contacts'
+    | '/settings/password'
+    | '/settings/personal'
+    | '/settings/profile'
+    | '/settings/roles'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
@@ -120,6 +180,12 @@ export interface FileRouteTypes {
     | '/learn'
     | '/pricing'
     | '/'
+    | '/settings/appearance'
+    | '/settings/contacts'
+    | '/settings/password'
+    | '/settings/personal'
+    | '/settings/profile'
+    | '/settings/roles'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
@@ -132,6 +198,12 @@ export interface FileRouteTypes {
     | '/_public/learn'
     | '/_public/pricing'
     | '/_public/'
+    | '/_core/settings/appearance'
+    | '/_core/settings/contacts'
+    | '/_core/settings/password'
+    | '/_core/settings/personal'
+    | '/_core/settings/profile'
+    | '/_core/settings/roles'
     | '/_public/learn/cookies'
     | '/_public/learn/privacy'
     | '/_public/learn/terms'
@@ -214,17 +286,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicLearnCookiesRouteImport
       parentRoute: typeof PublicLearnRoute
     }
+    '/_core/settings/roles': {
+      id: '/_core/settings/roles'
+      path: '/settings/roles'
+      fullPath: '/settings/roles'
+      preLoaderRoute: typeof CoreSettingsRolesRouteImport
+      parentRoute: typeof CoreRoute
+    }
+    '/_core/settings/profile': {
+      id: '/_core/settings/profile'
+      path: '/settings/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof CoreSettingsProfileRouteImport
+      parentRoute: typeof CoreRoute
+    }
+    '/_core/settings/personal': {
+      id: '/_core/settings/personal'
+      path: '/settings/personal'
+      fullPath: '/settings/personal'
+      preLoaderRoute: typeof CoreSettingsPersonalRouteImport
+      parentRoute: typeof CoreRoute
+    }
+    '/_core/settings/password': {
+      id: '/_core/settings/password'
+      path: '/settings/password'
+      fullPath: '/settings/password'
+      preLoaderRoute: typeof CoreSettingsPasswordRouteImport
+      parentRoute: typeof CoreRoute
+    }
+    '/_core/settings/contacts': {
+      id: '/_core/settings/contacts'
+      path: '/settings/contacts'
+      fullPath: '/settings/contacts'
+      preLoaderRoute: typeof CoreSettingsContactsRouteImport
+      parentRoute: typeof CoreRoute
+    }
+    '/_core/settings/appearance': {
+      id: '/_core/settings/appearance'
+      path: '/settings/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof CoreSettingsAppearanceRouteImport
+      parentRoute: typeof CoreRoute
+    }
   }
 }
 
 interface CoreRouteChildren {
   CoreDashboardRoute: typeof CoreDashboardRoute
   CorePricingAdminRoute: typeof CorePricingAdminRoute
+  CoreSettingsAppearanceRoute: typeof CoreSettingsAppearanceRoute
+  CoreSettingsContactsRoute: typeof CoreSettingsContactsRoute
+  CoreSettingsPasswordRoute: typeof CoreSettingsPasswordRoute
+  CoreSettingsPersonalRoute: typeof CoreSettingsPersonalRoute
+  CoreSettingsProfileRoute: typeof CoreSettingsProfileRoute
+  CoreSettingsRolesRoute: typeof CoreSettingsRolesRoute
 }
 
 const CoreRouteChildren: CoreRouteChildren = {
   CoreDashboardRoute: CoreDashboardRoute,
   CorePricingAdminRoute: CorePricingAdminRoute,
+  CoreSettingsAppearanceRoute: CoreSettingsAppearanceRoute,
+  CoreSettingsContactsRoute: CoreSettingsContactsRoute,
+  CoreSettingsPasswordRoute: CoreSettingsPasswordRoute,
+  CoreSettingsPersonalRoute: CoreSettingsPersonalRoute,
+  CoreSettingsProfileRoute: CoreSettingsProfileRoute,
+  CoreSettingsRolesRoute: CoreSettingsRolesRoute,
 }
 
 const CoreRouteWithChildren = CoreRoute._addFileChildren(CoreRouteChildren)

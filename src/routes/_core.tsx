@@ -1,10 +1,9 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router'
 import { CoreSidebar } from '@/components/QSideBar/QSidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
-import { LoginForm } from '@/components/auth/LoginForm'
-import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/_core')({
   component: CoreLayoutWrapper,
@@ -26,7 +25,14 @@ function CoreLayoutWrapper() {
 
 function AuthChecker({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
-  const { openDrawer } = useDrawer()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      // Redirect to home page where login is available via QDrawer
+      navigate({ to: '/' })
+    }
+  }, [user, isLoading, navigate])
 
   if (isLoading) {
     return (
@@ -37,21 +43,9 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    // Show login form if not authenticated
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="w-full max-w-md">
-          <div className="bg-white shadow-lg rounded-lg p-8">
-            <div className="text-center mb-8">
-              <div className="w-12 h-12 bg-blue-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Ankey Admin</h1>
-              <p className="text-gray-600">Sign in to access the admin dashboard</p>
-            </div>
-            <LoginForm isTenant={false} />
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     )
   }

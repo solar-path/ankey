@@ -14,7 +14,7 @@ interface LetMeInFormProps {
   workspaceName?: string
 }
 
-export function LetMeInForm({ onSubmit, isLoading = false, workspaceName }: LetMeInFormProps) {
+export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
   const { closeDrawer } = useDrawer()
 
   const {

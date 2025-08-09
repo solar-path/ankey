@@ -115,6 +115,8 @@ UI components follow the shadcn/ui pattern:
 - Auto code splitting enabled for performance
 - DevTools available in development
 - Type-safe navigation with generated route types
+- **NEVER use `window.location.href` for redirects** - always use TanStack Router's `navigate()` or `redirect()` functions
+- All frontend navigation must follow TanStack Router patterns for proper state management and type safety
 
 ### State Management
 
@@ -132,6 +134,7 @@ UI components follow the shadcn/ui pattern:
 ### Database & API Development
 
 - **Drizzle Kit** available for schema generation and migrations
+- **NEVER use `drizzle-kit push`** - only use `drizzle-kit generate` and `drizzle-kit migrate`
 - Use `tsx` for running TypeScript files directly (useful for database scripts)
 - **Zod v4** schemas for API validation and TypeScript inference
 - **React Hook Form** with `@hookform/resolvers` for form validation

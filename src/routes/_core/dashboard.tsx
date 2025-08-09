@@ -47,14 +47,6 @@ type SystemActivity = {
   timeAgo: string
 }
 
-const exportColumns = [
-  { key: 'id', label: 'ID', width: 10 },
-  { key: 'name', label: 'Name', width: 20 },
-  { key: 'email', label: 'Email', width: 25 },
-  { key: 'role', label: 'Role', width: 15 },
-  { key: 'status', label: 'Status', width: 15 },
-]
-
 const importColumns = [
   { key: 'name', label: 'Name', required: true, type: 'string' as const },
   { key: 'email', label: 'Email', required: true, type: 'string' as const },

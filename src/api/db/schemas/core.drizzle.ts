@@ -7,6 +7,7 @@ export const coreUsers = pgTable('core_users', {
   email: text('email').notNull().unique(),
   fullName: text('full_name').notNull(),
   passwordHash: text('password_hash').notNull(),
+  avatar: text('avatar'), // Avatar URL
   isActive: boolean('is_active').default(true),
   emailVerified: boolean('email_verified').default(false),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
@@ -76,13 +77,7 @@ export const coreAuditLogs = pgTable('core_audit_logs', {
   createdAt: timestamp('created_at').defaultNow(),
 })
 
-// Relations
-export const coreUsersRelations = relations(coreUsers, ({ many }) => ({
-  sessions: many(coreSessions),
-  passwordResetTokens: many(passwordResetTokens),
-  emailVerificationTokens: many(emailVerificationTokens),
-  auditLogs: many(coreAuditLogs),
-}))
+// Relations will be defined after settings table
 
 export const tenantsRelations = relations(tenants, ({ many }) => ({
   subscriptions: many(tenantSubscriptions),
@@ -184,6 +179,50 @@ export const tenantSubscriptionsRelations = relations(tenantSubscriptions, ({ on
     fields: [tenantSubscriptions.discountId],
     references: [pricingDiscounts.id],
   }),
+}))
+
+// Core user settings table
+export const coreUserSettings = pgTable('core_user_settings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => coreUsers.id, { onDelete: 'cascade' }),
+  // Personal settings
+  gender: text('gender'), // 'male', 'female', 'other', 'prefer-not-to-say'
+  dateOfBirth: text('date_of_birth'), // ISO date string
+  timezone: text('timezone'),
+  language: text('language').default('en'),
+  // Contact settings
+  phone: text('phone'),
+  address: text('address'),
+  emergencyContactName: text('emergency_contact_name'),
+  emergencyContactPhone: text('emergency_contact_phone'),
+  emergencyContactRelationship: text('emergency_contact_relationship'),
+  // Appearance settings
+  theme: text('theme').default('system'), // 'light', 'dark', 'system'
+  density: text('density').default('comfortable'), // 'compact', 'comfortable', 'spacious'
+  primaryColor: text('primary_color').default('#000000'),
+  fontSize: text('font_size').default('medium'), // 'small', 'medium', 'large'
+  sidebarCollapsed: boolean('sidebar_collapsed').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relations for core user settings
+export const coreUserSettingsRelations = relations(coreUserSettings, ({ one }) => ({
+  user: one(coreUsers, {
+    fields: [coreUserSettings.userId],
+    references: [coreUsers.id],
+  }),
+}))
+
+// Update coreUsersRelations to include settings
+export const coreUsersRelations = relations(coreUsers, ({ many, one }) => ({
+  sessions: many(coreSessions),
+  passwordResetTokens: many(passwordResetTokens),
+  emailVerificationTokens: many(emailVerificationTokens),
+  auditLogs: many(coreAuditLogs),
+  settings: one(coreUserSettings),
 }))
 
 // Note: Zod schemas temporarily disabled due to Zod v4 + Bun compatibility issues

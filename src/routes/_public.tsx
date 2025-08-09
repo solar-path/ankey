@@ -22,7 +22,7 @@ function PublicLayout() {
           </h1>
         </div>
         <div className="flex items-center space-x-4 text-sm">
-          <Link to="/learn" search={{}} className="[&.active]:font-bold">
+          <Link to="/learn" search={{ doc: undefined }} className="[&.active]:font-bold">
             Learn and support
           </Link>
           <Link to="/pricing" className="[&.active]:font-bold">

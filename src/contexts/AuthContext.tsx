@@ -80,6 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error)
     } finally {
       setUser(null)
+      // Navigation should be handled by the component that calls logout
+      // We'll emit a custom event that components can listen to
+      window.dispatchEvent(new CustomEvent('auth:logout'))
     }
   }
 

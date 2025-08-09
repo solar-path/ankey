@@ -3,12 +3,15 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import { coreAuthRoutes } from '@/api/controllers/core/auth.hono'
 import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
+import { coreSettingsRoutes } from '@/api/controllers/core/settings.hono'
 import coreExportRoutes from '@/api/controllers/core/export.hono'
 import coreImportRoutes from '@/api/controllers/core/import.hono'
 import { inquiryRoutes } from '@/api/controllers/core/inquiry.hono'
 import { pricingRouter } from '@/api/controllers/core/pricing.hono'
 import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
 import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
+import { tenantSettingsRoutes } from '@/api/controllers/tenant/settings.hono'
+import { productRoutes } from '@/api/controllers/tenant/product.hono'
 import { TenantService } from '@/api/tenant.settings'
 import { AuditService } from '@/api/audit.settings'
 
@@ -108,6 +111,7 @@ app.use('/api/*', (c, next) => {
 // Core routes (for localhost without subdomain)
 app.route('/api/core/auth', coreAuthRoutes)
 app.route('/api/core/tenants', coreTenantsRoutes)
+app.route('/api/core/settings', coreSettingsRoutes)
 app.route('/api/core/export', coreExportRoutes)
 app.route('/api/core/import', coreImportRoutes)
 app.route('/api/core/inquiry', inquiryRoutes)
@@ -126,18 +130,22 @@ app.use('/api/tenant/*', async (c, next) => {
 
 app.route('/api/tenant/auth', tenantAuthRoutes)
 app.route('/api/tenant/rbac', tenantRBACRoutes)
+app.route('/api/tenant/settings', tenantSettingsRoutes)
+app.route('/api/tenant/products', productRoutes)
 
 // RPC Routes for type-safe client communication
 const rpcRoutes = app
   .basePath('/api/rpc')
   .route('/core/auth', coreAuthRoutes)
   .route('/core/tenants', coreTenantsRoutes)
+  .route('/core/settings', coreSettingsRoutes)
   .route('/core/export', coreExportRoutes)
   .route('/core/import', coreImportRoutes)
   .route('/core/inquiry', inquiryRoutes)
   .route('/core/pricing', pricingRouter)
   .route('/tenant/auth', tenantAuthRoutes)
   .route('/tenant/rbac', tenantRBACRoutes)
+  .route('/tenant/settings', tenantSettingsRoutes)
 
 export type AppType = typeof rpcRoutes
 

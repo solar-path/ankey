@@ -31,14 +31,28 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
     await logout()
+    navigate({ to: '/' })
   }
+
+  // Listen for logout events from other components
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      navigate({ to: '/' })
+    }
+    
+    window.addEventListener('auth:logout', handleAuthLogout)
+    return () => window.removeEventListener('auth:logout', handleAuthLogout)
+  }, [navigate])
 
   if (!user) {
     return null

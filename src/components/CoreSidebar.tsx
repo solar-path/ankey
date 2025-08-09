@@ -1,4 +1,4 @@
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ import {
   Sun,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -48,11 +48,23 @@ const bottomNavigation = [{ name: 'Settings', href: '/settings', icon: Settings 
 export function CoreSidebar() {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleLogout = async () => {
     await logout()
+    navigate({ to: '/' })
   }
+
+  // Listen for logout events from other components
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      navigate({ to: '/' })
+    }
+    
+    window.addEventListener('auth:logout', handleAuthLogout)
+    return () => window.removeEventListener('auth:logout', handleAuthLogout)
+  }, [navigate])
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed)

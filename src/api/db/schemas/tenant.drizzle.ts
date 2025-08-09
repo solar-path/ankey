@@ -8,6 +8,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   fullName: text('full_name').notNull(),
   passwordHash: text('password_hash'),
+  avatar: text('avatar'), // Avatar URL
   isActive: boolean('is_active').default(true),
   emailVerified: boolean('email_verified').default(false),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
@@ -140,6 +141,19 @@ export const tenantEmailVerificationTokens = pgTable('email_verification_tokens'
   createdAt: timestamp('created_at').defaultNow(),
 })
 
+// Product table
+export const products = pgTable('products', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  price: text('price').notNull(),
+  isActive: text('isActive').notNull(),
+
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   sessions: many(sessions),
@@ -148,6 +162,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   delegationsAsDelegate: many(delegations, { relationName: 'delegatee' }),
   delegationsAsDelegator: many(delegations, { relationName: 'delegator' }),
   invitedUsers: many(users, { relationName: 'inviter' }),
+  settings: one(userSettings),
   inviter: one(users, {
     fields: [users.invitedBy],
     references: [users.id],
@@ -223,6 +238,41 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   }),
 }))
 
+// Tenant user settings table
+export const userSettings = pgTable('user_settings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  // Personal settings
+  gender: text('gender'), // 'male', 'female', 'other', 'prefer-not-to-say'
+  dateOfBirth: text('date_of_birth'), // ISO date string
+  timezone: text('timezone'),
+  language: text('language').default('en'),
+  // Contact settings
+  phone: text('phone'),
+  address: text('address'),
+  emergencyContactName: text('emergency_contact_name'),
+  emergencyContactPhone: text('emergency_contact_phone'),
+  emergencyContactRelationship: text('emergency_contact_relationship'),
+  // Appearance settings
+  theme: text('theme').default('system'), // 'light', 'dark', 'system'
+  density: text('density').default('comfortable'), // 'compact', 'comfortable', 'spacious'
+  primaryColor: text('primary_color').default('#000000'),
+  fontSize: text('font_size').default('medium'), // 'small', 'medium', 'large'
+  sidebarCollapsed: boolean('sidebar_collapsed').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relations for user settings
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}))
+
 // Zod schemas for validation - temporarily disabled due to Zod v4 + Bun compatibility issues
 // // export const insertUserSchema = createInsertSchema(users)
 // // export const selectUserSchema = createSelectSchema(users)
@@ -232,3 +282,7 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
 // export const selectPermissionSchema = createSelectSchema(permissions)
 // export const insertRoleSchema = createInsertSchema(roles)
 // export const selectRoleSchema = createSelectSchema(roles)
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  // Add relations here as needed
+}))

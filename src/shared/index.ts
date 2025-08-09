@@ -163,6 +163,70 @@ declare module 'hono' {
   }
 }
 
+// Settings schemas
+export const profileSettingsSchema = z.object({
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  avatar: z.string().optional(),
+})
+
+export const personalSettingsSchema = z.object({
+  gender: z.enum(['male', 'female', 'other', 'prefer-not-to-say']).optional(),
+  dateOfBirth: z.string().optional(), // ISO date string
+  timezone: z.string().optional(),
+  language: z.string().default('en'),
+})
+
+export const contactSettingsSchema = z.object({
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  emergencyContact: z.object({
+    name: z.string(),
+    phone: z.string(),
+    relationship: z.string(),
+  }).optional(),
+})
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain uppercase, lowercase, and number'
+    ),
+  confirmPassword: z.string().min(1, 'Password confirmation is required'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+})
+
+export const appearanceSettingsSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system']).default('system'),
+  density: z.enum(['compact', 'comfortable', 'spacious']).default('comfortable'),
+  primaryColor: z.string().default('#000000'),
+  fontSize: z.enum(['small', 'medium', 'large']).default('medium'),
+  sidebarCollapsed: z.boolean().default(false),
+})
+
+// Settings types
+export type ProfileSettings = z.infer<typeof profileSettingsSchema>
+export type PersonalSettings = z.infer<typeof personalSettingsSchema>
+export type ContactSettings = z.infer<typeof contactSettingsSchema>
+export type PasswordChange = z.infer<typeof passwordChangeSchema>
+export type AppearanceSettings = z.infer<typeof appearanceSettingsSchema>
+
+// Combined user settings type
+export const userSettingsSchema = z.object({
+  profile: profileSettingsSchema,
+  personal: personalSettingsSchema,
+  contact: contactSettingsSchema,
+  appearance: appearanceSettingsSchema,
+})
+
+export type UserSettings = z.infer<typeof userSettingsSchema>
+
 // Component prop types
 export interface QPhoneProps {
   value?: string
@@ -185,7 +249,7 @@ export interface QCalendarPickProps {
   className?: string
 }
 
-export interface DataTableProps<TData, TValue = any> {
+export interface DataTableProps<TData> {
   data: TData[]
   columns: any[]
   onDelete?: (rows: TData[]) => void
@@ -198,4 +262,62 @@ export interface DataTableProps<TData, TValue = any> {
   title?: string
   searchColumn?: string
   searchPlaceholder?: string
+}
+
+// Product types
+export interface Product {
+  id: string
+  title: string
+  description: string | null
+  price: string
+  isActive: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProductCreateInput {
+  title: string
+  description: string | null
+  price: string
+  isActive: string
+}
+
+export interface ProductUpdateInput {
+  title?: string
+  description?: string | null
+  price?: string
+  isActive?: string
+}
+
+export interface ProductResponse {
+  success: boolean
+  data?: Product
+  error?: string
+}
+
+export interface ProductsResponse {
+  success: boolean
+  data?: {
+    items: Product[]
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+    view: 'active' | 'trashed' | 'all'
+  }
+  error?: string
+}
+
+export interface ProductBulkActionRequest {
+  ids: string[]
+  action: 'delete' | 'restore' | 'force-delete'
+}
+
+export interface ProductBulkActionResponse {
+  success: boolean
+  message: string
+  count?: number
 }
