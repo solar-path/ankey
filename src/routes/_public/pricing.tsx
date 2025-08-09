@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { corePricing, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 
 export const Route = createFileRoute('/_public/pricing')({
   component: Pricing,
@@ -62,7 +62,7 @@ function Pricing() {
 
   const fetchPricingPlans = async () => {
     try {
-      const response = await corePricing.plans.$get()
+      const response = await client.pricing.plans.$get()
       const result = await handleApiResponse(response)
 
       if (result.success) {
@@ -92,7 +92,7 @@ function Pricing() {
       const userCount = userCounts[plan.id] || plan.minUsers || 1
 
       try {
-        const response = await corePricing.calculate.$post({
+        const response = await client.pricing.calculate.$post({
           json: {
             planId: plan.id,
             userCount,

@@ -83,6 +83,46 @@ app.get('/me', async c => {
   }
 })
 
+// Get profile settings
+app.get('/profile', async c => {
+  try {
+    const user = c.get('user') as any
+    const tenantDatabase = c.get('tenantDatabase')
+
+    if (!user) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+
+    if (!tenantDatabase) {
+      return c.json({ success: false, error: 'Tenant context required' }, 400)
+    }
+
+    const userId = user.id
+    const tenantDb = createTenantConnection(tenantDatabase)
+    
+    const userRecord = await tenantDb
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .then(rows => rows[0])
+
+    if (!userRecord) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    const profileData = {
+      fullName: userRecord.fullName,
+      email: userRecord.email,
+      avatar: userRecord.avatar || '',
+    }
+
+    return c.json({ success: true, data: profileData })
+  } catch (error) {
+    console.error('Get profile error:', error)
+    return c.json({ success: false, error: 'Internal server error' }, 500)
+  }
+})
+
 // Update profile settings
 app.patch('/profile', async c => {
   try {

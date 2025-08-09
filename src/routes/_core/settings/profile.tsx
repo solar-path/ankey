@@ -1,14 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LoaderCircle, Plus, Trash } from 'lucide-react'
-import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
+import { client, handleApiResponse } from '@/lib/rpc'
+import { useSettingsContext } from '@/hooks/useSettingsContext'
 import { profileSettingsSchema, type ProfileSettings } from '@/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute } from '@tanstack/react-router'
+import { LoaderCircle, Plus, Trash } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_core/settings/profile')({
   component: ProfileSettings,
@@ -17,13 +20,17 @@ export const Route = createFileRoute('/_core/settings/profile')({
 function ProfileSettings() {
   const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { user } = useAuth()
+  const { settingsClient } = useSettingsContext()
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileSettings>({
     resolver: zodResolver(profileSettingsSchema),
@@ -35,6 +42,53 @@ function ProfileSettings() {
   })
 
   const watchedValues = watch()
+
+  // Load user data into form when component mounts
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) return
+      
+      try {
+        setDataLoading(true)
+        
+        // Try to fetch extended profile data from settings endpoint
+        const response = await settingsClient.profile.$get()
+        const result = await handleApiResponse(response)
+        
+        if (result.success && result.data) {
+          const profileData = result.data as ProfileSettings
+          reset({
+            fullName: profileData.fullName || user.fullName || '',
+            email: profileData.email || user.email || '',
+            avatar: profileData.avatar || '',
+          })
+          
+          if (profileData.avatar) {
+            setPreview(profileData.avatar)
+          }
+        } else {
+          // Fallback to user data from auth context
+          reset({
+            fullName: user.fullName || '',
+            email: user.email || '',
+            avatar: '',
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load profile data:', error)
+        // Fallback to user data from auth context
+        reset({
+          fullName: user.fullName || '',
+          email: user.email || '',
+          avatar: '',
+        })
+      } finally {
+        setDataLoading(false)
+      }
+    }
+    
+    loadUserData()
+  }, [user, reset])
 
   const getInitials = (name: string) => {
     return name
@@ -70,26 +124,42 @@ function ProfileSettings() {
     try {
       setIsLoading(true)
 
-      // TODO: Replace with actual API call to /api/core/settings/profile or /api/tenant/settings/profile
-      const response = await fetch('/api/core/settings/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      // Use context-aware RPC client
+      const response = await settingsClient.profile.$patch({ 
+        json: data 
       })
+      const result = await handleApiResponse(response)
 
-      if (!response.ok) {
-        throw new Error('Failed to update profile')
+      if (result.success) {
+        toast.success('Profile updated successfully')
+        // Refresh user data in auth context if needed
+      } else {
+        throw new Error(result.error || 'Failed to update profile')
       }
-
-      toast.success('Profile updated successfully')
     } catch (error) {
       console.error('Update profile error:', error)
       toast.error('Failed to update profile')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading state while data is being loaded
+  if (dataLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Profile Settings</h2>
+          <p className="text-muted-foreground">Update your name, email, and profile picture</p>
+        </div>
+        <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow">
+          <div className="flex items-center justify-center py-12">
+            <LoaderCircle className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading profile data...</span>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -178,7 +248,11 @@ function ProfileSettings() {
                 {...register('email')}
                 placeholder="Email address"
                 autoComplete="email"
+                disabled
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Email address cannot be changed for security reasons
+              </p>
               {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
             </div>
 

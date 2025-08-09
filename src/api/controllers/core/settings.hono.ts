@@ -76,6 +76,39 @@ app.get('/me', async c => {
   }
 })
 
+// Get profile settings
+app.get('/profile', async c => {
+  try {
+    const coreDb = createCoreConnection()
+    const user = c.get('user') as any
+    if (!user) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+
+    const userId = user.id
+    const userRecord = await coreDb
+      .select()
+      .from(coreUsers)
+      .where(eq(coreUsers.id, userId))
+      .then(rows => rows[0])
+
+    if (!userRecord) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    const profileData = {
+      fullName: userRecord.fullName,
+      email: userRecord.email,
+      avatar: userRecord.avatar || '',
+    }
+
+    return c.json({ success: true, data: profileData })
+  } catch (error) {
+    console.error('Get profile error:', error)
+    return c.json({ success: false, error: 'Internal server error' }, 500)
+  }
+})
+
 // Update profile settings
 app.patch('/profile', async c => {
   try {

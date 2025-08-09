@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Edit } from 'lucide-react'
-import { tenantProducts, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 
 export const Route = createFileRoute('/_tenant/products/$id')({
   component: ProductDetail,
@@ -28,7 +28,7 @@ function ProductDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
-      const response = await tenantProducts[':id'].$get({ param: { id } })
+      const response = await client.products[':id'].$get({ param: { id } })
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch product')
       return result.data

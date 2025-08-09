@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
-import { tenantProducts, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -109,7 +109,7 @@ function ProductsPage() {
         view: search.view,
       })
 
-      const response = await tenantProducts.$get({ query: Object.fromEntries(params) })
+      const response = await client.products.$get({ query: Object.fromEntries(params) })
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch products')
       return result.data
@@ -148,7 +148,7 @@ function ProductsPage() {
   // Create product
   const handleCreate = async () => {
     try {
-      const response = await tenantProducts.$post({ json: formData })
+      const response = await client.products.$post({ json: formData })
       const result = await handleApiResponse(response)
 
       if (!result.success) throw new Error(result.error || 'Failed to create product')
@@ -168,7 +168,7 @@ function ProductsPage() {
     if (!editingItem) return
 
     try {
-      const response = await tenantProducts[':id'].$patch({
+      const response = await client.products[':id'].$patch({
         param: { id: editingItem.id },
         json: formData,
       })
@@ -189,7 +189,7 @@ function ProductsPage() {
   // Delete product
   const handleDelete = async (id: string) => {
     try {
-      const response = await tenantProducts[':id'].$delete({ param: { id } })
+      const response = await client.products[':id'].$delete({ param: { id } })
       const result = await handleApiResponse(response)
 
       if (!result.success) throw new Error(result.error || 'Failed to delete product')
@@ -205,7 +205,7 @@ function ProductsPage() {
   // Restore product
   const handleRestore = async (id: string) => {
     try {
-      const response = await tenantProducts[':id'].restore.$patch({ param: { id } })
+      const response = await client.products[':id'].restore.$patch({ param: { id } })
       const result = await handleApiResponse(response)
 
       if (!result.success) throw new Error(result.error || 'Failed to restore product')

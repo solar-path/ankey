@@ -108,47 +108,22 @@ app.use('/api/*', (c, next) => {
   return AuditService.createAuditMiddleware(isTenant ? tenantDatabase : undefined)(c, next)
 })
 
-// Core routes (for localhost without subdomain)
-app.route('/api/core/auth', coreAuthRoutes)
-app.route('/api/core/tenants', coreTenantsRoutes)
-app.route('/api/core/settings', coreSettingsRoutes)
-app.route('/api/core/export', coreExportRoutes)
-app.route('/api/core/import', coreImportRoutes)
-app.route('/api/core/inquiry', inquiryRoutes)
-app.route('/api/core/pricing', pricingRouter)
+// API Routes following BetterNews pattern exactly
+const routes = app
+  .basePath('/api')
+  .route('/auth', coreAuthRoutes)
+  .route('/tenants', coreTenantsRoutes)
+  .route('/settings', coreSettingsRoutes)
+  .route('/export', coreExportRoutes)
+  .route('/import', coreImportRoutes)
+  .route('/inquiry', inquiryRoutes)
+  .route('/pricing', pricingRouter)
+  .route('/tenant-auth', tenantAuthRoutes)
+  .route('/rbac', tenantRBACRoutes)
+  .route('/tenant-settings', tenantSettingsRoutes)
+  .route('/products', productRoutes)
 
-// Tenant routes (for subdomain requests)
-app.use('/api/tenant/*', async (c, next) => {
-  if (!c.get('isTenant')) {
-    return c.json(
-      { success: false, error: 'This endpoint is only available for tenant workspaces' },
-      400
-    )
-  }
-  await next()
-})
-
-app.route('/api/tenant/auth', tenantAuthRoutes)
-app.route('/api/tenant/rbac', tenantRBACRoutes)
-app.route('/api/tenant/settings', tenantSettingsRoutes)
-app.route('/api/tenant/products', productRoutes)
-
-// RPC Routes for type-safe client communication
-const rpcRoutes = app
-  .basePath('/api/rpc')
-  .route('/core/auth', coreAuthRoutes)
-  .route('/core/tenants', coreTenantsRoutes)
-  .route('/core/settings', coreSettingsRoutes)
-  .route('/core/export', coreExportRoutes)
-  .route('/core/import', coreImportRoutes)
-  .route('/core/inquiry', inquiryRoutes)
-  .route('/core/pricing', pricingRouter)
-  .route('/tenant/auth', tenantAuthRoutes)
-  .route('/tenant/rbac', tenantRBACRoutes)
-  .route('/tenant/settings', tenantSettingsRoutes)
-  .route('/tenant/products', productRoutes)
-
-export type AppType = typeof rpcRoutes
+export type AppType = typeof routes
 
 // Health check
 app.get('/api/health', c => {

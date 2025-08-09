@@ -1,15 +1,14 @@
-import { useState } from 'react'
-import { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DataTable } from '@/components/ui/data-table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { DataTable } from '@/components/ui/data-table'
-import { MoreHorizontal, Edit, Trash2, RotateCcw } from 'lucide-react'
+import { type ColumnDef } from '@tanstack/react-table'
+import { Edit, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react'
 
 export interface ProductItem {
   id: string

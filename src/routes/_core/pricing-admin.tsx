@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { corePricing, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { QDataTable } from '@/components/QDataTable'
 import {
   Sheet,
@@ -82,7 +82,7 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['pricing-plans'],
     queryFn: async () => {
-      const response = await corePricing.plans.$get()
+      const response = await client.pricing.plans.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch plans')
       return result.data?.plans || []
@@ -96,7 +96,7 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['pricing-discounts'],
     queryFn: async () => {
-      const response = await corePricing.discounts.$get()
+      const response = await client.pricing.discounts.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch discounts')
       return result.data?.discounts || []
@@ -111,7 +111,7 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['pricing-subscriptions'],
     queryFn: async () => {
-      const response = await corePricing.subscriptions.$get()
+      const response = await client.pricing.subscriptions.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch subscriptions')
       return result.data?.subscriptions || []
@@ -138,13 +138,13 @@ function RouteComponent() {
       let response
       if (editingPlan.id) {
         // Update existing plan
-        response = await corePricing.plans[':id'].$put({
+        response = await client.pricing.plans[':id'].$put({
           param: { id: editingPlan.id },
           json: planData,
         })
       } else {
         // Create new plan
-        response = await corePricing.plans.$post({ json: planData })
+        response = await client.pricing.plans.$post({ json: planData })
       }
 
       const result = await handleApiResponse(response)
@@ -164,7 +164,7 @@ function RouteComponent() {
 
   const deletePlan = async (planId: string) => {
     try {
-      const response = await corePricing.plans[':id'].$delete({
+      const response = await client.pricing.plans[':id'].$delete({
         param: { id: planId },
       })
       const result = await handleApiResponse(response)
@@ -188,13 +188,13 @@ function RouteComponent() {
       let response
       if (editingDiscount.id) {
         // Update existing discount
-        response = await corePricing.discounts[':id'].$put({
+        response = await client.pricing.discounts[':id'].$put({
           param: { id: editingDiscount.id },
           json: editingDiscount,
         })
       } else {
         // Create new discount
-        response = await corePricing.discounts.$post({ json: editingDiscount })
+        response = await client.pricing.discounts.$post({ json: editingDiscount })
       }
 
       const result = await handleApiResponse(response)
@@ -216,7 +216,7 @@ function RouteComponent() {
 
   const deleteDiscount = async (discountId: string) => {
     try {
-      const response = await corePricing.discounts[':id'].$delete({
+      const response = await client.pricing.discounts[':id'].$delete({
         param: { id: discountId },
       })
       const result = await handleApiResponse(response)
