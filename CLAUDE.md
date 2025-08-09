@@ -165,3 +165,113 @@ The following settings files in `src/api/` are **REQUIRED** and must be used for
 - `tenant.settings.ts` - Multi-tenant architecture settings
 
 **Important**: Always use these predefined settings files for their respective functionalities. Do not create duplicate or alternative implementations.
+
+## Development Rules & Guidelines
+
+Based on project evolution and established patterns, follow these strict rules when working with this codebase:
+
+### Code Migration & Refactoring Rules
+
+#### RPC Client Migration
+- **ALWAYS use unified `client` object** from `src/lib/rpc.ts` instead of individual exports
+- **NEVER use removed exports** like `coreAuth`, `coreTenants`, `coreSettings`, `dashboardApi`, etc.
+- **Pattern**: Replace `coreAuth.login.$post()` with `client.core.auth.login.$post()`
+- **Pattern**: Replace `coreTenants.create.$post()` with `client.core.tenants.create.$post()`
+- When refactoring RPC calls, update ALL files in `src/routes/` and `src/components/` systematically
+
+#### TypeScript Type Safety Rules
+- **ALWAYS define proper TypeScript interfaces** for all API functions and data structures
+- **NEVER use `any` type** - define specific interfaces in `src/shared/index.ts`
+- **ALWAYS add return types** to functions, especially API endpoints
+- **REQUIRED**: Define shared types in `src/shared/` for cross-module usage
+- **Pattern**: Use `interface` for object shapes, `type` for unions/primitives
+- Fix TypeScript errors immediately - never leave compilation errors unresolved
+
+#### Authentication & Security Rules
+- **ALWAYS use standardized middleware** for authentication across all API controllers
+- **NEVER implement inline authentication** - use predefined middleware from `src/api/middleware/`
+- **Core Admin Routes**: Use `requireCoreAuth` middleware for admin-only operations
+- **Tenant Routes**: Use `requireTenantAuth` middleware for tenant-specific operations  
+- **Public Routes**: Use `optionalCoreAuth` where authentication is helpful but not required
+- **Pattern**: Apply middleware using `.use('*', middlewareFunction)` or per-route basis
+- **NEVER expose admin operations** without proper authentication middleware
+
+### API Development Rules
+
+#### Controller Structure
+- **ALWAYS follow RESTful patterns** in route definitions
+- **NEVER mix authentication levels** within the same controller without clear separation
+- **REQUIRED**: Use `zValidator()` with Zod schemas for request validation
+- **PATTERN**: Structure controllers with middleware first, then routes in logical order (GET, POST, PUT, DELETE)
+- **Error Handling**: Always use `try/catch` with consistent error response format
+
+#### Database Operations
+- **ALWAYS use Drizzle ORM** for database operations - never raw SQL
+- **NEVER use `drizzle-kit push`** - only use `generate` and `migrate`
+- **PATTERN**: Use `createCoreConnection()` for core database, `createTenantConnection(tenantDatabase)` for tenant databases
+- **ALWAYS handle multi-tenant context** properly in tenant controllers
+- **REQUIRED**: Validate tenant database existence before operations
+
+#### Response Formatting
+- **ALWAYS use consistent response format**: `{ success: boolean, data?: any, error?: string }`
+- **HTTP Status Codes**: Use appropriate codes (200, 201, 400, 401, 403, 404, 500)
+- **Error Messages**: Provide clear, user-friendly error messages
+- **NEVER expose sensitive internal errors** to client responses
+
+### Code Quality & Maintenance Rules
+
+#### Import Management  
+- **ALWAYS use path aliases** (`@/*`) for internal imports
+- **NEVER use relative imports** for cross-directory references
+- **PATTERN**: Import order: external packages, internal modules, types/interfaces
+- **REQUIRED**: Remove unused imports immediately when refactoring
+
+#### Zod Schema Management
+- **ALWAYS use Zod v4** syntax and patterns
+- **DEPRECATED**: Never use `.flatten().fieldErrors` - use `.issues` or proper error handling
+- **PATTERN**: Define schemas close to usage or in `src/shared/` for reuse
+- **VALIDATION**: Use `zValidator()` for Hono route validation, `safeParse()` for conditional validation
+
+#### File Organization
+- **CONTROLLER LOCATION**: All API controllers in `src/api/controllers/core/` or `src/api/controllers/tenant/`
+- **MIDDLEWARE LOCATION**: Authentication middleware in `src/api/middleware/`
+- **TYPES LOCATION**: Shared types and interfaces in `src/shared/index.ts`
+- **SETTINGS LOCATION**: Configuration modules in `src/api/` (predefined files only)
+
+### Debugging & Problem Resolution Rules
+
+#### TypeScript Error Resolution
+- **PRIORITY 1**: Fix compilation errors before adding new features
+- **SYSTEMATIC APPROACH**: Address errors file by file, not randomly
+- **TYPE DEFINITIONS**: Create missing interfaces immediately when encountered
+- **COMPATIBILITY**: Ensure type compatibility between frontend and backend
+
+#### Code Review Process
+- **BEFORE REFACTORING**: Always read and understand existing code patterns
+- **INCREMENTAL CHANGES**: Make small, focused changes rather than large rewrites
+- **CONSISTENCY**: Follow established patterns in similar files
+- **TESTING**: Verify changes don't break existing functionality
+
+#### Migration Methodology
+- **STEP 1**: Analyze scope of changes (search all affected files)
+- **STEP 2**: Create/update type definitions in shared location
+- **STEP 3**: Update controllers and middleware systematically  
+- **STEP 4**: Update frontend components and routes
+- **STEP 5**: Fix TypeScript errors and run quality checks
+- **STEP 6**: Test authentication and API endpoints
+
+### Project-Specific Patterns
+
+#### Multi-Tenant Architecture
+- **CORE vs TENANT**: Clearly separate core admin functionality from tenant-specific operations
+- **DATABASE CONTEXT**: Always validate and use appropriate database connection
+- **AUTHENTICATION**: Use correct middleware for each tenant context
+- **ISOLATION**: Ensure tenant data isolation in all operations
+
+#### Middleware Usage Patterns
+- **Global Middleware**: Use `.use('*', middleware)` for routes requiring consistent authentication
+- **Selective Middleware**: Apply per-route for mixed authentication requirements
+- **Error Handling**: Let middleware handle authentication failures with proper HTTP status codes
+- **Context Passing**: Use Hono's context to pass user/tenant information between middleware and routes
+
+These rules have been established through iterative development and should be followed strictly to maintain code quality, security, and consistency throughout the project.
