@@ -3,13 +3,15 @@ import { hc } from 'hono/client'
 
 // Create type-safe RPC client following BetterNews pattern
 // Note: Using 'as any' due to Hono's complex type inference with our multi-tenant setup
-export const client = (hc<AppType>("/", {
-  fetch: (input: RequestInfo | URL, init?: RequestInit) =>
-    fetch(input, {
-      ...init,
-      credentials: 'include',
-    }),
-}) as any).api
+export const client = (
+  hc<AppType>('/', {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+      fetch(input, {
+        ...init,
+        credentials: 'include',
+      }),
+  }) as any
+).api
 
 // Dashboard-specific API calls - now using clean client structure
 export const dashboardApi = {

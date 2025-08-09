@@ -76,10 +76,7 @@ function RouteComponent() {
   const [discountSheetOpen, setDiscountSheetOpen] = useState(false)
 
   // Fetch plans with React Query
-  const {
-    data: plansData,
-    refetch: refetchPlans,
-  } = useQuery({
+  const { data: plansData, refetch: refetchPlans } = useQuery({
     queryKey: ['pricing-plans'],
     queryFn: async () => {
       const response = await client.pricing.plans.$get()
@@ -90,10 +87,7 @@ function RouteComponent() {
   })
 
   // Fetch discounts with React Query
-  const {
-    data: discountsData,
-    refetch: refetchDiscounts,
-  } = useQuery({
+  const { data: discountsData, refetch: refetchDiscounts } = useQuery({
     queryKey: ['pricing-discounts'],
     queryFn: async () => {
       const response = await client.pricing.discounts.$get()
@@ -105,10 +99,7 @@ function RouteComponent() {
   })
 
   // Fetch subscriptions with React Query
-  const {
-    data: subscriptionsData,
-    refetch: refetchSubscriptions,
-  } = useQuery({
+  const { data: subscriptionsData, refetch: refetchSubscriptions } = useQuery({
     queryKey: ['pricing-subscriptions'],
     queryFn: async () => {
       const response = await client.pricing.subscriptions.$get()

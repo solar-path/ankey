@@ -5,7 +5,7 @@ A TypeScript/Bun equivalent of Laravel's make:crud command, adapted for your cur
 ## Features
 
 - **Database Schema Generation**: Adds table definitions to Drizzle schema files
-- **Hono API Controllers**: Generates full CRUD API controllers with validation  
+- **Hono API Controllers**: Generates full CRUD API controllers with validation
 - **TanStack Router Routes**: Creates type-safe routes with data fetching
 - **React Components**: Generates data tables, forms, and list components
 - **TypeScript Types**: Generates comprehensive type definitions
@@ -22,6 +22,7 @@ bun run make:crud
 ```
 
 This will prompt you for:
+
 - Model name (PascalCase, e.g., `Product`, `UserProfile`)
 - Database schema (`core` or `tenant`)
 - Field definitions with types and constraints
@@ -57,6 +58,7 @@ bun run make:crud --name=Product --schema=tenant --fields="description:text:null
 This generates:
 
 1. **Database Schema** (`src/api/db/schemas/tenant.drizzle.ts`):
+
    ```typescript
    export const products = pgTable('products', {
      id: uuid('id').defaultRandom().primaryKey(),
@@ -110,6 +112,7 @@ This generates:
 After running the generator:
 
 1. **Update Database**:
+
    ```bash
    bun run db:push:tenant  # or db:push:core
    ```
@@ -157,15 +160,15 @@ src/
 
 ## Field Type Mapping
 
-| Field Type | Database | TypeScript | Validation |
-|------------|----------|------------|------------|
-| `text` | `text()` | `string` | `z.string()` |
-| `boolean` | `boolean()` | `boolean` | `z.boolean()` |
-| `integer` | `integer()` | `number` | `z.number().int()` |
-| `decimal` | `decimal()` | `number` | `z.number()` |
-| `timestamp` | `timestamp()` | `string` | `z.string().datetime()` |
-| `uuid` | `uuid()` | `string` | `z.string().uuid()` |
-| `jsonb` | `jsonb()` | `any` | `z.any()` |
+| Field Type  | Database      | TypeScript | Validation              |
+| ----------- | ------------- | ---------- | ----------------------- |
+| `text`      | `text()`      | `string`   | `z.string()`            |
+| `boolean`   | `boolean()`   | `boolean`  | `z.boolean()`           |
+| `integer`   | `integer()`   | `number`   | `z.number().int()`      |
+| `decimal`   | `decimal()`   | `number`   | `z.number()`            |
+| `timestamp` | `timestamp()` | `string`   | `z.string().datetime()` |
+| `uuid`      | `uuid()`      | `string`   | `z.string().uuid()`     |
+| `jsonb`     | `jsonb()`     | `any`      | `z.any()`               |
 
 ## Features Included
 

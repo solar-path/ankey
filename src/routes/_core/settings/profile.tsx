@@ -47,14 +47,14 @@ function ProfileSettings() {
   useEffect(() => {
     const loadUserData = async () => {
       if (!user) return
-      
+
       try {
         setDataLoading(true)
-        
+
         // Try to fetch extended profile data from settings endpoint
         const response = await settingsClient.profile.$get()
         const result = await handleApiResponse(response)
-        
+
         if (result.success && result.data) {
           const profileData = result.data as ProfileSettings
           reset({
@@ -62,7 +62,7 @@ function ProfileSettings() {
             email: profileData.email || user.email || '',
             avatar: profileData.avatar || '',
           })
-          
+
           if (profileData.avatar) {
             setPreview(profileData.avatar)
           }
@@ -86,7 +86,7 @@ function ProfileSettings() {
         setDataLoading(false)
       }
     }
-    
+
     loadUserData()
   }, [user, reset])
 
@@ -125,8 +125,8 @@ function ProfileSettings() {
       setIsLoading(true)
 
       // Use context-aware RPC client
-      const response = await settingsClient.profile.$patch({ 
-        json: data 
+      const response = await settingsClient.profile.$patch({
+        json: data,
       })
       const result = await handleApiResponse(response)
 
