@@ -1,14 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { client, handleApiResponse } from '@/lib/rpc'
-import { QDataTable } from '@/components/QDataTable'
+import { SimpleDataTable } from '@/components/SimpleDataTable'
 import {
   Sheet,
   SheetContent,
@@ -82,7 +81,7 @@ function RouteComponent() {
       const response = await client.pricing.plans.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch plans')
-      return result.data?.plans || []
+      return (result.data as any)?.plans || []
     },
   })
 
@@ -93,7 +92,7 @@ function RouteComponent() {
       const response = await client.pricing.discounts.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch discounts')
-      return result.data?.discounts || []
+      return (result.data as any)?.discounts || []
     },
     enabled: activeTab === 'discounts',
   })
@@ -105,14 +104,14 @@ function RouteComponent() {
       const response = await client.pricing.subscriptions.$get()
       const result = await handleApiResponse(response)
       if (!result.success) throw new Error(result.error || 'Failed to fetch subscriptions')
-      return result.data?.subscriptions || []
+      return (result.data as any)?.subscriptions || []
     },
     enabled: activeTab === 'subscriptions',
   })
 
-  const plans = plansData || []
-  const discounts = discountsData || []
-  const subscriptions = subscriptionsData || []
+  const plans = (plansData as PricingPlan[]) || []
+  const discounts = (discountsData as PricingDiscount[]) || []
+  const subscriptions = (subscriptionsData as TenantSubscription[]) || []
 
   const savePlan = async () => {
     if (!editingPlan) return
@@ -225,150 +224,147 @@ function RouteComponent() {
   }
 
   // Column definitions for Plans table
-  const plansColumns: ColumnDef<PricingPlan>[] = [
+  const plansColumns = [
     {
-      accessorKey: 'name',
+      key: 'name',
       header: 'Name',
-      cell: ({ row }) => (
+      cell: (row: PricingPlan) => (
         <div>
-          <div className="font-medium">{row.getValue('name')}</div>
-          <div className="text-sm text-gray-500">{row.original.description}</div>
+          <div className="font-medium">{row.name}</div>
+          <div className="text-sm text-gray-500">{row.description}</div>
         </div>
       ),
     },
     {
-      accessorKey: 'pricePerUserPerMonth',
+      key: 'pricePerUserPerMonth',
       header: 'Price/User/Month',
-      cell: ({ row }) => `$${row.getValue('pricePerUserPerMonth')}`,
+      cell: (row: PricingPlan) => `$${row.pricePerUserPerMonth}`,
     },
     {
-      id: 'userLimits',
+      key: 'userLimits',
       header: 'User Limits',
-      cell: ({ row }) => `${row.original.minUsers || 1} - ${row.original.maxUsers || '∞'}`,
+      cell: (row: PricingPlan) => `${row.minUsers || 1} - ${row.maxUsers || '∞'}`,
     },
     {
-      id: 'trial',
+      key: 'trial',
       header: 'Trial',
-      cell: ({ row }) =>
-        `${row.original.trialDays || 0} days (${row.original.trialMaxUsers || 0} users)`,
+      cell: (row: PricingPlan) =>
+        `${row.trialDays || 0} days (${row.trialMaxUsers || 0} users)`,
     },
     {
-      accessorKey: 'badge',
+      key: 'badge',
       header: 'Badge',
-      cell: ({ row }) =>
-        row.original.badge ? <Badge variant="secondary">{row.original.badge}</Badge> : null,
+      cell: (row: PricingPlan) =>
+        row.badge ? <Badge variant="secondary">{row.badge}</Badge> : null,
     },
     {
-      accessorKey: 'isActive',
+      key: 'isActive',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Inactive'}
+      cell: (row: PricingPlan) => (
+        <Badge variant={row.isActive ? 'default' : 'secondary'}>
+          {row.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
     },
   ]
 
   // Column definitions for Discounts table
-  const discountsColumns: ColumnDef<PricingDiscount>[] = [
+  const discountsColumns = [
     {
-      accessorKey: 'name',
+      key: 'name',
       header: 'Name',
     },
     {
-      accessorKey: 'discountPercent',
+      key: 'discountPercent',
       header: 'Discount',
-      cell: ({ row }) => `${row.getValue('discountPercent')}%`,
+      cell: (row: PricingDiscount) => `${row.discountPercent}%`,
     },
     {
-      id: 'period',
+      key: 'period',
       header: 'Period',
-      cell: ({ row }) =>
-        `${format(new Date(row.original.startDate), 'MMM dd, yyyy')} - ${format(new Date(row.original.endDate), 'MMM dd, yyyy')}`,
+      cell: (row: PricingDiscount) =>
+        `${format(new Date(row.startDate), 'MMM dd, yyyy')} - ${format(new Date(row.endDate), 'MMM dd, yyyy')}`,
     },
     {
-      accessorKey: 'promoCode',
+      key: 'promoCode',
       header: 'Promo Code',
-      cell: ({ row }) =>
-        row.original.promoCode ? (
+      cell: (row: PricingDiscount) =>
+        row.promoCode ? (
           <code className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">
-            {row.original.promoCode}
+            {row.promoCode}
           </code>
         ) : null,
     },
     {
-      accessorKey: 'isActive',
+      key: 'isActive',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Inactive'}
+      cell: (row: PricingDiscount) => (
+        <Badge variant={row.isActive ? 'default' : 'secondary'}>
+          {row.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
     },
   ]
 
   // Column definitions for Subscriptions table
-  const subscriptionsColumns: ColumnDef<TenantSubscription>[] = [
+  const subscriptionsColumns = [
     {
-      accessorKey: 'tenantId',
+      key: 'tenantId',
       header: 'Tenant ID',
-      cell: ({ row }) => (
-        <code className="font-mono text-sm">{row.getValue<string>('tenantId').slice(0, 8)}...</code>
+      cell: (row: TenantSubscription) => (
+        <code className="font-mono text-sm">{row.tenantId.slice(0, 8)}...</code>
       ),
     },
     {
-      accessorKey: 'planName',
+      key: 'planName',
       header: 'Plan',
     },
     {
-      accessorKey: 'status',
+      key: 'status',
       header: 'Status',
-      cell: ({ row }) => {
-        const status = row.getValue<string>('status')
+      cell: (row: TenantSubscription) => {
         const variant =
-          status === 'active'
+          row.status === 'active'
             ? 'default'
-            : status === 'trial'
+            : row.status === 'trial'
               ? 'secondary'
-              : status === 'cancelled'
+              : row.status === 'cancelled'
                 ? 'destructive'
                 : 'outline'
-        return <Badge variant={variant}>{status}</Badge>
+        return <Badge variant={variant}>{row.status}</Badge>
       },
     },
     {
-      accessorKey: 'userCount',
+      key: 'userCount',
       header: 'Users',
     },
     {
-      accessorKey: 'pricePerUser',
+      key: 'pricePerUser',
       header: 'Price/User',
-      cell: ({ row }) => `$${row.getValue('pricePerUser')}`,
+      cell: (row: TenantSubscription) => `$${row.pricePerUser}`,
     },
     {
-      accessorKey: 'totalMonthlyPrice',
+      key: 'totalMonthlyPrice',
       header: 'Total/Month',
-      cell: ({ row }) => `$${row.getValue('totalMonthlyPrice')}`,
+      cell: (row: TenantSubscription) => `$${row.totalMonthlyPrice}`,
     },
     {
-      accessorKey: 'billingCycle',
+      key: 'billingCycle',
       header: 'Billing',
-      cell: ({ row }) => <span className="capitalize">{row.getValue('billingCycle')}</span>,
+      cell: (row: TenantSubscription) => <span className="capitalize">{row.billingCycle}</span>,
     },
     {
-      accessorKey: 'trialEndsAt',
+      key: 'trialEndsAt',
       header: 'Trial Ends',
-      cell: ({ row }) => {
-        const date = row.getValue<Date | null>('trialEndsAt')
-        return date ? format(new Date(date), 'MMM dd, yyyy') : '-'
+      cell: (row: TenantSubscription) => {
+        return row.trialEndsAt ? format(new Date(row.trialEndsAt), 'MMM dd, yyyy') : '-'
       },
     },
     {
-      accessorKey: 'nextBillingDate',
+      key: 'nextBillingDate',
       header: 'Next Billing',
-      cell: ({ row }) => {
-        const date = row.getValue<Date | null>('nextBillingDate')
-        return date ? format(new Date(date), 'MMM dd, yyyy') : '-'
+      cell: (row: TenantSubscription) => {
+        return row.nextBillingDate ? format(new Date(row.nextBillingDate), 'MMM dd, yyyy') : '-'
       },
     },
   ]
@@ -399,7 +395,7 @@ function RouteComponent() {
       {/* Plans Tab */}
       {activeTab === 'plans' && (
         <div className="space-y-4">
-          <QDataTable
+          <SimpleDataTable
             title="Pricing Plans"
             columns={plansColumns}
             data={plans}
@@ -524,7 +520,7 @@ function RouteComponent() {
       {/* Discounts Tab */}
       {activeTab === 'discounts' && (
         <div className="space-y-4">
-          <QDataTable
+          <SimpleDataTable
             title="Pricing Discounts"
             columns={discountsColumns}
             data={discounts}
@@ -619,11 +615,10 @@ function RouteComponent() {
       {/* Subscriptions Tab */}
       {activeTab === 'subscriptions' && (
         <div className="space-y-4">
-          <QDataTable
+          <SimpleDataTable
             title="Tenant Subscriptions"
             columns={subscriptionsColumns}
             data={subscriptions}
-            onSync={() => refetchSubscriptions()}
           />
         </div>
       )}
