@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as coreSchema from './db/schemas/core.drizzle'
 import * as tenantSchema from './db/schemas/tenant.drizzle'
+import type { TenantOwnerData, SeedResult } from '@/shared'
 
 // Singleton instance for core database connection
 let coreDbInstance: ReturnType<typeof drizzle> | null = null
@@ -51,7 +52,7 @@ export function createTenantConnection(tenantDatabase: string) {
 }
 
 // Create a new tenant database
-export async function createTenantDatabase(tenantDatabase: string) {
+export async function createTenantDatabase(tenantDatabase: string): Promise<boolean> {
   const adminConnectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/postgres`
   const adminClient = postgres(adminConnectionString)
 
@@ -75,7 +76,7 @@ export async function createTenantDatabase(tenantDatabase: string) {
 }
 
 // Run tenant migrations (you'll need to implement this based on your migration strategy)
-export async function runTenantMigrations(tenantDatabase: string) {
+export async function runTenantMigrations(tenantDatabase: string): Promise<boolean> {
   // This would typically use drizzle-kit to run migrations
   // For now, we'll create tables directly
   // const db = createTenantConnection(tenantDatabase);
@@ -88,12 +89,8 @@ export async function runTenantMigrations(tenantDatabase: string) {
 // Seed tenant database with default data
 export async function seedTenantDatabase(
   tenantDatabase: string,
-  ownerData: {
-    email: string
-    fullName: string
-    passwordHash: string
-  }
-) {
+  ownerData: TenantOwnerData
+): Promise<SeedResult> {
   const db = createTenantConnection(tenantDatabase)
 
   try {

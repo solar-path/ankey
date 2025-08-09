@@ -1,5 +1,14 @@
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
+import type { 
+  EmailResult, 
+  WorkspaceWelcomeData, 
+  UserInvitationData, 
+  PasswordResetData, 
+  EmailVerificationData, 
+  TwoFactorCodeData, 
+  AccessRequestNotificationData 
+} from '@/shared'
 
 export class EmailService {
   private transporter: Transporter
@@ -16,7 +25,7 @@ export class EmailService {
     })
   }
 
-  private async sendEmail(to: string, subject: string, html: string, text?: string) {
+  private async sendEmail(to: string, subject: string, html: string, text?: string): Promise<EmailResult> {
     try {
       const info = await this.transporter.sendMail({
         from: process.env.FROM_EMAIL,
@@ -44,12 +53,7 @@ export class EmailService {
   }
 
   // Welcome email for new workspace
-  async sendWorkspaceWelcome(data: {
-    to: string
-    workspaceName: string
-    workspaceUrl: string
-    ownerName: string
-  }) {
+  async sendWorkspaceWelcome(data: WorkspaceWelcomeData): Promise<EmailResult> {
     const subject = `🎉 Your ${data.workspaceName} workspace is ready!`
     const html = `
       <!DOCTYPE html>
@@ -96,14 +100,7 @@ export class EmailService {
   }
 
   // User invitation email
-  async sendUserInvitation(data: {
-    to: string
-    fullName: string
-    workspaceName: string
-    workspaceUrl: string
-    inviterName: string
-    inviteToken: string
-  }) {
+  async sendUserInvitation(data: UserInvitationData): Promise<EmailResult> {
     const inviteUrl = `${data.workspaceUrl}/invite?token=${data.inviteToken}`
     const subject = `You've been invited to join ${data.workspaceName}`
     const html = `
@@ -150,12 +147,7 @@ export class EmailService {
   }
 
   // Password reset email
-  async sendPasswordReset(data: {
-    to: string
-    fullName: string
-    resetUrl: string
-    isCore?: boolean
-  }) {
+  async sendPasswordReset(data: PasswordResetData): Promise<EmailResult> {
     const subject = 'Reset your password'
     const html = `
       <!DOCTYPE html>
@@ -204,7 +196,7 @@ export class EmailService {
   }
 
   // Email verification
-  async sendEmailVerification(data: { to: string; fullName: string; verificationUrl: string }) {
+  async sendEmailVerification(data: EmailVerificationData): Promise<EmailResult> {
     const subject = 'Verify your email address'
     const html = `
       <!DOCTYPE html>
@@ -246,7 +238,7 @@ export class EmailService {
   }
 
   // Two-factor authentication code
-  async sendTwoFactorCode(data: { to: string; fullName: string; code: string }) {
+  async sendTwoFactorCode(data: TwoFactorCodeData): Promise<EmailResult> {
     const subject = 'Your verification code'
     const html = `
       <!DOCTYPE html>
@@ -285,14 +277,7 @@ export class EmailService {
   }
 
   // Access request notification
-  async sendAccessRequestNotification(data: {
-    to: string // Admin email
-    requesterName: string
-    requesterEmail: string
-    workspaceName: string
-    reason: string
-    approvalUrl: string
-  }) {
+  async sendAccessRequestNotification(data: AccessRequestNotificationData): Promise<EmailResult> {
     const subject = `New access request for ${data.workspaceName}`
     const html = `
       <!DOCTYPE html>
@@ -343,7 +328,7 @@ export class EmailService {
   }
 
   // Test email connection
-  async testConnection() {
+  async testConnection(): Promise<EmailResult> {
     try {
       await this.transporter.verify()
       return { success: true, message: 'Email connection successful' }

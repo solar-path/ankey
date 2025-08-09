@@ -828,3 +828,128 @@ export type UpdateDiscount = z.infer<typeof updateDiscountSchema>
 export type CreateSubscription = z.infer<typeof createSubscriptionSchema>
 export type UpdateSubscription = z.infer<typeof updateSubscriptionSchema>
 export type BillingCalculation = z.infer<typeof billingCalculationSchema>
+
+// ===== AUDIT AND COMPLIANCE TYPE DEFINITIONS =====
+
+export interface AuditLogFilter {
+  userId?: string
+  resource?: string
+  action?: string
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+  offset?: number
+}
+
+export interface AuditLogsResponse {
+  success: boolean
+  data?: any[]
+  error?: string
+}
+
+export interface ComplianceReport {
+  period: {
+    start: string
+    end: string
+  }
+  summary: {
+    totalActions: number
+    uniqueUsers: number
+    actionsByType: Record<string, number>
+    resourcesAccessed: Record<string, number>
+  }
+  criticalActions: any[]
+  failedActions: any[]
+  userActivity: Record<string, {
+    count: number
+    actions: Array<{
+      action: string
+      resource: string
+      timestamp: Date
+    }>
+  }>
+}
+
+export interface ComplianceReportResponse {
+  success: boolean
+  data?: ComplianceReport
+  error?: string
+}
+
+// ===== DATABASE TYPE DEFINITIONS =====
+
+export interface TenantOwnerData {
+  email: string
+  fullName: string
+  passwordHash: string
+}
+
+export interface SeedResult {
+  success: boolean
+  ownerId?: string
+  error?: any
+}
+
+export interface DatabaseConfig {
+  host: string
+  port: number
+  user: string
+  password: string
+  database: string
+  max?: number
+  idleTimeout?: number
+  connectTimeout?: number
+}
+
+// ===== EMAIL SERVICE TYPE DEFINITIONS =====
+
+export interface EmailResult {
+  success: boolean
+  messageId?: string
+  error?: string
+  message?: string
+}
+
+export interface WorkspaceWelcomeData {
+  to: string
+  workspaceName: string
+  workspaceUrl: string
+  ownerName: string
+}
+
+export interface UserInvitationData {
+  to: string
+  fullName: string
+  workspaceName: string
+  workspaceUrl: string
+  inviterName: string
+  inviteToken: string
+}
+
+export interface PasswordResetData {
+  to: string
+  fullName: string
+  resetUrl: string
+  isCore?: boolean
+}
+
+export interface EmailVerificationData {
+  to: string
+  fullName: string
+  verificationUrl: string
+}
+
+export interface TwoFactorCodeData {
+  to: string
+  fullName: string
+  code: string
+}
+
+export interface AccessRequestNotificationData {
+  to: string // Admin email
+  requesterName: string
+  requesterEmail: string
+  workspaceName: string
+  reason: string
+  approvalUrl: string
+}

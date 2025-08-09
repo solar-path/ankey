@@ -9,7 +9,7 @@ import { useCallback, useState } from 'react'
 import { z } from 'zod'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText } from 'lucide-react'
-import { coreInquiry, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { toast } from 'sonner'
 
 const inquirySchema = z.object({
@@ -82,7 +82,7 @@ export default function InquiryForm({
         await onSubmit(data)
       } else {
         // Use RPC client to submit inquiry
-        const response = await coreInquiry.submit.$post({
+        const response = await client.inquiry.submit.$post({
           json: {
             email: data.email,
             message: data.message,

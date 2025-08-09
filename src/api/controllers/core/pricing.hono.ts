@@ -1,17 +1,53 @@
-import {
-  billingCalculationSchema,
-  createDiscountSchema,
-  createPricingPlanSchema,
-  createSubscriptionSchema,
-  updateDiscountSchema,
-  updatePricingPlanSchema,
-  updateSubscriptionSchema,
-} from '@/shared'
+import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
 import { pricingDiscounts, pricingPlans, tenantSubscriptions } from '../../db/schemas/core.drizzle'
+
+// Define schemas based on database structure
+const createPricingPlanSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  pricePerUserPerMonth: z.number().min(0),
+  minUsers: z.number().optional(),
+  maxUsers: z.number().optional(),
+  features: z.string(), // JSON string of features array
+  trialDays: z.number().optional(),
+  trialMaxUsers: z.number().optional(),
+  displayOrder: z.number().default(0),
+  badge: z.string().optional(),
+  isActive: z.boolean().default(true),
+})
+
+const updatePricingPlanSchema = createPricingPlanSchema.partial()
+
+const createDiscountSchema = z.object({
+  planId: z.string().uuid(),
+  name: z.string().min(1),
+  discountPercent: z.number().min(0).max(100),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  promoCode: z.string().optional(),
+  minMonths: z.number().optional(),
+  isActive: z.boolean().default(true),
+})
+
+const updateDiscountSchema = createDiscountSchema.partial()
+
+const createSubscriptionSchema = z.object({
+  tenantId: z.string().uuid(),
+  planId: z.string().uuid(),
+  status: z.string(),
+  userCount: z.number().min(0),
+  pricePerUser: z.number().min(0),
+  totalMonthlyPrice: z.number().min(0),
+  billingCycle: z.string(),
+  trialEndsAt: z.coerce.date().optional(),
+  nextBillingDate: z.coerce.date().optional(),
+})
+
+const _updateSubscriptionSchema = createSubscriptionSchema.partial() // Reserved for future use
 
 // PRICING PLANS CRUD
 
@@ -27,7 +63,7 @@ export const pricingRouter = new Hono()
         .orderBy(pricingPlans.displayOrder, desc(pricingPlans.createdAt))
 
       return c.json({ plans })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch pricing plans' }, 500)
     }
   })
@@ -47,7 +83,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ plan })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch pricing plan' }, 500)
     }
   })
@@ -59,14 +95,11 @@ export const pricingRouter = new Hono()
 
       const [newPlan] = await createCoreConnection()
         .insert(pricingPlans)
-        .values({
-          ...planData,
-          updatedAt: new Date(),
-        })
+        .values(planData)
         .returning()
 
       return c.json({ plan: newPlan }, 201)
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to create pricing plan' }, 500)
     }
   })
@@ -79,10 +112,7 @@ export const pricingRouter = new Hono()
 
       const [updatedPlan] = await createCoreConnection()
         .update(pricingPlans)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(pricingPlans.id, planId))
         .returning()
 
@@ -91,7 +121,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ plan: updatedPlan })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to update pricing plan' }, 500)
     }
   })
@@ -115,7 +145,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ message: 'Pricing plan deleted successfully' })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to delete pricing plan' }, 500)
     }
   })
@@ -132,7 +162,7 @@ export const pricingRouter = new Hono()
         .orderBy(desc(pricingDiscounts.createdAt))
 
       return c.json({ discounts })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch discounts' }, 500)
     }
   })
@@ -148,7 +178,7 @@ export const pricingRouter = new Hono()
         .orderBy(desc(pricingDiscounts.createdAt))
 
       return c.json({ discounts })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch discounts' }, 500)
     }
   })
@@ -173,7 +203,7 @@ export const pricingRouter = new Hono()
         .orderBy(desc(pricingDiscounts.discountPercent))
 
       return c.json({ discounts: activeDiscounts })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch active discounts' }, 500)
     }
   })
@@ -189,33 +219,32 @@ export const pricingRouter = new Hono()
         .returning()
 
       return c.json({ discount: newDiscount }, 201)
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to create discount' }, 500)
     }
   })
 
   // Update discount
   .put('/discounts/:id', zValidator('json', updateDiscountSchema), async c => {
-      try {
-        const discountId = c.req.param('id')
-        const updateData = c.req.valid('json')
+    try {
+      const discountId = c.req.param('id')
+      const updateData = c.req.valid('json')
 
-        const [updatedDiscount] = await createCoreConnection()
-          .update(pricingDiscounts)
-          .set(updateData)
-          .where(eq(pricingDiscounts.id, discountId))
-          .returning()
+      const [updatedDiscount] = await createCoreConnection()
+        .update(pricingDiscounts)
+        .set(updateData)
+        .where(eq(pricingDiscounts.id, discountId))
+        .returning()
 
-        if (!updatedDiscount) {
-          return c.json({ error: 'Discount not found' }, 404)
-        }
-
-        return c.json({ discount: updatedDiscount })
-      } catch (error) {
-        return c.json({ error: 'Failed to update discount' }, 500)
+      if (!updatedDiscount) {
+        return c.json({ error: 'Discount not found' }, 404)
       }
+
+      return c.json({ discount: updatedDiscount })
+    } catch (_error) {
+      return c.json({ error: 'Failed to update discount' }, 500)
     }
-  )
+  })
 
   // Delete discount (soft delete)
   .delete('/discounts/:id', async c => {
@@ -233,7 +262,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ message: 'Discount deleted successfully' })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to delete discount' }, 500)
     }
   })
@@ -263,7 +292,7 @@ export const pricingRouter = new Hono()
         .orderBy(desc(tenantSubscriptions.createdAt))
 
       return c.json({ subscriptions })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch subscriptions' }, 500)
     }
   })
@@ -302,7 +331,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ subscription })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to fetch subscription' }, 500)
     }
   })
@@ -321,7 +350,7 @@ export const pricingRouter = new Hono()
         .returning()
 
       return c.json({ subscription: newSubscription }, 201)
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to create subscription' }, 500)
     }
   })
@@ -346,7 +375,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ subscription: updatedSubscription })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to update subscription' }, 500)
     }
   })
@@ -371,7 +400,7 @@ export const pricingRouter = new Hono()
       }
 
       return c.json({ subscription: cancelledSubscription })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to cancel subscription' }, 500)
     }
   })
@@ -455,7 +484,7 @@ export const pricingRouter = new Hono()
         appliedDiscount,
         trialDays: plan.trialDays,
       })
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Failed to calculate pricing' }, 500)
     }
   })

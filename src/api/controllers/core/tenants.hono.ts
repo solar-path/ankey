@@ -3,7 +3,6 @@ import { TenantService } from '@/api/tenant.settings'
 import { billingQuerySchema, deactivateTenantSchema, updateTenantSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod/v4'
 
 const tenantService = new TenantService()
 const authService = new CoreAuthService()

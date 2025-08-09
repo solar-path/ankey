@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { z } from 'zod'
 import { useState } from 'react'
-import { coreInquiry, handleApiResponse } from '@/lib/rpc'
+import { client, handleApiResponse } from '@/lib/rpc'
 import { toast } from 'sonner'
 
 const findInquirySchema = z.object({
@@ -47,7 +47,7 @@ export default function FindInquiryForm({
         await onSubmit(data)
       } else {
         // Use RPC client to find inquiry
-        const response = await coreInquiry.find.$post({
+        const response = await client.inquiry.find.$post({
           json: { id: data.id },
         })
 

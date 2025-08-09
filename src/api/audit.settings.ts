@@ -2,6 +2,7 @@ import { eq, and, gte, lte, desc } from 'drizzle-orm'
 import { createCoreConnection, createTenantConnection } from '@/api/database.settings'
 import * as coreSchema from '@/api/db/schemas/core.drizzle'
 import * as tenantSchema from '@/api/db/schemas/tenant.drizzle'
+import type { AuditLogFilter, AuditLogsResponse, ComplianceReportResponse } from '@/shared'
 
 export interface AuditLogData {
   userId: string
@@ -151,7 +152,7 @@ export class AuditService {
   // Middleware for automatic audit logging
   static createAuditMiddleware(tenantDatabase?: string) {
     return async (c: any, next: any) => {
-      const startTime = Date.now()
+      // const startTime = Date.now() // Reserved for future performance monitoring
 
       // Extract request information
       const method = c.req.method
@@ -220,16 +221,8 @@ export class AuditService {
   // Get audit logs with filtering
   static async getAuditLogs(
     tenantDatabase: string | null,
-    filters: {
-      userId?: string
-      resource?: string
-      action?: string
-      startDate?: Date
-      endDate?: Date
-      limit?: number
-      offset?: number
-    } = {}
-  ) {
+    filters: AuditLogFilter = {}
+  ): Promise<AuditLogsResponse> {
     try {
       const db = tenantDatabase ? createTenantConnection(tenantDatabase) : createCoreConnection()
       const auditTable = tenantDatabase ? tenantSchema.auditLogs : coreSchema.coreAuditLogs
@@ -272,7 +265,7 @@ export class AuditService {
     tenantDatabase: string | null,
     startDate: Date,
     endDate: Date
-  ) {
+  ): Promise<ComplianceReportResponse> {
     try {
       const auditLogs = await this.getAuditLogs(tenantDatabase, {
         startDate,
@@ -280,7 +273,7 @@ export class AuditService {
       })
 
       if (!auditLogs.success || !auditLogs.data) {
-        return auditLogs
+        return { success: false, error: auditLogs.error || 'Failed to get audit logs' }
       }
 
       const report = {
