@@ -28,9 +28,10 @@ A comprehensive multi-tenant SaaS application built with modern technologies, fe
 - **Frontend**: React 19 + TanStack Router + Tailwind CSS v4
 - **Backend**: Hono.js + Bun runtime
 - **Database**: PostgreSQL + Drizzle ORM
-- **Auth**: Lucia + Argon2 password hashing
+- **Auth**: Lucia + Bun password hashing
 - **Email**: Nodemailer with HTML templates
 - **Validation**: Zod v4 for runtime validation
+- **Icons**: lucide-react mandatory. svg is banned
 
 ### Project Structure
 
@@ -147,7 +148,7 @@ src/
 
 ### Authentication Features
 
-- Argon2 password hashing (industry standard)
+- Bun password hashing (industry standard)
 - Session-based authentication with secure cookies
 - Two-factor authentication support
 - Password reset with secure tokens
@@ -241,7 +242,7 @@ bun run build            # Production build
 
 ## 📝 Additional Notes
 
-- All passwords are hashed using Bun's native Argon2 implementation
+- All passwords are hashed using Bun's native Bun implementation
 - Email templates are responsive and professionally designed
 - Audit logs are stored permanently for compliance requirements
 - The system supports horizontal scaling with database-per-tenant architecture
