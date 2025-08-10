@@ -115,6 +115,7 @@ UI components follow the shadcn/ui pattern:
 - Comprehensive variant system for consistent design
 
 #### Theme Requirements
+
 - **ALWAYS use theme-aware classes**: `bg-white dark:bg-gray-800`, `text-gray-900 dark:text-gray-100`
 - **NEVER use single-theme classes**: Avoid `bg-white` or `bg-gray-800` without theme variants
 - **Required theme patterns**:
@@ -435,12 +436,14 @@ This application undergoes SOC 2 verification as a cloud SaaS platform helping c
 **NEVER make audit logging optional** - it is required for SOC 2 Type II compliance and must be implemented as follows:
 
 #### Automatic Audit Middleware
+
 - **ALL API endpoints MUST be audited** except health checks and public documentation
 - Audit middleware is automatically applied to `/api/*` routes via `AuditService.createAuditMiddleware()`
 - **Excluded endpoints**: `/api/health`, `/api/ping`, `/api/docs`, `/api/openapi`
 - **Critical security endpoints** (auth, login, register, password) are ALWAYS logged regardless of authentication status
 
 #### Required Audit Data Points
+
 - **User ID**: Real user ID for authenticated requests, `null` for anonymous users
 - **Action**: HTTP method mapped to business operations (CREATE, read, UPDATE, DELETE)
 - **Resource**: API endpoint resource being accessed
@@ -451,13 +454,16 @@ This application undergoes SOC 2 verification as a cloud SaaS platform helping c
 - **Error Details**: Complete error information for failed operations
 
 #### Database Storage
+
 - **Core Operations**: Logged to `core_audit_logs` table in core database
 - **Tenant Operations**: Logged to `audit_logs` table in respective tenant database
 - **Multi-tenant Aware**: Middleware automatically routes to correct database based on context
 - **Retention**: Minimum 90 days for SOC 2 compliance (recommended 7 years)
 
 #### Console Logging
+
 Real-time audit trail visible in server logs:
+
 ```
 [AUDIT] CREATE login - User: anonymous - Status: 401 - IP: 192.168.1.100
 [AUDIT] UPDATE profile - User: user-uuid - Status: 200 - IP: 192.168.1.100
@@ -466,6 +472,7 @@ Real-time audit trail visible in server logs:
 ### Security Control Implementation
 
 #### Authentication & Authorization
+
 - **Mandatory middleware** for all protected endpoints
 - **Session-based authentication** with secure cookie management
 - **Role-Based Access Control (RBAC)** via `rbac.settings.ts`
@@ -473,12 +480,14 @@ Real-time audit trail visible in server logs:
 - **Failed login attempt tracking** for brute force detection
 
 #### Data Protection
+
 - **Soft delete implementation** via `AuditService.safeDelete()` - never hard delete records
 - **Change tracking** for sensitive data modifications
 - **Encryption at rest** for sensitive fields (passwords, tokens)
 - **HTTPS enforcement** in production environments
 
 #### Delegation of Authority (DOA)
+
 - **Approval workflows** managed via `doa.settings.ts`
 - **Audit trail for approvals** with user, timestamp, and decision reasoning
 - **Escalation paths** for high-value transactions
@@ -487,12 +496,14 @@ Real-time audit trail visible in server logs:
 ### Compliance Monitoring
 
 #### Audit Log Analysis
+
 - **Real-time monitoring** via console logs during development
 - **Failed action alerts** for security incident response
 - **Compliance reporting** via `AuditService.generateComplianceReport()`
 - **User activity summaries** for access reviews
 
 #### Data Integrity
+
 - **Immutable audit logs** - never modify historical records
 - **Checksums/signatures** for audit log integrity verification
 - **Regular backup verification** of audit data
@@ -501,16 +512,19 @@ Real-time audit trail visible in server logs:
 ### Development Guidelines for SOC 2
 
 #### Code Changes
+
 - **NEVER bypass audit logging** - all changes to authentication, authorization, or data access must maintain audit trail
 - **Security-first mindset** - consider compliance implications of every feature
 - **Documentation requirements** - maintain security control documentation for auditors
 
 #### Testing Requirements
+
 - **Audit logging tests** must verify all critical endpoints generate appropriate logs
 - **Security regression testing** for authentication and authorization changes
 - **Penetration testing preparation** - code must withstand security assessments
 
 #### Incident Response
+
 - **Audit log preservation** during security incidents
 - **Forensic analysis support** via comprehensive logging
 - **Change management** - all security-related changes must be documented and approved
