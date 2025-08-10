@@ -106,7 +106,9 @@ export class CoreAuthService {
 
   async login(data: LoginData) {
     try {
-      const user = await this.db.select().from(coreSchema.coreUsers)
+      const user = await this.db
+        .select()
+        .from(coreSchema.coreUsers)
         .where(eq(coreSchema.coreUsers.email, data.email))
         .limit(1)
         .then(rows => rows[0])
@@ -175,15 +177,17 @@ export class CoreAuthService {
   async validateSession(sessionId: string) {
     try {
       const { session, user } = await this.lucia.validateSession(sessionId)
-      
+
       // If session is valid but user is missing email, fetch it manually from database
       // This ensures we always have complete user data even if Lucia's getUserAttributes isn't working properly
       if (session && user && !user.email && user.id) {
-        const dbUser = await this.db.select().from(coreSchema.coreUsers)
+        const dbUser = await this.db
+          .select()
+          .from(coreSchema.coreUsers)
           .where(eq(coreSchema.coreUsers.id, user.id))
           .limit(1)
           .then(rows => rows[0])
-        
+
         if (dbUser) {
           // Return user with complete data from database
           const completeUser = {
@@ -195,11 +199,11 @@ export class CoreAuthService {
             emailVerified: dbUser.emailVerified,
             twoFactorEnabled: dbUser.twoFactorEnabled,
           }
-          
+
           return { session, user: completeUser }
         }
       }
-      
+
       return { session, user }
     } catch (error) {
       console.error('Session validation error:', error)
@@ -209,7 +213,9 @@ export class CoreAuthService {
 
   async createPasswordResetToken(email: string) {
     try {
-      const user = await this.db.select().from(coreSchema.coreUsers)
+      const user = await this.db
+        .select()
+        .from(coreSchema.coreUsers)
         .where(eq(coreSchema.coreUsers.email, email))
         .limit(1)
         .then(rows => rows[0])
@@ -237,11 +243,18 @@ export class CoreAuthService {
 
   async resetPassword(data: ResetPasswordData) {
     try {
-      const tokenRecord = await this.db.select().from(coreSchema.passwordResetTokens)
+      const tokenRecord = await this.db
+        .select()
+        .from(coreSchema.passwordResetTokens)
         .where(eq(coreSchema.passwordResetTokens.token, data.token))
-        .leftJoin(coreSchema.coreUsers, eq(coreSchema.passwordResetTokens.userId, coreSchema.coreUsers.id))
+        .leftJoin(
+          coreSchema.coreUsers,
+          eq(coreSchema.passwordResetTokens.userId, coreSchema.coreUsers.id)
+        )
         .limit(1)
-        .then(rows => rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].core_users } : undefined)
+        .then(rows =>
+          rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].core_users } : undefined
+        )
 
       if (!tokenRecord || tokenRecord.used || tokenRecord.expiresAt < new Date()) {
         return { success: false, error: 'Invalid or expired token' }
@@ -390,11 +403,18 @@ export class TenantAuthService {
 
   async resetPassword(data: ResetPasswordData) {
     try {
-      const tokenRecord = await this.db.select().from(tenantSchema.tenantPasswordResetTokens)
+      const tokenRecord = await this.db
+        .select()
+        .from(tenantSchema.tenantPasswordResetTokens)
         .where(eq(tenantSchema.tenantPasswordResetTokens.token, data.token))
-        .leftJoin(tenantSchema.users, eq(tenantSchema.tenantPasswordResetTokens.userId, tenantSchema.users.id))
+        .leftJoin(
+          tenantSchema.users,
+          eq(tenantSchema.tenantPasswordResetTokens.userId, tenantSchema.users.id)
+        )
         .limit(1)
-        .then(rows => rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].users } : undefined)
+        .then(rows =>
+          rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].users } : undefined
+        )
 
       if (!tokenRecord || tokenRecord.used || tokenRecord.expiresAt < new Date()) {
         return { success: false, error: 'Invalid or expired token' }

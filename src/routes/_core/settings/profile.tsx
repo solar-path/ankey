@@ -55,7 +55,7 @@ function ProfileSettingsSimple() {
   const loadProfile = async () => {
     try {
       const response = await fetch('/api/settings/profile', {
-        credentials: 'include'
+        credentials: 'include',
       })
       const data = await response.json()
 
@@ -155,7 +155,7 @@ function ProfileSettingsSimple() {
 
       // Update profile
       const profileData: any = {
-        fullName: data.fullName
+        fullName: data.fullName,
       }
 
       // Only include avatar if we have a new one
@@ -164,7 +164,7 @@ function ProfileSettingsSimple() {
       }
 
       const response = await client.settings.profile.$patch({
-        json: profileData
+        json: profileData,
       })
 
       if (response.ok) {
@@ -173,9 +173,7 @@ function ProfileSettingsSimple() {
 
         // Update avatar URL if changed
         if (data.avatar) {
-          const url = data.avatar.startsWith('/')
-            ? data.avatar
-            : `/uploads/${data.avatar}`
+          const url = data.avatar.startsWith('/') ? data.avatar : `/uploads/${data.avatar}`
           setAvatarUrl(url)
         }
 
@@ -282,7 +280,12 @@ function ProfileSettingsSimple() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" disabled className="bg-gray-50 dark:bg-gray-900" />
+                      <Input
+                        {...field}
+                        type="email"
+                        disabled
+                        className="bg-gray-50 dark:bg-gray-900"
+                      />
                     </FormControl>
                     <FormDescription>Email cannot be changed</FormDescription>
                     <FormMessage />

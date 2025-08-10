@@ -39,7 +39,7 @@ function ContactSettings() {
       try {
         setIsLoadingData(true)
         const response = await client.settings.me.$get()
-        
+
         if (response.ok) {
           const data = await response.json()
           if (data.success && data.data?.contact) {
@@ -65,8 +65,8 @@ function ContactSettings() {
       setIsLoading(true)
 
       // Use Hono RPC client as required by CLAUDE.md
-      const response = await client.settings.contact.$patch({ 
-        json: data 
+      const response = await client.settings.contact.$patch({
+        json: data,
       })
 
       if (!response.ok) {
@@ -74,7 +74,7 @@ function ContactSettings() {
       }
 
       toast.success('Contact settings updated successfully')
-      
+
       // Refresh the form with updated data
       const updatedResponse = await client.settings.me.$get()
       if (updatedResponse.ok) {
@@ -154,7 +154,6 @@ function ContactSettings() {
                 </FormItem>
               )}
             />
-
 
             <div className="flex items-center gap-4 pt-4">
               <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>

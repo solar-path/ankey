@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "debug": "concurrently \"DEBUG=vite:* vite\" \"DEBUG=* tsx src/api/api.ts\"",
+    "debug": "concurrently \"DEBUG=vite:* vite --port 3000\" \"DEBUG=hono:*,vite:* bun run --watch src/api/api.ts\"",
     "setup-core": "tsx scripts/setup-core-admin.ts",
     "drop-core": "bun scripts/drop-core.ts",
     "seed": "bun scripts/seed-database.ts",

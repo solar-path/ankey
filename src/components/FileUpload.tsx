@@ -98,7 +98,9 @@ export function FileUpload({
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'
+            isDragActive
+              ? 'border-primary bg-primary/10'
+              : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'
           }`}
         >
           <input {...getInputProps()} />
@@ -119,7 +121,9 @@ export function FileUpload({
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-700">
           <div className="flex items-center">
             <AlertCircle className="h-5 w-5 text-red-400 dark:text-red-500 mr-2" />
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">File Upload Error</h3>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+              File Upload Error
+            </h3>
           </div>
           <div className="mt-2">
             {fileRejections.map((rejection, index) => (
@@ -137,7 +141,9 @@ export function FileUpload({
             <div className="flex items-center">
               <File className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{uploadedFile.name}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {uploadedFile.name}
+                </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
@@ -161,7 +167,9 @@ export function FileUpload({
             <div className="mt-4">
               <div
                 className={`flex items-center mb-3 ${
-                  importResult.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+                  importResult.success
+                    ? 'text-green-700 dark:text-green-300'
+                    : 'text-red-700 dark:text-red-300'
                 }`}
               >
                 {importResult.success ? (
@@ -188,7 +196,9 @@ export function FileUpload({
                   <div className="text-gray-600 dark:text-gray-400">Valid Rows</div>
                 </div>
                 <div className="text-center p-2 bg-red-50 rounded border dark:bg-red-900/20 dark:border-red-700">
-                  <div className="font-semibold text-red-700 dark:text-red-300">{importResult.summary.errorRows}</div>
+                  <div className="font-semibold text-red-700 dark:text-red-300">
+                    {importResult.summary.errorRows}
+                  </div>
                   <div className="text-gray-600 dark:text-gray-400">Error Rows</div>
                 </div>
                 <div className="text-center p-2 bg-blue-50 rounded border dark:bg-blue-900/20 dark:border-blue-700">
@@ -201,7 +211,9 @@ export function FileUpload({
 
               {importResult.errors.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Import Errors:</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    Import Errors:
+                  </h4>
                   <div className="max-h-40 overflow-y-auto">
                     {importResult.errors.slice(0, 10).map((error, index) => (
                       <div key={index} className="text-sm text-red-700 dark:text-red-300 mb-1">

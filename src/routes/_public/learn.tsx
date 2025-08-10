@@ -213,26 +213,40 @@ function LearnIndex() {
     // Add classes for better styling
     doc
       .querySelectorAll('h1')
-      .forEach(el => el.classList.add('text-4xl', 'font-bold', 'mb-4', 'mt-8', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-4xl', 'font-bold', 'mb-4', 'mt-8', 'dark:text-gray-100')
+      )
     doc
       .querySelectorAll('h2')
-      .forEach(el => el.classList.add('text-3xl', 'font-semibold', 'mb-3', 'mt-6', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-3xl', 'font-semibold', 'mb-3', 'mt-6', 'dark:text-gray-100')
+      )
     doc
       .querySelectorAll('h3')
-      .forEach(el => el.classList.add('text-2xl', 'font-semibold', 'mb-2', 'mt-4', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-2xl', 'font-semibold', 'mb-2', 'mt-4', 'dark:text-gray-100')
+      )
     doc
       .querySelectorAll('h4')
-      .forEach(el => el.classList.add('text-xl', 'font-medium', 'mb-2', 'mt-3', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-xl', 'font-medium', 'mb-2', 'mt-3', 'dark:text-gray-100')
+      )
     doc
       .querySelectorAll('h5')
-      .forEach(el => el.classList.add('text-lg', 'font-medium', 'mb-1', 'mt-2', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-lg', 'font-medium', 'mb-1', 'mt-2', 'dark:text-gray-100')
+      )
     doc
       .querySelectorAll('h6')
-      .forEach(el => el.classList.add('text-base', 'font-medium', 'mb-1', 'mt-2', 'dark:text-gray-100'))
+      .forEach(el =>
+        el.classList.add('text-base', 'font-medium', 'mb-1', 'mt-2', 'dark:text-gray-100')
+      )
 
     doc
       .querySelectorAll('p')
-      .forEach(el => el.classList.add('mb-4', 'text-gray-700', 'dark:text-gray-300', 'leading-relaxed'))
+      .forEach(el =>
+        el.classList.add('mb-4', 'text-gray-700', 'dark:text-gray-300', 'leading-relaxed')
+      )
     doc
       .querySelectorAll('ul')
       .forEach(el => el.classList.add('list-disc', 'list-inside', 'mb-4', 'ml-4'))
@@ -242,7 +256,16 @@ function LearnIndex() {
     doc.querySelectorAll('li').forEach(el => el.classList.add('mb-2'))
     doc.querySelectorAll('code').forEach(el => {
       if (!el.parentElement || el.parentElement.tagName !== 'PRE') {
-        el.classList.add('bg-gray-100', 'dark:bg-gray-800', 'dark:text-gray-200', 'px-1', 'py-0.5', 'rounded', 'text-sm', 'font-mono')
+        el.classList.add(
+          'bg-gray-100',
+          'dark:bg-gray-800',
+          'dark:text-gray-200',
+          'px-1',
+          'py-0.5',
+          'rounded',
+          'text-sm',
+          'font-mono'
+        )
       }
     })
     doc
@@ -259,13 +282,26 @@ function LearnIndex() {
         )
       )
     doc.querySelectorAll('pre code').forEach(el => el.classList.add('text-sm', 'font-mono'))
-    doc.querySelectorAll('a').forEach(el => el.classList.add('text-blue-600', 'dark:text-blue-400', 'hover:underline'))
+    doc
+      .querySelectorAll('a')
+      .forEach(el => el.classList.add('text-blue-600', 'dark:text-blue-400', 'hover:underline'))
     doc
       .querySelectorAll('blockquote')
-      .forEach(el => el.classList.add('border-l-4', 'border-gray-300', 'dark:border-gray-600', 'pl-4', 'italic', 'mb-4'))
+      .forEach(el =>
+        el.classList.add(
+          'border-l-4',
+          'border-gray-300',
+          'dark:border-gray-600',
+          'pl-4',
+          'italic',
+          'mb-4'
+        )
+      )
     doc.querySelectorAll('strong').forEach(el => el.classList.add('font-semibold'))
     doc.querySelectorAll('em').forEach(el => el.classList.add('italic'))
-    doc.querySelectorAll('hr').forEach(el => el.classList.add('my-8', 'border-gray-300', 'dark:border-gray-600'))
+    doc
+      .querySelectorAll('hr')
+      .forEach(el => el.classList.add('my-8', 'border-gray-300', 'dark:border-gray-600'))
 
     return <div dangerouslySetInnerHTML={{ __html: doc.body.innerHTML }} />
   }
@@ -327,7 +363,9 @@ function LearnIndex() {
           } lg:translate-x-0 fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out overflow-y-auto`}
         >
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Documentation</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
+              Documentation
+            </h2>
 
             {/* File list grouped by category */}
             <nav className="space-y-6">
@@ -371,9 +409,13 @@ function LearnIndex() {
                 <article ref={contentRef}>
                   {/* Article Header */}
                   <header className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">{selectedFile.title}</h1>
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                      {selectedFile.title}
+                    </h1>
                     {selectedFile.description && (
-                      <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">{selectedFile.description}</p>
+                      <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                        {selectedFile.description}
+                      </p>
                     )}
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       {selectedFile.duration && (
@@ -411,7 +453,9 @@ function LearnIndex() {
                 </article>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">Select a document from the sidebar to get started</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Select a document from the sidebar to get started
+                  </p>
                 </div>
               )}
             </main>
@@ -446,14 +490,18 @@ function LearnIndex() {
                           {item.level > 2 && (
                             <ChevronRight
                               className={`h-3 w-3 mr-1 ${
-                                activeSection === item.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+                                activeSection === item.id
+                                  ? 'text-blue-600 dark:text-blue-400'
+                                  : 'text-gray-400 dark:text-gray-500'
                               }`}
                             />
                           )}
                           {item.level === 2 && (
                             <Hash
                               className={`h-3 w-3 mr-1 ${
-                                activeSection === item.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+                                activeSection === item.id
+                                  ? 'text-blue-600 dark:text-blue-400'
+                                  : 'text-gray-400 dark:text-gray-500'
                               }`}
                             />
                           )}

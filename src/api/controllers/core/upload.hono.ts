@@ -27,30 +27,32 @@ export const coreUploadRoutes = new Hono()
       const coreDb = createCoreConnection()
 
       // Get current user's avatar to potentially delete old one
-      const currentUser = await coreDb.select().from(coreUsers)
+      const currentUser = await coreDb
+        .select()
+        .from(coreUsers)
         .where(eq(coreUsers.id, user.id))
         .limit(1)
         .then(rows => rows[0])
 
       // Upload new avatar (this will also delete old one if exists)
-      const uploadResult = await fileUploadService.replaceAvatar(
-        currentUser?.avatar || null,
-        file
-      )
+      const uploadResult = await fileUploadService.replaceAvatar(currentUser?.avatar || null, file)
 
       if (!uploadResult.success) {
-        return c.json({ 
-          success: false, 
-          error: uploadResult.error || 'Upload failed' 
-        }, 400)
+        return c.json(
+          {
+            success: false,
+            error: uploadResult.error || 'Upload failed',
+          },
+          400
+        )
       }
 
       // Update user's avatar in database
       await coreDb
         .update(coreUsers)
-        .set({ 
+        .set({
           avatar: uploadResult.filePath,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         })
         .where(eq(coreUsers.id, user.id))
 
@@ -63,10 +65,13 @@ export const coreUploadRoutes = new Hono()
       })
     } catch (error) {
       console.error('Avatar upload error:', error)
-      return c.json({ 
-        success: false, 
-        error: 'Internal server error' 
-      }, 500)
+      return c.json(
+        {
+          success: false,
+          error: 'Internal server error',
+        },
+        500
+      )
     }
   })
 
@@ -82,7 +87,9 @@ export const coreUploadRoutes = new Hono()
       const fileUploadService = new FileUploadService()
 
       // Get current user's avatar
-      const currentUser = await coreDb.select().from(coreUsers)
+      const currentUser = await coreDb
+        .select()
+        .from(coreUsers)
         .where(eq(coreUsers.id, user.id))
         .limit(1)
         .then(rows => rows[0])
@@ -95,18 +102,21 @@ export const coreUploadRoutes = new Hono()
       // Remove avatar reference from database
       await coreDb
         .update(coreUsers)
-        .set({ 
+        .set({
           avatar: null,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         })
         .where(eq(coreUsers.id, user.id))
 
       return c.json({ success: true })
     } catch (error) {
       console.error('Avatar deletion error:', error)
-      return c.json({ 
-        success: false, 
-        error: 'Internal server error' 
-      }, 500)
+      return c.json(
+        {
+          success: false,
+          error: 'Internal server error',
+        },
+        500
+      )
     }
   })

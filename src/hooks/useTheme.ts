@@ -65,7 +65,7 @@ export function useTheme(): UseThemeReturn {
 
       // Save to user settings
       await client.settings.appearance.$patch({
-        json: { theme: newTheme }
+        json: { theme: newTheme },
       })
     } catch (error) {
       console.error('Failed to save theme setting:', error)
@@ -76,6 +76,6 @@ export function useTheme(): UseThemeReturn {
   return {
     theme,
     setTheme,
-    loading
+    loading,
   }
 }

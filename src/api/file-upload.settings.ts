@@ -91,9 +91,9 @@ export class FileUploadService {
   async deleteFile(relativePath: string): Promise<boolean> {
     try {
       if (!relativePath) return false
-      
+
       const fullPath = path.join(this.baseUploadDir, relativePath)
-      
+
       if (fs.existsSync(fullPath)) {
         fs.unlinkSync(fullPath)
         return true

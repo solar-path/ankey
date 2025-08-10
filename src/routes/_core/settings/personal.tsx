@@ -46,10 +46,10 @@ function PersonalSettingsComponent() {
     const loadSettings = async () => {
       try {
         setDataLoading(true)
-        
+
         // Get current user's settings from the API
         const response = await client.settings.me.$get()
-        
+
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -61,7 +61,7 @@ function PersonalSettingsComponent() {
               timezone: settings.personal?.timezone || '',
               language: settings.personal?.language || 'en',
             })
-            
+
             console.log('Loaded personal settings:', settings.personal)
           }
         }
@@ -81,8 +81,8 @@ function PersonalSettingsComponent() {
       setIsLoading(true)
 
       // Use Hono RPC client as required by CLAUDE.md
-      const response = await client.settings.personal.$patch({ 
-        json: data 
+      const response = await client.settings.personal.$patch({
+        json: data,
       })
 
       if (!response.ok) {
@@ -90,7 +90,7 @@ function PersonalSettingsComponent() {
       }
 
       toast.success('Personal settings updated successfully')
-      
+
       // Reload settings to ensure form shows updated data
       const updatedResponse = await client.settings.me.$get()
       if (updatedResponse.ok) {
@@ -103,7 +103,7 @@ function PersonalSettingsComponent() {
             timezone: settings.personal?.timezone || '',
             language: settings.personal?.language || 'en',
           })
-          
+
           console.log('Reloaded personal settings after save:', settings.personal)
         }
       }
@@ -120,7 +120,9 @@ function PersonalSettingsComponent() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Personal Settings</h2>
-          <p className="text-muted-foreground">Update your personal information, timezone, and language preferences</p>
+          <p className="text-muted-foreground">
+            Update your personal information, timezone, and language preferences
+          </p>
         </div>
         <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow">
           <div className="animate-pulse space-y-4">
@@ -138,7 +140,9 @@ function PersonalSettingsComponent() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Personal Settings</h2>
-        <p className="text-muted-foreground">Update your personal information, timezone, and language preferences</p>
+        <p className="text-muted-foreground">
+          Update your personal information, timezone, and language preferences
+        </p>
       </div>
 
       <Form {...form}>

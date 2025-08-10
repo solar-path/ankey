@@ -160,7 +160,9 @@ function Pricing() {
 
       {/* Special Trial Offer */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-12 text-center dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-700">
-        <h2 className="text-2xl font-semibold mb-2 text-blue-900 dark:text-blue-100">🎉 Free 7-Day Trial</h2>
+        <h2 className="text-2xl font-semibold mb-2 text-blue-900 dark:text-blue-100">
+          🎉 Free 7-Day Trial
+        </h2>
         <p className="text-blue-700 dark:text-blue-300 mb-4">
           Get full access to our platform with up to 5 users for 1 week - no credit card required!
         </p>
@@ -237,7 +239,9 @@ function Pricing() {
               <div
                 key={plan.id}
                 className={`relative bg-white dark:bg-gray-900 rounded-lg shadow-lg border-2 p-8 ${
-                  hasPopularBadge ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700' : 'border-gray-200 dark:border-gray-700'
+                  hasPopularBadge
+                    ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700'
+                    : 'border-gray-200 dark:border-gray-700'
                 }`}
               >
                 {plan.badge && (
@@ -253,7 +257,10 @@ function Pricing() {
 
                   {/* User Count Selector */}
                   <div className="mb-4">
-                    <Label htmlFor={`users-${plan.id}`} className="text-sm text-gray-600 dark:text-gray-300">
+                    <Label
+                      htmlFor={`users-${plan.id}`}
+                      className="text-sm text-gray-600 dark:text-gray-300"
+                    >
                       Number of users
                     </Label>
                     <div className="flex items-center justify-center mt-1">
@@ -353,7 +360,9 @@ function Pricing() {
 
                 {(plan.minUsers || plan.maxUsers) && (
                   <div className="mb-8">
-                    <h4 className="font-semibold mb-4 text-gray-700 dark:text-gray-300">User Limits:</h4>
+                    <h4 className="font-semibold mb-4 text-gray-700 dark:text-gray-300">
+                      User Limits:
+                    </h4>
                     <ul className="space-y-2">
                       {plan.minUsers && (
                         <li className="flex items-start">
@@ -391,10 +400,14 @@ function Pricing() {
 
       {/* FAQ Section */}
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">Frequently Asked Questions</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">
+          Frequently Asked Questions
+        </h2>
         <div className="space-y-8">
           <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">Can I change plans later?</h3>
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+              Can I change plans later?
+            </h3>
             <p className="text-gray-600 dark:text-gray-300">
               Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in
               your next billing cycle.
@@ -402,7 +415,9 @@ function Pricing() {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">What happens after the free trial?</h3>
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+              What happens after the free trial?
+            </h3>
             <p className="text-gray-600 dark:text-gray-300">
               After your 7-day free trial, you can choose to continue with a paid plan. If you don't
               select a plan, your account will be suspended but your data will be preserved for 30
@@ -421,7 +436,9 @@ function Pricing() {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">What support is included?</h3>
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+              What support is included?
+            </h3>
             <p className="text-gray-600 dark:text-gray-300">
               All plans include email support. Professional and Enterprise plans include priority
               support with faster response times.

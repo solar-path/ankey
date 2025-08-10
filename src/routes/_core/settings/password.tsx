@@ -38,20 +38,20 @@ function PasswordSettings() {
   const onSubmit = async (data: PasswordChange) => {
     try {
       setIsLoading(true)
-      console.log('Submitting password change data:', { 
-        currentPassword: '[HIDDEN]', 
+      console.log('Submitting password change data:', {
+        currentPassword: '[HIDDEN]',
         newPassword: '[HIDDEN]',
         confirmPassword: '[HIDDEN]',
-        passwordsMatch: data.newPassword === data.confirmPassword
+        passwordsMatch: data.newPassword === data.confirmPassword,
       })
 
       // Use Hono RPC client as required by CLAUDE.md
-      const response = await client.settings.password.$patch({ 
+      const response = await client.settings.password.$patch({
         json: {
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
           confirmPassword: data.confirmPassword,
-        }
+        },
       })
 
       if (!response.ok) {
@@ -64,7 +64,7 @@ function PasswordSettings() {
       form.reset()
     } catch (error: any) {
       console.error('Change password error:', error)
-      
+
       // Extract meaningful error message
       let errorMessage = 'Failed to change password'
       if (error.message) {
@@ -72,7 +72,7 @@ function PasswordSettings() {
       } else if (typeof error === 'object' && error.error) {
         errorMessage = error.error
       }
-      
+
       toast.error(errorMessage)
 
       // Focus appropriate field based on error

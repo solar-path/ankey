@@ -99,9 +99,9 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 {user.avatar && (
-                  <AvatarImage 
-                    src={`/uploads/${user.avatar}`} 
-                    alt={user.fullName || user.email || 'User avatar'} 
+                  <AvatarImage
+                    src={`/uploads/${user.avatar}`}
+                    alt={user.fullName || user.email || 'User avatar'}
                   />
                 )}
                 <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white">

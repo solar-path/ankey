@@ -88,7 +88,7 @@ export const coreSettingsRoutes = new Hono()
       const profileData = {
         fullName: userRecord.fullName,
         email: userRecord.email,
-        avatar: userRecord.avatar || '',  // Return the raw path, let frontend handle URL construction
+        avatar: userRecord.avatar || '', // Return the raw path, let frontend handle URL construction
       }
 
       return c.json({ success: true, data: profileData })
@@ -309,8 +309,13 @@ export const coreSettingsRoutes = new Hono()
       const userId = user.id
 
       const body = await c.req.json()
-      console.log('Password change request body:', { ...body, currentPassword: '[HIDDEN]', newPassword: '[HIDDEN]', confirmPassword: '[HIDDEN]' })
-      
+      console.log('Password change request body:', {
+        ...body,
+        currentPassword: '[HIDDEN]',
+        newPassword: '[HIDDEN]',
+        confirmPassword: '[HIDDEN]',
+      })
+
       const result = passwordChangeSchema.safeParse(body)
 
       if (!result.success) {
@@ -327,7 +332,7 @@ export const coreSettingsRoutes = new Hono()
       }
 
       const { currentPassword, newPassword, confirmPassword } = result.data
-      
+
       // Double-check password confirmation (frontend should already validate this)
       if (newPassword !== confirmPassword) {
         return c.json({ success: false, error: 'Password confirmation does not match' }, 400)

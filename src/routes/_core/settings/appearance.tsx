@@ -40,10 +40,10 @@ function AppearanceSettingsComponent() {
   const onSubmit: SubmitHandler<AppearanceSettings> = async data => {
     try {
       setIsLoading(true)
-      
+
       // Use the global theme setter which handles both UI update and saving
       await setTheme(data.theme)
-      
+
       toast.success('Theme updated successfully')
     } catch (error) {
       console.error('Update appearance settings error:', error)

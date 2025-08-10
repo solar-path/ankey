@@ -69,7 +69,9 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">Access Request Process</h3>
+            <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Access Request Process
+            </h3>
             <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
               Your request will be sent to workspace administrators for approval. You'll receive an
               email once your request is reviewed.
@@ -130,7 +132,9 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
           />
 
           <div className="bg-gray-50 p-4 rounded-md dark:bg-gray-800">
-            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">What happens next?</h4>
+            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+              What happens next?
+            </h4>
             <ol className="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-decimal list-inside">
               <li>Your request is sent to workspace administrators</li>
               <li>Administrators review your request and reason</li>

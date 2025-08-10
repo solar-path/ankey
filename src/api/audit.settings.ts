@@ -178,13 +178,18 @@ export class AuditService {
         await next()
 
         // Log successful action - Always log auth endpoints for SOC 2 compliance
-        const isCriticalEndpoint = path.includes('/auth/') || path.includes('/login') || 
-                                  path.includes('/register') || path.includes('/password')
+        const isCriticalEndpoint =
+          path.includes('/auth/') ||
+          path.includes('/login') ||
+          path.includes('/register') ||
+          path.includes('/password')
         const shouldLog = userId || isCriticalEndpoint || c.res.status >= 400
-        
+
         if (shouldLog) {
-          console.log(`[AUDIT] ${action} ${resource} - User: ${userIdForLog} - Status: ${c.res.status} - IP: ${ipAddress}`)
-          
+          console.log(
+            `[AUDIT] ${action} ${resource} - User: ${userIdForLog} - Status: ${c.res.status} - IP: ${ipAddress}`
+          )
+
           const auditData: AuditLogData = {
             userId,
             action,
@@ -203,8 +208,10 @@ export class AuditService {
         }
       } catch (error) {
         // Always log failed actions for security monitoring
-        console.error(`[AUDIT] ${action}_FAILED ${resource} - User: ${userIdForLog} - IP: ${ipAddress} - Error: ${error instanceof Error ? error.message : String(error)}`)
-        
+        console.error(
+          `[AUDIT] ${action}_FAILED ${resource} - User: ${userIdForLog} - IP: ${ipAddress} - Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+
         if (userId) {
           const auditData: AuditLogData = {
             userId,

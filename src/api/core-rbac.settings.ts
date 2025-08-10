@@ -310,17 +310,19 @@ export class CoreRBACService {
     }
   }
 
-  async syncPermissionsFromRoutes(routes: Array<{ resource: string; action: string; description: string }>) {
+  async syncPermissionsFromRoutes(
+    routes: Array<{ resource: string; action: string; description: string }>
+  ) {
     try {
       let created = 0
       let updated = 0
 
       for (const route of routes) {
         const name = `${route.resource}.${route.action}`
-        
+
         // Check if permission already exists
         const existing = await this.db.query.corePermissions.findFirst({
-          where: eq(coreSchema.corePermissions.name, name)
+          where: eq(coreSchema.corePermissions.name, name),
         })
 
         if (existing) {

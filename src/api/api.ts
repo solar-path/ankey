@@ -107,7 +107,7 @@ app.use('*', async (c, next) => {
 // Add authentication middleware to populate user context for audit logging
 app.use('/api/*', async (c, next) => {
   const isTenant = c.get('isTenant')
-  
+
   // Apply appropriate authentication middleware based on context
   if (isTenant) {
     return optionalTenantAuth(c, next)
@@ -120,17 +120,12 @@ app.use('/api/*', async (c, next) => {
 // Exclude health checks and public endpoints
 app.use('/api/*', async (c, next) => {
   const url = new URL(c.req.url)
-  
+
   // Skip audit logging for health checks, public endpoints, and static assets
-  const excludedPaths = [
-    '/api/health',
-    '/api/ping',
-    '/api/docs',
-    '/api/openapi'
-  ]
-  
+  const excludedPaths = ['/api/health', '/api/ping', '/api/docs', '/api/openapi']
+
   const shouldSkipAudit = excludedPaths.some(path => url.pathname.startsWith(path))
-  
+
   if (shouldSkipAudit) {
     await next()
     return

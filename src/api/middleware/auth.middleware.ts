@@ -32,7 +32,7 @@ export const optionalCoreAuth = createMiddleware(async (c, next) => {
   if (sessionId) {
     try {
       const { session, user } = await coreAuthService.validateSession(sessionId)
-      
+
       if (session && user) {
         c.set('user', user)
         c.set('session', session)
@@ -89,7 +89,7 @@ export const optionalTenantAuth = createMiddleware(async (c, next) => {
     try {
       const tenantAuth = createTenantAuth(tenantDatabase)
       const { session, user } = await tenantAuth.validateSession(sessionId)
-      
+
       if (session && user) {
         c.set('user', user)
         c.set('session', session)

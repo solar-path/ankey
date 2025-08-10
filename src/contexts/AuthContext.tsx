@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       const response = await client.auth.me.$get()
-      
+
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data) {
