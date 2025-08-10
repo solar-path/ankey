@@ -181,7 +181,7 @@ export function RegisterWorkspaceForm({
                 <FormControl>
                   <Checkbox
                     checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
+                    onChange={e => field.onChange(e.target.checked)}
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">

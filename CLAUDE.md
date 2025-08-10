@@ -189,10 +189,7 @@ For Checkbox components in forms:
   render={({ field }) => (
     <FormItem>
       <FormControl>
-        <Checkbox
-          checked={field.value}
-          onChange={(e) => field.onChange(e.target.checked)}
-        />
+        <Checkbox checked={field.value} onChange={e => field.onChange(e.target.checked)} />
       </FormControl>
       <FormLabel>Accept terms and conditions</FormLabel>
       <FormMessage />

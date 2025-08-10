@@ -125,9 +125,12 @@ function ProfileSettings() {
     try {
       setIsLoading(true)
 
+      // Exclude email from submission as it's read-only
+      const { email, ...updateData } = data
+
       // Use context-aware RPC client
       const response = await settingsClient.profile.$patch({
-        json: data,
+        json: updateData as ProfileSettings, // Cast is safe since email is optional in schema
       })
       const result = await handleApiResponse(response)
 
@@ -260,6 +263,8 @@ function ProfileSettings() {
                       placeholder="Email address"
                       autoComplete="email"
                       disabled
+                      readOnly
+                      className="bg-gray-50 cursor-not-allowed"
                       {...field}
                     />
                   </FormControl>

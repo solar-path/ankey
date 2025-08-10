@@ -119,14 +119,14 @@ export const coreSettingsRoutes = new Hono()
       }
       const userId = user.id
 
-      const { fullName, email, avatar } = c.req.valid('json')
+      const { fullName, avatar } = c.req.valid('json')
+      // Note: email is intentionally excluded - users cannot change their email
 
-      // Update user profile
+      // Update user profile (excluding email)
       await coreDb
         .update(coreUsers)
         .set({
           fullName,
-          email,
           avatar,
           updatedAt: new Date(),
         })

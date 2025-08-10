@@ -166,7 +166,7 @@ declare module 'hono' {
 // Settings schemas
 export const profileSettingsSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address').optional(), // Optional for PATCH requests since email is read-only
   avatar: z.string().optional(),
 })
 

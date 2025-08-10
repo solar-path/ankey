@@ -39,7 +39,7 @@ function PersonalSettingsComponent() {
     },
   })
 
-  const onSubmit: SubmitHandler<PersonalSettings> = async (data) => {
+  const onSubmit: SubmitHandler<PersonalSettings> = async data => {
     try {
       setIsLoading(true)
 

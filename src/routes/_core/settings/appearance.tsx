@@ -41,7 +41,7 @@ function AppearanceSettingsComponent() {
     },
   })
 
-  const onSubmit: SubmitHandler<AppearanceSettings> = async (data) => {
+  const onSubmit: SubmitHandler<AppearanceSettings> = async data => {
     try {
       setIsLoading(true)
 
@@ -171,7 +171,7 @@ function AppearanceSettingsComponent() {
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
+                      onChange={e => field.onChange(e.target.checked)}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
