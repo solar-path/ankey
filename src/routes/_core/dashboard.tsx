@@ -1,300 +1,283 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
-import { ExportButton } from '@/components/ExportButton'
-import { FileUpload } from '@/components/FileUpload'
-import type { ImportResult } from '@/lib/import.service'
-import {
-  Users,
-  Building,
-  Activity,
-  DollarSign,
-  TrendingUp,
-  FileText,
-  Settings,
-  Shield,
-  Database,
-} from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { dashboardApi, handleApiResponse } from '@/lib/rpc'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_core/dashboard')({
   component: Dashboard,
 })
 
 // Types for dashboard data
-type DashboardStats = {
-  totalUsers: { value: string; change: string; trend: 'up' | 'down' }
-  activeTenants: { value: string; change: string; trend: 'up' | 'down' }
-  monthlyRevenue: { value: string; change: string; trend: 'up' | 'down' }
-  systemHealth: { value: string; change: string; trend: 'up' | 'down' }
-}
+// type DashboardStats = {
+//   totalUsers: { value: string; change: string; trend: 'up' | 'down' }
+//   activeTenants: { value: string; change: string; trend: 'up' | 'down' }
+//   monthlyRevenue: { value: string; change: string; trend: 'up' | 'down' }
+//   systemHealth: { value: string; change: string; trend: 'up' | 'down' }
+// }
 
-type RecentTenant = {
-  id: string
-  name: string
-  subdomain: string
-  userCount: number
-  status: string
-  createdAt: Date
-}
+// type RecentTenant = {
+//   id: string
+//   name: string
+//   subdomain: string
+//   userCount: number
+//   status: string
+//   createdAt: Date
+// }
 
-type SystemActivity = {
-  id: string
-  action: string
-  details: string
-  user: string
-  timeAgo: string
-}
+// type SystemActivity = {
+//   id: string
+//   action: string
+//   details: string
+//   user: string
+//   timeAgo: string
+// }
 
-const importColumns = [
-  { key: 'name', label: 'Name', required: true, type: 'string' as const },
-  { key: 'email', label: 'Email', required: true, type: 'string' as const },
-  { key: 'role', label: 'Role', required: false, type: 'string' as const },
-  { key: 'status', label: 'Status', required: false, type: 'string' as const },
-]
+// const importColumns = [
+//   { key: 'name', label: 'Name', required: true, type: 'string' as const },
+//   { key: 'email', label: 'Email', required: true, type: 'string' as const },
+//   { key: 'role', label: 'Role', required: false, type: 'string' as const },
+//   { key: 'status', label: 'Status', required: false, type: 'string' as const },
+// ]
 
 function Dashboard() {
-  const [showImport, setShowImport] = useState(false)
-  const [importResult, setImportResult] = useState<ImportResult | null>(null)
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
-  const [recentTenants, setRecentTenants] = useState<RecentTenant[]>([])
-  const [systemActivity, setSystemActivity] = useState<SystemActivity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // const [showImport, setShowImport] = useState(false)
+  // const [importResult, setImportResult] = useState<ImportResult | null>(null)
+  // const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
+  // const [recentTenants, setRecentTenants] = useState<RecentTenant[]>([])
+  // const [systemActivity, setSystemActivity] = useState<SystemActivity[]>([])
+  // const [isLoading, setIsLoading] = useState(true)
 
-  // Load dashboard data
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
+  // // Load dashboard data
+  // useEffect(() => {
+  //   loadDashboardData()
+  // }, [])
 
-  const loadDashboardData = async () => {
-    try {
-      setIsLoading(true)
+  // const loadDashboardData = async () => {
+  //   try {
+  //     setIsLoading(true)
 
-      // Try to load real data from API, fallback to demo data if it fails
-      try {
-        // Load dashboard stats
-        const statsResponse = await dashboardApi.getStats()
-        const statsResult = await handleApiResponse(statsResponse)
+  //     // Try to load real data from API, fallback to demo data if it fails
+  //     try {
+  //       // Load dashboard stats
+  //       const statsResponse = await dashboardApi.getStats()
+  //       const statsResult = await handleApiResponse(statsResponse)
 
-        if (statsResult.success) {
-          setDashboardStats(statsResult.data as DashboardStats)
-        } else {
-          // Fallback to demo data
-          console.warn('Using demo data for dashboard stats')
-          setDashboardStats({
-            totalUsers: { value: '12', change: '+12%', trend: 'up' },
-            activeTenants: { value: '4', change: '+1', trend: 'up' },
-            monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
-            systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
-          })
-        }
-      } catch {
-        // Fallback to demo data on error
-        setDashboardStats({
-          totalUsers: { value: '12', change: '+12%', trend: 'up' },
-          activeTenants: { value: '4', change: '+1', trend: 'up' },
-          monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
-          systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
-        })
-      }
+  //       if (statsResult.success) {
+  //         setDashboardStats(statsResult.data as DashboardStats)
+  //       } else {
+  //         // Fallback to demo data
+  //         console.warn('Using demo data for dashboard stats')
+  //         setDashboardStats({
+  //           totalUsers: { value: '12', change: '+12%', trend: 'up' },
+  //           activeTenants: { value: '4', change: '+1', trend: 'up' },
+  //           monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
+  //           systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
+  //         })
+  //       }
+  //     } catch {
+  //       // Fallback to demo data on error
+  //       setDashboardStats({
+  //         totalUsers: { value: '12', change: '+12%', trend: 'up' },
+  //         activeTenants: { value: '4', change: '+1', trend: 'up' },
+  //         monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
+  //         systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
+  //       })
+  //     }
 
-      // Try to load recent tenants
-      try {
-        const tenantsResponse = await dashboardApi.getRecentTenants(3)
-        const tenantsResult = await handleApiResponse(tenantsResponse)
+  //     // Try to load recent tenants
+  //     try {
+  //       const tenantsResponse = await dashboardApi.getRecentTenants(3)
+  //       const tenantsResult = await handleApiResponse(tenantsResponse)
 
-        if (tenantsResult.success) {
-          setRecentTenants(tenantsResult.data as RecentTenant[])
-        } else {
-          // Fallback to demo data
-          console.warn('Using demo data for recent tenants')
-          setRecentTenants([
-            {
-              id: '1',
-              name: 'Demo Corp',
-              subdomain: 'demo.ankey.app',
-              userCount: 8,
-              status: 'Active',
-              createdAt: new Date(),
-            },
-            {
-              id: '2',
-              name: 'Test Startup',
-              subdomain: 'test.ankey.app',
-              userCount: 3,
-              status: 'Active',
-              createdAt: new Date(),
-            },
-          ])
-        }
-      } catch {
-        // Fallback to demo data
-        setRecentTenants([
-          {
-            id: '1',
-            name: 'Demo Corp',
-            subdomain: 'demo.ankey.app',
-            userCount: 8,
-            status: 'Active',
-            createdAt: new Date(),
-          },
-          {
-            id: '2',
-            name: 'Test Startup',
-            subdomain: 'test.ankey.app',
-            userCount: 3,
-            status: 'Active',
-            createdAt: new Date(),
-          },
-        ])
-      }
+  //       if (tenantsResult.success) {
+  //         setRecentTenants(tenantsResult.data as RecentTenant[])
+  //       } else {
+  //         // Fallback to demo data
+  //         console.warn('Using demo data for recent tenants')
+  //         setRecentTenants([
+  //           {
+  //             id: '1',
+  //             name: 'Demo Corp',
+  //             subdomain: 'demo.ankey.app',
+  //             userCount: 8,
+  //             status: 'Active',
+  //             createdAt: new Date(),
+  //           },
+  //           {
+  //             id: '2',
+  //             name: 'Test Startup',
+  //             subdomain: 'test.ankey.app',
+  //             userCount: 3,
+  //             status: 'Active',
+  //             createdAt: new Date(),
+  //           },
+  //         ])
+  //       }
+  //     } catch {
+  //       // Fallback to demo data
+  //       setRecentTenants([
+  //         {
+  //           id: '1',
+  //           name: 'Demo Corp',
+  //           subdomain: 'demo.ankey.app',
+  //           userCount: 8,
+  //           status: 'Active',
+  //           createdAt: new Date(),
+  //         },
+  //         {
+  //           id: '2',
+  //           name: 'Test Startup',
+  //           subdomain: 'test.ankey.app',
+  //           userCount: 3,
+  //           status: 'Active',
+  //           createdAt: new Date(),
+  //         },
+  //       ])
+  //     }
 
-      // Try to load system activity
-      try {
-        const activityResponse = await dashboardApi.getSystemActivity(4)
-        const activityResult = await handleApiResponse(activityResponse)
+  //     // Try to load system activity
+  //     try {
+  //       const activityResponse = await dashboardApi.getSystemActivity(4)
+  //       const activityResult = await handleApiResponse(activityResponse)
 
-        if (activityResult.success) {
-          setSystemActivity(activityResult.data as SystemActivity[])
-        } else {
-          // Fallback to demo data
-          console.warn('Using demo data for system activity')
-          setSystemActivity([
-            {
-              id: '1',
-              action: 'New tenant created',
-              details: 'demo.ankey.app',
-              user: 'System',
-              timeAgo: '2 hours ago',
-            },
-            {
-              id: '2',
-              action: 'User registered',
-              details: 'john@demo.com',
-              user: 'System',
-              timeAgo: '4 hours ago',
-            },
-          ])
-        }
-      } catch {
-        // Fallback to demo data
-        setSystemActivity([
-          {
-            id: '1',
-            action: 'New tenant created',
-            details: 'demo.ankey.app',
-            user: 'System',
-            timeAgo: '2 hours ago',
-          },
-          {
-            id: '2',
-            action: 'User registered',
-            details: 'john@demo.com',
-            user: 'System',
-            timeAgo: '4 hours ago',
-          },
-        ])
-      }
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-      toast.error('Failed to load dashboard data', {
-        description: 'Using demo data instead.',
-      })
+  //       if (activityResult.success) {
+  //         setSystemActivity(activityResult.data as SystemActivity[])
+  //       } else {
+  //         // Fallback to demo data
+  //         console.warn('Using demo data for system activity')
+  //         setSystemActivity([
+  //           {
+  //             id: '1',
+  //             action: 'New tenant created',
+  //             details: 'demo.ankey.app',
+  //             user: 'System',
+  //             timeAgo: '2 hours ago',
+  //           },
+  //           {
+  //             id: '2',
+  //             action: 'User registered',
+  //             details: 'john@demo.com',
+  //             user: 'System',
+  //             timeAgo: '4 hours ago',
+  //           },
+  //         ])
+  //       }
+  //     } catch {
+  //       // Fallback to demo data
+  //       setSystemActivity([
+  //         {
+  //           id: '1',
+  //           action: 'New tenant created',
+  //           details: 'demo.ankey.app',
+  //           user: 'System',
+  //           timeAgo: '2 hours ago',
+  //         },
+  //         {
+  //           id: '2',
+  //           action: 'User registered',
+  //           details: 'john@demo.com',
+  //           user: 'System',
+  //           timeAgo: '4 hours ago',
+  //         },
+  //       ])
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading dashboard data:', error)
+  //     toast.error('Failed to load dashboard data', {
+  //       description: 'Using demo data instead.',
+  //     })
 
-      // Set demo data as final fallback
-      setDashboardStats({
-        totalUsers: { value: '12', change: '+12%', trend: 'up' },
-        activeTenants: { value: '4', change: '+1', trend: 'up' },
-        monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
-        systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  //     // Set demo data as final fallback
+  //     setDashboardStats({
+  //       totalUsers: { value: '12', change: '+12%', trend: 'up' },
+  //       activeTenants: { value: '4', change: '+1', trend: 'up' },
+  //       monthlyRevenue: { value: '$1,200', change: '+18%', trend: 'up' },
+  //       systemHealth: { value: '99.9%', change: '+0.1%', trend: 'up' },
+  //     })
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
-  const handleImportComplete = (result: ImportResult) => {
-    setImportResult(result)
-    console.log('Import completed:', result)
-    // TODO: Process the imported data
-  }
+  // const handleImportComplete = (result: ImportResult) => {
+  //   setImportResult(result)
+  //   console.log('Import completed:', result)
+  //   // TODO: Process the imported data
+  // }
 
-  // Create stats array from backend data with fallbacks
-  const stats = dashboardStats
-    ? [
-        {
-          title: 'Total Users',
-          value: dashboardStats.totalUsers?.value || '0',
-          change: dashboardStats.totalUsers?.change || '+0%',
-          trend: dashboardStats.totalUsers?.trend || 'up',
-          icon: Users,
-          color: 'text-blue-600',
-        },
-        {
-          title: 'Active Tenants',
-          value: dashboardStats.activeTenants?.value || '0',
-          change: dashboardStats.activeTenants?.change || '+0%',
-          trend: dashboardStats.activeTenants?.trend || 'up',
-          icon: Building,
-          color: 'text-green-600',
-        },
-        {
-          title: 'Monthly Revenue',
-          value: dashboardStats.monthlyRevenue?.value || '$0',
-          change: dashboardStats.monthlyRevenue?.change || '+0%',
-          trend: dashboardStats.monthlyRevenue?.trend || 'up',
-          icon: DollarSign,
-          color: 'text-purple-600',
-        },
-        {
-          title: 'System Health',
-          value: dashboardStats.systemHealth?.value || '99.9%',
-          change: dashboardStats.systemHealth?.change || '+0%',
-          trend: dashboardStats.systemHealth?.trend || 'up',
-          icon: Activity,
-          color: 'text-emerald-600',
-        },
-      ]
-    : [
-        // Fallback data when loading or error
-        {
-          title: 'Total Users',
-          value: '0',
-          change: '+0%',
-          trend: 'up' as const,
-          icon: Users,
-          color: 'text-blue-600',
-        },
-        {
-          title: 'Active Tenants',
-          value: '0',
-          change: '+0%',
-          trend: 'up' as const,
-          icon: Building,
-          color: 'text-green-600',
-        },
-        {
-          title: 'Monthly Revenue',
-          value: '$0',
-          change: '+0%',
-          trend: 'up' as const,
-          icon: DollarSign,
-          color: 'text-purple-600',
-        },
-        {
-          title: 'System Health',
-          value: '99.9%',
-          change: '+0%',
-          trend: 'up' as const,
-          icon: Activity,
-          color: 'text-emerald-600',
-        },
-      ]
+  // // Create stats array from backend data with fallbacks
+  // const stats = dashboardStats
+  //   ? [
+  //       {
+  //         title: 'Total Users',
+  //         value: dashboardStats.totalUsers?.value || '0',
+  //         change: dashboardStats.totalUsers?.change || '+0%',
+  //         trend: dashboardStats.totalUsers?.trend || 'up',
+  //         icon: Users,
+  //         color: 'text-blue-600',
+  //       },
+  //       {
+  //         title: 'Active Tenants',
+  //         value: dashboardStats.activeTenants?.value || '0',
+  //         change: dashboardStats.activeTenants?.change || '+0%',
+  //         trend: dashboardStats.activeTenants?.trend || 'up',
+  //         icon: Building,
+  //         color: 'text-green-600',
+  //       },
+  //       {
+  //         title: 'Monthly Revenue',
+  //         value: dashboardStats.monthlyRevenue?.value || '$0',
+  //         change: dashboardStats.monthlyRevenue?.change || '+0%',
+  //         trend: dashboardStats.monthlyRevenue?.trend || 'up',
+  //         icon: DollarSign,
+  //         color: 'text-purple-600',
+  //       },
+  //       {
+  //         title: 'System Health',
+  //         value: dashboardStats.systemHealth?.value || '99.9%',
+  //         change: dashboardStats.systemHealth?.change || '+0%',
+  //         trend: dashboardStats.systemHealth?.trend || 'up',
+  //         icon: Activity,
+  //         color: 'text-emerald-600',
+  //       },
+  //     ]
+  //   : [
+  //       // Fallback data when loading or error
+  //       {
+  //         title: 'Total Users',
+  //         value: '0',
+  //         change: '+0%',
+  //         trend: 'up' as const,
+  //         icon: Users,
+  //         color: 'text-blue-600',
+  //       },
+  //       {
+  //         title: 'Active Tenants',
+  //         value: '0',
+  //         change: '+0%',
+  //         trend: 'up' as const,
+  //         icon: Building,
+  //         color: 'text-green-600',
+  //       },
+  //       {
+  //         title: 'Monthly Revenue',
+  //         value: '$0',
+  //         change: '+0%',
+  //         trend: 'up' as const,
+  //         icon: DollarSign,
+  //         color: 'text-purple-600',
+  //       },
+  //       {
+  //         title: 'System Health',
+  //         value: '99.9%',
+  //         change: '+0%',
+  //         trend: 'up' as const,
+  //         icon: Activity,
+  //         color: 'text-emerald-600',
+  //       },
+  //     ]
 
   return (
     <div className="flex-1 overflow-hidden">
-      {/* Header */}
+      Dashboard
+      {/* Header
       <div className="bg-white dark:bg-gray-900 shadow">
         <div className="px-6 py-4">
           <div className="flex justify-between items-center">
@@ -333,7 +316,6 @@ function Dashboard() {
       </div>
 
       <div className="p-6">
-        {/* Import Section */}
         {showImport && (
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-6 p-6">
             <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">Import User Data</h2>
@@ -353,7 +335,6 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {isLoading
             ? // Loading placeholders
@@ -398,9 +379,7 @@ function Dashboard() {
               ))}
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Tenants */}
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold dark:text-gray-100">Recent Tenants</h2>
@@ -457,14 +436,12 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* System Status */}
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold dark:text-gray-100">System Status</h2>
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {/* System status is kept as static for now as it requires different monitoring infrastructure */}
                 {[
                   { component: 'API Service', status: 'Operational', uptime: '99.9%' },
                   { component: 'Database', status: 'Operational', uptime: '99.8%' },
@@ -496,7 +473,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold dark:text-gray-100">Quick Actions</h2>
@@ -523,7 +499,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Activity Log */}
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold dark:text-gray-100">Recent Activity</h2>
@@ -561,7 +536,7 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
