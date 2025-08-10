@@ -146,6 +146,13 @@ UI components follow the shadcn/ui pattern:
 - Leverage path aliases for clean imports
 - Consider both light and dark mode in styling
 
+#### UI Layout Preferences
+
+- **DO NOT use shadcn/ui Tabs component** - prefer custom layouts and separate pages instead
+- **PREFER separate route files** over tab-based navigation for better UX and maintainability
+- **USE custom navigation** with proper routing instead of single-page tab switching
+- This approach provides better SEO, bookmarkable URLs, and cleaner component separation
+
 ### Form Development with React Hook Form & shadcn/ui
 
 #### Required Pattern

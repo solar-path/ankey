@@ -1,4 +1,5 @@
-import { z } from 'zod'
+import { type ColumnDef } from '@tanstack/react-table';
+import { z } from 'zod';
 
 // User schemas
 export const userSchema = z.object({
@@ -242,20 +243,6 @@ export interface QCalendarPickProps {
   className?: string
 }
 
-export interface DataTableProps<TData> {
-  data: TData[]
-  columns: any[]
-  onDelete?: (rows: TData[]) => void
-  onEdit?: (row: TData) => void
-  onCreate?: () => void
-  onExportPdf?: () => void
-  onExportExcel?: () => void
-  onImport?: () => void
-  onSync?: () => void
-  title?: string
-  searchColumn?: string
-  searchPlaceholder?: string
-}
 
 // Product types
 export interface Product {
@@ -944,4 +931,18 @@ export interface AccessRequestNotificationData {
   workspaceName: string
   reason: string
   approvalUrl: string
+}
+
+
+export interface DataTableProps<TData, TValue> {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    onDelete?: (selectedRows: TData[]) => void;
+    onEdit?: (row: TData) => void;
+    onCreate?: () => void;
+    onExportPdf?: () => void;
+    onExportExcel?: () => void;
+    onImport?: () => void;
+    onSync?: () => void;
+    title?: string;
 }
