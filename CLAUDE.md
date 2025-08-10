@@ -33,7 +33,7 @@ This is a **modern full-stack React application** built with:
 - **Hono** as a lightweight API framework (embedded in `src/api/`)
 - **Drizzle ORM** for type-safe database operations with PostgreSQL
 - **Zod v4** for runtime validation and TypeScript inference
-- **React Hook Form** with Zod resolvers for form validation
+- **React Hook Form** with Zod resolvers for form validation and proper shadcn/ui integration
 - **Bun** as the JavaScript runtime and package manager
 
 ### Key Architecture Patterns
@@ -65,7 +65,7 @@ The drawer component demonstrates the state management pattern:
 - **Hono API server** embedded in `src/api/api.ts` with logger middleware
 - **Hono RPC Client** for type-safe frontend-to-backend communication
 - **NEVER use `fetch()` or `axios`** - always use Hono RPC client from `src/lib/rpc.ts`
-- All API calls must use the typed RPC approach: `coreAuth.login.$post()`, `dashboardApi.getStats()`, etc.
+- All API calls must use the typed RPC approach with unified client: `client.core.auth.login.$post()`, `client.dashboard.getStats()`, etc.
 - **Drizzle ORM** integration for type-safe database operations
 - **PostgreSQL** as the primary database with `pg` driver
 - Database schemas and migrations managed through Drizzle Kit
@@ -134,12 +134,130 @@ UI components follow the shadcn/ui pattern:
 - Leverage path aliases for clean imports
 - Consider both light and dark mode in styling
 
+### Form Development with React Hook Form & shadcn/ui
+
+#### Required Pattern
+
+All forms MUST follow the shadcn/ui recommended pattern with React Hook Form:
+
+```tsx
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const form = useForm({
+  resolver: zodResolver(schema),
+  defaultValues: { /* all fields */ }
+})
+
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)}>
+    <FormField
+      control={form.control}
+      name="fieldName"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Label</FormLabel>
+          <FormControl>
+            <Input {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </form>
+</Form>
+```
+
+#### Form Implementation Rules
+
+- **NEVER use manual register()** - always use FormField with render props
+- **NEVER display errors manually** - use FormMessage component
+- **ALWAYS wrap forms with Form component** from shadcn/ui
+- **USE FormControl** to wrap input components for proper styling and accessibility
+- **AVOID explicit generic types** in useForm - let TypeScript infer from resolver and defaultValues
+- **USE SubmitHandler type** for form submission functions: `const onSubmit: SubmitHandler<SchemaType> = async (data) => {}`
+
+#### Checkbox Fields Pattern
+
+For Checkbox components in forms:
+
+```tsx
+<FormField
+  control={form.control}
+  name="acceptTerms"
+  render={({ field }) => (
+    <FormItem>
+      <FormControl>
+        <Checkbox
+          checked={field.value}
+          onChange={(e) => field.onChange(e.target.checked)}
+        />
+      </FormControl>
+      <FormLabel>Accept terms and conditions</FormLabel>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+**Note**: Use `onChange` with event handler, NOT `onCheckedChange`
+
+#### Select Fields Pattern
+
+For Select components:
+
+```tsx
+<FormField
+  control={form.control}
+  name="theme"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Theme</FormLabel>
+      <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select theme" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          <SelectItem value="light">Light</SelectItem>
+          <SelectItem value="dark">Dark</SelectItem>
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+#### Custom Components Integration
+
+For custom components like QPhone, QCalendarPick:
+
+```tsx
+<FormField
+  control={form.control}
+  name="phone"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Phone</FormLabel>
+      <FormControl>
+        <QPhone value={field.value} onChange={field.onChange} />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
 ### API Communication
 
 - **NEVER use `fetch()`, `axios`, or any other HTTP client** - always use Hono RPC client
 - All API calls must use the typed RPC client from `src/lib/rpc.ts`
-- Use pre-defined RPC clients: `coreAuth`, `tenantAuth`, `dashboardApi`, etc.
-- Follow the pattern: `const response = await coreAuth.login.$post({ json: data })`
+- **USE unified `client` object** - NOT individual exports like `coreAuth`, `tenantAuth`, etc.
+- Follow the pattern: `const response = await client.core.auth.login.$post({ json: data })`
+- Example: `client['tenant-auth'].login.$post()` for tenant auth endpoints
 - Always use `handleApiResponse()` helper for consistent response handling
 - Type safety is enforced through Hono's RPC system - leverage this for better DX
 
@@ -173,6 +291,7 @@ Based on project evolution and established patterns, follow these strict rules w
 ### Code Migration & Refactoring Rules
 
 #### RPC Client Migration
+
 - **ALWAYS use unified `client` object** from `src/lib/rpc.ts` instead of individual exports
 - **NEVER use removed exports** like `coreAuth`, `coreTenants`, `coreSettings`, `dashboardApi`, etc.
 - **Pattern**: Replace `coreAuth.login.$post()` with `client.core.auth.login.$post()`
@@ -180,6 +299,7 @@ Based on project evolution and established patterns, follow these strict rules w
 - When refactoring RPC calls, update ALL files in `src/routes/` and `src/components/` systematically
 
 #### TypeScript Type Safety Rules
+
 - **ALWAYS define proper TypeScript interfaces** for all API functions and data structures
 - **NEVER use `any` type** - define specific interfaces in `src/shared/index.ts`
 - **ALWAYS add return types** to functions, especially API endpoints
@@ -188,10 +308,11 @@ Based on project evolution and established patterns, follow these strict rules w
 - Fix TypeScript errors immediately - never leave compilation errors unresolved
 
 #### Authentication & Security Rules
+
 - **ALWAYS use standardized middleware** for authentication across all API controllers
 - **NEVER implement inline authentication** - use predefined middleware from `src/api/middleware/`
 - **Core Admin Routes**: Use `requireCoreAuth` middleware for admin-only operations
-- **Tenant Routes**: Use `requireTenantAuth` middleware for tenant-specific operations  
+- **Tenant Routes**: Use `requireTenantAuth` middleware for tenant-specific operations
 - **Public Routes**: Use `optionalCoreAuth` where authentication is helpful but not required
 - **Pattern**: Apply middleware using `.use('*', middlewareFunction)` or per-route basis
 - **NEVER expose admin operations** without proper authentication middleware
@@ -199,6 +320,7 @@ Based on project evolution and established patterns, follow these strict rules w
 ### API Development Rules
 
 #### Controller Structure
+
 - **ALWAYS follow RESTful patterns** in route definitions
 - **NEVER mix authentication levels** within the same controller without clear separation
 - **REQUIRED**: Use `zValidator()` with Zod schemas for request validation
@@ -206,6 +328,7 @@ Based on project evolution and established patterns, follow these strict rules w
 - **Error Handling**: Always use `try/catch` with consistent error response format
 
 #### Database Operations
+
 - **ALWAYS use Drizzle ORM** for database operations - never raw SQL
 - **NEVER use `drizzle-kit push`** - only use `generate` and `migrate`
 - **PATTERN**: Use `createCoreConnection()` for core database, `createTenantConnection(tenantDatabase)` for tenant databases
@@ -213,6 +336,7 @@ Based on project evolution and established patterns, follow these strict rules w
 - **REQUIRED**: Validate tenant database existence before operations
 
 #### Response Formatting
+
 - **ALWAYS use consistent response format**: `{ success: boolean, data?: any, error?: string }`
 - **HTTP Status Codes**: Use appropriate codes (200, 201, 400, 401, 403, 404, 500)
 - **Error Messages**: Provide clear, user-friendly error messages
@@ -220,19 +344,22 @@ Based on project evolution and established patterns, follow these strict rules w
 
 ### Code Quality & Maintenance Rules
 
-#### Import Management  
+#### Import Management
+
 - **ALWAYS use path aliases** (`@/*`) for internal imports
 - **NEVER use relative imports** for cross-directory references
 - **PATTERN**: Import order: external packages, internal modules, types/interfaces
 - **REQUIRED**: Remove unused imports immediately when refactoring
 
 #### Zod Schema Management
+
 - **ALWAYS use Zod v4** syntax and patterns
 - **DEPRECATED**: Never use `.flatten().fieldErrors` - use `.issues` or proper error handling
 - **PATTERN**: Define schemas close to usage or in `src/shared/` for reuse
 - **VALIDATION**: Use `zValidator()` for Hono route validation, `safeParse()` for conditional validation
 
 #### File Organization
+
 - **CONTROLLER LOCATION**: All API controllers in `src/api/controllers/core/` or `src/api/controllers/tenant/`
 - **MIDDLEWARE LOCATION**: Authentication middleware in `src/api/middleware/`
 - **TYPES LOCATION**: Shared types and interfaces in `src/shared/index.ts`
@@ -241,21 +368,24 @@ Based on project evolution and established patterns, follow these strict rules w
 ### Debugging & Problem Resolution Rules
 
 #### TypeScript Error Resolution
+
 - **PRIORITY 1**: Fix compilation errors before adding new features
 - **SYSTEMATIC APPROACH**: Address errors file by file, not randomly
 - **TYPE DEFINITIONS**: Create missing interfaces immediately when encountered
 - **COMPATIBILITY**: Ensure type compatibility between frontend and backend
 
 #### Code Review Process
+
 - **BEFORE REFACTORING**: Always read and understand existing code patterns
 - **INCREMENTAL CHANGES**: Make small, focused changes rather than large rewrites
 - **CONSISTENCY**: Follow established patterns in similar files
 - **TESTING**: Verify changes don't break existing functionality
 
 #### Migration Methodology
+
 - **STEP 1**: Analyze scope of changes (search all affected files)
 - **STEP 2**: Create/update type definitions in shared location
-- **STEP 3**: Update controllers and middleware systematically  
+- **STEP 3**: Update controllers and middleware systematically
 - **STEP 4**: Update frontend components and routes
 - **STEP 5**: Fix TypeScript errors and run quality checks
 - **STEP 6**: Test authentication and API endpoints
@@ -263,12 +393,16 @@ Based on project evolution and established patterns, follow these strict rules w
 ### Project-Specific Patterns
 
 #### Multi-Tenant Architecture
+
 - **CORE vs TENANT**: Clearly separate core admin functionality from tenant-specific operations
 - **DATABASE CONTEXT**: Always validate and use appropriate database connection
 - **AUTHENTICATION**: Use correct middleware for each tenant context
 - **ISOLATION**: Ensure tenant data isolation in all operations
+- **Context Detection**: Use `useSettingsContext()` hook to determine tenant vs core context in UI
+- **Dynamic RPC Client**: Hook returns appropriate client based on context (subdomain or route)
 
 #### Middleware Usage Patterns
+
 - **Global Middleware**: Use `.use('*', middleware)` for routes requiring consistent authentication
 - **Selective Middleware**: Apply per-route for mixed authentication requirements
 - **Error Handling**: Let middleware handle authentication failures with proper HTTP status codes

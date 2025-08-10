@@ -1,7 +1,15 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { letMeInSchema, type LetMeInData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,12 +25,7 @@ interface LetMeInFormProps {
 export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
   const { closeDrawer } = useDrawer()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<LetMeInData>({
+  const form = useForm<LetMeInData>({
     resolver: zodResolver(letMeInSchema),
     defaultValues: {
       fullName: '',
@@ -40,7 +43,7 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
         description: 'Your request has been sent to workspace administrators for review.',
       })
 
-      reset()
+      form.reset()
       closeDrawer()
     } catch (error) {
       console.error('Error submitting access request:', error)
@@ -75,81 +78,85 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </Label>
-          <Input
-            id="fullName"
-            type="text"
-            {...register('fullName')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Your full name"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="Your full name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.fullName && (
-            <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
-          )}
-        </div>
 
-        <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="your.email@example.com"
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="your.email@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-        </div>
 
-        <div>
-          <Label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-            Reason for Access
-          </Label>
-          <Textarea
-            id="reason"
-            {...register('reason')}
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please explain why you need access to this workspace..."
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reason for Access</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={4}
+                    placeholder="Please explain why you need access to this workspace..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Help administrators understand why you need access
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Help administrators understand why you need access
-          </p>
-          {errors.reason && <p className="text-red-500 text-sm mt-1">{errors.reason.message}</p>}
-        </div>
 
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h4 className="font-medium text-gray-900 mb-2">What happens next?</h4>
-          <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-            <li>Your request is sent to workspace administrators</li>
-            <li>Administrators review your request and reason</li>
-            <li>You'll receive an email with the decision</li>
-            <li>If approved, you'll get login credentials</li>
-          </ol>
-        </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h4 className="font-medium text-gray-900 mb-2">What happens next?</h4>
+            <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+              <li>Your request is sent to workspace administrators</li>
+              <li>Administrators review your request and reason</li>
+              <li>You'll receive an email with the decision</li>
+              <li>If approved, you'll get login credentials</li>
+            </ol>
+          </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Submitting Request...' : 'Submit Access Request'}
-        </Button>
-
-        <div className="text-center">
-          <Button
-            type="button"
-            variant="link"
-            onClick={() => {
-              // TODO: Go back to login form
-              closeDrawer()
-            }}
-          >
-            Back to Login
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Submitting Request...' : 'Submit Access Request'}
           </Button>
-        </div>
-      </form>
+
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => {
+                // TODO: Go back to login form
+                closeDrawer()
+              }}
+            >
+              Back to Login
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   )
 }

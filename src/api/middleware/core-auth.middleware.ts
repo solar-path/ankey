@@ -40,7 +40,7 @@ export const optionalCoreAuth = createMiddleware<AuthContext>(async (c, next) =>
 
     if (sessionId) {
       const { session, user } = await authService.validateSession(sessionId)
-      
+
       if (session && user) {
         c.set('user', user as any)
         c.set('sessionId', sessionId)
@@ -60,7 +60,7 @@ export const optionalCoreAuth = createMiddleware<AuthContext>(async (c, next) =>
  */
 export const requireLoggedIn = createMiddleware<AuthContext>(async (c, next) => {
   const user = c.get('user')
-  
+
   if (!user) {
     throw new HTTPException(401, { message: 'Unauthorized' })
   }

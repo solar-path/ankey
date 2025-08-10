@@ -3,8 +3,15 @@ import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { LoaderCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { passwordChangeSchema, type PasswordChange } from '@/shared'
@@ -18,12 +25,7 @@ function PasswordSettings() {
   const passwordInput = useRef<HTMLInputElement>(null)
   const currentPasswordInput = useRef<HTMLInputElement>(null)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<PasswordChange>({
+  const form = useForm<PasswordChange>({
     resolver: zodResolver(passwordChangeSchema),
     defaultValues: {
       currentPassword: '',
@@ -54,7 +56,7 @@ function PasswordSettings() {
       }
 
       toast.success('Password changed successfully')
-      reset()
+      form.reset()
     } catch (error: any) {
       console.error('Change password error:', error)
       toast.error(error.message || 'Failed to change password')
@@ -79,86 +81,86 @@ function PasswordSettings() {
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
-      >
-        <div className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="currentPassword">Current password</Label>
-            <Input
-              id="currentPassword"
-              {...register('currentPassword', {
-                setValueAs: value => {
-                  if (currentPasswordInput.current) {
-                    currentPasswordInput.current.value = value
-                  }
-                  return value
-                },
-              })}
-              ref={currentPasswordInput}
-              type="password"
-              className="mt-1 block w-full"
-              autoComplete="current-password"
-              placeholder="Current password"
-            />
-            {errors.currentPassword && (
-              <p className="text-xs text-red-600">{errors.currentPassword.message}</p>
-            )}
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="newPassword">New password</Label>
-            <Input
-              id="newPassword"
-              {...register('newPassword', {
-                setValueAs: value => {
-                  if (passwordInput.current) {
-                    passwordInput.current.value = value
-                  }
-                  return value
-                },
-              })}
-              ref={passwordInput}
-              type="password"
-              className="mt-1 block w-full"
-              autoComplete="new-password"
-              placeholder="New password"
-            />
-            {errors.newPassword && (
-              <p className="text-xs text-red-600">{errors.newPassword.message}</p>
-            )}
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
-            <Input
-              id="confirmPassword"
-              {...register('confirmPassword')}
-              type="password"
-              className="mt-1 block w-full"
-              autoComplete="new-password"
-              placeholder="Confirm password"
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4 pt-4">
-            <Button type="submit" disabled={isSubmitting || isLoading}>
-              {isSubmitting || isLoading ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save password'
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+        >
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="currentPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current password</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      ref={currentPasswordInput}
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="Current password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
+            />
+
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New password</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      ref={passwordInput}
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="New password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Confirm password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex items-center gap-4 pt-4">
+              <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>
+                {form.formState.isSubmitting || isLoading ? (
+                  <>
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save password'
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   )
 }

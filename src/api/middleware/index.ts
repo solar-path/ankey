@@ -1,9 +1,5 @@
 // Core admin authentication middleware
-export {
-  requireCoreAuth,
-  optionalCoreAuth,
-  requireLoggedIn,
-} from './core-auth.middleware'
+export { requireCoreAuth, optionalCoreAuth, requireLoggedIn } from './core-auth.middleware'
 
 // Tenant user authentication middleware
 export {

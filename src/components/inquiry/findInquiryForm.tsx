@@ -1,8 +1,15 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { z } from 'zod'
 import { useState } from 'react'
@@ -27,11 +34,7 @@ export default function FindInquiryForm({
   const [isSearching, setIsSearching] = useState(false)
   const [foundInquiry, setFoundInquiry] = useState<any>(null)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FindInquiryData>({
+  const form = useForm<FindInquiryData>({
     resolver: zodResolver(findInquirySchema),
     defaultValues: {
       id: '',
@@ -82,25 +85,27 @@ export default function FindInquiryForm({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-1">
-            Inquiry ID
-          </Label>
-          <Input
-            id="id"
-            type="text"
-            {...register('id')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter inquiry ID (e.g., INQ-12345)"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Inquiry ID</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="Enter inquiry ID (e.g., INQ-12345)" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.id && <p className="text-red-500 text-sm mt-1">{errors.id.message}</p>}
-        </div>
 
-        <Button type="submit" className="w-full" disabled={isSearching || externalLoading}>
-          {isSearching || externalLoading ? 'Searching...' : 'Find Inquiry'}
-        </Button>
-      </form>
+          <Button type="submit" className="w-full" disabled={isSearching || externalLoading}>
+            {isSearching || externalLoading ? 'Searching...' : 'Find Inquiry'}
+          </Button>
+        </form>
+      </Form>
 
       {foundInquiry && (
         <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">

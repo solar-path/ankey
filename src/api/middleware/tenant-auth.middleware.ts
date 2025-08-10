@@ -10,7 +10,7 @@ import type { AuthContext } from './auth.types'
  */
 export const requireTenantAuth = createMiddleware<AuthContext>(async (c, next) => {
   const tenantDatabase = c.get('tenantDatabase')
-  
+
   if (!tenantDatabase) {
     throw new HTTPException(400, { message: 'Tenant database not found' })
   }
@@ -42,14 +42,14 @@ export const requireTenantAuth = createMiddleware<AuthContext>(async (c, next) =
 export const optionalTenantAuth = createMiddleware<AuthContext>(async (c, next) => {
   try {
     const tenantDatabase = c.get('tenantDatabase')
-    
+
     if (tenantDatabase) {
       const authService = new TenantAuthService(tenantDatabase)
       const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
 
       if (sessionId) {
         const { session, user } = await authService.validateSession(sessionId)
-        
+
         if (session && user) {
           c.set('user', user as any)
           c.set('sessionId', sessionId)
@@ -71,11 +71,11 @@ export const optionalTenantAuth = createMiddleware<AuthContext>(async (c, next) 
 export const requireTenantLoggedIn = createMiddleware<AuthContext>(async (c, next) => {
   const user = c.get('user')
   const tenantDatabase = c.get('tenantDatabase')
-  
+
   if (!tenantDatabase) {
     throw new HTTPException(400, { message: 'Tenant not found' })
   }
-  
+
   if (!user) {
     throw new HTTPException(401, { message: 'Unauthorized' })
   }

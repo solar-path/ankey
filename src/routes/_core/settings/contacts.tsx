@@ -4,8 +4,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { QPhone } from '@/components/QPhone'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { contactSettingsSchema, type ContactSettings } from '@/shared'
 
@@ -16,13 +23,7 @@ export const Route = createFileRoute('/_core/settings/contacts')({
 function ContactSettings() {
   const [isLoading, setIsLoading] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<ContactSettings>({
+  const form = useForm<ContactSettings>({
     resolver: zodResolver(contactSettingsSchema),
     defaultValues: {
       phone: '',
@@ -34,12 +35,6 @@ function ContactSettings() {
       },
     },
   })
-
-  const watchedValues = watch()
-
-  const handlePhoneChange = (value: string) => {
-    setValue('phone', value)
-  }
 
   const onSubmit = async (data: ContactSettings) => {
     try {
@@ -74,85 +69,97 @@ function ContactSettings() {
         <p className="text-muted-foreground">Update your phone number and address</p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
-      >
-        <div className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="phone">Phone</Label>
-            <QPhone
-              value={watchedValues.phone || ''}
-              onChange={handlePhoneChange}
-              className="mt-1 block w-full"
-            />
-            {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              className="mt-1 block w-full"
-              {...register('address')}
-              autoComplete="address"
-              placeholder="Address"
-            />
-            {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
-          </div>
-
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+        >
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Emergency Contact (Optional)</h3>
-
-            <div className="grid gap-2">
-              <Label htmlFor="emergencyContact.name">Name</Label>
-              <Input
-                id="emergencyContact.name"
-                className="mt-1 block w-full"
-                {...register('emergencyContact.name')}
-                placeholder="Emergency contact name"
-              />
-              {errors.emergencyContact?.name && (
-                <p className="text-xs text-red-600">{errors.emergencyContact.name.message}</p>
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <QPhone value={field.value || ''} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input {...field} autoComplete="address" placeholder="Address" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Emergency Contact (Optional)</h3>
+
+              <FormField
+                control={form.control}
+                name="emergencyContact.name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Emergency contact name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="emergencyContact.phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Emergency contact phone" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="emergencyContact.relationship"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Relationship</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Relationship (e.g., Spouse, Parent, Sibling)"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="emergencyContact.phone">Phone</Label>
-              <Input
-                id="emergencyContact.phone"
-                className="mt-1 block w-full"
-                {...register('emergencyContact.phone')}
-                placeholder="Emergency contact phone"
-              />
-              {errors.emergencyContact?.phone && (
-                <p className="text-xs text-red-600">{errors.emergencyContact.phone.message}</p>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="emergencyContact.relationship">Relationship</Label>
-              <Input
-                id="emergencyContact.relationship"
-                className="mt-1 block w-full"
-                {...register('emergencyContact.relationship')}
-                placeholder="Relationship (e.g., Spouse, Parent, Sibling)"
-              />
-              {errors.emergencyContact?.relationship && (
-                <p className="text-xs text-red-600">
-                  {errors.emergencyContact.relationship.message}
-                </p>
-              )}
+            <div className="flex items-center gap-4 pt-4">
+              <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>
+                {form.formState.isSubmitting || isLoading ? 'Saving...' : 'Save'}
+              </Button>
             </div>
           </div>
-
-          <div className="flex items-center gap-4 pt-4">
-            <Button type="submit" disabled={isSubmitting || isLoading}>
-              {isSubmitting || isLoading ? 'Saving...' : 'Save'}
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   )
 }

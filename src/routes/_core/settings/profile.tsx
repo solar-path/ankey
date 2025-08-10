@@ -1,10 +1,18 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { useAuth } from '@/contexts/AuthContext'
-import { client, handleApiResponse } from '@/lib/rpc'
 import { useSettingsContext } from '@/hooks/useSettingsContext'
+import { handleApiResponse } from '@/lib/rpc'
 import { profileSettingsSchema, type ProfileSettings } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute } from '@tanstack/react-router'
@@ -25,14 +33,7 @@ function ProfileSettings() {
   const { user } = useAuth()
   const { settingsClient } = useSettingsContext()
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<ProfileSettings>({
+  const form = useForm<ProfileSettings>({
     resolver: zodResolver(profileSettingsSchema),
     defaultValues: {
       fullName: '',
@@ -41,7 +42,7 @@ function ProfileSettings() {
     },
   })
 
-  const watchedValues = watch()
+  const watchedValues = form.watch()
 
   // Load user data into form when component mounts
   useEffect(() => {
@@ -57,7 +58,7 @@ function ProfileSettings() {
 
         if (result.success && result.data) {
           const profileData = result.data as ProfileSettings
-          reset({
+          form.reset({
             fullName: profileData.fullName || user.fullName || '',
             email: profileData.email || user.email || '',
             avatar: profileData.avatar || '',
@@ -68,7 +69,7 @@ function ProfileSettings() {
           }
         } else {
           // Fallback to user data from auth context
-          reset({
+          form.reset({
             fullName: user.fullName || '',
             email: user.email || '',
             avatar: '',
@@ -77,7 +78,7 @@ function ProfileSettings() {
       } catch (error) {
         console.error('Failed to load profile data:', error)
         // Fallback to user data from auth context
-        reset({
+        form.reset({
           fullName: user.fullName || '',
           email: user.email || '',
           avatar: '',
@@ -88,7 +89,7 @@ function ProfileSettings() {
     }
 
     loadUserData()
-  }, [user, reset])
+  }, [user, form])
 
   const getInitials = (name: string) => {
     return name
@@ -104,12 +105,12 @@ function ProfileSettings() {
     if (file) {
       const objectUrl = URL.createObjectURL(file)
       setPreview(objectUrl)
-      setValue('avatar', objectUrl)
+      form.setValue('avatar', objectUrl)
     }
   }
 
   const removeAvatar = () => {
-    setValue('avatar', '')
+    form.setValue('avatar', '')
     setPreview(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -169,96 +170,110 @@ function ProfileSettings() {
         <p className="text-muted-foreground">Update your name, email, and profile picture</p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
-      >
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-20 w-20">
-                {preview ? (
-                  <AvatarImage src={preview} alt={watchedValues.fullName || 'Profile'} />
-                ) : (
-                  <AvatarFallback className="text-lg">
-                    {getInitials(watchedValues.fullName || 'User')}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div className="absolute -top-2 -right-2 flex gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-6 w-6 rounded-full p-0"
-                  onClick={triggerFileInput}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-                {preview && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="h-6 w-6 rounded-full p-0"
-                    onClick={removeAvatar}
-                  >
-                    <Trash className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                accept="image/*"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Profile Picture</p>
-              <p className="text-xs text-muted-foreground">JPG, GIF or PNG. Max size 2MB</p>
-              {errors.avatar && (
-                <p className="mt-1 text-xs text-red-600">{errors.avatar.message}</p>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+        >
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="avatar"
+              render={() => (
+                <FormItem>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Avatar className="h-20 w-20">
+                        {preview ? (
+                          <AvatarImage src={preview} alt={watchedValues.fullName || 'Profile'} />
+                        ) : (
+                          <AvatarFallback className="text-lg">
+                            {getInitials(watchedValues.fullName || 'User')}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="absolute -top-2 -right-2 flex gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-6 w-6 rounded-full p-0"
+                          onClick={triggerFileInput}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        {preview && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={removeAvatar}
+                          >
+                            <Trash className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="image/*"
+                      />
+                    </div>
+                    <div>
+                      <FormLabel className="text-sm font-medium">Profile Picture</FormLabel>
+                      <FormDescription className="text-xs">
+                        JPG, GIF or PNG. Max size 2MB
+                      </FormDescription>
+                      <FormMessage />
+                    </div>
+                  </div>
+                </FormItem>
               )}
-            </div>
-          </div>
+            />
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="fullName">Name</Label>
-              <Input
-                id="fullName"
-                className="mt-1 w-full"
-                {...register('fullName')}
-                placeholder="Full name"
-                autoComplete="name"
-              />
-              {errors.fullName && (
-                <p className="mt-1 text-xs text-red-600">{errors.fullName.message}</p>
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Full name" autoComplete="name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            <div>
-              <Label htmlFor="email">Email address</Label>
-              <Input
-                id="email"
-                type="email"
-                className="mt-1 w-full"
-                {...register('email')}
-                placeholder="Email address"
-                autoComplete="email"
-                disabled
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Email address cannot be changed for security reasons
-              </p>
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-            </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email address</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Email address"
+                      autoComplete="email"
+                      disabled
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Email address cannot be changed for security reasons
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex items-center justify-end pt-4">
-              <Button type="submit" disabled={isSubmitting || isLoading}>
-                {isSubmitting || isLoading ? (
+              <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>
+                {form.formState.isSubmitting || isLoading ? (
                   <>
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
@@ -269,8 +284,8 @@ function ProfileSettings() {
               </Button>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   )
 }

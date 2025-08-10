@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
-import type { 
-  EmailResult, 
-  WorkspaceWelcomeData, 
-  UserInvitationData, 
-  PasswordResetData, 
-  EmailVerificationData, 
-  TwoFactorCodeData, 
-  AccessRequestNotificationData 
+import type {
+  EmailResult,
+  WorkspaceWelcomeData,
+  UserInvitationData,
+  PasswordResetData,
+  EmailVerificationData,
+  TwoFactorCodeData,
+  AccessRequestNotificationData,
 } from '@/shared'
 
 export class EmailService {
@@ -25,7 +25,12 @@ export class EmailService {
     })
   }
 
-  private async sendEmail(to: string, subject: string, html: string, text?: string): Promise<EmailResult> {
+  private async sendEmail(
+    to: string,
+    subject: string,
+    html: string,
+    text?: string
+  ): Promise<EmailResult> {
     try {
       const info = await this.transporter.sendMail({
         from: process.env.FROM_EMAIL,

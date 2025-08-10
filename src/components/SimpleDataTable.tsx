@@ -42,7 +42,7 @@ export function SimpleDataTable<T extends Record<string, any>>({
   onEdit,
   onDelete,
   onCreate,
-  getRowId = (row) => row.id || Math.random().toString(),
+  getRowId = row => row.id || Math.random().toString(),
 }: SimpleDataTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
@@ -50,10 +50,10 @@ export function SimpleDataTable<T extends Record<string, any>>({
   // Filter data based on search term
   const filteredData = data.filter(row =>
     columns.some(column => {
-      const value = column.accessor 
+      const value = column.accessor
         ? column.accessor(row)
-        : column.key === 'string' 
-          ? (row as any)[column.key] 
+        : column.key === 'string'
+          ? (row as any)[column.key]
           : row[column.key as keyof T]
       return String(value).toLowerCase().includes(searchTerm.toLowerCase())
     })
@@ -103,17 +103,13 @@ export function SimpleDataTable<T extends Record<string, any>>({
           <Input
             placeholder="Search..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="w-full md:w-64"
           />
         </div>
         <div className="flex items-center space-x-2">
           {onCreate && (
-            <Button
-              variant="default"
-              onClick={onCreate}
-              className="flex items-center space-x-2"
-            >
+            <Button variant="default" onClick={onCreate} className="flex items-center space-x-2">
               <PlusIcon className="h-4 w-4" />
               <span>Create</span>
             </Button>
@@ -159,14 +155,12 @@ export function SimpleDataTable<T extends Record<string, any>>({
                       <TableCell>
                         <Checkbox
                           checked={selectedRows.has(rowId)}
-                          onCheckedChange={(checked) => handleSelectRow(rowId, !!checked)}
+                          onCheckedChange={checked => handleSelectRow(rowId, !!checked)}
                         />
                       </TableCell>
                     )}
                     {columns.map((column, colIndex) => (
-                      <TableCell key={colIndex}>
-                        {getCellValue(row, column)}
-                      </TableCell>
+                      <TableCell key={colIndex}>{getCellValue(row, column)}</TableCell>
                     ))}
                     {onEdit && (
                       <TableCell>
@@ -190,7 +184,10 @@ export function SimpleDataTable<T extends Record<string, any>>({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length + (onEdit ? 1 : 0) + (onDelete || onEdit ? 1 : 0)} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length + (onEdit ? 1 : 0) + (onDelete || onEdit ? 1 : 0)}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>

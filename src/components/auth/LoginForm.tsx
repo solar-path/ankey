@@ -1,7 +1,14 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { loginSchema, type LoginData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,12 +34,7 @@ export function LoginForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<LoginData>({
+  const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -69,7 +71,7 @@ export function LoginForm({
 
         // Handle successful login
         if (result.data && !(result.data as any).requiresTwoFactor) {
-          reset()
+          form.reset()
           closeDrawer() // Close drawer before navigation
 
           // Navigate to appropriate dashboard based on user type
@@ -84,7 +86,7 @@ export function LoginForm({
         }
       }
 
-      reset()
+      form.reset()
       closeDrawer()
     } catch (error) {
       console.error('Login error:', error)
@@ -101,87 +103,88 @@ export function LoginForm({
 
   return (
     <div className="space-y-6 p-2">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your email"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter your email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-        </div>
 
-        <div>
-          <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            {...register('password')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your password"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Enter your password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-          )}
-        </div>
 
-        <div>
-          <Label htmlFor="twoFactorCode" className="block text-sm font-medium text-gray-700 mb-1">
-            Two-Factor Code (if enabled)
-          </Label>
-          <Input
-            id="twoFactorCode"
-            type="text"
-            {...register('twoFactorCode')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter 6-digit code"
-            maxLength={6}
+          <FormField
+            control={form.control}
+            name="twoFactorCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Two-Factor Code (if enabled)</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="Enter 6-digit code" maxLength={6} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.twoFactorCode && (
-            <p className="text-red-500 text-sm mt-1">{errors.twoFactorCode.message}</p>
-          )}
-        </div>
 
-        <div className="flex items-center justify-between">
-          <Button type="button" variant="ghost" onClick={() => openDrawer(<ForgotPasswordForm />)}>
-            Forgot Password?
-          </Button>
-        </div>
-
-        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
-          {isSubmitting || externalLoading ? 'Signing In...' : 'Sign In'}
-        </Button>
-
-        {isTenant && (
-          <div className="text-center">
+          <div className="flex items-center justify-between">
             <Button
               type="button"
-              variant="link"
-              onClick={() =>
-                openDrawer(
-                  <LetMeInForm
-                    onSubmit={async data => {
-                      // TODO: Implement actual API call for access request
-                      console.log('Access request submitted:', data)
-                      // This would typically call a tenant API endpoint
-                      // await tenantAuth.requestAccess.$post({ json: data })
-                    }}
-                  />
-                )
-              }
+              variant="ghost"
+              onClick={() => openDrawer(<ForgotPasswordForm />)}
             >
-              Don't have access? Request Access
+              Forgot Password?
             </Button>
           </div>
-        )}
-      </form>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+            {isSubmitting || externalLoading ? 'Signing In...' : 'Sign In'}
+          </Button>
+
+          {isTenant && (
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() =>
+                  openDrawer(
+                    <LetMeInForm
+                      onSubmit={async data => {
+                        // TODO: Implement actual API call for access request
+                        console.log('Access request submitted:', data)
+                        // This would typically call a tenant API endpoint
+                        // await tenantAuth.requestAccess.$post({ json: data })
+                      }}
+                    />
+                  )
+                }
+              >
+                Don't have access? Request Access
+              </Button>
+            </div>
+          )}
+        </form>
+      </Form>
     </div>
   )
 }

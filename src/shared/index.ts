@@ -860,14 +860,17 @@ export interface ComplianceReport {
   }
   criticalActions: any[]
   failedActions: any[]
-  userActivity: Record<string, {
-    count: number
-    actions: Array<{
-      action: string
-      resource: string
-      timestamp: Date
-    }>
-  }>
+  userActivity: Record<
+    string,
+    {
+      count: number
+      actions: Array<{
+        action: string
+        resource: string
+        timestamp: Date
+      }>
+    }
+  >
 }
 
 export interface ComplianceReportResponse {

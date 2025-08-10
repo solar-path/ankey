@@ -1,6 +1,16 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,16 +32,18 @@ export function RegisterWorkspaceForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<RegisterData>({
+  const form = useForm({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      workspace: '',
+      fullName: '',
+      email: '',
+      password: '',
+      acceptTerms: false,
+    },
   })
 
-  const workspaceName = watch('workspace')
+  const workspaceName = form.watch('workspace')
 
   const handleFormSubmit = async (data: RegisterData) => {
     setIsSubmitting(true)
@@ -85,118 +97,125 @@ export function RegisterWorkspaceForm({
 
   return (
     <div className="space-y-6 p-2">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="workspace" className="block text-sm font-medium text-gray-700 mb-1">
-            Workspace Name
-          </label>
-          <input
-            id="workspace"
-            type="text"
-            {...register('workspace')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="my-company"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="workspace"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Workspace Name</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="my-company" {...field} />
+                </FormControl>
+                {workspaceName && (
+                  <FormDescription>
+                    Your workspace will be available at:{' '}
+                    <strong>{generateSlug(workspaceName)}.localhost:3000</strong>
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {workspaceName && (
-            <p className="text-sm text-gray-500 mt-1">
-              Your workspace will be available at:{' '}
-              <strong>{generateSlug(workspaceName)}.localhost:3000</strong>
-            </p>
-          )}
-          {errors.workspace && (
-            <p className="text-red-500 text-sm mt-1">{errors.workspace.message}</p>
-          )}
-        </div>
 
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            {...register('fullName')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="John Doe"
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.fullName && (
-            <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
-          )}
-        </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </label>
-          <input
-            id="email"
-            type="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="john@example.com"
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="john@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-        </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            {...register('password')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter a strong password"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Enter a strong password" {...field} />
+                </FormControl>
+                <FormDescription>Must contain uppercase, lowercase, and a number</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Must contain uppercase, lowercase, and a number
-          </p>
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-          )}
-        </div>
 
-        <div className="bg-blue-50 p-4 rounded-md">
-          <h4 className="font-medium text-blue-900 mb-2">What you'll get:</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Your own dedicated workspace</li>
-            <li>• User management and role-based access control</li>
-            <li>• Audit logging for compliance</li>
-            <li>• Email notifications and invitations</li>
-            <li>• $25/user/month billing</li>
-          </ul>
-        </div>
+          <div className="bg-blue-50 p-4 rounded-md">
+            <h4 className="font-medium text-blue-900 mb-2">What you'll get:</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Your own dedicated workspace</li>
+              <li>• User management and role-based access control</li>
+              <li>• Audit logging for compliance</li>
+              <li>• Email notifications and invitations</li>
+              <li>• $25/user/month billing</li>
+            </ul>
+          </div>
 
-        <div className="flex items-start space-x-3">
-          <Checkbox id="acceptTerms" {...register('acceptTerms')} className="mt-1" />
-          <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-5">
-            I agree to the{' '}
-            <Link
-              to="/learn"
-              search={{ doc: 'terms' }}
-              className="text-blue-600 hover:text-blue-500 underline"
-              onClick={e => e.stopPropagation()}
-            >
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link
-              to="/learn"
-              search={{ doc: 'privacy' }}
-              className="text-blue-600 hover:text-blue-500 underline"
-              onClick={e => e.stopPropagation()}
-            >
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
-        {errors.acceptTerms && <p className="text-red-500 text-sm">{errors.acceptTerms.message}</p>}
+          <FormField
+            control={form.control}
+            name="acceptTerms"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    I agree to the{' '}
+                    <Link
+                      to="/learn"
+                      search={{ doc: 'terms' }}
+                      className="text-blue-600 hover:text-blue-500 underline"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link
+                      to="/learn"
+                      search={{ doc: 'privacy' }}
+                      className="text-blue-600 hover:text-blue-500 underline"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </Link>
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
-          {isSubmitting || externalLoading ? 'Creating Workspace...' : 'Create Workspace'}
-        </Button>
-      </form>
+          <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+            {isSubmitting || externalLoading ? 'Creating Workspace...' : 'Create Workspace'}
+          </Button>
+        </form>
+      </Form>
     </div>
   )
 }

@@ -3,7 +3,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { useCallback, useState } from 'react'
 import { z } from 'zod'
@@ -32,14 +40,7 @@ export default function InquiryForm({
   const { closeDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<InquiryData>({
+  const form = useForm<InquiryData>({
     resolver: zodResolver(inquirySchema),
     defaultValues: {
       email: '',
@@ -48,14 +49,14 @@ export default function InquiryForm({
     },
   })
 
-  const attachments = watch('attachments') || []
+  const attachments = form.watch('attachments') || []
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const currentAttachments = attachments || []
-      setValue('attachments', [...currentAttachments, ...acceptedFiles])
+      form.setValue('attachments', [...currentAttachments, ...acceptedFiles])
     },
-    [attachments, setValue]
+    [attachments, form]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -72,7 +73,7 @@ export default function InquiryForm({
 
   const removeAttachment = (index: number) => {
     const newAttachments = attachments.filter((_, i) => i !== index)
-    setValue('attachments', newAttachments)
+    form.setValue('attachments', newAttachments)
   }
 
   const handleFormSubmit = async (data: InquiryData) => {
@@ -104,7 +105,7 @@ export default function InquiryForm({
         console.log('Inquiry submitted successfully:', result.data)
       }
 
-      reset()
+      form.reset()
       closeDrawer()
     } catch (error) {
       console.error('Error submitting inquiry:', error)
@@ -120,90 +121,108 @@ export default function InquiryForm({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your email"
-          />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-            Message
-          </Label>
-          <Textarea
-            id="message"
-            {...register('message')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-            placeholder="Please describe your inquiry in detail"
-          />
-          {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
-        </div>
-
-        <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-1">
-            Attachments (optional)
-          </Label>
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-            {isDragActive ? (
-              <p className="text-sm text-blue-600">Drop the files here...</p>
-            ) : (
-              <div>
-                <p className="text-sm text-gray-600">
-                  Drag 'n' drop files here, or click to select
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Max file size: 10MB</p>
-              </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter your email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
 
-          {attachments.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {attachments.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
-                >
-                  <div className="flex items-center space-x-2">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">{file.name}</span>
-                    <span className="text-xs text-gray-500">
-                      ({(file.size / 1024).toFixed(1)} KB)
-                    </span>
+          <FormField
+            control={form.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Message</FormLabel>
+                <FormControl>
+                  <Textarea
+                    className="min-h-[120px]"
+                    placeholder="Please describe your inquiry in detail"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="attachments"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Attachments (optional)</FormLabel>
+                <FormControl>
+                  <div>
+                    <div
+                      {...getRootProps()}
+                      className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${
+                        isDragActive
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <input {...getInputProps()} />
+                      <Upload className="mx-auto h-6 w-6 text-gray-400 mb-2" />
+                      {isDragActive ? (
+                        <p className="text-sm text-blue-600">Drop the files here...</p>
+                      ) : (
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            Drag 'n' drop files here, or click to select
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">Max file size: 10MB</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {attachments.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {attachments.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <FileText className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm text-gray-700">{file.name}</span>
+                              <span className="text-xs text-gray-500">
+                                ({(file.size / 1024).toFixed(1)} KB)
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAttachment(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeAttachment(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
-          {isSubmitting || externalLoading ? 'Submitting...' : 'Submit Inquiry'}
-        </Button>
-      </form>
+          <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+            {isSubmitting || externalLoading ? 'Submitting...' : 'Submit Inquiry'}
+          </Button>
+        </form>
+      </Form>
     </div>
   )
 }

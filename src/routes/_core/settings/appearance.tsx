@@ -1,8 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -10,8 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { appearanceSettingsSchema, type AppearanceSettings } from '@/shared'
 
@@ -22,12 +30,7 @@ export const Route = createFileRoute('/_core/settings/appearance')({
 function AppearanceSettingsComponent() {
   const [isLoading, setIsLoading] = useState(false)
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({
+  const form = useForm({
     resolver: zodResolver(appearanceSettingsSchema),
     defaultValues: {
       theme: 'system' as const,
@@ -38,7 +41,7 @@ function AppearanceSettingsComponent() {
     },
   })
 
-  const onSubmit = async (data: AppearanceSettings) => {
+  const onSubmit: SubmitHandler<AppearanceSettings> = async (data) => {
     try {
       setIsLoading(true)
 
@@ -71,109 +74,122 @@ function AppearanceSettingsComponent() {
         <p className="text-muted-foreground">Customize your app's appearance and theme</p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
-      >
-        <div className="space-y-4">
-          <div className="grid gap-2">
-            <Label className="text-sm leading-none font-medium">Theme</Label>
-            <Controller
-              control={control}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full max-w-2xl space-y-6 rounded-lg bg-white p-6 shadow"
+        >
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
               name="theme"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select theme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormItem>
+                  <FormLabel>Theme</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select theme" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-            {errors.theme && <p className="text-xs text-red-600">{errors.theme.message}</p>}
-          </div>
 
-          <div className="grid gap-2">
-            <Label className="text-sm leading-none font-medium">Density</Label>
-            <Controller
-              control={control}
+            <FormField
+              control={form.control}
               name="density"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select density" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="compact">Compact</SelectItem>
-                    <SelectItem value="comfortable">Comfortable</SelectItem>
-                    <SelectItem value="spacious">Spacious</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormItem>
+                  <FormLabel>Density</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select density" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="compact">Compact</SelectItem>
+                      <SelectItem value="comfortable">Comfortable</SelectItem>
+                      <SelectItem value="spacious">Spacious</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-            {errors.density && <p className="text-xs text-red-600">{errors.density.message}</p>}
-          </div>
 
-          <div className="grid gap-2">
-            <Label className="text-sm leading-none font-medium">Font Size</Label>
-            <Controller
-              control={control}
+            <FormField
+              control={form.control}
               name="fontSize"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select font size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="large">Large</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormItem>
+                  <FormLabel>Font Size</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select font size" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="small">Small</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="large">Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-            {errors.fontSize && <p className="text-xs text-red-600">{errors.fontSize.message}</p>}
-          </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="primaryColor">Primary Color</Label>
-            <Input
-              id="primaryColor"
-              type="color"
-              {...register('primaryColor')}
-              className="mt-1 block w-full h-10"
+            <FormField
+              control={form.control}
+              name="primaryColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Primary Color</FormLabel>
+                  <FormControl>
+                    <Input type="color" {...field} className="h-10" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.primaryColor && (
-              <p className="text-xs text-red-600">{errors.primaryColor.message}</p>
-            )}
-          </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="sidebarCollapsed"
-              {...register('sidebarCollapsed')}
-              className="rounded"
+            <FormField
+              control={form.control}
+              name="sidebarCollapsed"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Start with sidebar collapsed</FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Label htmlFor="sidebarCollapsed" className="text-sm font-medium leading-none">
-              Start with sidebar collapsed
-            </Label>
-            {errors.sidebarCollapsed && (
-              <p className="text-xs text-red-600">{errors.sidebarCollapsed.message}</p>
-            )}
-          </div>
 
-          <div className="flex items-center gap-4 pt-4">
-            <Button type="submit" disabled={isSubmitting || isLoading}>
-              {isSubmitting || isLoading ? 'Saving...' : 'Save changes'}
-            </Button>
+            <div className="flex items-center gap-4 pt-4">
+              <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>
+                {form.formState.isSubmitting || isLoading ? 'Saving...' : 'Save changes'}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   )
 }

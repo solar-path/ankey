@@ -248,8 +248,7 @@ function RouteComponent() {
     {
       key: 'trial',
       header: 'Trial',
-      cell: (row: PricingPlan) =>
-        `${row.trialDays || 0} days (${row.trialMaxUsers || 0} users)`,
+      cell: (row: PricingPlan) => `${row.trialDays || 0} days (${row.trialMaxUsers || 0} users)`,
     },
     {
       key: 'badge',
@@ -290,9 +289,7 @@ function RouteComponent() {
       header: 'Promo Code',
       cell: (row: PricingDiscount) =>
         row.promoCode ? (
-          <code className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">
-            {row.promoCode}
-          </code>
+          <code className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">{row.promoCode}</code>
         ) : null,
     },
     {

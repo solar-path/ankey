@@ -1,7 +1,14 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { forgotPasswordSchema, type ForgotPasswordData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,12 +29,7 @@ export function ForgotPasswordForm({
   const { openDrawer, closeDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ForgotPasswordData>({
+  const form = useForm<ForgotPasswordData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: '',
@@ -58,7 +60,7 @@ export function ForgotPasswordForm({
 
         console.log('Password reset email sent:', result.data)
       }
-      reset()
+      form.reset()
       closeDrawer()
     } catch (error) {
       console.error('Error sending reset email:', error)
@@ -74,41 +76,43 @@ export function ForgotPasswordForm({
 
   return (
     <div className="space-y-6 p-2">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your email address"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter your email address" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-        </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
-          {isSubmitting || externalLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
-        </Button>
+          <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+            {isSubmitting || externalLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
+          </Button>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Remember your password?{' '}
-            <Button
-              type="button"
-              variant="link"
-              className="p-0 h-auto text-sm"
-              onClick={() => {
-                openDrawer(<LoginForm />)
-              }}
-            >
-              Sign in instead
-            </Button>
-          </p>
-        </div>
-      </form>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Remember your password?{' '}
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto text-sm"
+                onClick={() => {
+                  openDrawer(<LoginForm />)
+                }}
+              >
+                Sign in instead
+              </Button>
+            </p>
+          </div>
+        </form>
+      </Form>
     </div>
   )
 }
