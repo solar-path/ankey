@@ -1,21 +1,19 @@
 'use client'
 
+import { Link } from '@tanstack/react-router'
 import {
-  BarChart3,
-  LayoutDashboard,
-  Database,
+  Building2,
+  DollarSign,
   FileText,
+  HelpCircle,
+  LayoutDashboard,
   Search,
   Settings,
-  Users,
-  Building2,
   Shield,
-  DollarSign,
-  HelpCircle,
   TrendingUp,
+  Users
 } from 'lucide-react'
 import * as React from 'react'
-import { Link } from '@tanstack/react-router'
 
 import { NavMain } from '@/components/QSideBar/nav-main'
 import { NavSecondary } from '@/components/QSideBar/nav-secondary'

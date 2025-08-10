@@ -87,16 +87,7 @@ export function SiteHeader() {
         </Breadcrumb>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-            <a
-              href="https://github.com/anthropics/claude-code"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="dark:text-foreground"
-            >
-              Claude Code
-            </a>
-          </Button>
+          {/* Additional header actions can be added here */}
         </div>
       </div>
     </header>
