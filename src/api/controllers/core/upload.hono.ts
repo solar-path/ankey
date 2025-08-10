@@ -27,9 +27,10 @@ export const coreUploadRoutes = new Hono()
       const coreDb = createCoreConnection()
 
       // Get current user's avatar to potentially delete old one
-      const currentUser = await coreDb.query.coreUsers.findFirst({
-        where: eq(coreUsers.id, user.id),
-      })
+      const currentUser = await coreDb.select().from(coreUsers)
+        .where(eq(coreUsers.id, user.id))
+        .limit(1)
+        .then(rows => rows[0])
 
       // Upload new avatar (this will also delete old one if exists)
       const uploadResult = await fileUploadService.replaceAvatar(
@@ -81,9 +82,10 @@ export const coreUploadRoutes = new Hono()
       const fileUploadService = new FileUploadService()
 
       // Get current user's avatar
-      const currentUser = await coreDb.query.coreUsers.findFirst({
-        where: eq(coreUsers.id, user.id),
-      })
+      const currentUser = await coreDb.select().from(coreUsers)
+        .where(eq(coreUsers.id, user.id))
+        .limit(1)
+        .then(rows => rows[0])
 
       if (currentUser?.avatar) {
         // Delete physical file

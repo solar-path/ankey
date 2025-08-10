@@ -88,7 +88,7 @@ export const coreSettingsRoutes = new Hono()
       const profileData = {
         fullName: userRecord.fullName,
         email: userRecord.email,
-        avatar: userRecord.avatar ? `/uploads/${userRecord.avatar}` : '',
+        avatar: userRecord.avatar || '',  // Return the raw path, let frontend handle URL construction
       }
 
       return c.json({ success: true, data: profileData })

@@ -26,6 +26,7 @@ export function createCoreAuth() {
         id: attributes.id,
         email: attributes.email,
         fullName: attributes.fullName,
+        avatar: attributes.avatar,
         isActive: attributes.isActive,
         emailVerified: attributes.emailVerified,
         twoFactorEnabled: attributes.twoFactorEnabled,
@@ -52,6 +53,7 @@ export function createTenantAuth(tenantDatabase: string) {
         id: attributes.id,
         email: attributes.email,
         fullName: attributes.fullName,
+        avatar: attributes.avatar,
         isActive: attributes.isActive,
         emailVerified: attributes.emailVerified,
         twoFactorEnabled: attributes.twoFactorEnabled,
@@ -104,9 +106,10 @@ export class CoreAuthService {
 
   async login(data: LoginData) {
     try {
-      const user = await this.db.query.coreUsers.findFirst({
-        where: eq(coreSchema.coreUsers.email, data.email),
-      })
+      const user = await this.db.select().from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.email, data.email))
+        .limit(1)
+        .then(rows => rows[0])
 
       if (!user || !user.isActive) {
         return { success: false, error: 'Invalid credentials' }
@@ -141,6 +144,7 @@ export class CoreAuthService {
             id: user.id,
             email: user.email,
             fullName: user.fullName,
+            avatar: user.avatar,
             isActive: user.isActive,
             emailVerified: user.emailVerified,
             twoFactorEnabled: user.twoFactorEnabled,
@@ -175,9 +179,10 @@ export class CoreAuthService {
       // If session is valid but user is missing email, fetch it manually from database
       // This ensures we always have complete user data even if Lucia's getUserAttributes isn't working properly
       if (session && user && !user.email && user.id) {
-        const dbUser = await this.db.query.coreUsers.findFirst({
-          where: eq(coreSchema.coreUsers.id, user.id),
-        })
+        const dbUser = await this.db.select().from(coreSchema.coreUsers)
+          .where(eq(coreSchema.coreUsers.id, user.id))
+          .limit(1)
+          .then(rows => rows[0])
         
         if (dbUser) {
           // Return user with complete data from database
@@ -185,6 +190,7 @@ export class CoreAuthService {
             id: dbUser.id,
             email: dbUser.email,
             fullName: dbUser.fullName,
+            avatar: dbUser.avatar,
             isActive: dbUser.isActive,
             emailVerified: dbUser.emailVerified,
             twoFactorEnabled: dbUser.twoFactorEnabled,
@@ -203,9 +209,10 @@ export class CoreAuthService {
 
   async createPasswordResetToken(email: string) {
     try {
-      const user = await this.db.query.coreUsers.findFirst({
-        where: eq(coreSchema.coreUsers.email, email),
-      })
+      const user = await this.db.select().from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.email, email))
+        .limit(1)
+        .then(rows => rows[0])
 
       if (!user) {
         // Don't reveal if user exists or not
@@ -230,10 +237,11 @@ export class CoreAuthService {
 
   async resetPassword(data: ResetPasswordData) {
     try {
-      const tokenRecord = await this.db.query.passwordResetTokens.findFirst({
-        where: eq(coreSchema.passwordResetTokens.token, data.token),
-        with: { user: true },
-      })
+      const tokenRecord = await this.db.select().from(coreSchema.passwordResetTokens)
+        .where(eq(coreSchema.passwordResetTokens.token, data.token))
+        .leftJoin(coreSchema.coreUsers, eq(coreSchema.passwordResetTokens.userId, coreSchema.coreUsers.id))
+        .limit(1)
+        .then(rows => rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].core_users } : undefined)
 
       if (!tokenRecord || tokenRecord.used || tokenRecord.expiresAt < new Date()) {
         return { success: false, error: 'Invalid or expired token' }
@@ -382,10 +390,11 @@ export class TenantAuthService {
 
   async resetPassword(data: ResetPasswordData) {
     try {
-      const tokenRecord = await this.db.query.tenantPasswordResetTokens.findFirst({
-        where: eq(tenantSchema.tenantPasswordResetTokens.token, data.token),
-        with: { user: true },
-      })
+      const tokenRecord = await this.db.select().from(tenantSchema.tenantPasswordResetTokens)
+        .where(eq(tenantSchema.tenantPasswordResetTokens.token, data.token))
+        .leftJoin(tenantSchema.users, eq(tenantSchema.tenantPasswordResetTokens.userId, tenantSchema.users.id))
+        .limit(1)
+        .then(rows => rows[0] ? { ...rows[0].password_reset_tokens, user: rows[0].users } : undefined)
 
       if (!tokenRecord || tokenRecord.used || tokenRecord.expiresAt < new Date()) {
         return { success: false, error: 'Invalid or expired token' }
@@ -428,6 +437,7 @@ declare module 'lucia' {
       id: string
       email: string
       fullName: string
+      avatar: string | null
       isActive: boolean
       emailVerified: boolean
       twoFactorEnabled: boolean
