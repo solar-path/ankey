@@ -152,16 +152,16 @@ function Pricing() {
       {/* Header */}
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
           Choose the perfect plan for your business. Start with our free trial and scale as you
           grow.
         </p>
       </div>
 
       {/* Special Trial Offer */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-12 text-center">
-        <h2 className="text-2xl font-semibold mb-2 text-blue-900">🎉 Free 7-Day Trial</h2>
-        <p className="text-blue-700 mb-4">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-12 text-center dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-700">
+        <h2 className="text-2xl font-semibold mb-2 text-blue-900 dark:text-blue-100">🎉 Free 7-Day Trial</h2>
+        <p className="text-blue-700 dark:text-blue-300 mb-4">
           Get full access to our platform with up to 5 users for 1 week - no credit card required!
         </p>
         <Button
@@ -174,13 +174,13 @@ function Pricing() {
 
       {/* Billing Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="bg-gray-100 p-1 rounded-lg">
+        <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               billingCycle === 'monthly'
-                ? 'bg-white text-gray-900 shadow'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Monthly
@@ -189,12 +189,12 @@ function Pricing() {
             onClick={() => setBillingCycle('yearly')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               billingCycle === 'yearly'
-                ? 'bg-white text-gray-900 shadow'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Yearly
-            <span className="ml-1 text-green-600 font-semibold">(-15%)</span>
+            <span className="ml-1 text-green-600 dark:text-green-400 font-semibold">(-15%)</span>
           </button>
         </div>
       </div>
@@ -236,24 +236,24 @@ function Pricing() {
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white rounded-lg shadow-lg border-2 p-8 ${
-                  hasPopularBadge ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'
+                className={`relative bg-white dark:bg-gray-900 rounded-lg shadow-lg border-2 p-8 ${
+                  hasPopularBadge ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700' : 'border-gray-200 dark:border-gray-700'
                 }`}
               >
                 {plan.badge && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-blue-500 dark:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       {plan.badge}
                     </span>
                   </div>
                 )}
 
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold mb-2 dark:text-gray-100">{plan.name}</h3>
 
                   {/* User Count Selector */}
                   <div className="mb-4">
-                    <Label htmlFor={`users-${plan.id}`} className="text-sm text-gray-600">
+                    <Label htmlFor={`users-${plan.id}`} className="text-sm text-gray-600 dark:text-gray-300">
                       Number of users
                     </Label>
                     <div className="flex items-center justify-center mt-1">
@@ -264,7 +264,7 @@ function Pricing() {
                             Math.max(plan.minUsers || 1, userCount - 1)
                           )
                         }
-                        className="w-8 h-8 rounded-l border border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        className="w-8 h-8 rounded-l border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                         disabled={userCount <= (plan.minUsers || 1)}
                       >
                         -
@@ -281,7 +281,7 @@ function Pricing() {
                             parseInt(e.target.value) || plan.minUsers || 1
                           )
                         }
-                        className="w-20 h-8 text-center border-t border-b border-gray-300 rounded-none"
+                        className="w-20 h-8 text-center border-t border-b border-gray-300 dark:border-gray-600 rounded-none dark:bg-gray-800 dark:text-gray-100"
                       />
                       <button
                         onClick={() =>
@@ -290,7 +290,7 @@ function Pricing() {
                             Math.min(plan.maxUsers || 999, userCount + 1)
                           )
                         }
-                        className="w-8 h-8 rounded-r border border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        className="w-8 h-8 rounded-r border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                         disabled={plan.maxUsers ? userCount >= plan.maxUsers : false}
                       >
                         +
@@ -307,16 +307,16 @@ function Pricing() {
                             ? Math.round(calculation.periodicPrice)
                             : calculation.finalPrice}
                         </div>
-                        <div className="text-gray-600 text-sm">
+                        <div className="text-gray-600 dark:text-gray-300 text-sm">
                           per {billingCycle === 'yearly' ? 'month' : 'month'}
                           {billingCycle === 'yearly' && (
-                            <div className="text-xs text-green-600 font-medium">
+                            <div className="text-xs text-green-600 dark:text-green-400 font-medium">
                               (${calculation.finalPrice} billed annually)
                             </div>
                           )}
                         </div>
                         {calculation.discountPercent > 0 && (
-                          <div className="text-green-600 text-sm font-medium mt-1">
+                          <div className="text-green-600 dark:text-green-400 text-sm font-medium mt-1">
                             {calculation.discountPercent}% discount applied!
                           </div>
                         )}
@@ -326,26 +326,26 @@ function Pricing() {
                         <div className="text-4xl font-bold">
                           ${plan.pricePerUserPerMonth * userCount}
                         </div>
-                        <div className="text-gray-600">per month</div>
+                        <div className="text-gray-600 dark:text-gray-300">per month</div>
                       </div>
                     )}
                   </div>
 
-                  <p className="text-gray-600 text-sm">{plan.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">{plan.description}</p>
                   {plan.trialDays && plan.trialDays > 0 && (
-                    <p className="text-blue-600 font-medium mt-2">
+                    <p className="text-blue-600 dark:text-blue-400 font-medium mt-2">
                       {plan.trialDays} days free trial ({plan.trialMaxUsers || 5} users)
                     </p>
                   )}
                 </div>
 
                 <div className="mb-8">
-                  <h4 className="font-semibold mb-4">Features included:</h4>
+                  <h4 className="font-semibold mb-4 dark:text-gray-100">Features included:</h4>
                   <ul className="space-y-2">
                     {features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                        <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm dark:text-gray-300">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -353,18 +353,18 @@ function Pricing() {
 
                 {(plan.minUsers || plan.maxUsers) && (
                   <div className="mb-8">
-                    <h4 className="font-semibold mb-4 text-gray-700">User Limits:</h4>
+                    <h4 className="font-semibold mb-4 text-gray-700 dark:text-gray-300">User Limits:</h4>
                     <ul className="space-y-2">
                       {plan.minUsers && (
                         <li className="flex items-start">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
                             Minimum {plan.minUsers} users
                           </span>
                         </li>
                       )}
                       {plan.maxUsers && (
                         <li className="flex items-start">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
                             Maximum {plan.maxUsers} users
                           </span>
                         </li>
@@ -391,19 +391,19 @@ function Pricing() {
 
       {/* FAQ Section */}
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">Frequently Asked Questions</h2>
         <div className="space-y-8">
           <div>
-            <h3 className="text-xl font-semibold mb-3">Can I change plans later?</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">Can I change plans later?</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in
               your next billing cycle.
             </p>
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold mb-3">What happens after the free trial?</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">What happens after the free trial?</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               After your 7-day free trial, you can choose to continue with a paid plan. If you don't
               select a plan, your account will be suspended but your data will be preserved for 30
               days.
@@ -411,18 +411,18 @@ function Pricing() {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold mb-3">
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
               Do you offer discounts for annual billing?
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Yes! Save 15% when you pay annually. We also offer promotional discounts from time to
               time - use the promo code field above to apply any available discounts.
             </p>
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold mb-3">What support is included?</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">What support is included?</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               All plans include email support. Professional and Enterprise plans include priority
               support with faster response times.
             </p>

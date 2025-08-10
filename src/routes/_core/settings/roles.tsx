@@ -42,8 +42,8 @@ function RolesSettings() {
       try {
         setIsLoading(true)
 
-        // TODO: Replace with actual API call to /api/tenant/rbac/roles
-        const response = await fetch('/api/tenant/rbac/roles')
+        // Use core RBAC API for core admin users
+        const response = await fetch('/api/rbac/roles')
         if (!response.ok) {
           throw new Error('Failed to load roles')
         }
@@ -166,7 +166,7 @@ function RolesSettings() {
         </div>
         <div className="animate-pulse space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded-lg"></div>
+            <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -194,13 +194,13 @@ function RolesSettings() {
             {roles.map((role, index) => (
               <Collapsible
                 key={role.id}
-                open={openRoles[index]}
+                open={openRoles[index] || false}
                 onOpenChange={() => toggleRole(index)}
               >
                 <CollapsibleTrigger asChild>
                   <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
                     <div className="flex items-center gap-3">
-                      {openRoles[index] ? (
+                      {openRoles[index] || false ? (
                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
                       ) : (
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />

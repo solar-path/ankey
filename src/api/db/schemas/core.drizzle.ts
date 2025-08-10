@@ -195,15 +195,8 @@ export const coreUserSettings = pgTable('core_user_settings', {
   // Contact settings
   phone: text('phone'),
   address: text('address'),
-  emergencyContactName: text('emergency_contact_name'),
-  emergencyContactPhone: text('emergency_contact_phone'),
-  emergencyContactRelationship: text('emergency_contact_relationship'),
   // Appearance settings
-  theme: text('theme').default('system'), // 'light', 'dark', 'system'
-  density: text('density').default('comfortable'), // 'compact', 'comfortable', 'spacious'
-  primaryColor: text('primary_color').default('#000000'),
-  fontSize: text('font_size').default('medium'), // 'small', 'medium', 'large'
-  sidebarCollapsed: boolean('sidebar_collapsed').default(false),
+  theme: text('theme').default('light'), // 'light', 'dark'
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
@@ -216,13 +209,89 @@ export const coreUserSettingsRelations = relations(coreUserSettings, ({ one }) =
   }),
 }))
 
-// Update coreUsersRelations to include settings
+// Core RBAC tables
+export const corePermissions = pgTable('core_permissions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull().unique(),
+  resource: text('resource').notNull(),
+  action: text('action').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const coreRoles = pgTable('core_roles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  isSystem: boolean('is_system').default(false), // Cannot be deleted
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const coreRolePermissions = pgTable('core_role_permissions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  roleId: uuid('role_id')
+    .notNull()
+    .references(() => coreRoles.id, { onDelete: 'cascade' }),
+  permissionId: uuid('permission_id')
+    .notNull()
+    .references(() => corePermissions.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const coreUserRoles = pgTable('core_user_roles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => coreUsers.id, { onDelete: 'cascade' }),
+  roleId: uuid('role_id')
+    .notNull()
+    .references(() => coreRoles.id, { onDelete: 'cascade' }),
+  assignedBy: uuid('assigned_by').references(() => coreUsers.id),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// RBAC Relations
+export const corePermissionsRelations = relations(corePermissions, ({ many }) => ({
+  rolePermissions: many(coreRolePermissions),
+}))
+
+export const coreRolesRelations = relations(coreRoles, ({ many }) => ({
+  rolePermissions: many(coreRolePermissions),
+  userRoles: many(coreUserRoles),
+}))
+
+export const coreRolePermissionsRelations = relations(coreRolePermissions, ({ one }) => ({
+  role: one(coreRoles, {
+    fields: [coreRolePermissions.roleId],
+    references: [coreRoles.id],
+  }),
+  permission: one(corePermissions, {
+    fields: [coreRolePermissions.permissionId],
+    references: [corePermissions.id],
+  }),
+}))
+
+export const coreUserRolesRelations = relations(coreUserRoles, ({ one }) => ({
+  user: one(coreUsers, {
+    fields: [coreUserRoles.userId],
+    references: [coreUsers.id],
+  }),
+  role: one(coreRoles, {
+    fields: [coreUserRoles.roleId],
+    references: [coreRoles.id],
+  }),
+}))
+
+// Update coreUsersRelations to include RBAC
 export const coreUsersRelations = relations(coreUsers, ({ many, one }) => ({
   sessions: many(coreSessions),
   passwordResetTokens: many(passwordResetTokens),
   emailVerificationTokens: many(emailVerificationTokens),
   auditLogs: many(coreAuditLogs),
   settings: one(coreUserSettings),
+  userRoles: many(coreUserRoles),
 }))
 
 // Note: Zod schemas temporarily disabled due to Zod v4 + Bun compatibility issues

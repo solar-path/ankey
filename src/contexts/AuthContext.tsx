@@ -5,6 +5,7 @@ interface User {
   id: string
   email: string
   fullName: string | null
+  avatar: string | null
   isActive: boolean
   emailVerified: boolean
   twoFactorEnabled: boolean
@@ -35,10 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       const response = await client.auth.me.$get()
-      const result = await handleApiResponse(response)
-
-      if (result.success && result.data) {
-        setUser(result.data as User)
+      
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data) {
+          setUser(result.data as User)
+        } else {
+          setUser(null)
+        }
       } else {
         setUser(null)
       }
@@ -56,12 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         json: { email, password, twoFactorCode: twoFactorCode || '' },
       })
 
-      const result = await handleApiResponse(response)
-
-      if (result.success && result.data) {
-        setUser(result.data as User)
-        return { success: true }
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data) {
+          setUser(result.data as User)
+          return { success: true }
+        } else {
+          return { success: false, error: result.error || 'Login failed' }
+        }
       } else {
+        const result = await response.json()
         return { success: false, error: result.error || 'Login failed' }
       }
     } catch (error) {

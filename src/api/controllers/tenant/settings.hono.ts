@@ -61,20 +61,9 @@ export const tenantSettingsRoutes = new Hono()
         contact: {
           phone: settingsInfo?.phone || null,
           address: settingsInfo?.address || null,
-          emergencyContact: settingsInfo?.emergencyContactName
-            ? {
-                name: settingsInfo.emergencyContactName,
-                phone: settingsInfo.emergencyContactPhone || '',
-                relationship: settingsInfo.emergencyContactRelationship || '',
-              }
-            : null,
         },
         appearance: {
-          theme: settingsInfo?.theme || 'system',
-          density: settingsInfo?.density || 'comfortable',
-          primaryColor: settingsInfo?.primaryColor || '#000000',
-          fontSize: settingsInfo?.fontSize || 'medium',
-          sidebarCollapsed: settingsInfo?.sidebarCollapsed || false,
+          theme: settingsInfo?.theme || 'light',
         },
       }
 
@@ -271,7 +260,7 @@ export const tenantSettingsRoutes = new Hono()
         )
       }
 
-      const { phone, address, emergencyContact } = result.data
+      const { phone, address } = result.data
       const tenantDb = createTenantConnection(tenantDatabase)
 
       // Upsert user settings
@@ -284,9 +273,6 @@ export const tenantSettingsRoutes = new Hono()
       const updateData = {
         phone,
         address,
-        emergencyContactName: emergencyContact?.name || null,
-        emergencyContactPhone: emergencyContact?.phone || null,
-        emergencyContactRelationship: emergencyContact?.relationship || null,
         updatedAt: new Date(),
       }
 
@@ -332,7 +318,7 @@ export const tenantSettingsRoutes = new Hono()
         )
       }
 
-      const { theme, density, primaryColor, fontSize, sidebarCollapsed } = result.data
+      const { theme } = result.data
       const tenantDb = createTenantConnection(tenantDatabase)
 
       // Upsert user settings
@@ -344,10 +330,6 @@ export const tenantSettingsRoutes = new Hono()
 
       const updateData = {
         theme,
-        density,
-        primaryColor,
-        fontSize,
-        sidebarCollapsed,
         updatedAt: new Date(),
       }
 

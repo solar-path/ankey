@@ -158,6 +158,7 @@ export class AuditService {
       const method = c.req.method
       const path = c.req.path
       const userId = c.get('user')?.id
+      const userIdForLog = userId || 'anonymous'
       const sessionId = c.get('sessionId')
       const ipAddress = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown'
       const userAgent = c.req.header('user-agent') || 'unknown'
@@ -176,8 +177,14 @@ export class AuditService {
       try {
         await next()
 
-        // Log successful action
-        if (userId && c.res.status < 400) {
+        // Log successful action - Always log auth endpoints for SOC 2 compliance
+        const isCriticalEndpoint = path.includes('/auth/') || path.includes('/login') || 
+                                  path.includes('/register') || path.includes('/password')
+        const shouldLog = userId || isCriticalEndpoint || c.res.status >= 400
+        
+        if (shouldLog) {
+          console.log(`[AUDIT] ${action} ${resource} - User: ${userIdForLog} - Status: ${c.res.status} - IP: ${ipAddress}`)
+          
           const auditData: AuditLogData = {
             userId,
             action,
@@ -185,6 +192,7 @@ export class AuditService {
             ipAddress,
             userAgent,
             sessionId,
+            newValues: { status: c.res.status, endpoint: path },
           }
 
           if (tenantDatabase) {
@@ -194,7 +202,9 @@ export class AuditService {
           }
         }
       } catch (error) {
-        // Log failed action
+        // Always log failed actions for security monitoring
+        console.error(`[AUDIT] ${action}_FAILED ${resource} - User: ${userIdForLog} - IP: ${ipAddress} - Error: ${error instanceof Error ? error.message : String(error)}`)
+        
         if (userId) {
           const auditData: AuditLogData = {
             userId,

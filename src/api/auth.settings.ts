@@ -171,6 +171,29 @@ export class CoreAuthService {
   async validateSession(sessionId: string) {
     try {
       const { session, user } = await this.lucia.validateSession(sessionId)
+      
+      // If session is valid but user is missing email, fetch it manually from database
+      // This ensures we always have complete user data even if Lucia's getUserAttributes isn't working properly
+      if (session && user && !user.email && user.id) {
+        const dbUser = await this.db.query.coreUsers.findFirst({
+          where: eq(coreSchema.coreUsers.id, user.id),
+        })
+        
+        if (dbUser) {
+          // Return user with complete data from database
+          const completeUser = {
+            id: dbUser.id,
+            email: dbUser.email,
+            fullName: dbUser.fullName,
+            isActive: dbUser.isActive,
+            emailVerified: dbUser.emailVerified,
+            twoFactorEnabled: dbUser.twoFactorEnabled,
+          }
+          
+          return { session, user: completeUser }
+        }
+      }
+      
       return { session, user }
     } catch (error) {
       console.error('Session validation error:', error)

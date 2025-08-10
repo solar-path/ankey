@@ -8,6 +8,34 @@
       "when": 1754565678730,
       "tag": "0000_eager_rocket_racer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1754806990226,
+      "tag": "0001_tan_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754807120134,
+      "tag": "0002_volatile_medusa",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754807735929,
+      "tag": "0003_crazy_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754808144064,
+      "tag": "0004_brainy_silk_fever",
+      "breakpoints": true
     }
   ]
 }

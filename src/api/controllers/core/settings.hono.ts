@@ -52,20 +52,9 @@ export const coreSettingsRoutes = new Hono()
         contact: {
           phone: settingsInfo?.phone || null,
           address: settingsInfo?.address || null,
-          emergencyContact: settingsInfo?.emergencyContactName
-            ? {
-                name: settingsInfo.emergencyContactName,
-                phone: settingsInfo.emergencyContactPhone || '',
-                relationship: settingsInfo.emergencyContactRelationship || '',
-              }
-            : null,
         },
         appearance: {
-          theme: settingsInfo?.theme || 'system',
-          density: settingsInfo?.density || 'comfortable',
-          primaryColor: settingsInfo?.primaryColor || '#000000',
-          fontSize: settingsInfo?.fontSize || 'medium',
-          sidebarCollapsed: settingsInfo?.sidebarCollapsed || false,
+          theme: settingsInfo?.theme || 'light',
         },
       }
 
@@ -99,7 +88,7 @@ export const coreSettingsRoutes = new Hono()
       const profileData = {
         fullName: userRecord.fullName,
         email: userRecord.email,
-        avatar: userRecord.avatar || '',
+        avatar: userRecord.avatar ? `/uploads/${userRecord.avatar}` : '',
       }
 
       return c.json({ success: true, data: profileData })
@@ -224,7 +213,7 @@ export const coreSettingsRoutes = new Hono()
         )
       }
 
-      const { phone, address, emergencyContact } = result.data
+      const { phone, address } = result.data
 
       // Upsert user settings
       const existingSettings = await coreDb
@@ -236,9 +225,6 @@ export const coreSettingsRoutes = new Hono()
       const updateData = {
         phone,
         address,
-        emergencyContactName: emergencyContact?.name || null,
-        emergencyContactPhone: emergencyContact?.phone || null,
-        emergencyContactRelationship: emergencyContact?.relationship || null,
         updatedAt: new Date(),
       }
 
@@ -282,7 +268,7 @@ export const coreSettingsRoutes = new Hono()
         )
       }
 
-      const { theme, density, primaryColor, fontSize, sidebarCollapsed } = result.data
+      const { theme } = result.data
 
       // Upsert user settings
       const existingSettings = await coreDb
@@ -293,10 +279,6 @@ export const coreSettingsRoutes = new Hono()
 
       const updateData = {
         theme,
-        density,
-        primaryColor,
-        fontSize,
-        sidebarCollapsed,
         updatedAt: new Date(),
       }
 
@@ -327,20 +309,29 @@ export const coreSettingsRoutes = new Hono()
       const userId = user.id
 
       const body = await c.req.json()
+      console.log('Password change request body:', { ...body, currentPassword: '[HIDDEN]', newPassword: '[HIDDEN]', confirmPassword: '[HIDDEN]' })
+      
       const result = passwordChangeSchema.safeParse(body)
 
       if (!result.success) {
+        console.error('Password change validation failed:', result.error.issues)
         return c.json(
           {
             success: false,
             error: 'Validation failed',
             details: result.error.flatten().fieldErrors,
+            issues: result.error.issues,
           },
           400
         )
       }
 
-      const { currentPassword, newPassword } = result.data
+      const { currentPassword, newPassword, confirmPassword } = result.data
+      
+      // Double-check password confirmation (frontend should already validate this)
+      if (newPassword !== confirmPassword) {
+        return c.json({ success: false, error: 'Password confirmation does not match' }, 400)
+      }
 
       // Get current user record
       const userRecord = await coreDb

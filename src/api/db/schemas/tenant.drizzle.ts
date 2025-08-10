@@ -252,15 +252,8 @@ export const userSettings = pgTable('user_settings', {
   // Contact settings
   phone: text('phone'),
   address: text('address'),
-  emergencyContactName: text('emergency_contact_name'),
-  emergencyContactPhone: text('emergency_contact_phone'),
-  emergencyContactRelationship: text('emergency_contact_relationship'),
   // Appearance settings
-  theme: text('theme').default('system'), // 'light', 'dark', 'system'
-  density: text('density').default('comfortable'), // 'compact', 'comfortable', 'spacious'
-  primaryColor: text('primary_color').default('#000000'),
-  fontSize: text('font_size').default('medium'), // 'small', 'medium', 'large'
-  sidebarCollapsed: boolean('sidebar_collapsed').default(false),
+  theme: text('theme').default('light'), // 'light', 'dark'
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

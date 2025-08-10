@@ -2,7 +2,7 @@
 
 import { Bell, LogOut, MoreVertical, Settings } from 'lucide-react'
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,7 @@ import { useEffect } from 'react'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { user, logout } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -41,8 +41,40 @@ export function NavUser() {
     return () => window.removeEventListener('auth:logout', handleAuthLogout)
   }, [navigate])
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg">
+            <div className="h-8 w-8 rounded-lg bg-gray-200 animate-pulse" />
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="h-4 bg-gray-200 rounded animate-pulse" />
+              <div className="h-3 bg-gray-200 rounded animate-pulse mt-1" />
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
+
+  // Show sign-in prompt if no user
   if (!user) {
-    return null
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" onClick={() => navigate({ to: '/' })}>
+            <div className="h-8 w-8 rounded-lg bg-gray-300 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600">?</span>
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium text-gray-600">Not signed in</span>
+              <span className="text-muted-foreground truncate text-xs">Click to sign in</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
   }
 
   const userInitials = user.fullName
@@ -66,6 +98,12 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
+                {user.avatar && (
+                  <AvatarImage 
+                    src={`/uploads/${user.avatar}`} 
+                    alt={user.fullName || user.email || 'User avatar'} 
+                  />
+                )}
                 <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                   {userInitials}
                 </AvatarFallback>

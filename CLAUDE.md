@@ -109,9 +109,21 @@ UI components follow the shadcn/ui pattern:
 ### Styling System
 
 - Uses Tailwind CSS v4 with the new Vite plugin
+- **MANDATORY: Light/Dark Theme Support** - All Tailwind classes MUST include both light and dark variants
 - CSS variables for theming with dark mode support
 - Focus ring and accessibility styles built into components
 - Comprehensive variant system for consistent design
+
+#### Theme Requirements
+- **ALWAYS use theme-aware classes**: `bg-white dark:bg-gray-800`, `text-gray-900 dark:text-gray-100`
+- **NEVER use single-theme classes**: Avoid `bg-white` or `bg-gray-800` without theme variants
+- **Required theme patterns**:
+  - Backgrounds: `bg-white dark:bg-gray-800` for main containers
+  - Text: `text-gray-900 dark:text-gray-100` for primary text
+  - Muted text: `text-muted-foreground` (uses CSS variables)
+  - Borders: `border-gray-200 dark:border-gray-700`
+  - Cards/Forms: `bg-white dark:bg-gray-800 shadow-sm`
+- **Theme switching**: Users can toggle between light/dark themes via appearance settings
 
 ### Router Configuration
 
@@ -406,3 +418,104 @@ Based on project evolution and established patterns, follow these strict rules w
 - **Context Passing**: Use Hono's context to pass user/tenant information between middleware and routes
 
 These rules have been established through iterative development and should be followed strictly to maintain code quality, security, and consistency throughout the project.
+
+## SOC 2 Compliance Requirements
+
+This application undergoes SOC 2 verification as a cloud SaaS platform helping companies build security perimeters. All development must adhere to these mandatory compliance requirements:
+
+### Mandatory Audit Logging
+
+**NEVER make audit logging optional** - it is required for SOC 2 Type II compliance and must be implemented as follows:
+
+#### Automatic Audit Middleware
+- **ALL API endpoints MUST be audited** except health checks and public documentation
+- Audit middleware is automatically applied to `/api/*` routes via `AuditService.createAuditMiddleware()`
+- **Excluded endpoints**: `/api/health`, `/api/ping`, `/api/docs`, `/api/openapi`
+- **Critical security endpoints** (auth, login, register, password) are ALWAYS logged regardless of authentication status
+
+#### Required Audit Data Points
+- **User ID**: Real user ID for authenticated requests, `null` for anonymous users
+- **Action**: HTTP method mapped to business operations (CREATE, read, UPDATE, DELETE)
+- **Resource**: API endpoint resource being accessed
+- **IP Address**: Client IP for forensic analysis
+- **User Agent**: Browser/client identification
+- **Timestamp**: Automatic via `createdAt` field
+- **Status Code**: HTTP response status for success/failure tracking
+- **Error Details**: Complete error information for failed operations
+
+#### Database Storage
+- **Core Operations**: Logged to `core_audit_logs` table in core database
+- **Tenant Operations**: Logged to `audit_logs` table in respective tenant database
+- **Multi-tenant Aware**: Middleware automatically routes to correct database based on context
+- **Retention**: Minimum 90 days for SOC 2 compliance (recommended 7 years)
+
+#### Console Logging
+Real-time audit trail visible in server logs:
+```
+[AUDIT] CREATE login - User: anonymous - Status: 401 - IP: 192.168.1.100
+[AUDIT] UPDATE profile - User: user-uuid - Status: 200 - IP: 192.168.1.100
+```
+
+### Security Control Implementation
+
+#### Authentication & Authorization
+- **Mandatory middleware** for all protected endpoints
+- **Session-based authentication** with secure cookie management
+- **Role-Based Access Control (RBAC)** via `rbac.settings.ts`
+- **Multi-factor authentication support** for privileged accounts
+- **Failed login attempt tracking** for brute force detection
+
+#### Data Protection
+- **Soft delete implementation** via `AuditService.safeDelete()` - never hard delete records
+- **Change tracking** for sensitive data modifications
+- **Encryption at rest** for sensitive fields (passwords, tokens)
+- **HTTPS enforcement** in production environments
+
+#### Delegation of Authority (DOA)
+- **Approval workflows** managed via `doa.settings.ts`
+- **Audit trail for approvals** with user, timestamp, and decision reasoning
+- **Escalation paths** for high-value transactions
+- **Separation of duties** for critical operations
+
+### Compliance Monitoring
+
+#### Audit Log Analysis
+- **Real-time monitoring** via console logs during development
+- **Failed action alerts** for security incident response
+- **Compliance reporting** via `AuditService.generateComplianceReport()`
+- **User activity summaries** for access reviews
+
+#### Data Integrity
+- **Immutable audit logs** - never modify historical records
+- **Checksums/signatures** for audit log integrity verification
+- **Regular backup verification** of audit data
+- **Disaster recovery procedures** for audit trail preservation
+
+### Development Guidelines for SOC 2
+
+#### Code Changes
+- **NEVER bypass audit logging** - all changes to authentication, authorization, or data access must maintain audit trail
+- **Security-first mindset** - consider compliance implications of every feature
+- **Documentation requirements** - maintain security control documentation for auditors
+
+#### Testing Requirements
+- **Audit logging tests** must verify all critical endpoints generate appropriate logs
+- **Security regression testing** for authentication and authorization changes
+- **Penetration testing preparation** - code must withstand security assessments
+
+#### Incident Response
+- **Audit log preservation** during security incidents
+- **Forensic analysis support** via comprehensive logging
+- **Change management** - all security-related changes must be documented and approved
+
+### Implementation Status
+
+✅ **Mandatory audit middleware implemented** and operational
+✅ **Database schema supports** both core and tenant audit logging  
+✅ **Critical endpoint logging** for all authentication attempts
+✅ **Anonymous user tracking** for failed login monitoring
+✅ **Multi-tenant aware** audit routing
+✅ **Console logging** for real-time monitoring
+✅ **Soft delete functionality** with automatic audit trails
+
+**Warning**: Disabling or bypassing audit logging will result in SOC 2 compliance failures and potential security incidents. The audit system is not optional and must remain operational at all times.

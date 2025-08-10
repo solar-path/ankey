@@ -162,9 +162,9 @@ export function RegisterWorkspaceForm({
             )}
           />
 
-          <div className="bg-blue-50 p-4 rounded-md">
-            <h4 className="font-medium text-blue-900 mb-2">What you'll get:</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
+          <div className="bg-blue-50 p-4 rounded-md dark:bg-blue-900/20 dark:border-blue-700">
+            <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">What you'll get:</h4>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
               <li>• Your own dedicated workspace</li>
               <li>• User management and role-based access control</li>
               <li>• Audit logging for compliance</li>

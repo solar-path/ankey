@@ -12,9 +12,11 @@ export function useSettingsContext() {
 
   // Return the appropriate settings client based on the cleaned up RPC structure
   const settingsClient = isTenantContext ? client['tenant-settings'] : client.settings
+  const uploadClient = client.upload // Upload is always on core for now
 
   return {
     isTenantContext,
     settingsClient,
+    uploadClient,
   }
 }

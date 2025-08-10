@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { client } from '@/lib/rpc'
 import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,29 +38,42 @@ function PasswordSettings() {
   const onSubmit = async (data: PasswordChange) => {
     try {
       setIsLoading(true)
+      console.log('Submitting password change data:', { 
+        currentPassword: '[HIDDEN]', 
+        newPassword: '[HIDDEN]',
+        confirmPassword: '[HIDDEN]',
+        passwordsMatch: data.newPassword === data.confirmPassword
+      })
 
-      // TODO: Replace with actual API call to /api/core/settings/password or /api/tenant/settings/password
-      const response = await fetch('/api/core/settings/password', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Use Hono RPC client as required by CLAUDE.md
+      const response = await client.settings.password.$patch({ 
+        json: {
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
-        }),
+          confirmPassword: data.confirmPassword,
+        }
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to change password')
+        console.error('Password change API error:', errorData)
+        throw new Error(errorData.error || errorData.message || 'Failed to change password')
       }
 
       toast.success('Password changed successfully')
       form.reset()
     } catch (error: any) {
       console.error('Change password error:', error)
-      toast.error(error.message || 'Failed to change password')
+      
+      // Extract meaningful error message
+      let errorMessage = 'Failed to change password'
+      if (error.message) {
+        errorMessage = error.message
+      } else if (typeof error === 'object' && error.error) {
+        errorMessage = error.error
+      }
+      
+      toast.error(errorMessage)
 
       // Focus appropriate field based on error
       if (error.message?.includes('current password')) {

@@ -4,16 +4,20 @@ import { coreExportRoutes } from '@/api/controllers/core/export.hono'
 import { coreImportRoutes } from '@/api/controllers/core/import.hono'
 import { inquiryRoutes } from '@/api/controllers/core/inquiry.hono'
 import { pricingRouter } from '@/api/controllers/core/pricing.hono'
+import { coreRBACRoutes } from '@/api/controllers/core/rbac.hono'
 import { coreSettingsRoutes } from '@/api/controllers/core/settings.hono'
 import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
+import { coreUploadRoutes } from '@/api/controllers/core/upload.hono'
 import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
 import { productRoutes } from '@/api/controllers/tenant/product.hono'
 import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
 import { tenantSettingsRoutes } from '@/api/controllers/tenant/settings.hono'
+import { optionalCoreAuth, optionalTenantAuth } from '@/api/middleware/auth.middleware'
 import { TenantService } from '@/api/tenant.settings'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { serveStatic } from 'hono/bun'
 
 const app = new Hono()
 
@@ -100,13 +104,47 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// Add audit middleware
-app.use('/api/*', (c, next) => {
+// Add authentication middleware to populate user context for audit logging
+app.use('/api/*', async (c, next) => {
+  const isTenant = c.get('isTenant')
+  
+  // Apply appropriate authentication middleware based on context
+  if (isTenant) {
+    return optionalTenantAuth(c, next)
+  } else {
+    return optionalCoreAuth(c, next)
+  }
+})
+
+// Add mandatory audit middleware for SOC 2 compliance
+// Exclude health checks and public endpoints
+app.use('/api/*', async (c, next) => {
+  const url = new URL(c.req.url)
+  
+  // Skip audit logging for health checks, public endpoints, and static assets
+  const excludedPaths = [
+    '/api/health',
+    '/api/ping',
+    '/api/docs',
+    '/api/openapi'
+  ]
+  
+  const shouldSkipAudit = excludedPaths.some(path => url.pathname.startsWith(path))
+  
+  if (shouldSkipAudit) {
+    await next()
+    return
+  }
+
+  // Apply audit middleware for all other API endpoints
   const isTenant = c.get('isTenant')
   const tenantDatabase = c.get('tenantDatabase')
 
   return AuditService.createAuditMiddleware(isTenant ? tenantDatabase : undefined)(c, next)
 })
+
+// Static file serving for uploads
+app.use('/uploads/*', serveStatic({ root: './public' }))
 
 // API Routes following BetterNews pattern exactly
 const routes = app
@@ -114,12 +152,14 @@ const routes = app
   .route('/auth', coreAuthRoutes)
   .route('/tenants', coreTenantsRoutes)
   .route('/settings', coreSettingsRoutes)
+  .route('/rbac', coreRBACRoutes)
+  .route('/upload', coreUploadRoutes)
   .route('/export', coreExportRoutes)
   .route('/import', coreImportRoutes)
   .route('/inquiry', inquiryRoutes)
   .route('/pricing', pricingRouter)
   .route('/tenant-auth', tenantAuthRoutes)
-  .route('/rbac', tenantRBACRoutes)
+  .route('/tenant-rbac', tenantRBACRoutes)
   .route('/tenant-settings', tenantSettingsRoutes)
   .route('/products', productRoutes)
 

@@ -29,9 +29,10 @@ function ProfileSettings() {
   const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { user } = useAuth()
-  const { settingsClient } = useSettingsContext()
+  const { user, refreshUser } = useAuth()
+  const { settingsClient, uploadClient } = useSettingsContext()
 
   const form = useForm<ProfileSettings>({
     resolver: zodResolver(profileSettingsSchema),
@@ -103,17 +104,54 @@ function ProfileSettings() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file size (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('File size too large. Maximum size is 2MB')
+        return
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Invalid file type. Please select a JPEG, PNG, GIF, or WebP image')
+        return
+      }
+
       const objectUrl = URL.createObjectURL(file)
       setPreview(objectUrl)
-      form.setValue('avatar', objectUrl)
+      setSelectedFile(file)
+      form.setValue('avatar', 'pending') // Mark as pending upload
     }
   }
 
-  const removeAvatar = () => {
-    form.setValue('avatar', '')
-    setPreview(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+  const removeAvatar = async () => {
+    try {
+      setIsLoading(true)
+      
+      // Delete avatar via upload endpoint if user has one
+      if (user?.avatar) {
+        const response = await uploadClient.avatar.$delete()
+        const result = await handleApiResponse(response)
+        
+        if (result.success) {
+          toast.success('Avatar removed successfully')
+          await refreshUser() // Refresh user data in auth context
+        } else {
+          throw new Error(result.error || 'Failed to remove avatar')
+        }
+      }
+      
+      form.setValue('avatar', '')
+      setPreview(null)
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('Remove avatar error:', error)
+      toast.error('Failed to remove avatar')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -125,18 +163,48 @@ function ProfileSettings() {
     try {
       setIsLoading(true)
 
-      // Exclude email from submission as it's read-only
-      const { email, ...updateData } = data
+      let avatarPath = data.avatar
 
-      // Use context-aware RPC client
+      // Upload avatar if there's a selected file
+      if (selectedFile) {
+        const formData = new FormData()
+        formData.append('avatar', selectedFile)
+
+        const uploadResponse = await uploadClient.avatar.$post({
+          form: formData,
+        })
+        const uploadResult = await handleApiResponse(uploadResponse)
+
+        if (uploadResult.success && uploadResult.data) {
+          const uploadData = uploadResult.data as { filePath: string; url: string }
+          avatarPath = uploadData.filePath
+          toast.success('Avatar uploaded successfully')
+        } else {
+          throw new Error(uploadResult.error || 'Failed to upload avatar')
+        }
+      }
+
+      // Update profile with new data
+      const { email, ...updateData } = data
       const response = await settingsClient.profile.$patch({
-        json: updateData as ProfileSettings, // Cast is safe since email is optional in schema
+        json: {
+          ...updateData,
+          avatar: avatarPath === 'pending' ? '' : avatarPath, // Clear pending state
+        } as ProfileSettings,
       })
       const result = await handleApiResponse(response)
 
       if (result.success) {
         toast.success('Profile updated successfully')
-        // Refresh user data in auth context if needed
+        
+        // Clear selected file and update preview with actual URL
+        setSelectedFile(null)
+        if (avatarPath && avatarPath !== 'pending') {
+          setPreview(`/uploads/${avatarPath}`)
+        }
+        
+        // Refresh user data in auth context
+        await refreshUser()
       } else {
         throw new Error(result.error || 'Failed to update profile')
       }

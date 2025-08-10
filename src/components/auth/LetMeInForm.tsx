@@ -57,9 +57,9 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+      <div className="bg-amber-50 border border-amber-200 rounded-md p-4 dark:bg-amber-900/20 dark:border-amber-700">
         <div className="flex items-start">
-          <div className="text-amber-600 mr-3">
+          <div className="text-amber-600 dark:text-amber-400 mr-3">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -69,8 +69,8 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-amber-800">Access Request Process</h3>
-            <div className="text-sm text-amber-700 mt-1">
+            <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">Access Request Process</h3>
+            <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
               Your request will be sent to workspace administrators for approval. You'll receive an
               email once your request is reviewed.
             </div>
@@ -129,9 +129,9 @@ export function LetMeInForm({ onSubmit, isLoading = false }: LetMeInFormProps) {
             )}
           />
 
-          <div className="bg-gray-50 p-4 rounded-md">
-            <h4 className="font-medium text-gray-900 mb-2">What happens next?</h4>
-            <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+          <div className="bg-gray-50 p-4 rounded-md dark:bg-gray-800">
+            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">What happens next?</h4>
+            <ol className="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-decimal list-inside">
               <li>Your request is sent to workspace administrators</li>
               <li>Administrators review your request and reason</li>
               <li>You'll receive an email with the decision</li>

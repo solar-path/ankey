@@ -295,12 +295,12 @@ function Dashboard() {
   return (
     <div className="flex-1 overflow-hidden">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-gray-900 shadow">
         <div className="px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Core Dashboard</h1>
-              <p className="text-gray-600">Overview of your multi-tenant platform</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Core Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-300">Overview of your multi-tenant platform</p>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={() => setShowImport(!showImport)}>
@@ -335,16 +335,16 @@ function Dashboard() {
       <div className="p-6">
         {/* Import Section */}
         {showImport && (
-          <div className="bg-white rounded-lg shadow mb-6 p-6">
-            <h2 className="text-xl font-semibold mb-4">Import User Data</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-6 p-6">
+            <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">Import User Data</h2>
             <FileUpload
               onImportComplete={handleImportComplete}
               columns={importColumns}
               className="mb-4"
             />
             {importResult && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-medium mb-2">Import Summary:</h3>
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <h3 className="font-medium mb-2 dark:text-gray-100">Import Summary:</h3>
                 <p>Total rows: {importResult.summary.totalRows}</p>
                 <p>Valid rows: {importResult.summary.validRows}</p>
                 <p>Errors: {importResult.summary.errorRows}</p>
@@ -358,23 +358,23 @@ function Dashboard() {
           {isLoading
             ? // Loading placeholders
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-6 animate-pulse">
+                <div key={index} className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 animate-pulse">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                      <div className="h-8 bg-gray-200 rounded w-16 mb-1"></div>
-                      <div className="h-4 bg-gray-200 rounded w-12"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
+                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-1"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
                     </div>
-                    <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                    <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
                   </div>
                 </div>
               ))
             : stats.map((stat, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-6">
+                <div key={index} className="bg-white dark:bg-gray-900 rounded-lg shadow p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.title}</p>
+                      <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
                       <div className="flex items-center mt-1">
                         {stat.trend === 'up' ? (
                           <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
@@ -383,7 +383,7 @@ function Dashboard() {
                         )}
                         <span
                           className={`text-sm font-medium ${
-                            stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                            stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                           }`}
                         >
                           {stat.change}
@@ -401,24 +401,24 @@ function Dashboard() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Tenants */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Recent Tenants</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold dark:text-gray-100">Recent Tenants</h2>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 {isLoading ? (
                   // Loading placeholders
                   Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-lg animate-pulse">
+                    <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg animate-pulse">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="h-5 bg-gray-200 rounded w-32 mb-1"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-1"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
                         </div>
                         <div className="text-right">
-                          <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
-                          <div className="h-6 bg-gray-200 rounded w-12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-1"></div>
+                          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
                         </div>
                       </div>
                     </div>
@@ -427,19 +427,19 @@ function Dashboard() {
                   recentTenants.map((tenant, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
                     >
                       <div>
-                        <h3 className="font-medium">{tenant.name}</h3>
-                        <p className="text-sm text-gray-600">{tenant.subdomain}</p>
+                        <h3 className="font-medium dark:text-gray-100">{tenant.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{tenant.subdomain}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{tenant.userCount} users</p>
+                        <p className="font-medium dark:text-gray-100">{tenant.userCount} users</p>
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             tenant.status === 'Active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                           }`}
                         >
                           {tenant.status}
@@ -448,7 +448,7 @@ function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <Building className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No recent tenants found</p>
                   </div>
@@ -458,9 +458,9 @@ function Dashboard() {
           </div>
 
           {/* System Status */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">System Status</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold dark:text-gray-100">System Status</h2>
             </div>
             <div className="p-6">
               <div className="space-y-4">
@@ -478,13 +478,13 @@ function Dashboard() {
                           item.status === 'Operational' ? 'bg-green-500' : 'bg-yellow-500'
                         }`}
                       />
-                      <span className="font-medium">{item.component}</span>
+                      <span className="font-medium dark:text-gray-100">{item.component}</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium">{item.uptime}</p>
+                      <p className="text-sm font-medium dark:text-gray-100">{item.uptime}</p>
                       <p
                         className={`text-xs ${
-                          item.status === 'Operational' ? 'text-green-600' : 'text-yellow-600'
+                          item.status === 'Operational' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
                         }`}
                       >
                         {item.status}
@@ -497,9 +497,9 @@ function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Quick Actions</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold dark:text-gray-100">Quick Actions</h2>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-2 gap-4">
@@ -524,9 +524,9 @@ function Dashboard() {
           </div>
 
           {/* Activity Log */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Recent Activity</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold dark:text-gray-100">Recent Activity</h2>
             </div>
             <div className="p-6">
               <div className="space-y-3">
@@ -535,24 +535,24 @@ function Dashboard() {
                   Array.from({ length: 4 }).map((_, index) => (
                     <div key={index} className="flex justify-between items-center animate-pulse">
                       <div>
-                        <div className="h-4 bg-gray-200 rounded w-40 mb-1"></div>
-                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-1"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
                       </div>
-                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
                     </div>
                   ))
                 ) : systemActivity.length > 0 ? (
                   systemActivity.map((activity, index) => (
                     <div key={index} className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium text-sm">{activity.action}</p>
-                        <p className="text-xs text-gray-600">{activity.details}</p>
+                        <p className="font-medium text-sm dark:text-gray-100">{activity.action}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details}</p>
                       </div>
-                      <span className="text-xs text-gray-500">{activity.timeAgo}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{activity.timeAgo}</span>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No recent activity found</p>
                   </div>

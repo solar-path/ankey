@@ -180,13 +180,6 @@ export const personalSettingsSchema = z.object({
 export const contactSettingsSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
-  emergencyContact: z
-    .object({
-      name: z.string(),
-      phone: z.string(),
-      relationship: z.string(),
-    })
-    .optional(),
 })
 
 export const passwordChangeSchema = z
@@ -207,11 +200,7 @@ export const passwordChangeSchema = z
   })
 
 export const appearanceSettingsSchema = z.object({
-  theme: z.enum(['light', 'dark', 'system']).default('system'),
-  density: z.enum(['compact', 'comfortable', 'spacious']).default('comfortable'),
-  primaryColor: z.string().default('#000000'),
-  fontSize: z.enum(['small', 'medium', 'large']).default('medium'),
-  sidebarCollapsed: z.boolean().default(false),
+  theme: z.enum(['light', 'dark']).default('light'),
 })
 
 // Settings types
