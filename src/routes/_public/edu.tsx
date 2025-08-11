@@ -1,19 +1,19 @@
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createFileRoute } from '@tanstack/react-router'
-import { 
-  Search, 
-  BookOpen, 
-  Star, 
-  Users, 
-  Clock, 
-  Award, 
-  PlayCircle, 
+import {
+  Award,
+  BookOpen,
+  Clock,
   Download,
+  Globe,
+  PlayCircle,
+  Search,
+  Star,
   TrendingUp,
-  Globe
+  Users
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_public/edu')({
@@ -98,10 +98,10 @@ function EducationPage() {
             Learn New Skills Online
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Master in-demand skills with expert-led courses. Join millions of learners 
+            Master in-demand skills with expert-led courses. Join millions of learners
             and advance your career with hands-on projects and certificates.
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
@@ -162,7 +162,7 @@ function EducationPage() {
               View All Courses
             </Button>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredCourses.map((course) => (
               <Card key={course.id} className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all group">
@@ -180,7 +180,7 @@ function EducationPage() {
                 <CardContent>
                   <CardTitle className="text-lg mb-2 line-clamp-2">{course.title}</CardTitle>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">by {course.instructor}</p>
-                  
+
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
