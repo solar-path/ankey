@@ -36,7 +36,7 @@ const data = {
       icon: LayoutDashboard,
     },
     {
-      title: 'Pricing Admin',
+      title: 'Price Plans',
       url: '/pricing-admin',
       icon: DollarSign,
     },
@@ -93,10 +93,7 @@ export function CoreSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link to="/dashboard">
-                <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">A</span>
-                </div>
-                <span className="text-base font-semibold">Ankey Admin</span>
+                <span className="text-base font-semibold">Solo</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

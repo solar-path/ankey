@@ -1,9 +1,8 @@
 'use client'
 
 import { Link, useLocation } from '@tanstack/react-router'
-import { Mail, PlusCircle, type LucideIcon } from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -25,7 +24,7 @@ export function NavMain({
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
+        {/* <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
@@ -43,7 +42,7 @@ export function NavMain({
               <span className="sr-only">Inbox</span>
             </Button>
           </SidebarMenuItem>
-        </SidebarMenu>
+        </SidebarMenu> */}
         <SidebarMenu>
           {items.map(item => {
             const isActive = location.pathname === item.url
