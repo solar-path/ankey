@@ -1,7 +1,7 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { CoreSidebar } from '@/components/QSideBar/QSidebar'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -58,7 +58,11 @@ function CoreLayout() {
     <SidebarProvider>
       <CoreSidebar />
       <SidebarInset>
-        <Outlet />
+       <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+            <Outlet />
+          </div>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

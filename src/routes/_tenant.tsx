@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { TenantSidebar } from '@/components/QSideBar/TenantSidebar'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -51,7 +52,7 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 function TenantLayout() {
   return (
     <SidebarProvider>
-      {/* TODO: Create TenantSidebar component */}
+      <TenantSidebar />
       <SidebarInset>
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
