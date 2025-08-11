@@ -1,9 +1,9 @@
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { createFileRoute } from '@tanstack/react-router'
-import { Plus, Search, Copy, Calendar, Percent, Tag } from 'lucide-react'
+import { Calendar, Copy, Percent, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_core/pricing/discounts')({
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_core/pricing/discounts')({
 
 function PricingDiscounts() {
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   // Sample data - replace with actual API calls
   const discounts = [
     {

@@ -66,7 +66,7 @@ function PricingLayout() {
 
       <div className="flex h-full flex-1">
         {/* Pricing Navigation */}
-        <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-6">
+        <div className="w-64 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-6">
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-gray-600 dark:text-gray-400" />
