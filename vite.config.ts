@@ -31,7 +31,15 @@ export default defineConfig({
     proxy: {
       '^/api/.*': {
         target: 'http://localhost:3001',
-        changeOrigin: true,
+        changeOrigin: false, // Preserve original host header for tenant detection
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // Preserve original host header for subdomain detection
+            if (req.headers.host) {
+              proxyReq.setHeader('host', req.headers.host)
+            }
+          })
+        },
       },
     },
   },

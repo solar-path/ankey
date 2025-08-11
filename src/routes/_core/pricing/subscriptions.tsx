@@ -33,6 +33,8 @@ export const Route = createFileRoute('/_core/pricing/subscriptions')({
 interface Subscription {
   id: string
   tenantId: string
+  tenantName: string | null
+  tenantSubdomain: string | null
   planId: string
   planName: string | null
   status: string
@@ -75,7 +77,8 @@ function PricingSubscriptions() {
 
   const filteredSubscriptions = subscriptions.filter(
     subscription =>
-      subscription.tenantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subscription.tenantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subscription.tenantSubdomain?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       subscription.planName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       subscription.status.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -258,9 +261,9 @@ function PricingSubscriptions() {
                   <TableRow key={subscription.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{subscription.tenantId}</p>
+                        <p className="font-medium">{subscription.tenantName || 'Unknown Tenant'}</p>
                         <p className="text-sm text-muted-foreground">
-                          Created {new Date(subscription.createdAt).toLocaleDateString()}
+                          {subscription.tenantSubdomain ? `${subscription.tenantSubdomain}.ankey.app` : 'No subdomain'} • Created {new Date(subscription.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </TableCell>
@@ -276,16 +279,31 @@ function PricingSubscriptions() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {subscription.nextBillingDate
-                        ? new Date(subscription.nextBillingDate).toLocaleDateString()
-                        : subscription.trialEndsAt
-                          ? `Trial ends ${new Date(subscription.trialEndsAt).toLocaleDateString()}`
+                      {subscription.status === 'trial' && subscription.trialEndsAt
+                        ? (
+                          <div>
+                            <p className="text-sm">Trial ends</p>
+                            <p className="font-medium">{new Date(subscription.trialEndsAt).toLocaleDateString()}</p>
+                          </div>
+                        )
+                        : subscription.nextBillingDate
+                          ? (
+                            <div>
+                              <p className="text-sm">Next billing</p>
+                              <p className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+                            </div>
+                          )
                           : '-'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

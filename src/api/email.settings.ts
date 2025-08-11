@@ -14,15 +14,21 @@ export class EmailService {
   private transporter: Transporter
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    const config: any = {
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: Number(process.env.SMTP_PORT) === 465,
-      auth: {
+    }
+
+    // Only add auth if credentials are provided (for local Mailpit, no auth needed)
+    if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+      config.auth = {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
-      },
-    })
+      }
+    }
+
+    this.transporter = nodemailer.createTransport(config)
   }
 
   private async sendEmail(

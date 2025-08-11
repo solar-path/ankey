@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
-import { pricingDiscounts, pricingPlans, tenantSubscriptions } from '../../db/schemas/core.drizzle'
+import { pricingDiscounts, pricingPlans, tenantSubscriptions, tenants } from '../../db/schemas/core.drizzle'
 import { requireCoreAuth, optionalCoreAuth } from '@/api/middleware'
 
 // Define schemas based on database structure
@@ -278,6 +278,8 @@ export const pricingRouter = new Hono()
         .select({
           id: tenantSubscriptions.id,
           tenantId: tenantSubscriptions.tenantId,
+          tenantName: tenants.name,
+          tenantSubdomain: tenants.subdomain,
           planId: tenantSubscriptions.planId,
           status: tenantSubscriptions.status,
           userCount: tenantSubscriptions.userCount,
@@ -291,6 +293,7 @@ export const pricingRouter = new Hono()
         })
         .from(tenantSubscriptions)
         .leftJoin(pricingPlans, eq(tenantSubscriptions.planId, pricingPlans.id))
+        .leftJoin(tenants, eq(tenantSubscriptions.tenantId, tenants.id))
         .orderBy(desc(tenantSubscriptions.createdAt))
 
       return c.json({ subscriptions })

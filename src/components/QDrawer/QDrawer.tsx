@@ -24,9 +24,9 @@ export function QDrawer() {
   return (
     <Sheet
       open={state.isOpen}
-      onOpenChange={(open: boolean) => {
-        console.log('Drawer open state changed:', open)
-        if (!open) closeDrawer()
+      onOpenChange={() => {
+        // Prevent closing on outside click - drawer is persistent
+        // Only close via explicit closeDrawer() calls
       }}
     >
       <SheetContent side="right" className="w-full max-w-sm">

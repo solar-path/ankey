@@ -65,10 +65,10 @@ export function RegisterWorkspaceForm({
 
         const workspaceData = result.data as any
         const workspaceUrl = workspaceData?.workspaceUrl || 
-          `http://${workspaceData?.tenant?.subdomain}.localhost:3000`
+          `http://${data.workspace.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}.localhost:3000`
 
         // Show success with workspace URL
-        toast.success('Workspace created successfully!', {
+        toast.success(`${data.workspace} workspace created successfully!`, {
           description: (
             <div className="space-y-2">
               <p>Your workspace is ready!</p>
