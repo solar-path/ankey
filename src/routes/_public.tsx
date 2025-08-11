@@ -1,5 +1,4 @@
 import { LoginForm } from '@/components/auth/LoginForm'
-import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
 import InquiryForm from '@/components/inquiry/inquiryForm'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
@@ -29,13 +28,8 @@ function PublicLayout() {
             Pricing
           </Link>
 
-          {/* TODO: Add authentication state management */}
-          <>
-            <Button variant="ghost" onClick={() => openDrawer(<RegisterWorkspaceForm />)}>
-              Sign Up
-            </Button>
+
             <Button onClick={() => openDrawer(<LoginForm />)}>Sign In</Button>
-          </>
         </div>
       </div>
 

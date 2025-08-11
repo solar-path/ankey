@@ -63,16 +63,29 @@ export function RegisterWorkspaceForm({
           throw new Error(result.error || 'Failed to set up workspace. Please try again.')
         }
 
-        // Show success toast
+        const workspaceData = result.data as any
+        const workspaceUrl = workspaceData?.workspaceUrl || 
+          `http://${workspaceData?.tenant?.subdomain}.localhost:3000`
+
+        // Show success with workspace URL
         toast.success('Workspace created successfully!', {
-          description: 'Welcome to your new workspace. You can now start managing your team.',
+          description: (
+            <div className="space-y-2">
+              <p>Your workspace is ready!</p>
+              <p className="font-semibold">
+                Access it at: <a href={workspaceUrl} className="underline">{workspaceUrl}</a>
+              </p>
+              <p className="text-sm">Check your email for login instructions.</p>
+            </div>
+          ),
+          duration: 10000, // Show for 10 seconds
         })
 
         console.log('Workspace created successfully:', result.data)
 
-        // Navigate to core dashboard after successful registration
-        navigate({ to: '/dashboard' })
-        return // Early return to avoid duplicate closeDrawer
+        // Close drawer after success - don't redirect
+        closeDrawer()
+        return
       }
       closeDrawer()
     } catch (error) {

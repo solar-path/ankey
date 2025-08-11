@@ -101,6 +101,9 @@ export class TenantService {
       // Update user count
       await this.updateUserCount(tenant[0].id)
 
+      // Create trial subscription for the new tenant
+      await this.createTrialSubscription(tenant[0].id)
+
       // Log tenant creation
       if (createdBy) {
         await AuditService.logCore({
@@ -325,6 +328,67 @@ export class TenantService {
     } catch (error) {
       console.error('Update user count error:', error)
       return { success: false, error: 'Failed to update user count' }
+    }
+  }
+
+  // Create trial subscription for new tenant
+  async createTrialSubscription(tenantId: string) {
+    try {
+      // Get the first active plan (or create a default trial plan)
+      const plans = await this.db
+        .select()
+        .from(coreSchema.pricingPlans)
+        .where(eq(coreSchema.pricingPlans.isActive, true))
+        .orderBy(coreSchema.pricingPlans.displayOrder)
+        .limit(1)
+
+      let defaultPlan = plans[0]
+      
+      // If no plans exist, create a default trial plan
+      if (!defaultPlan) {
+        const [newPlan] = await this.db
+          .insert(coreSchema.pricingPlans)
+          .values({
+            name: 'Trial Plan',
+            description: 'Free trial plan for new workspaces',
+            pricePerUserPerMonth: 0,
+            minUsers: 1,
+            maxUsers: 5,
+            features: JSON.stringify(['Core features included', 'Email support', 'Basic integrations']),
+            trialDays: 7,
+            trialMaxUsers: 5,
+            isActive: true,
+            displayOrder: 0,
+          })
+          .returning()
+        
+        defaultPlan = newPlan
+      }
+
+      // Calculate trial end date
+      const trialDays = defaultPlan.trialDays || 7
+      const trialEndsAt = new Date()
+      trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
+
+      // Create subscription record
+      await this.db
+        .insert(coreSchema.tenantSubscriptions)
+        .values({
+          tenantId,
+          planId: defaultPlan.id,
+          status: 'trial',
+          userCount: 1,
+          pricePerUser: defaultPlan.pricePerUserPerMonth,
+          totalMonthlyPrice: 0, // Free during trial
+          billingCycle: 'monthly',
+          trialEndsAt,
+          nextBillingDate: trialEndsAt, // Billing starts after trial ends
+        })
+
+      return { success: true }
+    } catch (error) {
+      console.error('Create trial subscription error:', error)
+      return { success: false, error: 'Failed to create trial subscription' }
     }
   }
 
