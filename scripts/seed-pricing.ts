@@ -1,20 +1,18 @@
-import * as dotenv from 'dotenv'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Client } from 'pg'
+#!/usr/bin/env bun
+
+import { config } from 'dotenv'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import { pricingDiscounts, pricingPlans } from '../src/api/db/schemas/core.drizzle'
 
-dotenv.config()
+config()
 
 async function main() {
-  const client = new Client({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER || 'ali',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME || 'ankey_core',
-  })
+  const connectionString = `postgresql://${process.env.DB_USER || 'ali'}:${process.env.DB_PASSWORD || 'password'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || 'ankey_core'}`
 
-  await client.connect()
+  const client = postgres(connectionString, {
+    max: 1,
+  })
 
   const db = drizzle(client)
 

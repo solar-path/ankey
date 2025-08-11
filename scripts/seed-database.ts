@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 
 import { config } from 'dotenv'
 import { eq } from 'drizzle-orm'

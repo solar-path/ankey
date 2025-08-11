@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 
 import { TenantService } from '../src/api/tenant.settings'
 

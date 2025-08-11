@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { createCoreConnection } from '../src/api/database.settings'
 import {
   coreRoles,

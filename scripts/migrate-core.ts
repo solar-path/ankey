@@ -1,22 +1,20 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
-import { Client } from 'pg'
-import * as dotenv from 'dotenv'
+#!/usr/bin/env bun
 
-dotenv.config()
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import postgres from 'postgres'
+import { config } from 'dotenv'
+
+config()
 
 async function main() {
-  const client = new Client({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER || 'ali',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME || 'ankey_core',
+  const connectionString = `postgresql://${process.env.DB_USER || 'ali'}:${process.env.DB_PASSWORD || 'password'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || 'ankey_core'}`
+
+  const migrationClient = postgres(connectionString, {
+    max: 1,
   })
 
-  await client.connect()
-
-  const db = drizzle(client)
+  const db = drizzle(migrationClient)
 
   console.log('Running core migrations...')
 
@@ -24,7 +22,7 @@ async function main() {
 
   console.log('Core migrations completed!')
 
-  await client.end()
+  await migrationClient.end()
 }
 
 main().catch(err => {
