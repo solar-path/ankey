@@ -34,6 +34,30 @@ export const coreAuthRoutes = new Hono()
 
     return c.json({ success: true })
   })
+  .get('/check-workspace/:workspace', async c => {
+    const workspace = c.req.param('workspace')
+    
+    if (!workspace) {
+      return c.json({ success: false, error: 'Workspace name required' }, 400)
+    }
+
+    // Generate slug for consistent checking
+    const slug = workspace
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    const result = await tenantService.getTenantBySubdomain(slug)
+    const isAvailable = !result.success
+    
+    return c.json({ 
+      success: true, 
+      available: isAvailable,
+      workspace: slug,
+      message: isAvailable ? 'Workspace is available' : 'Workspace name is already taken'
+    })
+  })
   .post('/register-workspace', zValidator('json', registerSchema), async c => {
     const data = c.req.valid('json')
     const result = await tenantService.createTenant(data)

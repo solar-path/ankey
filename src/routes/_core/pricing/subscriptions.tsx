@@ -22,6 +22,7 @@ import {
   Search,
   User,
   DollarSign,
+  RefreshCw,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -51,6 +52,7 @@ function PricingSubscriptions() {
   const [searchTerm, setSearchTerm] = useState('')
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     fetchSubscriptions()
@@ -72,6 +74,41 @@ function PricingSubscriptions() {
       toast.error('Failed to load subscriptions')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const syncSubscriptions = async () => {
+    try {
+      setSyncing(true)
+      const response = await client.pricing.subscriptions.sync.$post()
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Show detailed sync results
+        const parts = []
+        if (data.synced > 0) parts.push(`${data.synced} updated`)
+        if (data.created > 0) parts.push(`${data.created} created`)
+        if (data.errors > 0) parts.push(`${data.errors} errors`)
+        
+        const description = parts.length > 0 
+          ? `Subscriptions: ${parts.join(', ')}`
+          : 'All subscription data is up to date'
+        
+        toast.success('Subscription data synced successfully', {
+          description
+        })
+        
+        // Refresh the data after sync
+        await fetchSubscriptions()
+      } else {
+        toast.error('Failed to sync subscription data')
+      }
+    } catch (error) {
+      console.error('Error syncing subscriptions:', error)
+      toast.error('Failed to sync subscription data')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -224,10 +261,20 @@ function PricingSubscriptions() {
             <Filter className="h-4 w-4" />
           </Button>
         </div>
-        <Button variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={syncSubscriptions}
+            disabled={syncing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Syncing...' : 'Sync Data'}
+          </Button>
+          <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </div>
 
       {/* Subscriptions Table */}

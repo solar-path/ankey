@@ -32,6 +32,9 @@ export class TenantService {
 
   // Create new tenant workspace
   async createTenant(data: RegisterData, createdBy?: string) {
+    let tenantId: string | null = null
+    let databaseCreated = false
+    
     try {
       const slug = this.slugifyWorkspace(data.workspace)
       const databaseName = `ankey_${slug}`
@@ -59,17 +62,34 @@ export class TenantService {
       // Hash password for tenant owner
       const passwordHash = await hashPassword(data.password)
 
-      // Create tenant database
+      // Create tenant database first (before creating tenant record)
       const dbCreated = await createTenantDatabase(databaseName)
-      if (!dbCreated) {
-        // Database might already exist, continue but log
-        console.warn(`Database ${databaseName} might already exist`)
+      if (dbCreated) {
+        databaseCreated = true
+        console.log(`✅ Created database: ${databaseName}`)
+      } else {
+        console.warn(`⚠️  Database ${databaseName} might already exist`)
       }
 
       // Run tenant migrations
+      console.log(`🔄 Running migrations for ${databaseName}...`)
       await runTenantMigrations(databaseName)
 
-      // Create tenant record in core database
+      // Seed tenant database with owner BEFORE creating tenant record
+      // This prevents orphaned tenant records if seeding fails
+      console.log(`🌱 Seeding tenant database ${databaseName}...`)
+      const seedResult = await seedTenantDatabase(databaseName, {
+        email: data.email,
+        fullName: data.fullName,
+        passwordHash,
+      })
+
+      if (!seedResult.success) {
+        throw new Error(`Tenant database seeding failed: ${seedResult.error}`)
+      }
+
+      // Only create tenant record AFTER successful database setup
+      console.log(`📝 Creating tenant record for ${slug}...`)
       const tenant = await this.db
         .insert(coreSchema.tenants)
         .values({
@@ -78,31 +98,19 @@ export class TenantService {
           database: databaseName,
           billingEmail: data.email,
           isActive: true,
+          userCount: 1, // We know we have 1 user from seeding
         })
         .returning()
 
-      // Seed tenant database with owner
-      const seedResult = await seedTenantDatabase(databaseName, {
-        email: data.email,
-        fullName: data.fullName,
-        passwordHash,
-      })
-
-      if (!seedResult.success) {
-        // Rollback tenant creation
-        await this.db.delete(coreSchema.tenants).where(eq(coreSchema.tenants.id, tenant[0].id))
-
-        return {
-          success: false,
-          error: 'Failed to set up workspace. Please try again.',
-        }
-      }
-
-      // Update user count
-      await this.updateUserCount(tenant[0].id)
+      tenantId = tenant[0].id
 
       // Create trial subscription for the new tenant
-      await this.createTrialSubscription(tenant[0].id)
+      console.log(`💳 Creating trial subscription for ${slug}...`)
+      const subscriptionResult = await this.createTrialSubscription(tenant[0].id)
+      if (!subscriptionResult.success) {
+        console.warn(`⚠️  Failed to create trial subscription: ${subscriptionResult.error}`)
+        // Don't fail the entire process, just log it
+      }
 
       // Log tenant creation
       if (createdBy) {
@@ -133,8 +141,36 @@ export class TenantService {
         },
       }
     } catch (error) {
-      console.error('Create tenant error:', error)
-      return { success: false, error: 'Failed to create workspace' }
+      console.error('❌ Create tenant error:', error)
+      
+      // Cleanup on failure
+      try {
+        // If tenant record was created, remove it
+        if (tenantId) {
+          console.log(`🧹 Cleaning up tenant record: ${tenantId}`)
+          await this.db.delete(coreSchema.tenants).where(eq(coreSchema.tenants.id, tenantId))
+        }
+        
+        // Note: We don't drop the database as it might contain data from previous attempts
+        // The database and its tables will remain but can be reused if registration is retried
+        
+      } catch (cleanupError) {
+        console.error('❌ Cleanup error:', cleanupError)
+      }
+
+      // Return user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create workspace'
+      if (errorMessage.includes('already exists') || errorMessage.includes('unique')) {
+        return { 
+          success: false, 
+          error: 'Workspace name already exists. Please choose another name.' 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: 'Failed to create workspace. Please try again.' 
+      }
     }
   }
 

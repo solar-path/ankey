@@ -9,6 +9,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps['theme']}
       className="toaster group"
       position="top-center"
+      expand={true} // Always expand toasts to show content
+      visibleToasts={10} // Allow more toasts to be visible
       toastOptions={{
         style: {
           zIndex: 100, // Higher than sheet components (z-50)

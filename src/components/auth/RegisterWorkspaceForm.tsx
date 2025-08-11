@@ -16,7 +16,7 @@ import { client, handleApiResponse } from '@/lib/rpc'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -31,6 +31,8 @@ export function RegisterWorkspaceForm({
 }: RegisterWorkspaceFormProps) {
   const { closeDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
+  const [workspaceAvailable, setWorkspaceAvailable] = useState<boolean | null>(null)
   const navigate = useNavigate()
 
   const form = useForm({
@@ -46,6 +48,58 @@ export function RegisterWorkspaceForm({
 
   const workspaceName = form.watch('workspace')
 
+  // Debounced workspace availability check
+  const checkWorkspaceAvailability = useCallback(async (workspace: string) => {
+    if (!workspace || workspace.length < 2) {
+      setWorkspaceAvailable(null)
+      return
+    }
+
+    const slug = generateSlug(workspace)
+    if (!slug) {
+      setWorkspaceAvailable(false)
+      return
+    }
+
+    setCheckingAvailability(true)
+    try {
+      const response = await client.auth['check-workspace'][':workspace'].$get({
+        param: { workspace: slug }
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        setWorkspaceAvailable(result.available)
+        
+        // Set form error if not available
+        if (!result.available) {
+          form.setError('workspace', {
+            type: 'manual',
+            message: 'This workspace name is already taken'
+          })
+        } else {
+          form.clearErrors('workspace')
+        }
+      }
+    } catch (error) {
+      console.error('Error checking workspace availability:', error)
+      setWorkspaceAvailable(null)
+    } finally {
+      setCheckingAvailability(false)
+    }
+  }, [form])
+
+  // Debounce the availability check
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (workspaceName) {
+        checkWorkspaceAvailability(workspaceName)
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timeout)
+  }, [workspaceName, checkWorkspaceAvailability])
+
   const handleFormSubmit = async (data: RegisterData) => {
     setIsSubmitting(true)
     try {
@@ -60,7 +114,20 @@ export function RegisterWorkspaceForm({
         const result = await handleApiResponse(response)
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to set up workspace. Please try again.')
+          // Handle specific error cases
+          const errorMessage = result.error || 'Failed to set up workspace. Please try again.'
+          
+          // Check if it's a workspace availability error
+          if (errorMessage.toLowerCase().includes('already exists') || 
+              errorMessage.toLowerCase().includes('already taken')) {
+            form.setError('workspace', {
+              type: 'manual',
+              message: 'This workspace name is already taken. Please choose another.'
+            })
+            return // Don't throw, just show field error
+          }
+          
+          throw new Error(errorMessage)
         }
 
         const workspaceData = result.data as any
@@ -120,12 +187,43 @@ export function RegisterWorkspaceForm({
               <FormItem>
                 <FormLabel>Workspace</FormLabel>
                 <FormControl>
-                  <Input type="text" placeholder="my-company" {...field} />
+                  <div className="relative">
+                    <Input 
+                      type="text" 
+                      placeholder="my-company" 
+                      {...field}
+                      className={
+                        workspaceAvailable === true 
+                          ? 'border-green-500 dark:border-green-600' 
+                          : workspaceAvailable === false 
+                            ? 'border-red-500 dark:border-red-600' 
+                            : ''
+                      }
+                    />
+                    {checkingAvailability && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-600 rounded-full"></div>
+                      </div>
+                    )}
+                    {!checkingAvailability && workspaceAvailable === true && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 dark:text-green-500">
+                        ✓
+                      </div>
+                    )}
+                    {!checkingAvailability && workspaceAvailable === false && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600 dark:text-red-500">
+                        ✗
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
-                {workspaceName && (
+                {workspaceName && workspaceAvailable !== false && (
                   <FormDescription>
                     Your workspace will be available at:{' '}
                     <strong>{generateSlug(workspaceName)}.localhost:3000</strong>
+                    {workspaceAvailable === true && (
+                      <span className="text-green-600 dark:text-green-500 ml-2">✓ Available</span>
+                    )}
                   </FormDescription>
                 )}
                 <FormMessage />
@@ -215,7 +313,17 @@ export function RegisterWorkspaceForm({
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={
+              isSubmitting || 
+              externalLoading || 
+              checkingAvailability || 
+              workspaceAvailable === false ||
+              !workspaceName
+            }
+          >
             {isSubmitting || externalLoading ? 'Creating Workspace...' : 'Create Workspace'}
           </Button>
         </form>
