@@ -3,13 +3,16 @@ import { defineConfig } from 'drizzle-kit'
 // Determine which schema to use based on environment variable
 const isCore = process.env.DRIZZLE_SCHEMA === 'core'
 const isTenant = process.env.DRIZZLE_SCHEMA === 'tenant'
+const isServices = process.env.DRIZZLE_SCHEMA === 'services'
 
 // Default to all schemas if not specified
 const schema = isCore
   ? './src/api/db/schemas/core.drizzle.ts'
   : isTenant
     ? './src/api/db/schemas/tenant.drizzle.ts'
-    : './src/api/db/schemas/*.drizzle.ts'
+    : isServices
+      ? './src/api/db/schemas/services.drizzle.ts'
+      : './src/api/db/schemas/*.drizzle.ts'
 
 // Determine database name
 const dbName = isTenant
@@ -21,7 +24,9 @@ const outDir = isCore
   ? './src/api/db/migrations/core'
   : isTenant
     ? './src/api/db/migrations/tenant'
-    : './src/api/db/migrations'
+    : isServices
+      ? './src/api/db/migrations/services'
+      : './src/api/db/migrations'
 
 export default defineConfig({
   schema,

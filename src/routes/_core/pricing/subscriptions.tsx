@@ -1,28 +1,15 @@
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { QDataTable } from '@/components/QDataTable'
 import { client } from '@/lib/rpc'
 import { createFileRoute } from '@tanstack/react-router'
+import { type ColumnDef } from '@tanstack/react-table'
 import {
   Calendar,
   CreditCard,
-  Download,
-  Filter,
-  MoreHorizontal,
-  Search,
   User,
   DollarSign,
-  RefreshCw,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -49,10 +36,97 @@ interface Subscription {
 }
 
 function PricingSubscriptions() {
-  const [searchTerm, setSearchTerm] = useState('')
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
+
+  // Define columns for QDataTable
+  const columns: ColumnDef<Subscription>[] = [
+    {
+      accessorKey: 'tenantName',
+      header: 'Tenant',
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">{row.original.tenantName || 'Unknown Tenant'}</p>
+          <p className="text-sm text-muted-foreground">
+            {row.original.tenantSubdomain ? (
+              <a 
+                href={`http://${row.original.tenantSubdomain}.localhost:3000`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {row.original.tenantSubdomain}.localhost:3000
+              </a>
+            ) : (
+              'No subdomain'
+            )} • Created {new Date(row.original.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'planName',
+      header: 'Plan',
+      cell: ({ row }) => row.original.planName || 'Unknown Plan',
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const status = row.original.status
+        const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+          active: 'default',
+          trialing: 'secondary',
+          trial: 'secondary',
+          past_due: 'destructive',
+          pastdue: 'destructive',
+          cancelled: 'outline',
+          canceled: 'outline',
+          inactive: 'outline',
+        }
+        return <Badge variant={variants[status] || 'outline'}>{status.replace('_', ' ')}</Badge>
+      },
+    },
+    {
+      accessorKey: 'userCount',
+      header: 'Users',
+    },
+    {
+      accessorKey: 'totalMonthlyPrice',
+      header: 'Amount',
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">${row.original.totalMonthlyPrice}</p>
+          <p className="text-sm text-muted-foreground">
+            ${row.original.pricePerUser}/user
+          </p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'nextBillingDate',
+      header: 'Next Billing',
+      cell: ({ row }) => {
+        const subscription = row.original
+        if (subscription.status === 'trial' && subscription.trialEndsAt) {
+          return (
+            <div>
+              <p className="text-sm">Trial ends</p>
+              <p className="font-medium">{new Date(subscription.trialEndsAt).toLocaleDateString()}</p>
+            </div>
+          )
+        } else if (subscription.nextBillingDate) {
+          return (
+            <div>
+              <p className="text-sm">Next billing</p>
+              <p className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+            </div>
+          )
+        }
+        return '-'
+      },
+    },
+  ]
 
   useEffect(() => {
     fetchSubscriptions()
@@ -79,7 +153,6 @@ function PricingSubscriptions() {
 
   const syncSubscriptions = async () => {
     try {
-      setSyncing(true)
       const response = await client.pricing.subscriptions.sync.$post()
 
       if (response.ok) {
@@ -107,31 +180,29 @@ function PricingSubscriptions() {
     } catch (error) {
       console.error('Error syncing subscriptions:', error)
       toast.error('Failed to sync subscription data')
-    } finally {
-      setSyncing(false)
     }
   }
 
-  const filteredSubscriptions = subscriptions.filter(
-    subscription =>
-      subscription.tenantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subscription.tenantSubdomain?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subscription.planName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subscription.status.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Action handlers for QDataTable
+  const handleEdit = (subscription: Subscription) => {
+    // TODO: Implement edit functionality
+    toast.info(`Edit subscription for ${subscription.tenantName}`)
+  }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      active: 'default',
-      trialing: 'secondary',
-      trial: 'secondary',
-      past_due: 'destructive',
-      pastdue: 'destructive',
-      cancelled: 'outline',
-      canceled: 'outline',
-      inactive: 'outline',
-    }
-    return <Badge variant={variants[status] || 'outline'}>{status.replace('_', ' ')}</Badge>
+  const handleDelete = async (subscriptions: Subscription[]) => {
+    // TODO: Implement delete functionality
+    const names = subscriptions.map(s => s.tenantName || 'Unknown').join(', ')
+    toast.info(`Delete subscriptions: ${names}`)
+  }
+
+  const handleExportExcel = () => {
+    // TODO: Implement Excel export
+    toast.info('Export to Excel functionality coming soon')
+  }
+
+  const handleExportPdf = () => {
+    // TODO: Implement PDF export
+    toast.info('Export to PDF functionality coming soon')
   }
 
   // Calculate summary stats
@@ -244,132 +315,17 @@ function PricingSubscriptions() {
         </Card>
       </div>
 
-      {/* Filters and Search */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search subscriptions..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10 w-[300px]"
-            />
-          </div>
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={syncSubscriptions}
-            disabled={syncing}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Data'}
-          </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-        </div>
-      </div>
-
-      {/* Subscriptions Table */}
-      {filteredSubscriptions.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground">
-              {searchTerm
-                ? 'No subscriptions found matching your search'
-                : 'No subscriptions found'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Next Billing</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSubscriptions.map(subscription => (
-                  <TableRow key={subscription.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{subscription.tenantName || 'Unknown Tenant'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {subscription.tenantSubdomain ? (
-                            <a 
-                              href={`http://${subscription.tenantSubdomain}.localhost:3000`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 dark:text-blue-400 hover:underline"
-                            >
-                              {subscription.tenantSubdomain}.localhost:3000
-                            </a>
-                          ) : (
-                            'No subdomain'
-                          )} • Created {new Date(subscription.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{subscription.planName || 'Unknown Plan'}</TableCell>
-                    <TableCell>{getStatusBadge(subscription.status)}</TableCell>
-                    <TableCell>{subscription.userCount}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">${subscription.totalMonthlyPrice}</p>
-                        <p className="text-sm text-muted-foreground">
-                          ${subscription.pricePerUser}/user
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {subscription.status === 'trial' && subscription.trialEndsAt
-                        ? (
-                          <div>
-                            <p className="text-sm">Trial ends</p>
-                            <p className="font-medium">{new Date(subscription.trialEndsAt).toLocaleDateString()}</p>
-                          </div>
-                        )
-                        : subscription.nextBillingDate
-                          ? (
-                            <div>
-                              <p className="text-sm">Next billing</p>
-                              <p className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
-                            </div>
-                          )
-                          : '-'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+      {/* Subscriptions Data Table */}
+      <QDataTable
+        title="Subscriptions"
+        columns={columns}
+        data={subscriptions}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onExportExcel={handleExportExcel}
+        onExportPdf={handleExportPdf}
+        onSync={syncSubscriptions}
+      />
     </div>
   )
 }

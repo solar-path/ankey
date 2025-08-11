@@ -19,9 +19,13 @@
     "db:studio": "drizzle-kit studio",
     "db:generate:core": "DRIZZLE_SCHEMA=core drizzle-kit generate",
     "db:generate:tenant": "DRIZZLE_SCHEMA=tenant drizzle-kit generate",
+    "db:generate:services": "DRIZZLE_SCHEMA=services drizzle-kit generate",
     "db:migrate:core": "bun scripts/migrate-core.ts",
     "db:migrate:tenant": "bun scripts/migrate-tenant.ts",
     "db:migrate:tenant:all": "bun scripts/migrate-all-tenants.ts",
+    "db:migrate:services": "bun scripts/migrate-services.ts",
+    "db:migrate:names": "bun scripts/migrate-database-names.ts",
+    "db:sync:tenant-plans": "bun scripts/sync-tenant-plans.ts",
     "db:studio:core": "DRIZZLE_SCHEMA=core drizzle-kit studio",
     "db:studio:tenant": "DRIZZLE_SCHEMA=tenant drizzle-kit studio",
     "make:crud": "bun scripts/make-crud.ts"

@@ -21,15 +21,25 @@ function PublicLayout() {
           </h1>
         </div>
         <div className="flex items-center space-x-4 text-sm">
-          <Link to="/learn" search={{ doc: undefined }} className="[&.active]:font-bold">
-            Learn and support
+          <Link to="/edu" className="[&.active]:font-bold hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Education
           </Link>
-          <Link to="/offers" className="[&.active]:font-bold">
+          <Link to="/hunt" className="[&.active]:font-bold hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+            Job Hunt
+          </Link>
+          <Link to="/shop" className="[&.active]:font-bold hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+            Shop
+          </Link>
+          <Link to="/swap" className="[&.active]:font-bold hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+            Crypto Swap
+          </Link>
+          <Link to="/learn" search={{ doc: undefined }} className="[&.active]:font-bold hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            Learn & Support
+          </Link>
+          <Link to="/offers" className="[&.active]:font-bold hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
             Pricing
           </Link>
-
-
-            <Button onClick={() => openDrawer(<LoginForm />)}>Sign In</Button>
+          <Button onClick={() => openDrawer(<LoginForm />)}>Sign In</Button>
         </div>
       </div>
 

@@ -37,7 +37,7 @@ export class TenantService {
     
     try {
       const slug = this.slugifyWorkspace(data.workspace)
-      const databaseName = `ankey_${slug}`
+      const databaseName = slug
 
       // Validate subdomain
       if (this.isReservedSubdomain(slug)) {

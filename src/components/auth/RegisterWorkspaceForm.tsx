@@ -1,5 +1,5 @@
-import { QPassword } from '@/components/QPassword'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { QPassword } from '@/components/QPassword'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -15,8 +15,8 @@ import { Input } from '@/components/ui/input'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { registerSchema, type RegisterData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { useState, useEffect, useCallback } from 'react'
+import { Link } from '@tanstack/react-router'
+import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -33,7 +33,6 @@ export function RegisterWorkspaceForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
   const [workspaceAvailable, setWorkspaceAvailable] = useState<boolean | null>(null)
-  const navigate = useNavigate()
 
   const form = useForm({
     resolver: zodResolver(registerSchema),
@@ -66,11 +65,11 @@ export function RegisterWorkspaceForm({
       const response = await client.auth['check-workspace'][':workspace'].$get({
         param: { workspace: slug }
       })
-      
+
       if (response.ok) {
         const result = await response.json()
         setWorkspaceAvailable(result.available)
-        
+
         // Set form error if not available
         if (!result.available) {
           form.setError('workspace', {
@@ -116,9 +115,9 @@ export function RegisterWorkspaceForm({
         if (!result.success) {
           // Handle specific error cases
           const errorMessage = result.error || 'Failed to set up workspace. Please try again.'
-          
+
           // Check if it's a workspace availability error
-          if (errorMessage.toLowerCase().includes('already exists') || 
+          if (errorMessage.toLowerCase().includes('already exists') ||
               errorMessage.toLowerCase().includes('already taken')) {
             form.setError('workspace', {
               type: 'manual',
@@ -126,12 +125,12 @@ export function RegisterWorkspaceForm({
             })
             return // Don't throw, just show field error
           }
-          
+
           throw new Error(errorMessage)
         }
 
         const workspaceData = result.data as any
-        const workspaceUrl = workspaceData?.workspaceUrl || 
+        const workspaceUrl = workspaceData?.workspaceUrl ||
           `http://${data.workspace.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}.localhost:3000`
 
         // Show success with workspace URL
@@ -188,15 +187,15 @@ export function RegisterWorkspaceForm({
                 <FormLabel>Workspace</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input 
-                      type="text" 
-                      placeholder="my-company" 
+                    <Input
+                      type="text"
+                      placeholder="my-company"
                       {...field}
                       className={
-                        workspaceAvailable === true 
-                          ? 'border-green-500 dark:border-green-600' 
-                          : workspaceAvailable === false 
-                            ? 'border-red-500 dark:border-red-600' 
+                        workspaceAvailable === true
+                          ? 'border-green-500 dark:border-green-600'
+                          : workspaceAvailable === false
+                            ? 'border-red-500 dark:border-red-600'
                             : ''
                       }
                     />
@@ -266,7 +265,7 @@ export function RegisterWorkspaceForm({
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <QPassword 
+                  <QPassword
                     {...field}
                     placeholder="Enter a strong password"
                     showComplexity={true}
@@ -289,7 +288,7 @@ export function RegisterWorkspaceForm({
                   />
                 </FormControl>
                   <FormLabel>
-                    I agree to the
+                    I agree to the{' '}
                     <Link
                       to="/learn"
                       search={{ doc: 'terms' }}
@@ -313,13 +312,13 @@ export function RegisterWorkspaceForm({
             )}
           />
 
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full"
             disabled={
-              isSubmitting || 
-              externalLoading || 
-              checkingAvailability || 
+              isSubmitting ||
+              externalLoading ||
+              checkingAvailability ||
               workspaceAvailable === false ||
               !workspaceName
             }

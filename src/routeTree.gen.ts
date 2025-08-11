@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as CoreRouteImport } from './routes/_core'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicSwapRouteImport } from './routes/_public/swap'
+import { Route as PublicShopRouteImport } from './routes/_public/shop'
 import { Route as PublicOffersRouteImport } from './routes/_public/offers'
 import { Route as PublicLearnRouteImport } from './routes/_public/learn'
+import { Route as PublicHuntRouteImport } from './routes/_public/hunt'
+import { Route as PublicEduRouteImport } from './routes/_public/edu'
 import { Route as CoreDashboardRouteImport } from './routes/_core/dashboard'
 import { Route as CorePricingRouteRouteImport } from './routes/_core/pricing/route'
 import { Route as CoreAccountRouteRouteImport } from './routes/_core/account/route'
@@ -48,6 +52,16 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicSwapRoute = PublicSwapRouteImport.update({
+  id: '/swap',
+  path: '/swap',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicShopRoute = PublicShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicOffersRoute = PublicOffersRouteImport.update({
   id: '/offers',
   path: '/offers',
@@ -56,6 +70,16 @@ const PublicOffersRoute = PublicOffersRouteImport.update({
 const PublicLearnRoute = PublicLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicHuntRoute = PublicHuntRouteImport.update({
+  id: '/hunt',
+  path: '/hunt',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicEduRoute = PublicEduRouteImport.update({
+  id: '/edu',
+  path: '/edu',
   getParentRoute: () => PublicRoute,
 } as any)
 const CoreDashboardRoute = CoreDashboardRouteImport.update({
@@ -164,8 +188,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof CoreAccountRouteRouteWithChildren
   '/pricing': typeof CorePricingRouteRouteWithChildren
   '/dashboard': typeof CoreDashboardRoute
+  '/edu': typeof PublicEduRoute
+  '/hunt': typeof PublicHuntRoute
   '/learn': typeof PublicLearnRouteWithChildren
   '/offers': typeof PublicOffersRoute
+  '/shop': typeof PublicShopRoute
+  '/swap': typeof PublicSwapRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -187,8 +215,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof CoreDashboardRoute
+  '/edu': typeof PublicEduRoute
+  '/hunt': typeof PublicHuntRoute
   '/learn': typeof PublicLearnRouteWithChildren
   '/offers': typeof PublicOffersRoute
+  '/shop': typeof PublicShopRoute
+  '/swap': typeof PublicSwapRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -215,8 +247,12 @@ export interface FileRoutesById {
   '/_core/account': typeof CoreAccountRouteRouteWithChildren
   '/_core/pricing': typeof CorePricingRouteRouteWithChildren
   '/_core/dashboard': typeof CoreDashboardRoute
+  '/_public/edu': typeof PublicEduRoute
+  '/_public/hunt': typeof PublicHuntRoute
   '/_public/learn': typeof PublicLearnRouteWithChildren
   '/_public/offers': typeof PublicOffersRoute
+  '/_public/shop': typeof PublicShopRoute
+  '/_public/swap': typeof PublicSwapRoute
   '/_public/': typeof PublicIndexRoute
   '/_core/account/appearance': typeof CoreAccountAppearanceRoute
   '/_core/account/contacts': typeof CoreAccountContactsRoute
@@ -242,8 +278,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/pricing'
     | '/dashboard'
+    | '/edu'
+    | '/hunt'
     | '/learn'
     | '/offers'
+    | '/shop'
+    | '/swap'
     | '/'
     | '/account/appearance'
     | '/account/contacts'
@@ -265,8 +305,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/dashboard'
+    | '/edu'
+    | '/hunt'
     | '/learn'
     | '/offers'
+    | '/shop'
+    | '/swap'
     | '/'
     | '/account/appearance'
     | '/account/contacts'
@@ -292,8 +336,12 @@ export interface FileRouteTypes {
     | '/_core/account'
     | '/_core/pricing'
     | '/_core/dashboard'
+    | '/_public/edu'
+    | '/_public/hunt'
     | '/_public/learn'
     | '/_public/offers'
+    | '/_public/shop'
+    | '/_public/swap'
     | '/_public/'
     | '/_core/account/appearance'
     | '/_core/account/contacts'
@@ -344,6 +392,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/swap': {
+      id: '/_public/swap'
+      path: '/swap'
+      fullPath: '/swap'
+      preLoaderRoute: typeof PublicSwapRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/shop': {
+      id: '/_public/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof PublicShopRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/offers': {
       id: '/_public/offers'
       path: '/offers'
@@ -356,6 +418,20 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof PublicLearnRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/hunt': {
+      id: '/_public/hunt'
+      path: '/hunt'
+      fullPath: '/hunt'
+      preLoaderRoute: typeof PublicHuntRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/edu': {
+      id: '/_public/edu'
+      path: '/edu'
+      fullPath: '/edu'
+      preLoaderRoute: typeof PublicEduRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_core/dashboard': {
@@ -574,14 +650,22 @@ const PublicLearnRouteWithChildren = PublicLearnRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
+  PublicEduRoute: typeof PublicEduRoute
+  PublicHuntRoute: typeof PublicHuntRoute
   PublicLearnRoute: typeof PublicLearnRouteWithChildren
   PublicOffersRoute: typeof PublicOffersRoute
+  PublicShopRoute: typeof PublicShopRoute
+  PublicSwapRoute: typeof PublicSwapRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicEduRoute: PublicEduRoute,
+  PublicHuntRoute: PublicHuntRoute,
   PublicLearnRoute: PublicLearnRouteWithChildren,
   PublicOffersRoute: PublicOffersRoute,
+  PublicShopRoute: PublicShopRoute,
+  PublicSwapRoute: PublicSwapRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 

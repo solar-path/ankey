@@ -15,6 +15,13 @@
       "when": 1754906008205,
       "tag": "0001_ambitious_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754925975706,
+      "tag": "0002_outgoing_karen_page",
+      "breakpoints": true
     }
   ]
 }

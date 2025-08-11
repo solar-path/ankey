@@ -52,6 +52,24 @@ export function createTenantConnection(tenantDatabase: string) {
   return drizzle(client, { schema: tenantSchema })
 }
 
+// Check if database exists
+export async function checkDatabaseExists(databaseName: string): Promise<boolean> {
+  const adminConnectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/postgres`
+  const adminClient = postgres(adminConnectionString)
+
+  try {
+    const result = await adminClient`
+      SELECT 1 FROM pg_database WHERE datname = ${databaseName}
+    `
+    await adminClient.end()
+    return result.length > 0
+  } catch (error) {
+    console.error(`Error checking database ${databaseName}:`, error)
+    await adminClient.end()
+    return false
+  }
+}
+
 // Create a new tenant database
 export async function createTenantDatabase(tenantDatabase: string): Promise<boolean> {
   const adminConnectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/postgres`
@@ -98,57 +116,104 @@ export async function runTenantMigrations(tenantDatabase: string): Promise<boole
   } catch (error) {
     console.error(`Migration failed for ${tenantDatabase}:`, error)
     await migrationClient.end()
-    throw error
+    return false
   }
 }
 
-// Seed tenant database with default data
+// Seed tenant database with initial owner
 export async function seedTenantDatabase(
   tenantDatabase: string,
   ownerData: TenantOwnerData
 ): Promise<SeedResult> {
-  const db = createTenantConnection(tenantDatabase)
+  const tenantDb = createTenantConnection(tenantDatabase)
 
   try {
-    // Create default roles
-    const adminRole = await db
-      .insert(tenantSchema.roles)
-      .values({
-        name: 'Administrator',
-        description: 'Full system access',
-        isSystem: true,
-      })
-      .returning()
+    // Check if users already exist
+    const existingUsers = await tenantDb.select().from(tenantSchema.users).limit(1)
 
-    await db.insert(tenantSchema.roles).values({
-      name: 'User',
-      description: 'Basic user access',
-      isSystem: true,
-    })
+    if (existingUsers.length > 0) {
+      console.log(`Database ${tenantDatabase} already has users, skipping seed`)
+      return { success: true, ownerId: existingUsers[0].id }
+    }
 
-    // Create owner user
-    const owner = await db
+    // Create tenant owner
+    const [owner] = await tenantDb
       .insert(tenantSchema.users)
       .values({
         email: ownerData.email,
         fullName: ownerData.fullName,
         passwordHash: ownerData.passwordHash,
+        isActive: true,
         emailVerified: true,
         isApproved: true,
-        isActive: true,
+        approvedAt: new Date(),
       })
       .returning()
 
-    // Assign admin role to owner
-    await db.insert(tenantSchema.userRoles).values({
-      userId: owner[0].id as string,
-      roleId: adminRole[0].id as string,
-    })
+    // Create basic roles
+    const roles = [
+      { name: 'Admin', description: 'Full system access', isSystem: true },
+      { name: 'Manager', description: 'Department management access', isSystem: true },
+      { name: 'User', description: 'Basic user access', isSystem: true },
+    ]
 
-    console.log(`Tenant database ${tenantDatabase} seeded successfully`)
-    return { success: true, ownerId: owner[0].id }
+    const insertedRoles = await tenantDb.insert(tenantSchema.roles).values(roles).returning()
+
+    // Assign Admin role to owner
+    const adminRole = insertedRoles.find(r => r.name === 'Admin')
+    if (adminRole) {
+      await tenantDb.insert(tenantSchema.userRoles).values({
+        userId: owner.id,
+        roleId: adminRole.id,
+      })
+    }
+
+    // Create basic permissions
+    const permissions = [
+      // User management
+      { name: 'users.read', resource: 'users', action: 'read', description: 'View users' },
+      { name: 'users.create', resource: 'users', action: 'create', description: 'Create users' },
+      { name: 'users.update', resource: 'users', action: 'update', description: 'Update users' },
+      { name: 'users.delete', resource: 'users', action: 'delete', description: 'Delete users' },
+      // Role management
+      { name: 'roles.read', resource: 'roles', action: 'read', description: 'View roles' },
+      { name: 'roles.create', resource: 'roles', action: 'create', description: 'Create roles' },
+      { name: 'roles.update', resource: 'roles', action: 'update', description: 'Update roles' },
+      { name: 'roles.delete', resource: 'roles', action: 'delete', description: 'Delete roles' },
+      // Settings
+      {
+        name: 'settings.read',
+        resource: 'settings',
+        action: 'read',
+        description: 'View settings',
+      },
+      {
+        name: 'settings.update',
+        resource: 'settings',
+        action: 'update',
+        description: 'Update settings',
+      },
+    ]
+
+    const insertedPermissions = await tenantDb
+      .insert(tenantSchema.permissions)
+      .values(permissions)
+      .returning()
+
+    // Assign all permissions to Admin role
+    if (adminRole) {
+      const rolePermissions = insertedPermissions.map(perm => ({
+        roleId: adminRole.id,
+        permissionId: perm.id,
+      }))
+
+      await tenantDb.insert(tenantSchema.rolePermissions).values(rolePermissions)
+    }
+
+    console.log(`✅ Tenant database ${tenantDatabase} seeded successfully`)
+    return { success: true, ownerId: owner.id }
   } catch (error) {
     console.error(`Failed to seed tenant database ${tenantDatabase}:`, error)
-    return { success: false, error }
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

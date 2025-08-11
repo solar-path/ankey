@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, uuid, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, uuid, jsonb, integer, decimal } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
@@ -279,3 +279,49 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 export const productsRelations = relations(products, ({ one, many }) => ({
   // Add relations here as needed
 }))
+
+// Tenant Subscription & Plan Information (Local Cache)
+// This mirrors core database data but provides local access for tenant operations
+export const tenantSubscription = pgTable('tenant_subscription', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(), // Reference to core tenant ID
+  planId: text('plan_id').notNull(), // Reference to core plan ID
+  planName: text('plan_name').notNull(),
+  planFeatures: jsonb('plan_features'), // JSON array of features
+  status: text('status').notNull().default('trial'), // 'active', 'trial', 'inactive', 'cancelled'
+  userCount: integer('user_count').default(0).notNull(),
+  maxUsers: integer('max_users'), // null = unlimited
+  pricePerUser: decimal('price_per_user', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  totalMonthlyPrice: decimal('total_monthly_price', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  billingCycle: text('billing_cycle').default('monthly').notNull(), // 'monthly', 'yearly'
+  trialEndsAt: timestamp('trial_ends_at'),
+  nextBillingDate: timestamp('next_billing_date'),
+  lastSyncedAt: timestamp('last_synced_at').defaultNow(), // When last synced with core
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Tenant Usage Metrics (for billing and plan limits)
+export const tenantUsage = pgTable('tenant_usage', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  usageDate: timestamp('usage_date').defaultNow().notNull(),
+  activeUsers: integer('active_users').default(0).notNull(),
+  totalUsers: integer('total_users').default(0).notNull(),
+  storageUsed: integer('storage_used').default(0).notNull(), // in MB
+  apiRequests: integer('api_requests').default(0).notNull(),
+  dataTransfer: integer('data_transfer').default(0).notNull(), // in MB
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// Plan Limits Tracking
+export const planLimits = pgTable('plan_limits', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  limitType: text('limit_type').notNull(), // 'users', 'storage', 'api_requests', 'data_transfer'
+  limitValue: integer('limit_value'), // null = unlimited
+  currentUsage: integer('current_usage').default(0).notNull(),
+  warningThreshold: integer('warning_threshold').default(80).notNull(), // percentage
+  isExceeded: boolean('is_exceeded').default(false).notNull(),
+  lastChecked: timestamp('last_checked').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})

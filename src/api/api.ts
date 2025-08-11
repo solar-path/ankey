@@ -5,6 +5,7 @@ import { coreImportRoutes } from '@/api/controllers/core/import.hono'
 import { inquiryRoutes } from '@/api/controllers/core/inquiry.hono'
 import { pricingRouter } from '@/api/controllers/core/pricing.hono'
 import { coreRBACRoutes } from '@/api/controllers/core/rbac.hono'
+import { servicesRouter } from '@/api/controllers/core/services.hono'
 import { coreSettingsRoutes } from '@/api/controllers/core/settings.hono'
 import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
 import { coreUploadRoutes } from '@/api/controllers/core/upload.hono'
@@ -153,6 +154,7 @@ const routes = app
   .route('/import', coreImportRoutes)
   .route('/inquiry', inquiryRoutes)
   .route('/pricing', pricingRouter)
+  .route('/services', servicesRouter)
   .route('/tenant-auth', tenantAuthRoutes)
   .route('/tenant-rbac', tenantRBACRoutes)
   .route('/tenant-settings', tenantSettingsRoutes)
