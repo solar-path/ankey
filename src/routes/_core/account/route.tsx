@@ -1,46 +1,52 @@
+import { SiteHeader } from '@/components/QSideBar/site-header'
 import { cn } from '@/lib/utils'
+import { type BreadcrumbItem } from '@/shared'
 import { createFileRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Contact, Lock, Palette, Settings, Shield, User } from 'lucide-react'
-import { SiteHeader } from '@/components/QSideBar/site-header'
+import { createContext, useContext } from 'react'
 
-export const Route = createFileRoute('/_core/settings')({
+// Create context for breadcrumbs
+export const BreadcrumbContext = createContext<BreadcrumbItem[]>([])
+export const useBreadcrumbs = () => useContext(BreadcrumbContext)
+
+export const Route = createFileRoute('/_core/account')({
   component: SettingsLayout,
 })
 
 const settingsNavigation = [
   {
     name: 'Profile',
-    href: '/settings/profile',
+    href: '/account/profile',
     icon: User,
     description: 'Manage your profile information',
   },
   {
     name: 'Personal',
-    href: '/settings/personal',
+    href: '/account/personal',
     icon: Settings,
     description: 'Personal details and preferences',
   },
   {
     name: 'Contacts',
-    href: '/settings/contacts',
+    href: '/account/contacts',
     icon: Contact,
     description: 'Contact information and emergency contacts',
   },
   {
     name: 'Password',
-    href: '/settings/password',
+    href: '/account/password',
     icon: Lock,
     description: 'Change your password and security settings',
   },
   {
     name: 'Appearance',
-    href: '/settings/appearance',
+    href: '/account/appearance',
     icon: Palette,
     description: 'Customize your interface and theme',
   },
   {
     name: 'Roles',
-    href: '/settings/roles',
+    href: '/account/roles',
     icon: Shield,
     description: 'Manage roles and permissions',
   },
@@ -50,19 +56,48 @@ function SettingsLayout() {
   const location = useLocation()
   const currentPath = location.pathname
 
+  // Determine breadcrumbs based on current path
+  const getBreadcrumbs = (): BreadcrumbItem[] => {
+    const path = currentPath.split('/').filter(Boolean)
+    const lastSegment = path[path.length - 1]
+
+    const breadcrumbMap: Record<string, string> = {
+      'profile': 'Profile',
+      'personal': 'Personal',
+      'contacts': 'Contacts',
+      'password': 'Password',
+      'appearance': 'Appearance',
+      'roles': 'Roles',
+      'account': 'Account'
+    }
+
+    const breadcrumbs: BreadcrumbItem[] = [
+      { title: 'Account', href: '/account' }
+    ]
+
+    if (lastSegment && lastSegment !== 'account' && breadcrumbMap[lastSegment]) {
+      breadcrumbs.push({
+        title: breadcrumbMap[lastSegment],
+        href: currentPath
+      })
+    }
+
+    return breadcrumbs
+  }
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Site Header with breadcrumbs */}
-      <SiteHeader />
+      <SiteHeader breadcrumbs={getBreadcrumbs()}/>
 
       <div className="flex h-full flex-1">
         {/* Settings Navigation */}
-        <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-6">
+        <div className="w-64 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-6">
           <nav className="space-y-2">
             {settingsNavigation.map(item => {
               const isActive =
                 currentPath === item.href ||
-                (currentPath === '/settings' && item.href === '/settings/profile')
+                (currentPath === '/account' && item.href === '/account/profile')
 
               return (
                 <Link

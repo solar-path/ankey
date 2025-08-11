@@ -1,10 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { createFileRoute } from '@tanstack/react-router'
 import { ChevronDown, ChevronRight, Key, Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-export const Route = createFileRoute('/_core/settings/roles')({
+
+export const Route = createFileRoute('/_core/account/roles')({
   component: RolesSettings,
 })
 

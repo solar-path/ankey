@@ -15,22 +15,22 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicPricingRouteImport } from './routes/_public/pricing'
 import { Route as PublicLearnRouteImport } from './routes/_public/learn'
 import { Route as CoreDashboardRouteImport } from './routes/_core/dashboard'
-import { Route as CoreSettingsRouteRouteImport } from './routes/_core/settings/route'
+import { Route as CoreAccountRouteRouteImport } from './routes/_core/account/route'
 import { Route as TenantProductsIndexRouteImport } from './routes/_tenant/products/index'
-import { Route as CoreSettingsIndexRouteImport } from './routes/_core/settings/index'
+import { Route as CoreAccountIndexRouteImport } from './routes/_core/account/index'
 import { Route as TenantProductsIdRouteImport } from './routes/_tenant/products/$id'
 import { Route as PublicLearnTermsRouteImport } from './routes/_public/learn/terms'
 import { Route as PublicLearnPrivacyRouteImport } from './routes/_public/learn/privacy'
 import { Route as PublicLearnCookiesRouteImport } from './routes/_public/learn/cookies'
-import { Route as CoreSettingsRolesRouteImport } from './routes/_core/settings/roles'
-import { Route as CoreSettingsProfileRouteImport } from './routes/_core/settings/profile'
-import { Route as CoreSettingsPersonalRouteImport } from './routes/_core/settings/personal'
-import { Route as CoreSettingsPasswordRouteImport } from './routes/_core/settings/password'
-import { Route as CoreSettingsContactsRouteImport } from './routes/_core/settings/contacts'
-import { Route as CoreSettingsAppearanceRouteImport } from './routes/_core/settings/appearance'
 import { Route as CorePricingPricingSubscriptionsRouteImport } from './routes/_core/pricing/pricing-subscriptions'
 import { Route as CorePricingPricingDiscountsRouteImport } from './routes/_core/pricing/pricing-discounts'
 import { Route as CorePricingPricingAdminRouteImport } from './routes/_core/pricing/pricing-admin'
+import { Route as CoreAccountRolesRouteImport } from './routes/_core/account/roles'
+import { Route as CoreAccountProfileRouteImport } from './routes/_core/account/profile'
+import { Route as CoreAccountPersonalRouteImport } from './routes/_core/account/personal'
+import { Route as CoreAccountPasswordRouteImport } from './routes/_core/account/password'
+import { Route as CoreAccountContactsRouteImport } from './routes/_core/account/contacts'
+import { Route as CoreAccountAppearanceRouteImport } from './routes/_core/account/appearance'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -60,9 +60,9 @@ const CoreDashboardRoute = CoreDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CoreRoute,
 } as any)
-const CoreSettingsRouteRoute = CoreSettingsRouteRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const CoreAccountRouteRoute = CoreAccountRouteRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => CoreRoute,
 } as any)
 const TenantProductsIndexRoute = TenantProductsIndexRouteImport.update({
@@ -70,10 +70,10 @@ const TenantProductsIndexRoute = TenantProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CoreSettingsIndexRoute = CoreSettingsIndexRouteImport.update({
+const CoreAccountIndexRoute = CoreAccountIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => CoreSettingsRouteRoute,
+  getParentRoute: () => CoreAccountRouteRoute,
 } as any)
 const TenantProductsIdRoute = TenantProductsIdRouteImport.update({
   id: '/_tenant/products/$id',
@@ -95,36 +95,6 @@ const PublicLearnCookiesRoute = PublicLearnCookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => PublicLearnRoute,
 } as any)
-const CoreSettingsRolesRoute = CoreSettingsRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
-const CoreSettingsProfileRoute = CoreSettingsProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
-const CoreSettingsPersonalRoute = CoreSettingsPersonalRouteImport.update({
-  id: '/personal',
-  path: '/personal',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
-const CoreSettingsPasswordRoute = CoreSettingsPasswordRouteImport.update({
-  id: '/password',
-  path: '/password',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
-const CoreSettingsContactsRoute = CoreSettingsContactsRouteImport.update({
-  id: '/contacts',
-  path: '/contacts',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
-const CoreSettingsAppearanceRoute = CoreSettingsAppearanceRouteImport.update({
-  id: '/appearance',
-  path: '/appearance',
-  getParentRoute: () => CoreSettingsRouteRoute,
-} as any)
 const CorePricingPricingSubscriptionsRoute =
   CorePricingPricingSubscriptionsRouteImport.update({
     id: '/pricing/pricing-subscriptions',
@@ -142,27 +112,57 @@ const CorePricingPricingAdminRoute = CorePricingPricingAdminRouteImport.update({
   path: '/pricing/pricing-admin',
   getParentRoute: () => CoreRoute,
 } as any)
+const CoreAccountRolesRoute = CoreAccountRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
+const CoreAccountProfileRoute = CoreAccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
+const CoreAccountPersonalRoute = CoreAccountPersonalRouteImport.update({
+  id: '/personal',
+  path: '/personal',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
+const CoreAccountPasswordRoute = CoreAccountPasswordRouteImport.update({
+  id: '/password',
+  path: '/password',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
+const CoreAccountContactsRoute = CoreAccountContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
+const CoreAccountAppearanceRoute = CoreAccountAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/settings': typeof CoreSettingsRouteRouteWithChildren
+  '/account': typeof CoreAccountRouteRouteWithChildren
   '/dashboard': typeof CoreDashboardRoute
   '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
+  '/account/appearance': typeof CoreAccountAppearanceRoute
+  '/account/contacts': typeof CoreAccountContactsRoute
+  '/account/password': typeof CoreAccountPasswordRoute
+  '/account/personal': typeof CoreAccountPersonalRoute
+  '/account/profile': typeof CoreAccountProfileRoute
+  '/account/roles': typeof CoreAccountRolesRoute
   '/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
   '/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
   '/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
-  '/settings/appearance': typeof CoreSettingsAppearanceRoute
-  '/settings/contacts': typeof CoreSettingsContactsRoute
-  '/settings/password': typeof CoreSettingsPasswordRoute
-  '/settings/personal': typeof CoreSettingsPersonalRoute
-  '/settings/profile': typeof CoreSettingsProfileRoute
-  '/settings/roles': typeof CoreSettingsRolesRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
   '/products/$id': typeof TenantProductsIdRoute
-  '/settings/': typeof CoreSettingsIndexRoute
+  '/account/': typeof CoreAccountIndexRoute
   '/products': typeof TenantProductsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -170,69 +170,69 @@ export interface FileRoutesByTo {
   '/learn': typeof PublicLearnRouteWithChildren
   '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
+  '/account/appearance': typeof CoreAccountAppearanceRoute
+  '/account/contacts': typeof CoreAccountContactsRoute
+  '/account/password': typeof CoreAccountPasswordRoute
+  '/account/personal': typeof CoreAccountPersonalRoute
+  '/account/profile': typeof CoreAccountProfileRoute
+  '/account/roles': typeof CoreAccountRolesRoute
   '/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
   '/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
   '/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
-  '/settings/appearance': typeof CoreSettingsAppearanceRoute
-  '/settings/contacts': typeof CoreSettingsContactsRoute
-  '/settings/password': typeof CoreSettingsPasswordRoute
-  '/settings/personal': typeof CoreSettingsPersonalRoute
-  '/settings/profile': typeof CoreSettingsProfileRoute
-  '/settings/roles': typeof CoreSettingsRolesRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
   '/products/$id': typeof TenantProductsIdRoute
-  '/settings': typeof CoreSettingsIndexRoute
+  '/account': typeof CoreAccountIndexRoute
   '/products': typeof TenantProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_core': typeof CoreRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
-  '/_core/settings': typeof CoreSettingsRouteRouteWithChildren
+  '/_core/account': typeof CoreAccountRouteRouteWithChildren
   '/_core/dashboard': typeof CoreDashboardRoute
   '/_public/learn': typeof PublicLearnRouteWithChildren
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/': typeof PublicIndexRoute
+  '/_core/account/appearance': typeof CoreAccountAppearanceRoute
+  '/_core/account/contacts': typeof CoreAccountContactsRoute
+  '/_core/account/password': typeof CoreAccountPasswordRoute
+  '/_core/account/personal': typeof CoreAccountPersonalRoute
+  '/_core/account/profile': typeof CoreAccountProfileRoute
+  '/_core/account/roles': typeof CoreAccountRolesRoute
   '/_core/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
   '/_core/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
   '/_core/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
-  '/_core/settings/appearance': typeof CoreSettingsAppearanceRoute
-  '/_core/settings/contacts': typeof CoreSettingsContactsRoute
-  '/_core/settings/password': typeof CoreSettingsPasswordRoute
-  '/_core/settings/personal': typeof CoreSettingsPersonalRoute
-  '/_core/settings/profile': typeof CoreSettingsProfileRoute
-  '/_core/settings/roles': typeof CoreSettingsRolesRoute
   '/_public/learn/cookies': typeof PublicLearnCookiesRoute
   '/_public/learn/privacy': typeof PublicLearnPrivacyRoute
   '/_public/learn/terms': typeof PublicLearnTermsRoute
   '/_tenant/products/$id': typeof TenantProductsIdRoute
-  '/_core/settings/': typeof CoreSettingsIndexRoute
+  '/_core/account/': typeof CoreAccountIndexRoute
   '/_tenant/products/': typeof TenantProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/settings'
+    | '/account'
     | '/dashboard'
     | '/learn'
     | '/pricing'
     | '/'
+    | '/account/appearance'
+    | '/account/contacts'
+    | '/account/password'
+    | '/account/personal'
+    | '/account/profile'
+    | '/account/roles'
     | '/pricing/pricing-admin'
     | '/pricing/pricing-discounts'
     | '/pricing/pricing-subscriptions'
-    | '/settings/appearance'
-    | '/settings/contacts'
-    | '/settings/password'
-    | '/settings/personal'
-    | '/settings/profile'
-    | '/settings/roles'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
     | '/products/$id'
-    | '/settings/'
+    | '/account/'
     | '/products'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,44 +240,44 @@ export interface FileRouteTypes {
     | '/learn'
     | '/pricing'
     | '/'
+    | '/account/appearance'
+    | '/account/contacts'
+    | '/account/password'
+    | '/account/personal'
+    | '/account/profile'
+    | '/account/roles'
     | '/pricing/pricing-admin'
     | '/pricing/pricing-discounts'
     | '/pricing/pricing-subscriptions'
-    | '/settings/appearance'
-    | '/settings/contacts'
-    | '/settings/password'
-    | '/settings/personal'
-    | '/settings/profile'
-    | '/settings/roles'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
     | '/products/$id'
-    | '/settings'
+    | '/account'
     | '/products'
   id:
     | '__root__'
     | '/_core'
     | '/_public'
-    | '/_core/settings'
+    | '/_core/account'
     | '/_core/dashboard'
     | '/_public/learn'
     | '/_public/pricing'
     | '/_public/'
+    | '/_core/account/appearance'
+    | '/_core/account/contacts'
+    | '/_core/account/password'
+    | '/_core/account/personal'
+    | '/_core/account/profile'
+    | '/_core/account/roles'
     | '/_core/pricing/pricing-admin'
     | '/_core/pricing/pricing-discounts'
     | '/_core/pricing/pricing-subscriptions'
-    | '/_core/settings/appearance'
-    | '/_core/settings/contacts'
-    | '/_core/settings/password'
-    | '/_core/settings/personal'
-    | '/_core/settings/profile'
-    | '/_core/settings/roles'
     | '/_public/learn/cookies'
     | '/_public/learn/privacy'
     | '/_public/learn/terms'
     | '/_tenant/products/$id'
-    | '/_core/settings/'
+    | '/_core/account/'
     | '/_tenant/products/'
   fileRoutesById: FileRoutesById
 }
@@ -332,11 +332,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoreDashboardRouteImport
       parentRoute: typeof CoreRoute
     }
-    '/_core/settings': {
-      id: '/_core/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof CoreSettingsRouteRouteImport
+    '/_core/account': {
+      id: '/_core/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof CoreAccountRouteRouteImport
       parentRoute: typeof CoreRoute
     }
     '/_tenant/products/': {
@@ -346,12 +346,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TenantProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_core/settings/': {
-      id: '/_core/settings/'
+    '/_core/account/': {
+      id: '/_core/account/'
       path: '/'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof CoreSettingsIndexRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
+      fullPath: '/account/'
+      preLoaderRoute: typeof CoreAccountIndexRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
     }
     '/_tenant/products/$id': {
       id: '/_tenant/products/$id'
@@ -381,48 +381,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicLearnCookiesRouteImport
       parentRoute: typeof PublicLearnRoute
     }
-    '/_core/settings/roles': {
-      id: '/_core/settings/roles'
-      path: '/roles'
-      fullPath: '/settings/roles'
-      preLoaderRoute: typeof CoreSettingsRolesRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
-    '/_core/settings/profile': {
-      id: '/_core/settings/profile'
-      path: '/profile'
-      fullPath: '/settings/profile'
-      preLoaderRoute: typeof CoreSettingsProfileRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
-    '/_core/settings/personal': {
-      id: '/_core/settings/personal'
-      path: '/personal'
-      fullPath: '/settings/personal'
-      preLoaderRoute: typeof CoreSettingsPersonalRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
-    '/_core/settings/password': {
-      id: '/_core/settings/password'
-      path: '/password'
-      fullPath: '/settings/password'
-      preLoaderRoute: typeof CoreSettingsPasswordRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
-    '/_core/settings/contacts': {
-      id: '/_core/settings/contacts'
-      path: '/contacts'
-      fullPath: '/settings/contacts'
-      preLoaderRoute: typeof CoreSettingsContactsRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
-    '/_core/settings/appearance': {
-      id: '/_core/settings/appearance'
-      path: '/appearance'
-      fullPath: '/settings/appearance'
-      preLoaderRoute: typeof CoreSettingsAppearanceRouteImport
-      parentRoute: typeof CoreSettingsRouteRoute
-    }
     '/_core/pricing/pricing-subscriptions': {
       id: '/_core/pricing/pricing-subscriptions'
       path: '/pricing/pricing-subscriptions'
@@ -444,34 +402,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorePricingPricingAdminRouteImport
       parentRoute: typeof CoreRoute
     }
+    '/_core/account/roles': {
+      id: '/_core/account/roles'
+      path: '/roles'
+      fullPath: '/account/roles'
+      preLoaderRoute: typeof CoreAccountRolesRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
+    '/_core/account/profile': {
+      id: '/_core/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof CoreAccountProfileRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
+    '/_core/account/personal': {
+      id: '/_core/account/personal'
+      path: '/personal'
+      fullPath: '/account/personal'
+      preLoaderRoute: typeof CoreAccountPersonalRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
+    '/_core/account/password': {
+      id: '/_core/account/password'
+      path: '/password'
+      fullPath: '/account/password'
+      preLoaderRoute: typeof CoreAccountPasswordRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
+    '/_core/account/contacts': {
+      id: '/_core/account/contacts'
+      path: '/contacts'
+      fullPath: '/account/contacts'
+      preLoaderRoute: typeof CoreAccountContactsRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
+    '/_core/account/appearance': {
+      id: '/_core/account/appearance'
+      path: '/appearance'
+      fullPath: '/account/appearance'
+      preLoaderRoute: typeof CoreAccountAppearanceRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
   }
 }
 
-interface CoreSettingsRouteRouteChildren {
-  CoreSettingsAppearanceRoute: typeof CoreSettingsAppearanceRoute
-  CoreSettingsContactsRoute: typeof CoreSettingsContactsRoute
-  CoreSettingsPasswordRoute: typeof CoreSettingsPasswordRoute
-  CoreSettingsPersonalRoute: typeof CoreSettingsPersonalRoute
-  CoreSettingsProfileRoute: typeof CoreSettingsProfileRoute
-  CoreSettingsRolesRoute: typeof CoreSettingsRolesRoute
-  CoreSettingsIndexRoute: typeof CoreSettingsIndexRoute
+interface CoreAccountRouteRouteChildren {
+  CoreAccountAppearanceRoute: typeof CoreAccountAppearanceRoute
+  CoreAccountContactsRoute: typeof CoreAccountContactsRoute
+  CoreAccountPasswordRoute: typeof CoreAccountPasswordRoute
+  CoreAccountPersonalRoute: typeof CoreAccountPersonalRoute
+  CoreAccountProfileRoute: typeof CoreAccountProfileRoute
+  CoreAccountRolesRoute: typeof CoreAccountRolesRoute
+  CoreAccountIndexRoute: typeof CoreAccountIndexRoute
 }
 
-const CoreSettingsRouteRouteChildren: CoreSettingsRouteRouteChildren = {
-  CoreSettingsAppearanceRoute: CoreSettingsAppearanceRoute,
-  CoreSettingsContactsRoute: CoreSettingsContactsRoute,
-  CoreSettingsPasswordRoute: CoreSettingsPasswordRoute,
-  CoreSettingsPersonalRoute: CoreSettingsPersonalRoute,
-  CoreSettingsProfileRoute: CoreSettingsProfileRoute,
-  CoreSettingsRolesRoute: CoreSettingsRolesRoute,
-  CoreSettingsIndexRoute: CoreSettingsIndexRoute,
+const CoreAccountRouteRouteChildren: CoreAccountRouteRouteChildren = {
+  CoreAccountAppearanceRoute: CoreAccountAppearanceRoute,
+  CoreAccountContactsRoute: CoreAccountContactsRoute,
+  CoreAccountPasswordRoute: CoreAccountPasswordRoute,
+  CoreAccountPersonalRoute: CoreAccountPersonalRoute,
+  CoreAccountProfileRoute: CoreAccountProfileRoute,
+  CoreAccountRolesRoute: CoreAccountRolesRoute,
+  CoreAccountIndexRoute: CoreAccountIndexRoute,
 }
 
-const CoreSettingsRouteRouteWithChildren =
-  CoreSettingsRouteRoute._addFileChildren(CoreSettingsRouteRouteChildren)
+const CoreAccountRouteRouteWithChildren =
+  CoreAccountRouteRoute._addFileChildren(CoreAccountRouteRouteChildren)
 
 interface CoreRouteChildren {
-  CoreSettingsRouteRoute: typeof CoreSettingsRouteRouteWithChildren
+  CoreAccountRouteRoute: typeof CoreAccountRouteRouteWithChildren
   CoreDashboardRoute: typeof CoreDashboardRoute
   CorePricingPricingAdminRoute: typeof CorePricingPricingAdminRoute
   CorePricingPricingDiscountsRoute: typeof CorePricingPricingDiscountsRoute
@@ -479,7 +479,7 @@ interface CoreRouteChildren {
 }
 
 const CoreRouteChildren: CoreRouteChildren = {
-  CoreSettingsRouteRoute: CoreSettingsRouteRouteWithChildren,
+  CoreAccountRouteRoute: CoreAccountRouteRouteWithChildren,
   CoreDashboardRoute: CoreDashboardRoute,
   CorePricingPricingAdminRoute: CorePricingPricingAdminRoute,
   CorePricingPricingDiscountsRoute: CorePricingPricingDiscountsRoute,

@@ -1,8 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { client } from '@/lib/rpc'
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { QPhone } from '@/components/QPhone'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,10 +9,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { toast } from 'sonner'
+import { client } from '@/lib/rpc'
 import { contactSettingsSchema, type ContactSettings } from '@/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
-export const Route = createFileRoute('/_core/settings/contacts')({
+
+export const Route = createFileRoute('/_core/account/contacts')({
   component: ContactSettings,
 })
 

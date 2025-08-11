@@ -18,7 +18,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/contexts/AuthContext'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 export function NavUser() {
@@ -131,9 +131,9 @@ export function NavUser() {
                 Notifications
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/settings/profile">
+                <Link to="/account/profile">
                   <Settings className="mr-2 h-4 w-4" />
-                  Account Settings
+                  Account
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

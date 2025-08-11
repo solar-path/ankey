@@ -1,6 +1,12 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { z } from 'zod'
 
+// Breadcrumb type
+export interface BreadcrumbItem {
+  title: string
+  href: string
+}
+
 // User schemas
 export const userSchema = z.object({
   id: z.string(),

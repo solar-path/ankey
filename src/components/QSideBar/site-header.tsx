@@ -8,78 +8,45 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Link, useRouterState } from '@tanstack/react-router'
+import { type BreadcrumbItem as BreadcrumbItemType } from '@/shared'
+import { Link } from '@tanstack/react-router'
 
-export function SiteHeader() {
-  const router = useRouterState()
-  const pathname = router.location.pathname
+interface SiteHeaderProps {
+  breadcrumbs?: BreadcrumbItemType[]
+}
 
-  // Generate breadcrumb items based on current path
-  const generateBreadcrumbs = () => {
-    const segments = pathname.split('/').filter(Boolean)
-    const breadcrumbs = [{ name: 'Dashboard', href: '/dashboard' }]
+export function SiteHeader({ breadcrumbs = [] }: SiteHeaderProps) {
+  // Determine the root breadcrumb based on the current context
+  const isCore = window.location.pathname.includes('/account') || window.location.pathname.includes('/dashboard') || window.location.pathname.includes('/pricing')
+  const rootBreadcrumb: BreadcrumbItemType = isCore
+    ? { title: 'Core', href: '/dashboard' }
+    : { title: 'Workspace', href: '/' } // This will be replaced with actual workspace title when available
 
-    let currentPath = ''
-    segments.forEach((segment, index) => {
-      currentPath += `/${segment}`
-
-      // Skip the first segment if it's just the route prefix
-      if (segment === '_core' || segment === '_tenant' || segment === '_public') {
-        return
-      }
-
-      // Format segment name
-      let name = segment
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-
-      // Special cases for better naming
-      if (segment === 'pricing-admin') name = 'Pricing Plans'
-      if (segment === 'pricing-discounts') name = 'Pricing Discounts'
-      if (segment === 'pricing-subscriptions') name = 'Subscriptions'
-      if (segment === 'settings') name = 'Settings'
-      if (segment === 'profile') name = 'Profile'
-      if (segment === 'personal') name = 'Personal'
-      if (segment === 'contacts') name = 'Contacts'
-      if (segment === 'appearance') name = 'Appearance'
-      if (segment === 'password') name = 'Password'
-      if (segment === 'roles') name = 'Roles'
-
-      breadcrumbs.push({
-        name,
-        href: currentPath,
-      })
-    })
-
-    return breadcrumbs
-  }
-
-  const breadcrumbs = generateBreadcrumbs()
+  const allBreadcrumbs = [rootBreadcrumb, ...breadcrumbs]
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 p-2">
+      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
 
         {/* Dynamic Breadcrumbs */}
         <Breadcrumb>
           <BreadcrumbList>
-            {breadcrumbs.map((item, index) => (
+            {allBreadcrumbs.map((item, index) => (
               <div key={item.href} className="flex items-center gap-1.5">
                 <BreadcrumbItem>
-                  {index === breadcrumbs.length - 1 ? (
-                    <BreadcrumbPage>{item.name}</BreadcrumbPage>
+                  {index === allBreadcrumbs.length - 1 ? (
+                    <BreadcrumbPage>{item.title}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
                       <Link to={item.href} className="hover:text-foreground transition-colors">
-                        {item.name}
+                        {item.title}
                       </Link>
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
-                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                {index < allBreadcrumbs.length - 1 && <BreadcrumbSeparator />}
               </div>
             ))}
           </BreadcrumbList>

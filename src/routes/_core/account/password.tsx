@@ -1,8 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { client } from '@/lib/rpc'
-import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -13,11 +8,17 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { LoaderCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import { client } from '@/lib/rpc'
 import { passwordChangeSchema, type PasswordChange } from '@/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute } from '@tanstack/react-router'
+import { LoaderCircle } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
-export const Route = createFileRoute('/_core/settings/password')({
+
+export const Route = createFileRoute('/_core/account/password')({
   component: PasswordSettings,
 })
 

@@ -1,5 +1,4 @@
 import QCalendarPick from '@/components/QCalendarPick'
-import { client } from '@/lib/rpc'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,14 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { client } from '@/lib/rpc'
 import { personalSettingsSchema, type PersonalSettings } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/_core/settings/personal')({
+
+export const Route = createFileRoute('/_core/account/personal')({
   component: PersonalSettingsComponent,
 })
 
