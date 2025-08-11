@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { createCoreConnection } from '@/api/database.settings'
 import * as coreSchema from '@/api/db/schemas/core.drizzle'
 import type { Permission, Role } from '@/shared'

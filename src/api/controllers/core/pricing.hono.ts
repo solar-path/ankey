@@ -37,19 +37,21 @@ const createDiscountSchema = z.object({
 
 const updateDiscountSchema = createDiscountSchema.partial()
 
-const createSubscriptionSchema = z.object({
-  tenantId: z.string().uuid(),
-  planId: z.string().uuid(),
-  status: z.string(),
-  userCount: z.number().min(0),
-  pricePerUser: z.number().min(0),
-  totalMonthlyPrice: z.number().min(0),
-  billingCycle: z.string(),
-  trialEndsAt: z.coerce.date().optional(),
-  nextBillingDate: z.coerce.date().optional(),
-})
+// Reserved for future use - subscription schema
+// const createSubscriptionSchema = z.object({
+//   tenantId: z.string().uuid(),
+//   planId: z.string().uuid(),
+//   status: z.string(),
+//   userCount: z.number().min(0),
+//   pricePerUser: z.number().min(0),
+//   totalMonthlyPrice: z.number().min(0),
+//   billingCycle: z.string(),
+//   trialEndsAt: z.coerce.date().optional(),
+//   nextBillingDate: z.coerce.date().optional(),
+// })
 
-const _updateSubscriptionSchema = createSubscriptionSchema.partial() // Reserved for future use
+// Reserved for future use
+// const _updateSubscriptionSchema = createSubscriptionSchema.partial()
 
 // PRICING PLANS CRUD
 

@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { and, desc, eq, count } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { createCoreConnection } from '../../database.settings'
-import { services, serviceSubscriptions, serviceUsage, serviceConfigs } from '../../db/schemas/services.drizzle'
+import { services, serviceSubscriptions, serviceUsage } from '../../db/schemas/services.drizzle'
 import { requireCoreAuth, optionalCoreAuth } from '@/api/middleware'
 
 // Define schemas for service operations
@@ -24,8 +24,8 @@ const createServiceSubscriptionSchema = z.object({
   tenantName: z.string().optional(),
   status: z.string().default('active'),
   userCount: z.number().min(0).default(0),
-  pricePerUser: z.number().min(0).default(0),
-  totalMonthlyPrice: z.number().min(0).default(0),
+  pricePerUser: z.string().default('0.00'), // decimal field in database
+  totalMonthlyPrice: z.string().default('0.00'), // decimal field in database
   billingCycle: z.string().default('monthly'),
 })
 

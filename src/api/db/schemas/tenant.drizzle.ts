@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean, uuid, jsonb, integer, decimal } from 'drizzle-orm/pg-core'
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+// import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
 // Tenant users table
@@ -276,7 +276,7 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 // export const insertRoleSchema = createInsertSchema(roles)
 // export const selectRoleSchema = createSelectSchema(roles)
 
-export const productsRelations = relations(products, ({ one, many }) => ({
+export const productsRelations = relations(products, () => ({
   // Add relations here as needed
 }))
 
