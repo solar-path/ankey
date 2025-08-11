@@ -1,3 +1,4 @@
+import { QPassword } from '@/components/QPassword'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -7,13 +8,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { client } from '@/lib/rpc'
 import { passwordChangeSchema, type PasswordChange } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { LoaderCircle } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -23,8 +23,6 @@ export const Route = createFileRoute('/_core/account/password')({
 
 function PasswordSettings() {
   const [isLoading, setIsLoading] = useState(false)
-  const passwordInput = useRef<HTMLInputElement>(null)
-  const currentPasswordInput = useRef<HTMLInputElement>(null)
 
   const form = useForm<PasswordChange>({
     resolver: zodResolver(passwordChangeSchema),
@@ -74,13 +72,6 @@ function PasswordSettings() {
       }
 
       toast.error(errorMessage)
-
-      // Focus appropriate field based on error
-      if (error.message?.includes('current password')) {
-        currentPasswordInput.current?.focus()
-      } else {
-        passwordInput.current?.focus()
-      }
     } finally {
       setIsLoading(false)
     }
@@ -108,10 +99,8 @@ function PasswordSettings() {
                 <FormItem>
                   <FormLabel>Current password</FormLabel>
                   <FormControl>
-                    <Input
+                    <QPassword
                       {...field}
-                      ref={currentPasswordInput}
-                      type="password"
                       autoComplete="current-password"
                       placeholder="Current password"
                     />
@@ -128,12 +117,11 @@ function PasswordSettings() {
                 <FormItem>
                   <FormLabel>New password</FormLabel>
                   <FormControl>
-                    <Input
+                    <QPassword
                       {...field}
-                      ref={passwordInput}
-                      type="password"
                       autoComplete="new-password"
                       placeholder="New password"
+                      showComplexity={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -148,9 +136,8 @@ function PasswordSettings() {
                 <FormItem>
                   <FormLabel>Confirm password</FormLabel>
                   <FormControl>
-                    <Input
+                    <QPassword
                       {...field}
-                      type="password"
                       autoComplete="new-password"
                       placeholder="Confirm password"
                     />
