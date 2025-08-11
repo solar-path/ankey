@@ -310,7 +310,18 @@ function PricingSubscriptions() {
                       <div>
                         <p className="font-medium">{subscription.tenantName || 'Unknown Tenant'}</p>
                         <p className="text-sm text-muted-foreground">
-                          {subscription.tenantSubdomain ? `${subscription.tenantSubdomain}.ankey.app` : 'No subdomain'} • Created {new Date(subscription.createdAt).toLocaleDateString()}
+                          {subscription.tenantSubdomain ? (
+                            <a 
+                              href={`http://${subscription.tenantSubdomain}.localhost:3000`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              {subscription.tenantSubdomain}.localhost:3000
+                            </a>
+                          ) : (
+                            'No subdomain'
+                          )} • Created {new Date(subscription.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </TableCell>

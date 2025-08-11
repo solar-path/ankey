@@ -25,6 +25,7 @@ import { Route as PublicLearnTermsRouteImport } from './routes/_public/learn/ter
 import { Route as PublicLearnPrivacyRouteImport } from './routes/_public/learn/privacy'
 import { Route as PublicLearnCookiesRouteImport } from './routes/_public/learn/cookies'
 import { Route as CorePricingSubscriptionsRouteImport } from './routes/_core/pricing/subscriptions'
+import { Route as CorePricingServicesRouteImport } from './routes/_core/pricing/services'
 import { Route as CorePricingPlansRouteImport } from './routes/_core/pricing/plans'
 import { Route as CorePricingDiscountsRouteImport } from './routes/_core/pricing/discounts'
 import { Route as CoreAccountRolesRouteImport } from './routes/_core/account/roles'
@@ -113,6 +114,11 @@ const CorePricingSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => CorePricingRouteRoute,
   } as any)
+const CorePricingServicesRoute = CorePricingServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => CorePricingRouteRoute,
+} as any)
 const CorePricingPlansRoute = CorePricingPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/account/roles': typeof CoreAccountRolesRoute
   '/pricing/discounts': typeof CorePricingDiscountsRoute
   '/pricing/plans': typeof CorePricingPlansRoute
+  '/pricing/services': typeof CorePricingServicesRoute
   '/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/account/roles': typeof CoreAccountRolesRoute
   '/pricing/discounts': typeof CorePricingDiscountsRoute
   '/pricing/plans': typeof CorePricingPlansRoute
+  '/pricing/services': typeof CorePricingServicesRoute
   '/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/_core/account/roles': typeof CoreAccountRolesRoute
   '/_core/pricing/discounts': typeof CorePricingDiscountsRoute
   '/_core/pricing/plans': typeof CorePricingPlansRoute
+  '/_core/pricing/services': typeof CorePricingServicesRoute
   '/_core/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/_public/learn/cookies': typeof PublicLearnCookiesRoute
   '/_public/learn/privacy': typeof PublicLearnPrivacyRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/account/roles'
     | '/pricing/discounts'
     | '/pricing/plans'
+    | '/pricing/services'
     | '/pricing/subscriptions'
     | '/learn/cookies'
     | '/learn/privacy'
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/account/roles'
     | '/pricing/discounts'
     | '/pricing/plans'
+    | '/pricing/services'
     | '/pricing/subscriptions'
     | '/learn/cookies'
     | '/learn/privacy'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/_core/account/roles'
     | '/_core/pricing/discounts'
     | '/_core/pricing/plans'
+    | '/_core/pricing/services'
     | '/_core/pricing/subscriptions'
     | '/_public/learn/cookies'
     | '/_public/learn/privacy'
@@ -423,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorePricingSubscriptionsRouteImport
       parentRoute: typeof CorePricingRouteRoute
     }
+    '/_core/pricing/services': {
+      id: '/_core/pricing/services'
+      path: '/services'
+      fullPath: '/pricing/services'
+      preLoaderRoute: typeof CorePricingServicesRouteImport
+      parentRoute: typeof CorePricingRouteRoute
+    }
     '/_core/pricing/plans': {
       id: '/_core/pricing/plans'
       path: '/plans'
@@ -508,6 +527,7 @@ const CoreAccountRouteRouteWithChildren =
 interface CorePricingRouteRouteChildren {
   CorePricingDiscountsRoute: typeof CorePricingDiscountsRoute
   CorePricingPlansRoute: typeof CorePricingPlansRoute
+  CorePricingServicesRoute: typeof CorePricingServicesRoute
   CorePricingSubscriptionsRoute: typeof CorePricingSubscriptionsRoute
   CorePricingIndexRoute: typeof CorePricingIndexRoute
 }
@@ -515,6 +535,7 @@ interface CorePricingRouteRouteChildren {
 const CorePricingRouteRouteChildren: CorePricingRouteRouteChildren = {
   CorePricingDiscountsRoute: CorePricingDiscountsRoute,
   CorePricingPlansRoute: CorePricingPlansRoute,
+  CorePricingServicesRoute: CorePricingServicesRoute,
   CorePricingSubscriptionsRoute: CorePricingSubscriptionsRoute,
   CorePricingIndexRoute: CorePricingIndexRoute,
 }
