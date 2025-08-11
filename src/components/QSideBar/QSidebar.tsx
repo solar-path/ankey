@@ -2,16 +2,8 @@
 
 import { Link } from '@tanstack/react-router'
 import {
-  Building2,
   DollarSign,
-  FileText,
-  HelpCircle,
-  LayoutDashboard,
-  Search,
-  Settings,
-  Shield,
-  TrendingUp,
-  Users
+  LayoutDashboard
 } from 'lucide-react'
 import * as React from 'react'
 
@@ -28,6 +20,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
+
 const data = {
   navMain: [
     {
@@ -40,48 +33,48 @@ const data = {
       url: '/pricing-admin',
       icon: DollarSign,
     },
-    {
-      title: 'Tenants',
-      url: '/tenants',
-      icon: Building2,
-    },
-    {
-      title: 'Users',
-      url: '/users',
-      icon: Users,
-    },
-    {
-      title: 'Analytics',
-      url: '/analytics',
-      icon: TrendingUp,
-    },
-    {
-      title: 'Security',
-      url: '/security',
-      icon: Shield,
-    },
-    {
-      title: 'Reports',
-      url: '/reports',
-      icon: FileText,
-    },
+  //   {
+  //     title: 'Tenants',
+  //     url: '/tenants',
+  //     icon: Building2,
+  //   },
+  //   {
+  //     title: 'Users',
+  //     url: '/users',
+  //     icon: Users,
+  //   },
+  //   {
+  //     title: 'Analytics',
+  //     url: '/analytics',
+  //     icon: TrendingUp,
+  //   },
+  //   {
+  //     title: 'Security',
+  //     url: '/security',
+  //     icon: Shield,
+  //   },
+  //   {
+  //     title: 'Reports',
+  //     url: '/reports',
+  //     icon: FileText,
+  //   },
   ],
   navSecondary: [
-    {
-      title: 'Settings',
-      url: '/settings',
-      icon: Settings,
-    },
-    {
-      title: 'Help',
-      url: '/help',
-      icon: HelpCircle,
-    },
-    {
-      title: 'Search',
-      url: '/search',
-      icon: Search,
-    },
+    // {
+    //   title: 'Settings',
+    //   url: '/settings',
+    //   icon: Settings,
+    // },
+    // {
+    //   title: 'Help',
+    //   url: '/help',
+    //   icon: HelpCircle,
+    // },
+    // {
+    //   title: 'Search',
+    //   url: '/search',
+    //   icon: Search,
+    // },
   ],
 }
 

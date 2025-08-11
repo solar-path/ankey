@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import { createFileRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Contact, Lock, Palette, Settings, Shield, User } from 'lucide-react'
+import { SiteHeader } from '@/components/QSideBar/site-header'
 
 export const Route = createFileRoute('/_core/settings')({
   component: SettingsLayout,
@@ -50,23 +51,13 @@ function SettingsLayout() {
   const currentPath = location.pathname
 
   return (
-    <div className="flex-1 overflow-hidden">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="px-6 py-4">
-          <div className="flex items-center">
-            <Settings className="h-6 w-6 mr-3 text-gray-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
-              <p className="text-gray-600">Manage your account preferences and security</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="flex-1 overflow-hidden flex flex-col">
+      {/* Site Header with breadcrumbs */}
+      <SiteHeader />
 
-      <div className="flex h-full">
+      <div className="flex h-full flex-1">
         {/* Settings Navigation */}
-        <div className="w-64 bg-gray-50 border-r border-gray-200 p-6">
+        <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-6">
           <nav className="space-y-2">
             {settingsNavigation.map(item => {
               const isActive =
@@ -80,20 +71,20 @@ function SettingsLayout() {
                   className={cn(
                     'flex items-start p-3 rounded-lg text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   )}
                 >
                   <item.icon
                     className={cn(
                       'h-5 w-5 mr-3 mt-0.5 flex-shrink-0',
-                      isActive ? 'text-blue-600' : 'text-gray-500'
+                      isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
                     )}
                   />
                   <div>
                     <div className="font-medium">{item.name}</div>
                     <div
-                      className={cn('text-xs mt-1', isActive ? 'text-blue-600' : 'text-gray-500')}
+                      className={cn('text-xs mt-1', isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}
                     >
                       {item.description}
                     </div>
