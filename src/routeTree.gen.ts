@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TenantRouteImport } from './routes/_tenant'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as CoreRouteImport } from './routes/_core'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as TenantTenantDashboardRouteImport } from './routes/_tenant/tenantDashboard'
 import { Route as PublicSwapRouteImport } from './routes/_public/swap'
 import { Route as PublicShopRouteImport } from './routes/_public/shop'
 import { Route as PublicOffersRouteImport } from './routes/_public/offers'
@@ -39,6 +41,10 @@ import { Route as CoreAccountPasswordRouteImport } from './routes/_core/account/
 import { Route as CoreAccountContactsRouteImport } from './routes/_core/account/contacts'
 import { Route as CoreAccountAppearanceRouteImport } from './routes/_core/account/appearance'
 
+const TenantRoute = TenantRouteImport.update({
+  id: '/_tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
@@ -51,6 +57,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublicRoute,
+} as any)
+const TenantTenantDashboardRoute = TenantTenantDashboardRouteImport.update({
+  id: '/tenantDashboard',
+  path: '/tenantDashboard',
+  getParentRoute: () => TenantRoute,
 } as any)
 const PublicSwapRoute = PublicSwapRouteImport.update({
   id: '/swap',
@@ -98,9 +109,9 @@ const CoreAccountRouteRoute = CoreAccountRouteRouteImport.update({
   getParentRoute: () => CoreRoute,
 } as any)
 const TenantProductsIndexRoute = TenantProductsIndexRouteImport.update({
-  id: '/_tenant/products/',
+  id: '/products/',
   path: '/products/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => TenantRoute,
 } as any)
 const CorePricingIndexRoute = CorePricingIndexRouteImport.update({
   id: '/',
@@ -113,9 +124,9 @@ const CoreAccountIndexRoute = CoreAccountIndexRouteImport.update({
   getParentRoute: () => CoreAccountRouteRoute,
 } as any)
 const TenantProductsIdRoute = TenantProductsIdRouteImport.update({
-  id: '/_tenant/products/$id',
+  id: '/products/$id',
   path: '/products/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => TenantRoute,
 } as any)
 const PublicLearnTermsRoute = PublicLearnTermsRouteImport.update({
   id: '/terms',
@@ -194,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/offers': typeof PublicOffersRoute
   '/shop': typeof PublicShopRoute
   '/swap': typeof PublicSwapRoute
+  '/tenantDashboard': typeof TenantTenantDashboardRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -221,6 +233,7 @@ export interface FileRoutesByTo {
   '/offers': typeof PublicOffersRoute
   '/shop': typeof PublicShopRoute
   '/swap': typeof PublicSwapRoute
+  '/tenantDashboard': typeof TenantTenantDashboardRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -244,6 +257,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_core': typeof CoreRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/_tenant': typeof TenantRouteWithChildren
   '/_core/account': typeof CoreAccountRouteRouteWithChildren
   '/_core/pricing': typeof CorePricingRouteRouteWithChildren
   '/_core/dashboard': typeof CoreDashboardRoute
@@ -253,6 +267,7 @@ export interface FileRoutesById {
   '/_public/offers': typeof PublicOffersRoute
   '/_public/shop': typeof PublicShopRoute
   '/_public/swap': typeof PublicSwapRoute
+  '/_tenant/tenantDashboard': typeof TenantTenantDashboardRoute
   '/_public/': typeof PublicIndexRoute
   '/_core/account/appearance': typeof CoreAccountAppearanceRoute
   '/_core/account/contacts': typeof CoreAccountContactsRoute
@@ -284,6 +299,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/shop'
     | '/swap'
+    | '/tenantDashboard'
     | '/'
     | '/account/appearance'
     | '/account/contacts'
@@ -311,6 +327,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/shop'
     | '/swap'
+    | '/tenantDashboard'
     | '/'
     | '/account/appearance'
     | '/account/contacts'
@@ -333,6 +350,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_core'
     | '/_public'
+    | '/_tenant'
     | '/_core/account'
     | '/_core/pricing'
     | '/_core/dashboard'
@@ -342,6 +360,7 @@ export interface FileRouteTypes {
     | '/_public/offers'
     | '/_public/shop'
     | '/_public/swap'
+    | '/_tenant/tenantDashboard'
     | '/_public/'
     | '/_core/account/appearance'
     | '/_core/account/contacts'
@@ -365,12 +384,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   CoreRoute: typeof CoreRouteWithChildren
   PublicRoute: typeof PublicRouteWithChildren
-  TenantProductsIdRoute: typeof TenantProductsIdRoute
-  TenantProductsIndexRoute: typeof TenantProductsIndexRoute
+  TenantRoute: typeof TenantRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_tenant': {
+      id: '/_tenant'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_public': {
       id: '/_public'
       path: ''
@@ -391,6 +416,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/_tenant/tenantDashboard': {
+      id: '/_tenant/tenantDashboard'
+      path: '/tenantDashboard'
+      fullPath: '/tenantDashboard'
+      preLoaderRoute: typeof TenantTenantDashboardRouteImport
+      parentRoute: typeof TenantRoute
     }
     '/_public/swap': {
       id: '/_public/swap'
@@ -460,7 +492,7 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products'
       preLoaderRoute: typeof TenantProductsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TenantRoute
     }
     '/_core/pricing/': {
       id: '/_core/pricing/'
@@ -481,7 +513,7 @@ declare module '@tanstack/react-router' {
       path: '/products/$id'
       fullPath: '/products/$id'
       preLoaderRoute: typeof TenantProductsIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TenantRoute
     }
     '/_public/learn/terms': {
       id: '/_public/learn/terms'
@@ -672,11 +704,25 @@ const PublicRouteChildren: PublicRouteChildren = {
 const PublicRouteWithChildren =
   PublicRoute._addFileChildren(PublicRouteChildren)
 
+interface TenantRouteChildren {
+  TenantTenantDashboardRoute: typeof TenantTenantDashboardRoute
+  TenantProductsIdRoute: typeof TenantProductsIdRoute
+  TenantProductsIndexRoute: typeof TenantProductsIndexRoute
+}
+
+const TenantRouteChildren: TenantRouteChildren = {
+  TenantTenantDashboardRoute: TenantTenantDashboardRoute,
+  TenantProductsIdRoute: TenantProductsIdRoute,
+  TenantProductsIndexRoute: TenantProductsIndexRoute,
+}
+
+const TenantRouteWithChildren =
+  TenantRoute._addFileChildren(TenantRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   CoreRoute: CoreRouteWithChildren,
   PublicRoute: PublicRouteWithChildren,
-  TenantProductsIdRoute: TenantProductsIdRoute,
-  TenantProductsIndexRoute: TenantProductsIndexRoute,
+  TenantRoute: TenantRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

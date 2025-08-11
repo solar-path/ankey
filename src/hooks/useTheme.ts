@@ -13,6 +13,17 @@ export function useTheme(): UseThemeReturn {
   const [theme, setThemeState] = useState<Theme>('light')
   const [loading, setLoading] = useState(true)
 
+  // Auto-detect tenant context from URL
+  const detectTenantContext = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      const subdomain = hostname.split('.')[0]
+      // Check if we're on a tenant subdomain (not localhost, www, or core domains)
+      return !['localhost', 'www', 'api', 'core'].includes(subdomain) && subdomain !== hostname
+    }
+    return false
+  }
+
   // Apply theme to document
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement
@@ -27,7 +38,13 @@ export function useTheme(): UseThemeReturn {
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const response = await client.settings.me.$get()
+        const isTenant = detectTenantContext()
+        
+        // Use appropriate settings endpoint based on context
+        const response = isTenant 
+          ? await client['tenant-settings'].me.$get()
+          : await client.settings.me.$get()
+          
         if (response.ok) {
           const data = await response.json()
           if (data.success && data.data?.appearance?.theme) {
@@ -63,10 +80,18 @@ export function useTheme(): UseThemeReturn {
       setThemeState(newTheme)
       applyTheme(newTheme)
 
-      // Save to user settings
-      await client.settings.appearance.$patch({
-        json: { theme: newTheme },
-      })
+      const isTenant = detectTenantContext()
+      
+      // Save to appropriate settings endpoint based on context
+      if (isTenant) {
+        await client['tenant-settings'].appearance.$patch({
+          json: { theme: newTheme },
+        })
+      } else {
+        await client.settings.appearance.$patch({
+          json: { theme: newTheme },
+        })
+      }
     } catch (error) {
       console.error('Failed to save theme setting:', error)
       // Still apply the theme locally even if save fails

@@ -34,6 +34,19 @@ export function LoginForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
+  // Auto-detect tenant context from URL
+  const detectTenantContext = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      const subdomain = hostname.split('.')[0]
+      // Check if we're on a tenant subdomain (not localhost, www, or core domains)
+      return !['localhost', 'www', 'api', 'core'].includes(subdomain) && subdomain !== hostname
+    }
+    return false
+  }
+
+  const isActuallyTenant = isTenant || detectTenantContext()
+
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -44,6 +57,9 @@ export function LoginForm({
   })
 
   const handleFormSubmit = async (data: LoginData) => {
+    console.log('Submitting login form with data:', data)
+    console.log('Tenant context detected:', isActuallyTenant)
+    console.log('Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server-side')
     setIsSubmitting(true)
     try {
       if (onSubmit) {
@@ -51,7 +67,8 @@ export function LoginForm({
       } else {
         console.log(data)
         // Use RPC client for login
-        const authClient = isTenant ? client['tenant-auth'] : client.auth
+        const authClient = isActuallyTenant ? client['tenant-auth'] : client.auth
+        console.log('Using auth client:', isActuallyTenant ? 'tenant-auth' : 'core-auth')
         const response = await authClient.login.$post({
           json: data,
         })
@@ -75,9 +92,9 @@ export function LoginForm({
           closeDrawer() // Close drawer before navigation
 
           // Navigate to appropriate dashboard based on user type
-          if (isTenant) {
-            // For tenant users, navigate to root - they'll be handled by tenant subdomain routing
-            navigate({ to: '/' })
+          if (isActuallyTenant) {
+            // For tenant users, navigate to tenant dashboard
+            navigate({ to: '/tenantDashboard' })
           } else {
             // For core admin users, navigate to core dashboard
             navigate({ to: '/dashboard' })
@@ -161,7 +178,7 @@ export function LoginForm({
             {isSubmitting || externalLoading ? 'Signing In...' : 'Sign In'}
           </Button>
 
-          {isTenant && (
+          {isActuallyTenant && (
             <div className="text-center">
               <Button
                 type="button"

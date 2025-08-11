@@ -32,10 +32,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!user
 
+  // Auto-detect tenant context from URL
+  const detectTenantContext = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      const subdomain = hostname.split('.')[0]
+      // Check if we're on a tenant subdomain (not localhost, www, or core domains)
+      return !['localhost', 'www', 'api', 'core'].includes(subdomain) && subdomain !== hostname
+    }
+    return false
+  }
+
   const checkAuth = async () => {
     setIsLoading(true)
     try {
-      const response = await client.auth.me.$get()
+      const isTenant = detectTenantContext()
+      
+      // Use appropriate auth endpoint based on context
+      const response = isTenant
+        ? await client['tenant-auth'].me.$get()
+        : await client.auth.me.$get()
 
       if (response.ok) {
         const result = await response.json()
@@ -57,9 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, twoFactorCode?: string) => {
     try {
-      const response = await client.auth.login.$post({
-        json: { email, password, twoFactorCode: twoFactorCode || '' },
-      })
+      const isTenant = detectTenantContext()
+      
+      // Use appropriate login endpoint based on context
+      const response = isTenant
+        ? await client['tenant-auth'].login.$post({
+            json: { email, password, twoFactorCode: twoFactorCode || '' },
+          })
+        : await client.auth.login.$post({
+            json: { email, password, twoFactorCode: twoFactorCode || '' },
+          })
 
       if (response.ok) {
         const result = await response.json()
@@ -84,7 +107,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await client.auth.logout.$post()
+      const isTenant = detectTenantContext()
+      
+      // Use appropriate logout endpoint based on context
+      if (isTenant) {
+        await client['tenant-auth'].logout.$post()
+      } else {
+        await client.auth.logout.$post()
+      }
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
