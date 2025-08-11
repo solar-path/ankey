@@ -306,7 +306,10 @@ Forms should be organized based on complexity and field count:
 ### Database & API Development
 
 - **Drizzle Kit** available for schema generation and migrations
-- **NEVER use `drizzle-kit push`** - only use `drizzle-kit generate` and `drizzle-kit migrate`
+- **🚨 PROHIBITED: `drizzle-kit push` commands are FORBIDDEN** 
+  - **NEVER use** `bun run db:push`, `bun run db:push:core`, or `bun run db:push:tenant`
+  - **ONLY use** `drizzle-kit generate` and `drizzle-kit migrate` for safe schema changes
+  - **Reason**: `push` bypasses migration history and can cause data loss in production
 - Use `tsx` for running TypeScript files directly (useful for database scripts)
 - **Zod v4** schemas for API validation and TypeScript inference
 - **React Hook Form** with `@hookform/resolvers` for form validation
