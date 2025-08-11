@@ -346,6 +346,9 @@ function OffersPage() {
                                 (${Math.round(calculation.periodicPrice)} per month)
                               </div>
                             </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)} per user per month
+                            </div>
                           </>
                         ) : (
                           <>
@@ -354,6 +357,9 @@ function OffersPage() {
                             </div>
                             <div className="text-gray-600 dark:text-gray-300 text-sm">
                               per month
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)} per user per month
                             </div>
                           </>
                         )}
@@ -376,6 +382,9 @@ function OffersPage() {
                                 (${Math.round(plan.pricePerUserPerMonth * userCount * 0.85)} per month)
                               </div>
                             </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              ${(plan.pricePerUserPerMonth * 0.85).toFixed(2)} per user per month
+                            </div>
                           </>
                         ) : (
                           <>
@@ -384,6 +393,9 @@ function OffersPage() {
                             </div>
                             <div className="text-gray-600 dark:text-gray-300 text-sm">
                               per month
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              ${plan.pricePerUserPerMonth.toFixed(2)} per user per month
                             </div>
                           </>
                         )}

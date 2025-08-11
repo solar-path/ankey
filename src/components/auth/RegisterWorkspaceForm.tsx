@@ -60,7 +60,7 @@ export function RegisterWorkspaceForm({
         const result = await handleApiResponse(response)
 
         if (!result.success) {
-          throw new Error(result.error || 'Registration failed')
+          throw new Error(result.error || 'Failed to set up workspace. Please try again.')
         }
 
         // Show success toast

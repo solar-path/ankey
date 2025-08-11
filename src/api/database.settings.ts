@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import * as coreSchema from './db/schemas/core.drizzle'
 import * as tenantSchema from './db/schemas/tenant.drizzle'
@@ -75,15 +76,30 @@ export async function createTenantDatabase(tenantDatabase: string): Promise<bool
   }
 }
 
-// Run tenant migrations (you'll need to implement this based on your migration strategy)
+// Run tenant migrations
 export async function runTenantMigrations(tenantDatabase: string): Promise<boolean> {
-  // This would typically use drizzle-kit to run migrations
-  // For now, we'll create tables directly
-  // const db = createTenantConnection(tenantDatabase);
-
-  // You would typically run migration files here
-  console.log(`Migrations completed for ${tenantDatabase}`)
-  return true
+  const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${tenantDatabase}`
+  
+  const migrationClient = postgres(connectionString, {
+    max: 1,
+  })
+  
+  try {
+    const db = drizzle(migrationClient, { schema: tenantSchema })
+    
+    console.log(`Running migrations for ${tenantDatabase}...`)
+    
+    await migrate(db, { migrationsFolder: './src/api/db/migrations/tenant' })
+    
+    console.log(`Migrations completed for ${tenantDatabase}`)
+    
+    await migrationClient.end()
+    return true
+  } catch (error) {
+    console.error(`Migration failed for ${tenantDatabase}:`, error)
+    await migrationClient.end()
+    throw error
+  }
 }
 
 // Seed tenant database with default data
