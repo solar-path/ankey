@@ -1,9 +1,12 @@
 import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { createFileRoute } from '@tanstack/react-router'
 import { Check, Loader2 } from 'lucide-react'
@@ -135,11 +138,11 @@ function OffersPage() {
 
   const handleGetStarted = (plan: PricingPlan) => {
     if (plan.trialDays && plan.trialDays > 0) {
-      console.log('Starting free trial...', plan)
-      // TODO: Implement trial signup
+      // Open drawer with RegisterWorkspaceForm for free trial
+      openDrawer(<RegisterWorkspaceForm />)
     } else {
       console.log(`Selecting ${plan.name} plan...`, plan)
-      // TODO: Implement plan selection
+      // TODO: Implement plan selection for non-trial plans
     }
   }
 
@@ -168,11 +171,11 @@ function OffersPage() {
       </div>
 
       {/* Limited Time Offer */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-12 text-center dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-700">
+      <div className="mb-12 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-lg p-8 text-center">
         <h2 className="text-2xl font-semibold mb-2 text-green-900 dark:text-green-100">
           🎉 Limited Time Offer
         </h2>
-        <p className="text-green-700 dark:text-green-300 mb-4">
+        <p className="text-green-700 dark:text-green-300 mb-6 text-lg">
           Get full access to our platform with up to 5 users for 1 week - no credit card required!
           Plus enjoy special pricing on your first year.
         </p>
@@ -186,29 +189,20 @@ function OffersPage() {
 
       {/* Billing Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-          <button
-            onClick={() => setBillingCycle('monthly')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              billingCycle === 'monthly'
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-            }`}
-          >
+        <ToggleGroup
+          type="single"
+          value={billingCycle}
+          onValueChange={(value) => value && setBillingCycle(value as 'monthly' | 'yearly')}
+          className="border rounded-lg"
+        >
+          <ToggleGroupItem value="monthly" className="px-6 py-2">
             Monthly
-          </button>
-          <button
-            onClick={() => setBillingCycle('yearly')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              billingCycle === 'yearly'
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-            }`}
-          >
+          </ToggleGroupItem>
+          <ToggleGroupItem value="yearly" className="px-6 py-2">
             Yearly
             <span className="ml-1 text-green-600 dark:text-green-400 font-semibold">(-15%)</span>
-          </button>
-        </div>
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Promo Code */}
@@ -259,9 +253,9 @@ function OffersPage() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16 max-w-7xl mx-auto">
         {pricingPlans
-          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+          .sort((a, b) => a.pricePerUserPerMonth - b.pricePerUserPerMonth)
           .map(plan => {
             const calculation = calculations[plan.id]
             const features = parseFeatures(plan.features)
@@ -269,24 +263,24 @@ function OffersPage() {
             const hasPopularBadge = plan.badge === 'Popular' || plan.badge === 'Most Popular'
 
             return (
-              <div
+              <Card
                 key={plan.id}
-                className={`relative bg-white dark:bg-gray-900 rounded-lg shadow-lg border-2 p-8 ${
+                className={`relative flex flex-col h-full ${
                   hasPopularBadge
                     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700'
-                    : 'border-gray-200 dark:border-gray-700'
+                    : ''
                 }`}
               >
                 {plan.badge && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                     <span className="bg-blue-500 dark:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       {plan.badge}
                     </span>
                   </div>
                 )}
 
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold mb-2 dark:text-gray-100">{plan.name}</h3>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
 
                   {/* User Count Selector */}
                   <div className="mb-4">
@@ -304,7 +298,7 @@ function OffersPage() {
                             Math.max(plan.minUsers || 1, userCount - 1)
                           )
                         }
-                        className="w-8 h-8 rounded-l border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="w-10 h-10 rounded-l border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-center"
                         disabled={userCount <= (plan.minUsers || 1)}
                       >
                         -
@@ -321,7 +315,7 @@ function OffersPage() {
                             parseInt(e.target.value) || plan.minUsers || 1
                           )
                         }
-                        className="w-20 h-8 text-center border-t border-b border-gray-300 dark:border-gray-600 rounded-none dark:bg-gray-800 dark:text-gray-100"
+                        className="w-20 h-10 text-center border-t border-b border-gray-300 dark:border-gray-600 rounded-none dark:bg-gray-800 dark:text-gray-100"
                       />
                       <button
                         onClick={() =>
@@ -330,7 +324,7 @@ function OffersPage() {
                             Math.min(plan.maxUsers || 999, userCount + 1)
                           )
                         }
-                        className="w-8 h-8 rounded-r border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="w-10 h-10 rounded-r border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-center"
                         disabled={plan.maxUsers ? userCount >= plan.maxUsers : false}
                       >
                         +
@@ -341,20 +335,28 @@ function OffersPage() {
                   <div className="mb-2">
                     {calculation ? (
                       <div>
-                        <div className="text-4xl font-bold">
-                          $
-                          {billingCycle === 'yearly'
-                            ? Math.round(calculation.periodicPrice)
-                            : calculation.finalPrice}
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-300 text-sm">
-                          per {billingCycle === 'yearly' ? 'month' : 'month'}
-                          {billingCycle === 'yearly' && (
-                            <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                              (${calculation.finalPrice} billed annually)
+                        {billingCycle === 'yearly' ? (
+                          <>
+                            <div className="text-4xl font-bold">
+                              ${Math.round(calculation.periodicPrice * 12)}
                             </div>
-                          )}
-                        </div>
+                            <div className="text-gray-600 dark:text-gray-300 text-sm">
+                              total annually
+                              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                (${Math.round(calculation.periodicPrice)} per month)
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-4xl font-bold">
+                              ${calculation.finalPrice}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-300 text-sm">
+                              per month
+                            </div>
+                          </>
+                        )}
                         {calculation.discountPercent > 0 && (
                           <div className="text-green-600 dark:text-green-400 text-sm font-medium mt-1">
                             {calculation.discountPercent}% discount applied!
@@ -363,72 +365,90 @@ function OffersPage() {
                       </div>
                     ) : (
                       <div>
-                        <div className="text-4xl font-bold">
-                          ${plan.pricePerUserPerMonth * userCount}
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-300">per month</div>
+                        {billingCycle === 'yearly' ? (
+                          <>
+                            <div className="text-4xl font-bold">
+                              ${Math.round(plan.pricePerUserPerMonth * userCount * 0.85 * 12)}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-300 text-sm">
+                              total annually
+                              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                (${Math.round(plan.pricePerUserPerMonth * userCount * 0.85)} per month)
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-4xl font-bold">
+                              ${plan.pricePerUserPerMonth * userCount}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-300 text-sm">
+                              per month
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">{plan.description}</p>
+                  <CardDescription className="text-sm">{plan.description}</CardDescription>
                   {plan.trialDays && plan.trialDays > 0 && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium mt-2">
                       {plan.trialDays} days free trial ({plan.trialMaxUsers || 5} users)
                     </p>
                   )}
-                </div>
+                </CardHeader>
 
-                <div className="mb-8">
-                  <h4 className="font-semibold mb-4 dark:text-gray-100">Features included:</h4>
-                  <ul className="space-y-2">
-                    {features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm dark:text-gray-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {(plan.minUsers || plan.maxUsers) && (
-                  <div className="mb-8">
-                    <h4 className="font-semibold mb-4 text-gray-700 dark:text-gray-300">
-                      User Limits:
-                    </h4>
+                <CardContent className="flex-1">
+                  <div className="mb-6">
+                    <h4 className="font-semibold mb-4">Features included:</h4>
                     <ul className="space-y-2">
-                      {plan.minUsers && (
-                        <li className="flex items-start">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Minimum {plan.minUsers} users
-                          </span>
+                      {features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start">
+                          <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{feature}</span>
                         </li>
-                      )}
-                      {plan.maxUsers && (
-                        <li className="flex items-start">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Maximum {plan.maxUsers} users
-                          </span>
-                        </li>
-                      )}
+                      ))}
                     </ul>
                   </div>
-                )}
 
-                <Button
-                  onClick={() => handleGetStarted(plan)}
-                  className={`w-full ${
-                    hasPopularBadge
-                      ? 'bg-blue-600 hover:bg-blue-700'
-                      : 'bg-gray-600 hover:bg-gray-700'
-                  }`}
-                  variant={hasPopularBadge ? 'default' : 'outline'}
-                >
-                  {plan.trialDays && plan.trialDays > 0 ? 'Start Free Trial' : 'Choose Plan'}
-                </Button>
-              </div>
-            )
-          })}
+                  {(plan.minUsers || plan.maxUsers) && (
+                    <div className="mb-6">
+                      <h4 className="font-semibold mb-4 text-muted-foreground">
+                        User Limits:
+                      </h4>
+                      <ul className="space-y-2">
+                        {plan.minUsers && (
+                          <li className="flex items-start">
+                            <span className="text-sm text-muted-foreground">
+                              Minimum {plan.minUsers} users
+                            </span>
+                          </li>
+                        )}
+                        {plan.maxUsers && (
+                          <li className="flex items-start">
+                            <span className="text-sm text-muted-foreground">
+                              Maximum {plan.maxUsers} users
+                            </span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter>
+                  <Button
+                    className="w-full"
+                    onClick={() => handleGetStarted(plan)}
+                    variant={hasPopularBadge ? 'default' : 'outline'}
+                  >
+                    {plan.trialDays && plan.trialDays > 0 ? 'Start Free Trial' : 'Choose Plan'}
+                  </Button>
+                </CardFooter>
+                </Card>
+              )
+            })}
       </div>
 
       {/* FAQ Section */}
@@ -436,48 +456,56 @@ function OffersPage() {
         <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">
           Frequently Asked Questions
         </h2>
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+        <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-left">
               Can I change plans later?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in
-              your next billing cycle.
-            </p>
-          </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <p className="text-gray-600 dark:text-gray-300">
+                Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in
+                your next billing cycle.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
 
-          <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+          <AccordionItem value="item-2">
+            <AccordionTrigger className="text-left">
               What happens after the free trial?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              After your 7-day free trial, you can choose to continue with a paid plan. If you don't
-              select a plan, your account will be suspended but your data will be preserved for 30
-              days.
-            </p>
-          </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <p className="text-gray-600 dark:text-gray-300">
+                After your 7-day free trial, you can choose to continue with a paid plan. If you don't
+                select a plan, your account will be suspended but your data will be preserved for 30
+                days.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
 
-          <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+          <AccordionItem value="item-3">
+            <AccordionTrigger className="text-left">
               Do you offer discounts for annual billing?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              Yes! Save 15% when you pay annually. We also offer promotional discounts from time to
-              time - use the promo code field above to apply any available discounts.
-            </p>
-          </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <p className="text-gray-600 dark:text-gray-300">
+                Yes! Save 15% when you pay annually. We also offer promotional discounts from time to
+                time - use the promo code field above to apply any available discounts.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
 
-          <div>
-            <h3 className="text-xl font-semibold mb-3 dark:text-gray-100">
+          <AccordionItem value="item-4">
+            <AccordionTrigger className="text-left">
               What support is included?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              All plans include email support. Professional and Enterprise plans include priority
-              support with faster response times.
-            </p>
-          </div>
-        </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <p className="text-gray-600 dark:text-gray-300">
+                All plans include email support. Professional and Enterprise plans include priority
+                support with faster response times.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   )

@@ -105,6 +105,7 @@ function PricingPlans() {
     const initialData = {
       name: plan.name,
       description: plan.description || '',
+      features: parseFeatures(plan.features).join('\n'),
       pricePerUserPerMonth: plan.pricePerUserPerMonth,
       minUsers: plan.minUsers || undefined,
       maxUsers: plan.maxUsers || undefined,

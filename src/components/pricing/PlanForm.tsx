@@ -20,6 +20,7 @@ import { z } from 'zod'
 const planFormSchema = z.object({
   name: z.string().min(1, 'Plan name is required'),
   description: z.string().optional(),
+  features: z.string().min(1, 'Features are required'),
   pricePerUserPerMonth: z.number().min(0, 'Price must be non-negative'),
   minUsers: z.number().min(1, 'Minimum users must be at least 1').optional(),
   maxUsers: z.number().min(1, 'Maximum users must be at least 1').optional(),
@@ -45,6 +46,7 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
+      features: initialData?.features || 'Core features included\nEmail support\nBasic integrations\nStandard security',
       pricePerUserPerMonth: initialData?.pricePerUserPerMonth || 0,
       minUsers: initialData?.minUsers,
       maxUsers: initialData?.maxUsers,
@@ -59,17 +61,15 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
     try {
       setIsSubmitting(true)
 
-      // Prepare features array - for now, we'll use a default set
-      const features = [
-        'Core features included',
-        'Email support',
-        'Basic integrations',
-        'Standard security',
-      ]
+      // Convert features text to array
+      const featuresArray = data.features
+        .split('\n')
+        .map(f => f.trim())
+        .filter(f => f.length > 0)
 
       const payload = {
         ...data,
-        features: JSON.stringify(features),
+        features: JSON.stringify(featuresArray),
         displayOrder: 1, // Default display order
       }
 
@@ -129,6 +129,27 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
                 <FormControl>
                   <Textarea placeholder="Brief description of this plan" rows={2} {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="features"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Features</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter features, one per line&#10;e.g.:&#10;Core features included&#10;Email support&#10;Basic integrations"
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Enter each feature on a new line
+                </div>
                 <FormMessage />
               </FormItem>
             )}
