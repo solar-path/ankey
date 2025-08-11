@@ -30,7 +30,7 @@ const data = {
     },
     {
       title: 'Price Plans',
-      url: '/pricing-admin',
+      url: '/pricing',
       icon: DollarSign,
     },
   //   {

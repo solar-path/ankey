@@ -15,16 +15,18 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicPricingRouteImport } from './routes/_public/pricing'
 import { Route as PublicLearnRouteImport } from './routes/_public/learn'
 import { Route as CoreDashboardRouteImport } from './routes/_core/dashboard'
+import { Route as CorePricingRouteRouteImport } from './routes/_core/pricing/route'
 import { Route as CoreAccountRouteRouteImport } from './routes/_core/account/route'
 import { Route as TenantProductsIndexRouteImport } from './routes/_tenant/products/index'
+import { Route as CorePricingIndexRouteImport } from './routes/_core/pricing/index'
 import { Route as CoreAccountIndexRouteImport } from './routes/_core/account/index'
 import { Route as TenantProductsIdRouteImport } from './routes/_tenant/products/$id'
 import { Route as PublicLearnTermsRouteImport } from './routes/_public/learn/terms'
 import { Route as PublicLearnPrivacyRouteImport } from './routes/_public/learn/privacy'
 import { Route as PublicLearnCookiesRouteImport } from './routes/_public/learn/cookies'
-import { Route as CorePricingPricingSubscriptionsRouteImport } from './routes/_core/pricing/pricing-subscriptions'
-import { Route as CorePricingPricingDiscountsRouteImport } from './routes/_core/pricing/pricing-discounts'
-import { Route as CorePricingPricingAdminRouteImport } from './routes/_core/pricing/pricing-admin'
+import { Route as CorePricingSubscriptionsRouteImport } from './routes/_core/pricing/subscriptions'
+import { Route as CorePricingPlansRouteImport } from './routes/_core/pricing/plans'
+import { Route as CorePricingDiscountsRouteImport } from './routes/_core/pricing/discounts'
 import { Route as CoreAccountRolesRouteImport } from './routes/_core/account/roles'
 import { Route as CoreAccountProfileRouteImport } from './routes/_core/account/profile'
 import { Route as CoreAccountPersonalRouteImport } from './routes/_core/account/personal'
@@ -60,6 +62,11 @@ const CoreDashboardRoute = CoreDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CoreRoute,
 } as any)
+const CorePricingRouteRoute = CorePricingRouteRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => CoreRoute,
+} as any)
 const CoreAccountRouteRoute = CoreAccountRouteRouteImport.update({
   id: '/account',
   path: '/account',
@@ -69,6 +76,11 @@ const TenantProductsIndexRoute = TenantProductsIndexRouteImport.update({
   id: '/_tenant/products/',
   path: '/products/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CorePricingIndexRoute = CorePricingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CorePricingRouteRoute,
 } as any)
 const CoreAccountIndexRoute = CoreAccountIndexRouteImport.update({
   id: '/',
@@ -95,22 +107,21 @@ const PublicLearnCookiesRoute = PublicLearnCookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => PublicLearnRoute,
 } as any)
-const CorePricingPricingSubscriptionsRoute =
-  CorePricingPricingSubscriptionsRouteImport.update({
-    id: '/pricing/pricing-subscriptions',
-    path: '/pricing/pricing-subscriptions',
-    getParentRoute: () => CoreRoute,
+const CorePricingSubscriptionsRoute =
+  CorePricingSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => CorePricingRouteRoute,
   } as any)
-const CorePricingPricingDiscountsRoute =
-  CorePricingPricingDiscountsRouteImport.update({
-    id: '/pricing/pricing-discounts',
-    path: '/pricing/pricing-discounts',
-    getParentRoute: () => CoreRoute,
-  } as any)
-const CorePricingPricingAdminRoute = CorePricingPricingAdminRouteImport.update({
-  id: '/pricing/pricing-admin',
-  path: '/pricing/pricing-admin',
-  getParentRoute: () => CoreRoute,
+const CorePricingPlansRoute = CorePricingPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => CorePricingRouteRoute,
+} as any)
+const CorePricingDiscountsRoute = CorePricingDiscountsRouteImport.update({
+  id: '/discounts',
+  path: '/discounts',
+  getParentRoute: () => CorePricingRouteRoute,
 } as any)
 const CoreAccountRolesRoute = CoreAccountRolesRouteImport.update({
   id: '/roles',
@@ -145,9 +156,9 @@ const CoreAccountAppearanceRoute = CoreAccountAppearanceRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/account': typeof CoreAccountRouteRouteWithChildren
+  '/pricing': typeof PublicPricingRoute
   '/dashboard': typeof CoreDashboardRoute
   '/learn': typeof PublicLearnRouteWithChildren
-  '/pricing': typeof PublicPricingRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -155,20 +166,21 @@ export interface FileRoutesByFullPath {
   '/account/personal': typeof CoreAccountPersonalRoute
   '/account/profile': typeof CoreAccountProfileRoute
   '/account/roles': typeof CoreAccountRolesRoute
-  '/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
-  '/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
-  '/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
+  '/pricing/discounts': typeof CorePricingDiscountsRoute
+  '/pricing/plans': typeof CorePricingPlansRoute
+  '/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
   '/products/$id': typeof TenantProductsIdRoute
   '/account/': typeof CoreAccountIndexRoute
+  '/pricing/': typeof CorePricingIndexRoute
   '/products': typeof TenantProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof CoreDashboardRoute
   '/learn': typeof PublicLearnRouteWithChildren
-  '/pricing': typeof PublicPricingRoute
+  '/pricing': typeof CorePricingIndexRoute
   '/': typeof PublicIndexRoute
   '/account/appearance': typeof CoreAccountAppearanceRoute
   '/account/contacts': typeof CoreAccountContactsRoute
@@ -176,9 +188,9 @@ export interface FileRoutesByTo {
   '/account/personal': typeof CoreAccountPersonalRoute
   '/account/profile': typeof CoreAccountProfileRoute
   '/account/roles': typeof CoreAccountRolesRoute
-  '/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
-  '/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
-  '/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
+  '/pricing/discounts': typeof CorePricingDiscountsRoute
+  '/pricing/plans': typeof CorePricingPlansRoute
+  '/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/learn/cookies': typeof PublicLearnCookiesRoute
   '/learn/privacy': typeof PublicLearnPrivacyRoute
   '/learn/terms': typeof PublicLearnTermsRoute
@@ -191,6 +203,7 @@ export interface FileRoutesById {
   '/_core': typeof CoreRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
   '/_core/account': typeof CoreAccountRouteRouteWithChildren
+  '/_core/pricing': typeof CorePricingRouteRouteWithChildren
   '/_core/dashboard': typeof CoreDashboardRoute
   '/_public/learn': typeof PublicLearnRouteWithChildren
   '/_public/pricing': typeof PublicPricingRoute
@@ -201,23 +214,24 @@ export interface FileRoutesById {
   '/_core/account/personal': typeof CoreAccountPersonalRoute
   '/_core/account/profile': typeof CoreAccountProfileRoute
   '/_core/account/roles': typeof CoreAccountRolesRoute
-  '/_core/pricing/pricing-admin': typeof CorePricingPricingAdminRoute
-  '/_core/pricing/pricing-discounts': typeof CorePricingPricingDiscountsRoute
-  '/_core/pricing/pricing-subscriptions': typeof CorePricingPricingSubscriptionsRoute
+  '/_core/pricing/discounts': typeof CorePricingDiscountsRoute
+  '/_core/pricing/plans': typeof CorePricingPlansRoute
+  '/_core/pricing/subscriptions': typeof CorePricingSubscriptionsRoute
   '/_public/learn/cookies': typeof PublicLearnCookiesRoute
   '/_public/learn/privacy': typeof PublicLearnPrivacyRoute
   '/_public/learn/terms': typeof PublicLearnTermsRoute
   '/_tenant/products/$id': typeof TenantProductsIdRoute
   '/_core/account/': typeof CoreAccountIndexRoute
+  '/_core/pricing/': typeof CorePricingIndexRoute
   '/_tenant/products/': typeof TenantProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/account'
+    | '/pricing'
     | '/dashboard'
     | '/learn'
-    | '/pricing'
     | '/'
     | '/account/appearance'
     | '/account/contacts'
@@ -225,14 +239,15 @@ export interface FileRouteTypes {
     | '/account/personal'
     | '/account/profile'
     | '/account/roles'
-    | '/pricing/pricing-admin'
-    | '/pricing/pricing-discounts'
-    | '/pricing/pricing-subscriptions'
+    | '/pricing/discounts'
+    | '/pricing/plans'
+    | '/pricing/subscriptions'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
     | '/products/$id'
     | '/account/'
+    | '/pricing/'
     | '/products'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -246,9 +261,9 @@ export interface FileRouteTypes {
     | '/account/personal'
     | '/account/profile'
     | '/account/roles'
-    | '/pricing/pricing-admin'
-    | '/pricing/pricing-discounts'
-    | '/pricing/pricing-subscriptions'
+    | '/pricing/discounts'
+    | '/pricing/plans'
+    | '/pricing/subscriptions'
     | '/learn/cookies'
     | '/learn/privacy'
     | '/learn/terms'
@@ -260,6 +275,7 @@ export interface FileRouteTypes {
     | '/_core'
     | '/_public'
     | '/_core/account'
+    | '/_core/pricing'
     | '/_core/dashboard'
     | '/_public/learn'
     | '/_public/pricing'
@@ -270,14 +286,15 @@ export interface FileRouteTypes {
     | '/_core/account/personal'
     | '/_core/account/profile'
     | '/_core/account/roles'
-    | '/_core/pricing/pricing-admin'
-    | '/_core/pricing/pricing-discounts'
-    | '/_core/pricing/pricing-subscriptions'
+    | '/_core/pricing/discounts'
+    | '/_core/pricing/plans'
+    | '/_core/pricing/subscriptions'
     | '/_public/learn/cookies'
     | '/_public/learn/privacy'
     | '/_public/learn/terms'
     | '/_tenant/products/$id'
     | '/_core/account/'
+    | '/_core/pricing/'
     | '/_tenant/products/'
   fileRoutesById: FileRoutesById
 }
@@ -332,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoreDashboardRouteImport
       parentRoute: typeof CoreRoute
     }
+    '/_core/pricing': {
+      id: '/_core/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof CorePricingRouteRouteImport
+      parentRoute: typeof CoreRoute
+    }
     '/_core/account': {
       id: '/_core/account'
       path: '/account'
@@ -345,6 +369,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/products'
       preLoaderRoute: typeof TenantProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_core/pricing/': {
+      id: '/_core/pricing/'
+      path: '/'
+      fullPath: '/pricing/'
+      preLoaderRoute: typeof CorePricingIndexRouteImport
+      parentRoute: typeof CorePricingRouteRoute
     }
     '/_core/account/': {
       id: '/_core/account/'
@@ -381,26 +412,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicLearnCookiesRouteImport
       parentRoute: typeof PublicLearnRoute
     }
-    '/_core/pricing/pricing-subscriptions': {
-      id: '/_core/pricing/pricing-subscriptions'
-      path: '/pricing/pricing-subscriptions'
-      fullPath: '/pricing/pricing-subscriptions'
-      preLoaderRoute: typeof CorePricingPricingSubscriptionsRouteImport
-      parentRoute: typeof CoreRoute
+    '/_core/pricing/subscriptions': {
+      id: '/_core/pricing/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/pricing/subscriptions'
+      preLoaderRoute: typeof CorePricingSubscriptionsRouteImport
+      parentRoute: typeof CorePricingRouteRoute
     }
-    '/_core/pricing/pricing-discounts': {
-      id: '/_core/pricing/pricing-discounts'
-      path: '/pricing/pricing-discounts'
-      fullPath: '/pricing/pricing-discounts'
-      preLoaderRoute: typeof CorePricingPricingDiscountsRouteImport
-      parentRoute: typeof CoreRoute
+    '/_core/pricing/plans': {
+      id: '/_core/pricing/plans'
+      path: '/plans'
+      fullPath: '/pricing/plans'
+      preLoaderRoute: typeof CorePricingPlansRouteImport
+      parentRoute: typeof CorePricingRouteRoute
     }
-    '/_core/pricing/pricing-admin': {
-      id: '/_core/pricing/pricing-admin'
-      path: '/pricing/pricing-admin'
-      fullPath: '/pricing/pricing-admin'
-      preLoaderRoute: typeof CorePricingPricingAdminRouteImport
-      parentRoute: typeof CoreRoute
+    '/_core/pricing/discounts': {
+      id: '/_core/pricing/discounts'
+      path: '/discounts'
+      fullPath: '/pricing/discounts'
+      preLoaderRoute: typeof CorePricingDiscountsRouteImport
+      parentRoute: typeof CorePricingRouteRoute
     }
     '/_core/account/roles': {
       id: '/_core/account/roles'
@@ -470,20 +501,33 @@ const CoreAccountRouteRouteChildren: CoreAccountRouteRouteChildren = {
 const CoreAccountRouteRouteWithChildren =
   CoreAccountRouteRoute._addFileChildren(CoreAccountRouteRouteChildren)
 
+interface CorePricingRouteRouteChildren {
+  CorePricingDiscountsRoute: typeof CorePricingDiscountsRoute
+  CorePricingPlansRoute: typeof CorePricingPlansRoute
+  CorePricingSubscriptionsRoute: typeof CorePricingSubscriptionsRoute
+  CorePricingIndexRoute: typeof CorePricingIndexRoute
+}
+
+const CorePricingRouteRouteChildren: CorePricingRouteRouteChildren = {
+  CorePricingDiscountsRoute: CorePricingDiscountsRoute,
+  CorePricingPlansRoute: CorePricingPlansRoute,
+  CorePricingSubscriptionsRoute: CorePricingSubscriptionsRoute,
+  CorePricingIndexRoute: CorePricingIndexRoute,
+}
+
+const CorePricingRouteRouteWithChildren =
+  CorePricingRouteRoute._addFileChildren(CorePricingRouteRouteChildren)
+
 interface CoreRouteChildren {
   CoreAccountRouteRoute: typeof CoreAccountRouteRouteWithChildren
+  CorePricingRouteRoute: typeof CorePricingRouteRouteWithChildren
   CoreDashboardRoute: typeof CoreDashboardRoute
-  CorePricingPricingAdminRoute: typeof CorePricingPricingAdminRoute
-  CorePricingPricingDiscountsRoute: typeof CorePricingPricingDiscountsRoute
-  CorePricingPricingSubscriptionsRoute: typeof CorePricingPricingSubscriptionsRoute
 }
 
 const CoreRouteChildren: CoreRouteChildren = {
   CoreAccountRouteRoute: CoreAccountRouteRouteWithChildren,
+  CorePricingRouteRoute: CorePricingRouteRouteWithChildren,
   CoreDashboardRoute: CoreDashboardRoute,
-  CorePricingPricingAdminRoute: CorePricingPricingAdminRoute,
-  CorePricingPricingDiscountsRoute: CorePricingPricingDiscountsRoute,
-  CorePricingPricingSubscriptionsRoute: CorePricingPricingSubscriptionsRoute,
 }
 
 const CoreRouteWithChildren = CoreRoute._addFileChildren(CoreRouteChildren)

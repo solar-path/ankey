@@ -540,3 +540,25 @@ Real-time audit trail visible in server logs:
 ✅ **Soft delete functionality** with automatic audit trails
 
 **Warning**: Disabling or bypassing audit logging will result in SOC 2 compliance failures and potential security incidents. The audit system is not optional and must remain operational at all times.
+
+## User Preferences & Patterns
+
+### Route Organization Preferences
+
+- **Layout Routes**: Use directory-based routing with `route.tsx` as the layout file
+- **Dynamic Breadcrumbs**: Generate breadcrumbs dynamically in layout routes based on URL path
+- **Avoid Redundancy**: Don't define static breadcrumbs in individual route files when handled by layout
+- **Navigation Structure**: Define navigation items in the layout route with name, href, icon, and description
+- **Default Redirects**: Use `index.tsx` files to redirect to the first/default sub-route
+
+### Naming Conventions
+
+- **Routes**: Use descriptive names without prefixes (e.g., `plans.tsx` instead of `pricing-admin.tsx`)
+- **Breadcrumb Titles**: Use proper case for breadcrumb titles (e.g., "Account" not "Settings")
+- **Path Consistency**: Ensure paths match the actual route structure
+
+### Code Organization Patterns
+
+- **Single Source of Truth**: Keep route configuration and navigation in one place (layout file)
+- **Dynamic Generation**: Prefer dynamic breadcrumb generation over static definitions
+- **Context-Aware**: Detect core vs tenant context for appropriate root breadcrumbs
