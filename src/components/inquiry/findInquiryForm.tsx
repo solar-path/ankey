@@ -1,5 +1,3 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -10,11 +8,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useDrawer } from '@/components/QDrawer/QDrawer.store'
-import { z } from 'zod'
-import { useState } from 'react'
 import { client, handleApiResponse } from '@/lib/rpc'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 const findInquirySchema = z.object({
   id: z.string().min(1, 'Inquiry ID is required'),
@@ -84,7 +83,7 @@ export default function FindInquiryForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           <FormField

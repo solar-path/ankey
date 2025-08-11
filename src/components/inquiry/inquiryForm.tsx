@@ -1,24 +1,24 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useCallback, useState } from 'react'
-import { z } from 'zod'
-import { useDropzone } from 'react-dropzone'
-import { Upload, X, FileText } from 'lucide-react'
 import { client, handleApiResponse } from '@/lib/rpc'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FileText, Search, Upload, X } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
+import FindInquiryForm from './findInquiryForm'
 
 const inquirySchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -37,7 +37,7 @@ export default function InquiryForm({
   onSubmit,
   isLoading: externalLoading = false,
 }: InquiryFormProps) {
-  const { closeDrawer } = useDrawer()
+  const { closeDrawer, openDrawer } = useDrawer()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<InquiryData>({
@@ -119,8 +119,16 @@ export default function InquiryForm({
     }
   }
 
+  const handleFindInquiry = () => {
+    openDrawer(<FindInquiryForm />)
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
+      {/* Find Inquiry Button */}
+
+
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           <FormField
@@ -223,6 +231,19 @@ export default function InquiryForm({
           </Button>
         </form>
       </Form>
+
+       <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleFindInquiry}
+          className="text-sm"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          Find Existing Inquiry
+        </Button>
+
+
     </div>
   )
 }
