@@ -21,6 +21,14 @@ const findInquirySchema = z.object({
 
 type FindInquiryData = z.infer<typeof findInquirySchema>
 
+interface InquiryResult {
+  id: string
+  email: string
+  status: string
+  submittedAt: string
+  response?: string
+}
+
 interface FindInquiryFormProps {
   onSubmit?: (data: FindInquiryData) => Promise<void>
   isLoading?: boolean
@@ -31,7 +39,7 @@ export default function FindInquiryForm({
   isLoading: externalLoading = false,
 }: FindInquiryFormProps) {
   const [isSearching, setIsSearching] = useState(false)
-  const [foundInquiry, setFoundInquiry] = useState<any>(null)
+  const [foundInquiry, setFoundInquiry] = useState<InquiryResult | null>(null)
 
   const form = useForm<FindInquiryData>({
     resolver: zodResolver(findInquirySchema),
@@ -59,11 +67,11 @@ export default function FindInquiryForm({
           throw new Error(result.error || 'Inquiry not found')
         }
 
-        setFoundInquiry(result.data)
+        setFoundInquiry(result.data as InquiryResult)
 
         // Show success toast
         toast.success('Inquiry found!', {
-          description: `Found inquiry ${result.data.id} from ${result.data.email}`,
+          description: `Found inquiry ${(result.data as InquiryResult).id} from ${(result.data as InquiryResult).email}`,
         })
 
         console.log('Found inquiry:', result.data)

@@ -119,15 +119,9 @@ export default function InquiryForm({
     }
   }
 
-  const handleFindInquiry = () => {
-    openDrawer(<FindInquiryForm />)
-  }
 
   return (
     <div className="space-y-6 p-2">
-      {/* Find Inquiry Button */}
-
-
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -166,7 +160,7 @@ export default function InquiryForm({
           <FormField
             control={form.control}
             name="attachments"
-            render={({ field }) => (
+            render={() => (
               <FormItem>
                 <FormLabel>Attachments (optional)</FormLabel>
                 <FormControl>
@@ -232,17 +226,10 @@ export default function InquiryForm({
         </form>
       </Form>
 
-       <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleFindInquiry}
-          className="text-sm"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Find Existing Inquiry
-        </Button>
-
+      <Button variant='ghost' className="w-full" onClick={() => openDrawer(<FindInquiryForm />)}>
+        <Search className="mr-2 h-4 w-4" />
+        Find Existing Inquiry
+            </Button>
 
     </div>
   )
