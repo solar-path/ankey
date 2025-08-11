@@ -25,7 +25,7 @@ function PublicLayout() {
           <Link to="/learn" search={{ doc: undefined }} className="[&.active]:font-bold">
             Learn and support
           </Link>
-          <Link to="/pricing" className="[&.active]:font-bold">
+          <Link to="/offers" className="[&.active]:font-bold">
             Pricing
           </Link>
 

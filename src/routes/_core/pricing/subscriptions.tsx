@@ -1,6 +1,8 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -9,100 +11,87 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
+import { client } from '@/lib/rpc'
 import { createFileRoute } from '@tanstack/react-router'
-import { Search, Filter, Download, MoreHorizontal, User, Calendar, CreditCard, DollarSign } from 'lucide-react'
-import { useState } from 'react'
+import {
+  Calendar,
+  CreditCard,
+  Download,
+  Filter,
+  MoreHorizontal,
+  Search,
+  User,
+  DollarSign,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_core/pricing/subscriptions')({
   component: PricingSubscriptions,
 })
 
+interface Subscription {
+  id: string
+  tenantId: string
+  planId: string
+  planName: string | null
+  status: string
+  userCount: number
+  pricePerUser: number
+  totalMonthlyPrice: number
+  billingCycle: string
+  trialEndsAt: string | null
+  nextBillingDate: string | null
+  createdAt: string
+}
+
 function PricingSubscriptions() {
   const [searchTerm, setSearchTerm] = useState('')
-  
-  // Sample data - replace with actual API calls
-  const subscriptions = [
-    {
-      id: 1,
-      customer: 'Acme Corporation',
-      email: 'billing@acme.com',
-      plan: 'Enterprise',
-      status: 'active',
-      amount: 299,
-      billing: 'monthly',
-      startDate: '2024-01-15',
-      nextBilling: '2024-12-15',
-      users: 150,
-    },
-    {
-      id: 2,
-      customer: 'TechStart Inc',
-      email: 'admin@techstart.io',
-      plan: 'Professional',
-      status: 'active',
-      amount: 99,
-      billing: 'monthly',
-      startDate: '2024-03-20',
-      nextBilling: '2024-12-20',
-      users: 35,
-    },
-    {
-      id: 3,
-      customer: 'Small Business Co',
-      email: 'owner@smallbiz.com',
-      plan: 'Starter',
-      status: 'trialing',
-      amount: 29,
-      billing: 'monthly',
-      startDate: '2024-11-01',
-      nextBilling: '2024-12-01',
-      users: 8,
-    },
-    {
-      id: 4,
-      customer: 'Global Enterprises',
-      email: 'finance@global.com',
-      plan: 'Enterprise',
-      status: 'past_due',
-      amount: 299,
-      billing: 'annual',
-      startDate: '2023-06-01',
-      nextBilling: '2024-06-01',
-      users: 500,
-    },
-    {
-      id: 5,
-      customer: 'Startup Labs',
-      email: 'team@startuplabs.co',
-      plan: 'Professional',
-      status: 'canceled',
-      amount: 99,
-      billing: 'monthly',
-      startDate: '2024-02-10',
-      nextBilling: '-',
-      users: 20,
-    },
-  ]
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredSubscriptions = subscriptions.filter(subscription =>
-    subscription.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subscription.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subscription.plan.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    fetchSubscriptions()
+  }, [])
+
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(true)
+      const response = await client.pricing.subscriptions.$get()
+
+      if (response.ok) {
+        const data = await response.json()
+        setSubscriptions(data.subscriptions)
+      } else {
+        toast.error('Failed to load subscriptions')
+      }
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error)
+      toast.error('Failed to load subscriptions')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredSubscriptions = subscriptions.filter(
+    subscription =>
+      subscription.tenantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subscription.planName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subscription.status.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       active: 'default',
       trialing: 'secondary',
+      trial: 'secondary',
       past_due: 'destructive',
+      pastdue: 'destructive',
+      cancelled: 'outline',
       canceled: 'outline',
+      inactive: 'outline',
     }
-    return (
-      <Badge variant={variants[status] || 'default'}>
-        {status.replace('_', ' ')}
-      </Badge>
-    )
+    return <Badge variant={variants[status] || 'outline'}>{status.replace('_', ' ')}</Badge>
   }
 
   // Calculate summary stats
@@ -110,17 +99,64 @@ function PricingSubscriptions() {
     totalSubscriptions: subscriptions.filter(s => s.status === 'active').length,
     totalRevenue: subscriptions
       .filter(s => s.status === 'active')
-      .reduce((sum, s) => sum + s.amount, 0),
+      .reduce((sum, s) => sum + s.totalMonthlyPrice, 0),
     totalUsers: subscriptions
       .filter(s => s.status === 'active')
-      .reduce((sum, s) => sum + s.users, 0),
-    trialAccounts: subscriptions.filter(s => s.status === 'trialing').length,
+      .reduce((sum, s) => sum + s.userCount, 0),
+    trialAccounts: subscriptions.filter(s => s.status === 'trial' || s.status === 'trialing')
+      .length,
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+            Subscriptions
+          </h2>
+          <p className="text-muted-foreground">Monitor and manage active customer subscriptions</p>
+        </div>
+
+        {/* Stats Cards Loading */}
+        <div className="grid gap-4 md:grid-cols-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-20" />
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="space-y-4 p-6">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Subscriptions</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+          Subscriptions
+        </h2>
         <p className="text-muted-foreground">Monitor and manage active customer subscriptions</p>
       </div>
 
@@ -133,9 +169,7 @@ function PricingSubscriptions() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalSubscriptions}</div>
-            <p className="text-xs text-muted-foreground">
-              +2 from last month
-            </p>
+            <p className="text-xs text-muted-foreground">Paying customers</p>
           </CardContent>
         </Card>
         <Card>
@@ -145,9 +179,7 @@ function PricingSubscriptions() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last month
-            </p>
+            <p className="text-xs text-muted-foreground">Recurring revenue</p>
           </CardContent>
         </Card>
         <Card>
@@ -157,9 +189,7 @@ function PricingSubscriptions() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all subscriptions
-            </p>
+            <p className="text-xs text-muted-foreground">Across all subscriptions</p>
           </CardContent>
         </Card>
         <Card>
@@ -169,9 +199,7 @@ function PricingSubscriptions() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.trialAccounts}</div>
-            <p className="text-xs text-muted-foreground">
-              Converting this month
-            </p>
+            <p className="text-xs text-muted-foreground">In trial period</p>
           </CardContent>
         </Card>
       </div>
@@ -185,7 +213,7 @@ function PricingSubscriptions() {
               type="text"
               placeholder="Search subscriptions..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10 w-[300px]"
             />
           </div>
@@ -200,55 +228,72 @@ function PricingSubscriptions() {
       </div>
 
       {/* Subscriptions Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Users</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Next Billing</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSubscriptions.map((subscription) => (
-                <TableRow key={subscription.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{subscription.customer}</p>
-                      <p className="text-sm text-muted-foreground">{subscription.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{subscription.plan}</TableCell>
-                  <TableCell>{getStatusBadge(subscription.status)}</TableCell>
-                  <TableCell>{subscription.users}</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">${subscription.amount}</p>
-                      <p className="text-sm text-muted-foreground">/{subscription.billing}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {subscription.nextBilling !== '-' 
-                      ? new Date(subscription.nextBilling).toLocaleDateString()
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+      {filteredSubscriptions.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground">
+              {searchTerm
+                ? 'No subscriptions found matching your search'
+                : 'No subscriptions found'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tenant</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Users</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Next Billing</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredSubscriptions.map(subscription => (
+                  <TableRow key={subscription.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{subscription.tenantId}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Created {new Date(subscription.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{subscription.planName || 'Unknown Plan'}</TableCell>
+                    <TableCell>{getStatusBadge(subscription.status)}</TableCell>
+                    <TableCell>{subscription.userCount}</TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">${subscription.totalMonthlyPrice}</p>
+                        <p className="text-sm text-muted-foreground">
+                          ${subscription.pricePerUser}/user
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {subscription.nextBillingDate
+                        ? new Date(subscription.nextBillingDate).toLocaleDateString()
+                        : subscription.trialEndsAt
+                          ? `Trial ends ${new Date(subscription.trialEndsAt).toLocaleDateString()}`
+                          : '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ChevronDown, ChevronRight, Key, Shield } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-
 export const Route = createFileRoute('/_core/account/roles')({
   component: RolesSettings,
 })

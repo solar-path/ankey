@@ -39,20 +39,18 @@ function PricingLayout() {
     const lastSegment = path[path.length - 1]
 
     const breadcrumbMap: Record<string, string> = {
-      'plans': 'Plans',
-      'discounts': 'Discounts',
-      'subscriptions': 'Subscriptions',
-      'pricing': 'Pricing'
+      plans: 'Plans',
+      discounts: 'Discounts',
+      subscriptions: 'Subscriptions',
+      pricing: 'Pricing',
     }
 
-    const breadcrumbs: BreadcrumbItem[] = [
-      { title: 'Pricing', href: '/pricing' }
-    ]
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pricing', href: '/pricing' }]
 
     if (lastSegment && lastSegment !== 'pricing' && breadcrumbMap[lastSegment]) {
       breadcrumbs.push({
         title: breadcrumbMap[lastSegment],
-        href: currentPath
+        href: currentPath,
       })
     }
 
@@ -62,7 +60,7 @@ function PricingLayout() {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Site Header with breadcrumbs */}
-      <SiteHeader breadcrumbs={getBreadcrumbs()}/>
+      <SiteHeader breadcrumbs={getBreadcrumbs()} />
 
       <div className="flex h-full flex-1">
         {/* Pricing Navigation */}
@@ -70,9 +68,13 @@ function PricingLayout() {
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Pricing Management</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Pricing Management
+              </h2>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Configure plans, discounts, and subscriptions</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Configure plans, discounts, and subscriptions
+            </p>
           </div>
           <nav className="space-y-2">
             {pricingNavigation.map(item => {
@@ -94,13 +96,20 @@ function PricingLayout() {
                   <item.icon
                     className={cn(
                       'h-5 w-5 mr-3 mt-0.5 flex-shrink-0',
-                      isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                      isActive
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400'
                     )}
                   />
                   <div>
                     <div className="font-medium">{item.name}</div>
                     <div
-                      className={cn('text-xs mt-1', isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}
+                      className={cn(
+                        'text-xs mt-1',
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-500 dark:text-gray-400'
+                      )}
                     >
                       {item.description}
                     </div>

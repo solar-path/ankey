@@ -268,6 +268,31 @@ For custom components like QPhone, QCalendarPick:
 />
 ```
 
+### Form Organization Rules
+
+Forms should be organized based on complexity and field count:
+
+#### QDrawer Forms (≤8 static fields)
+
+- **When to use**: Forms with 8 or fewer fields and no dynamically created fields
+- **Location**: Store form components in `src/components/`
+- **Pattern**: Use QDrawer component for modal-style forms
+- **Example**: Plan creation, discount creation, user profile updates
+
+#### Dialog Forms (8-20 static fields)
+
+- **When to use**: Forms with 8-20 fields and no dynamically created fields
+- **Location**: Store form components in `src/components/`
+- **Pattern**: Use Dialog component for larger modal forms
+- **Example**: Tenant configuration, complex settings forms
+
+#### Form Routes (>20 fields or dynamic fields)
+
+- **When to use**: Forms with more than 20 fields OR any forms with dynamically created fields
+- **Location**: Create dedicated route files in `src/routes/`
+- **Pattern**: Full-page forms with proper routing
+- **Example**: Multi-step wizards, complex data entry forms, forms with conditional fields
+
 ### API Communication
 
 - **NEVER use `fetch()`, `axios`, or any other HTTP client** - always use Hono RPC client

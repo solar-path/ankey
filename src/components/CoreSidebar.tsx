@@ -1,4 +1,3 @@
-import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,29 +8,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthContext'
-import {
-  LayoutDashboard,
-  DollarSign,
-  Users,
-  Building2,
-  Settings,
-  LogOut,
-  User,
-  Bell,
-  Search,
-  Shield,
-  FileText,
-  TrendingUp,
-  ChevronDown,
-  UserCog,
-  Mail,
-  Activity,
-  HelpCircle,
-  Moon,
-  Sun,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import {
+  Activity,
+  Bell,
+  Building2,
+  ChevronDown,
+  DollarSign,
+  FileText,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Search,
+  Settings,
+  Shield,
+  TrendingUp,
+  UserCog,
+  Users,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },

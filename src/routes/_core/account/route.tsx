@@ -62,23 +62,21 @@ function SettingsLayout() {
     const lastSegment = path[path.length - 1]
 
     const breadcrumbMap: Record<string, string> = {
-      'profile': 'Profile',
-      'personal': 'Personal',
-      'contacts': 'Contacts',
-      'password': 'Password',
-      'appearance': 'Appearance',
-      'roles': 'Roles',
-      'account': 'Account'
+      profile: 'Profile',
+      personal: 'Personal',
+      contacts: 'Contacts',
+      password: 'Password',
+      appearance: 'Appearance',
+      roles: 'Roles',
+      account: 'Account',
     }
 
-    const breadcrumbs: BreadcrumbItem[] = [
-      { title: 'Account', href: '/account' }
-    ]
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Account', href: '/account' }]
 
     if (lastSegment && lastSegment !== 'account' && breadcrumbMap[lastSegment]) {
       breadcrumbs.push({
         title: breadcrumbMap[lastSegment],
-        href: currentPath
+        href: currentPath,
       })
     }
 
@@ -88,7 +86,7 @@ function SettingsLayout() {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Site Header with breadcrumbs */}
-      <SiteHeader breadcrumbs={getBreadcrumbs()}/>
+      <SiteHeader breadcrumbs={getBreadcrumbs()} />
 
       <div className="flex h-full flex-1">
         {/* Settings Navigation */}
@@ -113,13 +111,20 @@ function SettingsLayout() {
                   <item.icon
                     className={cn(
                       'h-5 w-5 mr-3 mt-0.5 flex-shrink-0',
-                      isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                      isActive
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400'
                     )}
                   />
                   <div>
                     <div className="font-medium">{item.name}</div>
                     <div
-                      className={cn('text-xs mt-1', isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}
+                      className={cn(
+                        'text-xs mt-1',
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-500 dark:text-gray-400'
+                      )}
                     >
                       {item.description}
                     </div>

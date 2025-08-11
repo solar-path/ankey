@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { CoreSidebar } from '@/components/QSideBar/QSidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'

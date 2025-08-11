@@ -1,10 +1,7 @@
 'use client'
 
 import { Link } from '@tanstack/react-router'
-import {
-  DollarSign,
-  LayoutDashboard
-} from 'lucide-react'
+import { DollarSign, LayoutDashboard } from 'lucide-react'
 import * as React from 'react'
 
 import { NavMain } from '@/components/QSideBar/nav-main'
@@ -20,7 +17,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
-
 const data = {
   navMain: [
     {
@@ -33,31 +29,31 @@ const data = {
       url: '/pricing',
       icon: DollarSign,
     },
-  //   {
-  //     title: 'Tenants',
-  //     url: '/tenants',
-  //     icon: Building2,
-  //   },
-  //   {
-  //     title: 'Users',
-  //     url: '/users',
-  //     icon: Users,
-  //   },
-  //   {
-  //     title: 'Analytics',
-  //     url: '/analytics',
-  //     icon: TrendingUp,
-  //   },
-  //   {
-  //     title: 'Security',
-  //     url: '/security',
-  //     icon: Shield,
-  //   },
-  //   {
-  //     title: 'Reports',
-  //     url: '/reports',
-  //     icon: FileText,
-  //   },
+    //   {
+    //     title: 'Tenants',
+    //     url: '/tenants',
+    //     icon: Building2,
+    //   },
+    //   {
+    //     title: 'Users',
+    //     url: '/users',
+    //     icon: Users,
+    //   },
+    //   {
+    //     title: 'Analytics',
+    //     url: '/analytics',
+    //     icon: TrendingUp,
+    //   },
+    //   {
+    //     title: 'Security',
+    //     url: '/security',
+    //     icon: Shield,
+    //   },
+    //   {
+    //     title: 'Reports',
+    //     url: '/reports',
+    //     icon: FileText,
+    //   },
   ],
   navSecondary: [
     // {

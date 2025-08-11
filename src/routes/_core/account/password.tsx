@@ -17,7 +17,6 @@ import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
-
 export const Route = createFileRoute('/_core/account/password')({
   component: PasswordSettings,
 })

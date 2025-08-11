@@ -1,14 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
+import { useDrawer } from '@/components/QDrawer/QDrawer.store'
 import { Button } from '@/components/ui/button'
-import { Check, Loader2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { client, handleApiResponse } from '@/lib/rpc'
+import { createFileRoute } from '@tanstack/react-router'
+import { Check, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-export const Route = createFileRoute('/_public/pricing')({
-  component: Pricing,
+export const Route = createFileRoute('/_public/offers')({
+  component: OffersPage,
 })
 
 interface PricingPlan {
@@ -42,7 +44,9 @@ interface PricingCalculation {
   trialDays: number | null
 }
 
-function Pricing() {
+function OffersPage() {
+  const { openDrawer } = useDrawer()
+
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [calculations, setCalculations] = useState<Record<string, PricingCalculation>>({})
@@ -65,8 +69,13 @@ function Pricing() {
       const response = await client.pricing.plans.$get()
       const result = await handleApiResponse(response)
 
-      if (result.success) {
-        const plans = result.data?.plans || []
+      if (result.success && result.data) {
+        // API returns { plans: [...] }
+        const plans = (result.data as any).plans || []
+        if (!Array.isArray(plans)) {
+          console.error('Expected plans array but got:', plans)
+          return
+        }
         setPricingPlans(plans)
 
         // Set default user counts
@@ -103,7 +112,7 @@ function Pricing() {
 
         const result = await handleApiResponse(response)
         if (result.success) {
-          newCalculations[plan.id] = result.data
+          newCalculations[plan.id] = result.data as PricingCalculation
         }
       } catch (error) {
         console.error(`Error calculating pricing for plan ${plan.id}:`, error)
@@ -151,26 +160,27 @@ function Pricing() {
     <div className="container mx-auto px-4 py-16">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+        <h1 className="text-4xl font-bold mb-4">Special Offers & Pricing</h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Choose the perfect plan for your business. Start with our free trial and scale as you
-          grow.
+          Take advantage of our special offers. Choose the perfect plan for your business and start
+          with our free trial.
         </p>
       </div>
 
-      {/* Special Trial Offer */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-12 text-center dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-700">
-        <h2 className="text-2xl font-semibold mb-2 text-blue-900 dark:text-blue-100">
-          🎉 Free 7-Day Trial
+      {/* Limited Time Offer */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-12 text-center dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-700">
+        <h2 className="text-2xl font-semibold mb-2 text-green-900 dark:text-green-100">
+          🎉 Limited Time Offer
         </h2>
-        <p className="text-blue-700 dark:text-blue-300 mb-4">
+        <p className="text-green-700 dark:text-green-300 mb-4">
           Get full access to our platform with up to 5 users for 1 week - no credit card required!
+          Plus enjoy special pricing on your first year.
         </p>
         <Button
-          onClick={() => console.log('Starting free trial...')}
-          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => openDrawer(<RegisterWorkspaceForm />)}
+          className="bg-green-600 hover:bg-green-700"
         >
-          Start Free Trial
+          Claim Offer Now
         </Button>
       </div>
 
@@ -203,26 +213,49 @@ function Pricing() {
 
       {/* Promo Code */}
       <div className="max-w-md mx-auto mb-8">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full">
-              Have a promo code? Click here
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="promoCode">Promo Code</Label>
-                <Input
-                  id="promoCode"
-                  placeholder="Enter your promo code"
-                  value={promoCode}
-                  onChange={e => setPromoCode(e.target.value)}
-                />
+        {promoCode ? (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-green-800 dark:text-green-200">
+                  Promo code applied
+                </div>
+                <div className="text-lg font-semibold text-green-900 dark:text-green-100">
+                  {promoCode}
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPromoCode('')}
+                className="text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100"
+              >
+                Remove
+              </Button>
             </div>
-          </PopoverContent>
-        </Popover>
+          </div>
+        ) : (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full">
+                Have a promo code? Click here
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promoCode">Promo Code</Label>
+                  <Input
+                    id="promoCode"
+                    placeholder="Enter your promo code"
+                    value={promoCode}
+                    onChange={e => setPromoCode(e.target.value)}
+                  />
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Pricing Grid */}
@@ -391,7 +424,7 @@ function Pricing() {
                   }`}
                   variant={hasPopularBadge ? 'default' : 'outline'}
                 >
-                  {plan.trialDays && plan.trialDays > 0 ? 'Start Free Trial' : 'Get Started'}
+                  {plan.trialDays && plan.trialDays > 0 ? 'Start Free Trial' : 'Choose Plan'}
                 </Button>
               </div>
             )

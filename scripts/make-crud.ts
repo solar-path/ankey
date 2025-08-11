@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
 import { parseArgs } from 'node:util'
-import { existsSync, mkdirSync } from 'node:fs'
 import { SchemaGenerator } from './generators/schema-generator'
 import { ControllerGenerator } from './generators/controller-generator'
 import { RouteGenerator } from './generators/route-generator'

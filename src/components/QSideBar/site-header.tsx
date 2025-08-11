@@ -17,7 +17,10 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ breadcrumbs = [] }: SiteHeaderProps) {
   // Determine the root breadcrumb based on the current context
-  const isCore = window.location.pathname.includes('/account') || window.location.pathname.includes('/dashboard') || window.location.pathname.includes('/pricing')
+  const isCore =
+    window.location.pathname.includes('/account') ||
+    window.location.pathname.includes('/dashboard') ||
+    window.location.pathname.includes('/pricing')
   const rootBreadcrumb: BreadcrumbItemType = isCore
     ? { title: 'Core', href: '/dashboard' }
     : { title: 'Workspace', href: '/' } // This will be replaced with actual workspace title when available

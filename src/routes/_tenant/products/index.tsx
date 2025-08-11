@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { client, handleApiResponse } from '@/lib/rpc'
@@ -34,20 +34,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  RotateCcw,
-  Download,
-  Upload,
-  Filter,
-} from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
 // Search params schema
