@@ -1,11 +1,13 @@
-import type { LoginData, ResetPasswordData } from '@/shared'
+import type { LoginData, ResetPasswordData, TwoFactorCodeData } from '@/shared'
 import { DrizzlePostgreSQLAdapter } from '@lucia-auth/adapter-drizzle'
 import crypto from 'crypto'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { Lucia } from 'lucia'
 import { createCoreConnection, createTenantConnection } from './database.settings'
 import * as coreSchema from './db/schemas/core.drizzle'
 import * as tenantSchema from './db/schemas/tenant.drizzle'
+import { TwoFactorService } from './two-factor.service'
+import { EmailService } from './email.settings'
 
 // Core authentication for admin users
 export function createCoreAuth() {
@@ -132,8 +134,10 @@ export class CoreAuthService {
       }
 
       if (user.twoFactorEnabled && data.twoFactorCode) {
-        // Verify 2FA code (implementation depends on your 2FA method)
-        // For now, we'll assume it's valid
+        const isValidCode = await this.verify2FACode(user.id, data.twoFactorCode)
+        if (!isValidCode) {
+          return { success: false, error: 'Invalid two-factor code' }
+        }
       }
 
       const session = await this.lucia.createSession(user.id as string, {})
@@ -287,6 +291,242 @@ export class CoreAuthService {
       return { success: false, error: 'Password reset failed' }
     }
   }
+
+  async setup2FA(userId: string, userEmail: string) {
+    try {
+      const setupData = await TwoFactorService.generateTOTPSetup(userEmail)
+      
+      return {
+        success: true,
+        data: setupData,
+      }
+    } catch (error) {
+      console.error('2FA setup error:', error)
+      return { success: false, error: 'Failed to setup 2FA' }
+    }
+  }
+
+  async enable2FA(userId: string, secret: string, code: string, backupCodes: string[]) {
+    try {
+      // Verify the TOTP code before enabling
+      const isValidCode = TwoFactorService.verifyTOTP(secret, code)
+      if (!isValidCode) {
+        return { success: false, error: 'Invalid verification code' }
+      }
+
+      // Hash backup codes
+      const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
+
+      // Enable 2FA in database
+      await this.db
+        .update(coreSchema.coreUsers)
+        .set({
+          twoFactorEnabled: true,
+          twoFactorSecret: secret,
+          twoFactorBackupCodes: JSON.stringify(hashedBackupCodes),
+          updatedAt: new Date(),
+        })
+        .where(eq(coreSchema.coreUsers.id, userId))
+
+      return { success: true }
+    } catch (error) {
+      console.error('2FA enable error:', error)
+      return { success: false, error: 'Failed to enable 2FA' }
+    }
+  }
+
+  async disable2FA(userId: string, password: string) {
+    try {
+      // Verify current password
+      const user = await this.db
+        .select()
+        .from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.id, userId))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      const validPassword = await verifyPassword(password, user.passwordHash)
+      if (!validPassword) {
+        return { success: false, error: 'Invalid password' }
+      }
+
+      // Disable 2FA
+      await this.db
+        .update(coreSchema.coreUsers)
+        .set({
+          twoFactorEnabled: false,
+          twoFactorSecret: null,
+          twoFactorBackupCodes: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(coreSchema.coreUsers.id, userId))
+
+      return { success: true }
+    } catch (error) {
+      console.error('2FA disable error:', error)
+      return { success: false, error: 'Failed to disable 2FA' }
+    }
+  }
+
+  async verify2FACode(userId: string, code: string) {
+    try {
+      const user = await this.db
+        .select({
+          twoFactorSecret: coreSchema.coreUsers.twoFactorSecret,
+          twoFactorBackupCodes: coreSchema.coreUsers.twoFactorBackupCodes,
+        })
+        .from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.id, userId))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!user || !user.twoFactorSecret) {
+        return false
+      }
+
+      // First try TOTP verification
+      const isValidTOTP = TwoFactorService.verifyTOTP(user.twoFactorSecret, code)
+      if (isValidTOTP) {
+        return true
+      }
+
+      // If TOTP fails, try backup codes
+      if (user.twoFactorBackupCodes) {
+        const backupCodes = JSON.parse(user.twoFactorBackupCodes)
+        const isValidBackupCode = TwoFactorService.verifyBackupCode(backupCodes, code)
+        
+        if (isValidBackupCode) {
+          // Remove used backup code
+          const remainingCodes = TwoFactorService.removeUsedBackupCode(backupCodes, code)
+          
+          await this.db
+            .update(coreSchema.coreUsers)
+            .set({
+              twoFactorBackupCodes: JSON.stringify(remainingCodes),
+              updatedAt: new Date(),
+            })
+            .where(eq(coreSchema.coreUsers.id, userId))
+
+          return true
+        }
+      }
+
+      return false
+    } catch (error) {
+      console.error('2FA verification error:', error)
+      return false
+    }
+  }
+
+  async sendEmail2FA(userId: string) {
+    try {
+      const user = await this.db
+        .select({
+          email: coreSchema.coreUsers.email,
+          fullName: coreSchema.coreUsers.fullName,
+        })
+        .from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.id, userId))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      const { token, expiresAt } = TwoFactorService.generateEmailToken()
+
+      // Store token in database
+      await this.db.insert(coreSchema.emailTwoFactorTokens).values({
+        userId,
+        token,
+        expiresAt,
+      })
+
+      // Send email
+      const emailService = new EmailService()
+      await emailService.sendTwoFactorCode({
+        to: user.email,
+        fullName: user.fullName,
+        code: token,
+      })
+
+      return { success: true, expiresAt }
+    } catch (error) {
+      console.error('Email 2FA error:', error)
+      return { success: false, error: 'Failed to send email 2FA code' }
+    }
+  }
+
+  async verifyEmail2FA(userId: string, code: string) {
+    try {
+      const tokenRecord = await this.db
+        .select()
+        .from(coreSchema.emailTwoFactorTokens)
+        .where(
+          and(
+            eq(coreSchema.emailTwoFactorTokens.userId, userId),
+            eq(coreSchema.emailTwoFactorTokens.token, code),
+            eq(coreSchema.emailTwoFactorTokens.used, false)
+          )
+        )
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!tokenRecord) {
+        return { success: false, error: 'Invalid code' }
+      }
+
+      const isValid = TwoFactorService.verifyEmailToken(
+        tokenRecord.token,
+        code,
+        tokenRecord.expiresAt,
+        tokenRecord.used
+      )
+
+      if (!isValid) {
+        return { success: false, error: 'Invalid or expired code' }
+      }
+
+      // Mark token as used
+      await this.db
+        .update(coreSchema.emailTwoFactorTokens)
+        .set({ used: true })
+        .where(eq(coreSchema.emailTwoFactorTokens.id, tokenRecord.id))
+
+      return { success: true }
+    } catch (error) {
+      console.error('Email 2FA verification error:', error)
+      return { success: false, error: 'Failed to verify email 2FA code' }
+    }
+  }
+
+  async regenerateBackupCodes(userId: string) {
+    try {
+      const backupCodes = Array.from({ length: 10 }, () =>
+        crypto.randomBytes(4).toString('hex').toUpperCase()
+      )
+      
+      const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
+
+      await this.db
+        .update(coreSchema.coreUsers)
+        .set({
+          twoFactorBackupCodes: JSON.stringify(hashedBackupCodes),
+          updatedAt: new Date(),
+        })
+        .where(eq(coreSchema.coreUsers.id, userId))
+
+      return { success: true, backupCodes }
+    } catch (error) {
+      console.error('Backup codes regeneration error:', error)
+      return { success: false, error: 'Failed to regenerate backup codes' }
+    }
+  }
 }
 
 // Tenant authentication service
@@ -325,6 +565,13 @@ export class TenantAuthService {
       // Handle two-factor authentication if enabled
       if (user.twoFactorEnabled && !data.twoFactorCode) {
         return { success: false, error: 'Two-factor code required', requiresTwoFactor: true }
+      }
+
+      if (user.twoFactorEnabled && data.twoFactorCode) {
+        const isValidCode = await this.verify2FACode(user.id, data.twoFactorCode)
+        if (!isValidCode) {
+          return { success: false, error: 'Invalid two-factor code' }
+        }
       }
 
       const session = await this.lucia.createSession(user.id as string, {})
@@ -445,6 +692,231 @@ export class TenantAuthService {
     } catch (error) {
       console.error('Tenant password reset error:', error)
       return { success: false, error: 'Password reset failed' }
+    }
+  }
+
+  // 2FA methods for tenant users (similar to core but using tenant schema)
+  async setup2FA(userId: string, userEmail: string) {
+    try {
+      const setupData = await TwoFactorService.generateTOTPSetup(userEmail)
+      
+      return {
+        success: true,
+        data: setupData,
+      }
+    } catch (error) {
+      console.error('Tenant 2FA setup error:', error)
+      return { success: false, error: 'Failed to setup 2FA' }
+    }
+  }
+
+  async enable2FA(userId: string, secret: string, code: string, backupCodes: string[]) {
+    try {
+      const isValidCode = TwoFactorService.verifyTOTP(secret, code)
+      if (!isValidCode) {
+        return { success: false, error: 'Invalid verification code' }
+      }
+
+      const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
+
+      await this.db
+        .update(tenantSchema.users)
+        .set({
+          twoFactorEnabled: true,
+          twoFactorSecret: secret,
+          twoFactorBackupCodes: JSON.stringify(hashedBackupCodes),
+          updatedAt: new Date(),
+        })
+        .where(eq(tenantSchema.users.id, userId))
+
+      return { success: true }
+    } catch (error) {
+      console.error('Tenant 2FA enable error:', error)
+      return { success: false, error: 'Failed to enable 2FA' }
+    }
+  }
+
+  async disable2FA(userId: string, password: string) {
+    try {
+      const user = await this.db.query.users.findFirst({
+        where: eq(tenantSchema.users.id, userId),
+      })
+
+      if (!user || !user.passwordHash) {
+        return { success: false, error: 'User not found or no password set' }
+      }
+
+      const validPassword = await verifyPassword(password, user.passwordHash)
+      if (!validPassword) {
+        return { success: false, error: 'Invalid password' }
+      }
+
+      await this.db
+        .update(tenantSchema.users)
+        .set({
+          twoFactorEnabled: false,
+          twoFactorSecret: null,
+          twoFactorBackupCodes: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(tenantSchema.users.id, userId))
+
+      return { success: true }
+    } catch (error) {
+      console.error('Tenant 2FA disable error:', error)
+      return { success: false, error: 'Failed to disable 2FA' }
+    }
+  }
+
+  async verify2FACode(userId: string, code: string) {
+    try {
+      const user = await this.db
+        .select({
+          twoFactorSecret: tenantSchema.users.twoFactorSecret,
+          twoFactorBackupCodes: tenantSchema.users.twoFactorBackupCodes,
+        })
+        .from(tenantSchema.users)
+        .where(eq(tenantSchema.users.id, userId))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!user || !user.twoFactorSecret) {
+        return false
+      }
+
+      // First try TOTP verification
+      const isValidTOTP = TwoFactorService.verifyTOTP(user.twoFactorSecret, code)
+      if (isValidTOTP) {
+        return true
+      }
+
+      // If TOTP fails, try backup codes
+      if (user.twoFactorBackupCodes) {
+        const backupCodes = JSON.parse(user.twoFactorBackupCodes)
+        const isValidBackupCode = TwoFactorService.verifyBackupCode(backupCodes, code)
+        
+        if (isValidBackupCode) {
+          const remainingCodes = TwoFactorService.removeUsedBackupCode(backupCodes, code)
+          
+          await this.db
+            .update(tenantSchema.users)
+            .set({
+              twoFactorBackupCodes: JSON.stringify(remainingCodes),
+              updatedAt: new Date(),
+            })
+            .where(eq(tenantSchema.users.id, userId))
+
+          return true
+        }
+      }
+
+      return false
+    } catch (error) {
+      console.error('Tenant 2FA verification error:', error)
+      return false
+    }
+  }
+
+  async sendEmail2FA(userId: string) {
+    try {
+      const user = await this.db
+        .select({
+          email: tenantSchema.users.email,
+          fullName: tenantSchema.users.fullName,
+        })
+        .from(tenantSchema.users)
+        .where(eq(tenantSchema.users.id, userId))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      const { token, expiresAt } = TwoFactorService.generateEmailToken()
+
+      await this.db.insert(tenantSchema.tenantEmailTwoFactorTokens).values({
+        userId,
+        token,
+        expiresAt,
+      })
+
+      const emailService = new EmailService()
+      await emailService.sendTwoFactorCode({
+        to: user.email,
+        fullName: user.fullName,
+        code: token,
+      })
+
+      return { success: true, expiresAt }
+    } catch (error) {
+      console.error('Tenant Email 2FA error:', error)
+      return { success: false, error: 'Failed to send email 2FA code' }
+    }
+  }
+
+  async verifyEmail2FA(userId: string, code: string) {
+    try {
+      const tokenRecord = await this.db
+        .select()
+        .from(tenantSchema.tenantEmailTwoFactorTokens)
+        .where(
+          and(
+            eq(tenantSchema.tenantEmailTwoFactorTokens.userId, userId),
+            eq(tenantSchema.tenantEmailTwoFactorTokens.token, code),
+            eq(tenantSchema.tenantEmailTwoFactorTokens.used, false)
+          )
+        )
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!tokenRecord) {
+        return { success: false, error: 'Invalid code' }
+      }
+
+      const isValid = TwoFactorService.verifyEmailToken(
+        tokenRecord.token,
+        code,
+        tokenRecord.expiresAt,
+        tokenRecord.used
+      )
+
+      if (!isValid) {
+        return { success: false, error: 'Invalid or expired code' }
+      }
+
+      await this.db
+        .update(tenantSchema.tenantEmailTwoFactorTokens)
+        .set({ used: true })
+        .where(eq(tenantSchema.tenantEmailTwoFactorTokens.id, tokenRecord.id))
+
+      return { success: true }
+    } catch (error) {
+      console.error('Tenant Email 2FA verification error:', error)
+      return { success: false, error: 'Failed to verify email 2FA code' }
+    }
+  }
+
+  async regenerateBackupCodes(userId: string) {
+    try {
+      const backupCodes = Array.from({ length: 10 }, () =>
+        crypto.randomBytes(4).toString('hex').toUpperCase()
+      )
+      
+      const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
+
+      await this.db
+        .update(tenantSchema.users)
+        .set({
+          twoFactorBackupCodes: JSON.stringify(hashedBackupCodes),
+          updatedAt: new Date(),
+        })
+        .where(eq(tenantSchema.users.id, userId))
+
+      return { success: true, backupCodes }
+    } catch (error) {
+      console.error('Tenant backup codes regeneration error:', error)
+      return { success: false, error: 'Failed to regenerate backup codes' }
     }
   }
 }

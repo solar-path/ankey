@@ -33,6 +33,12 @@ const settingsNavigation = [
     description: 'Contact information and emergency contacts',
   },
   {
+    name: 'Security',
+    href: '/account/security',
+    icon: Shield,
+    description: 'Two-factor authentication and security settings',
+  },
+  {
     name: 'Password',
     href: '/account/password',
     icon: Lock,
@@ -65,6 +71,7 @@ function SettingsLayout() {
       profile: 'Profile',
       personal: 'Personal',
       contacts: 'Contacts',
+      security: 'Security',
       password: 'Password',
       appearance: 'Appearance',
       roles: 'Roles',

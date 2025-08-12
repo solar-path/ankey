@@ -3,6 +3,7 @@ import { TenantService } from '@/api/tenant.settings'
 import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { z } from 'zod'
 
 const authService = new CoreAuthService()
 const tenantService = new TenantService()
@@ -99,5 +100,122 @@ export const coreAuthRoutes = new Hono()
     const data = c.req.valid('json')
     const result = await authService.resetPassword(data)
 
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  // 2FA endpoints
+  .post('/2fa/setup', async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const result = await authService.setup2FA(user.id, user.email)
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  .post('/2fa/enable', zValidator('json', z.object({
+    secret: z.string(),
+    code: z.string().length(6),
+    backupCodes: z.array(z.string()),
+  })), async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const { secret, code, backupCodes } = c.req.valid('json')
+    const result = await authService.enable2FA(user.id, secret, code, backupCodes)
+    
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  .post('/2fa/disable', zValidator('json', z.object({
+    password: z.string(),
+  })), async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const { password } = c.req.valid('json')
+    const result = await authService.disable2FA(user.id, password)
+    
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  .post('/2fa/email/send', async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const result = await authService.sendEmail2FA(user.id)
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  .post('/2fa/email/verify', zValidator('json', z.object({
+    code: z.string().length(6),
+  })), async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const { code } = c.req.valid('json')
+    const result = await authService.verifyEmail2FA(user.id, code)
+    
+    return c.json(result, result.success ? 200 : 400)
+  })
+  
+  .post('/2fa/backup-codes/regenerate', async c => {
+    const sessionId = c.req.header('Cookie')?.match(/auth_session=([^;]*)/)?.[1]
+
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const { session, user } = await authService.validateSession(sessionId)
+
+    if (!session || !user) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+
+    const result = await authService.regenerateBackupCodes(user.id)
     return c.json(result, result.success ? 200 : 400)
   })

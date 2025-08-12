@@ -13,6 +13,7 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').default(false),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: text('two_factor_secret'),
+  twoFactorBackupCodes: text('two_factor_backup_codes'), // JSON array of hashed backup codes
   invitedBy: uuid('invited_by').references((): any => users.id),
   inviteToken: text('invite_token'),
   inviteExpiresAt: timestamp('invite_expires_at'),
@@ -141,6 +142,18 @@ export const tenantEmailVerificationTokens = pgTable('email_verification_tokens'
   createdAt: timestamp('created_at').defaultNow(),
 })
 
+// Email 2FA tokens for tenant users
+export const tenantEmailTwoFactorTokens = pgTable('email_two_factor_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  token: text('token').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  used: boolean('used').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
 // Product table
 export const products = pgTable('products', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -162,6 +175,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   delegationsAsDelegate: many(delegations, { relationName: 'delegatee' }),
   delegationsAsDelegator: many(delegations, { relationName: 'delegator' }),
   invitedUsers: many(users, { relationName: 'inviter' }),
+  emailTwoFactorTokens: many(tenantEmailTwoFactorTokens),
   settings: one(userSettings),
   companies: many(userCompanies),
   inviter: one(users, {
@@ -173,6 +187,13 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     fields: [users.approvedBy],
     references: [users.id],
     relationName: 'approver',
+  }),
+}))
+
+export const tenantEmailTwoFactorTokensRelations = relations(tenantEmailTwoFactorTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [tenantEmailTwoFactorTokens.userId],
+    references: [users.id],
   }),
 }))
 

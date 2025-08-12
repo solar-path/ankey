@@ -12,6 +12,7 @@ export const coreUsers = pgTable('core_users', {
   emailVerified: boolean('email_verified').default(false),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: text('two_factor_secret'),
+  twoFactorBackupCodes: text('two_factor_backup_codes'), // JSON array of hashed backup codes
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
@@ -60,6 +61,18 @@ export const emailVerificationTokens = pgTable('email_verification_tokens', {
   token: text('token').notNull().unique(),
   email: text('email').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// Email 2FA tokens
+export const emailTwoFactorTokens = pgTable('email_two_factor_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => coreUsers.id),
+  token: text('token').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  used: boolean('used').default(false),
   createdAt: timestamp('created_at').defaultNow(),
 })
 
@@ -290,9 +303,17 @@ export const coreUsersRelations = relations(coreUsers, ({ many, one }) => ({
   sessions: many(coreSessions),
   passwordResetTokens: many(passwordResetTokens),
   emailVerificationTokens: many(emailVerificationTokens),
+  emailTwoFactorTokens: many(emailTwoFactorTokens),
   auditLogs: many(coreAuditLogs),
   settings: one(coreUserSettings),
   userRoles: many(coreUserRoles),
+}))
+
+export const emailTwoFactorTokensRelations = relations(emailTwoFactorTokens, ({ one }) => ({
+  user: one(coreUsers, {
+    fields: [emailTwoFactorTokens.userId],
+    references: [coreUsers.id],
+  }),
 }))
 
 // Note: Zod schemas temporarily disabled due to Zod v4 + Bun compatibility issues

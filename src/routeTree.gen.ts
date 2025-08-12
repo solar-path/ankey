@@ -34,6 +34,7 @@ import { Route as CorePricingSubscriptionsRouteImport } from './routes/_core/pri
 import { Route as CorePricingServicesRouteImport } from './routes/_core/pricing/services'
 import { Route as CorePricingPlansRouteImport } from './routes/_core/pricing/plans'
 import { Route as CorePricingDiscountsRouteImport } from './routes/_core/pricing/discounts'
+import { Route as CoreAccountSecurityRouteImport } from './routes/_core/account/security'
 import { Route as CoreAccountRolesRouteImport } from './routes/_core/account/roles'
 import { Route as CoreAccountProfileRouteImport } from './routes/_core/account/profile'
 import { Route as CoreAccountPersonalRouteImport } from './routes/_core/account/personal'
@@ -164,6 +165,11 @@ const CorePricingDiscountsRoute = CorePricingDiscountsRouteImport.update({
   path: '/discounts',
   getParentRoute: () => CorePricingRouteRoute,
 } as any)
+const CoreAccountSecurityRoute = CoreAccountSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => CoreAccountRouteRoute,
+} as any)
 const CoreAccountRolesRoute = CoreAccountRolesRouteImport.update({
   id: '/roles',
   path: '/roles',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/account/personal': typeof CoreAccountPersonalRoute
   '/account/profile': typeof CoreAccountProfileRoute
   '/account/roles': typeof CoreAccountRolesRoute
+  '/account/security': typeof CoreAccountSecurityRoute
   '/pricing/discounts': typeof CorePricingDiscountsRoute
   '/pricing/plans': typeof CorePricingPlansRoute
   '/pricing/services': typeof CorePricingServicesRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/account/personal': typeof CoreAccountPersonalRoute
   '/account/profile': typeof CoreAccountProfileRoute
   '/account/roles': typeof CoreAccountRolesRoute
+  '/account/security': typeof CoreAccountSecurityRoute
   '/pricing/discounts': typeof CorePricingDiscountsRoute
   '/pricing/plans': typeof CorePricingPlansRoute
   '/pricing/services': typeof CorePricingServicesRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/_core/account/personal': typeof CoreAccountPersonalRoute
   '/_core/account/profile': typeof CoreAccountProfileRoute
   '/_core/account/roles': typeof CoreAccountRolesRoute
+  '/_core/account/security': typeof CoreAccountSecurityRoute
   '/_core/pricing/discounts': typeof CorePricingDiscountsRoute
   '/_core/pricing/plans': typeof CorePricingPlansRoute
   '/_core/pricing/services': typeof CorePricingServicesRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/account/personal'
     | '/account/profile'
     | '/account/roles'
+    | '/account/security'
     | '/pricing/discounts'
     | '/pricing/plans'
     | '/pricing/services'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/account/personal'
     | '/account/profile'
     | '/account/roles'
+    | '/account/security'
     | '/pricing/discounts'
     | '/pricing/plans'
     | '/pricing/services'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/_core/account/personal'
     | '/_core/account/profile'
     | '/_core/account/roles'
+    | '/_core/account/security'
     | '/_core/pricing/discounts'
     | '/_core/pricing/plans'
     | '/_core/pricing/services'
@@ -564,6 +576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorePricingDiscountsRouteImport
       parentRoute: typeof CorePricingRouteRoute
     }
+    '/_core/account/security': {
+      id: '/_core/account/security'
+      path: '/security'
+      fullPath: '/account/security'
+      preLoaderRoute: typeof CoreAccountSecurityRouteImport
+      parentRoute: typeof CoreAccountRouteRoute
+    }
     '/_core/account/roles': {
       id: '/_core/account/roles'
       path: '/roles'
@@ -616,6 +635,7 @@ interface CoreAccountRouteRouteChildren {
   CoreAccountPersonalRoute: typeof CoreAccountPersonalRoute
   CoreAccountProfileRoute: typeof CoreAccountProfileRoute
   CoreAccountRolesRoute: typeof CoreAccountRolesRoute
+  CoreAccountSecurityRoute: typeof CoreAccountSecurityRoute
   CoreAccountIndexRoute: typeof CoreAccountIndexRoute
 }
 
@@ -626,6 +646,7 @@ const CoreAccountRouteRouteChildren: CoreAccountRouteRouteChildren = {
   CoreAccountPersonalRoute: CoreAccountPersonalRoute,
   CoreAccountProfileRoute: CoreAccountProfileRoute,
   CoreAccountRolesRoute: CoreAccountRolesRoute,
+  CoreAccountSecurityRoute: CoreAccountSecurityRoute,
   CoreAccountIndexRoute: CoreAccountIndexRoute,
 }
 

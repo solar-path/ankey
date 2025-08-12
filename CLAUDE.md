@@ -590,3 +590,40 @@ Real-time audit trail visible in server logs:
 - **Single Source of Truth**: Keep route configuration and navigation in one place (layout file)
 - **Dynamic Generation**: Prefer dynamic breadcrumb generation over static definitions
 - **Context-Aware**: Detect core vs tenant context for appropriate root breadcrumbs
+
+# Data Usage Rules
+
+## NO MOCK DATA POLICY
+
+**CRITICAL RULE**: Generated code shall NEVER contain mock or fake data. All data MUST come from existing backend APIs.
+
+### Prohibited Patterns
+
+- **NEVER use mock data**: No hardcoded arrays, fake API responses, or placeholder data
+- **NEVER use console.log for API calls**: Always use actual RPC client calls
+- **NEVER use setTimeout for fake loading**: Always use real async operations
+- **NEVER use static data**: All dynamic content must come from backend
+
+### Required Patterns
+
+- **ALWAYS use Hono RPC client** from `src/lib/rpc.ts` for all data fetching
+- **ALWAYS handle loading states** with real API calls
+- **ALWAYS handle error states** with proper error boundaries
+- **ALWAYS use TypeScript interfaces** from `src/shared/index.ts` for API responses
+
+### Examples
+
+❌ **FORBIDDEN**:
+```tsx
+const mockUser = { name: 'John', email: 'john@example.com' }
+console.log('API call would go here')
+setTimeout(() => setLoading(false), 1000)
+```
+
+✅ **REQUIRED**:
+```tsx
+const { data: user, isLoading } = await client.core.auth.me.$get()
+if (!result.success) {
+  throw new Error(result.error)
+}
+```
