@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertTriangle, Key, Mail, Shield, ShieldCheck, ShieldX, Smartphone } from 'lucide-react'
@@ -355,12 +356,20 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Enter 6-digit code from email"
+                            <InputOTP
                               maxLength={6}
-                              className="text-center bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
-                            />
+                              value={field.value}
+                              onChange={field.onChange}
+                            >
+                              <InputOTPGroup className="gap-2">
+                                <InputOTPSlot index={0} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                                <InputOTPSlot index={1} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                                <InputOTPSlot index={2} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                                <InputOTPSlot index={3} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                                <InputOTPSlot index={4} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                                <InputOTPSlot index={5} className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                              </InputOTPGroup>
+                            </InputOTP>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

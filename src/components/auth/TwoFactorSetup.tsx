@@ -1,7 +1,5 @@
-import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Form,
   FormControl,
@@ -10,13 +8,15 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Badge } from '@/components/ui/badge'
-import { Copy, CheckCircle, AlertTriangle, Smartphone } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { toast } from 'sonner'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { Label } from '@/components/ui/label'
 import { client, handleApiResponse } from '@/lib/rpc'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AlertTriangle, CheckCircle, Copy, Smartphone } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
 interface TwoFactorSetupProps {
   onComplete?: (data: { secret: string; backupCodes: string[] }) => Promise<void>
@@ -240,12 +240,22 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
                       Verification Code
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter 6-digit code"
+                       <div className="flex justify-center">
+                      <InputOTP
                         maxLength={6}
-                        className="text-center text-lg tracking-wider bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
-                      />
+                        value={field.value}
+                        onChange={field.onChange}
+                      >
+                        <InputOTPGroup >
+                          <InputOTPSlot index={0}  />
+                          <InputOTPSlot index={1}  />
+                          <InputOTPSlot index={2}  />
+                          <InputOTPSlot index={3}  />
+                          <InputOTPSlot index={4}  />
+                          <InputOTPSlot index={5}  />
+                        </InputOTPGroup>
+                        </InputOTP>
+                        </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

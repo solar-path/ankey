@@ -1,4 +1,5 @@
 import { AuditService } from '@/api/audit.settings'
+import { openAPIApp } from '@/api/openapi'
 import { coreAuthRoutes } from '@/api/controllers/core/auth.hono'
 import { coreExportRoutes } from '@/api/controllers/core/export.hono'
 import { coreImportRoutes } from '@/api/controllers/core/import.hono'
@@ -149,6 +150,7 @@ app.use('/uploads/*', serveStatic({ root: './public' }))
 // API Routes following BetterNews pattern exactly
 const routes = app
   .basePath('/api')
+  .route('/', openAPIApp) // Add OpenAPI documentation routes
   .route('/auth', coreAuthRoutes)
   .route('/tenants', coreTenantsRoutes)
   .route('/settings', coreSettingsRoutes)

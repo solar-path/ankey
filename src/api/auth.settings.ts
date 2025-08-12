@@ -186,33 +186,40 @@ export class CoreAuthService {
     try {
       const { session, user } = await this.lucia.validateSession(sessionId)
 
-      // If session is valid but user is missing email, fetch it manually from database
-      // This ensures we always have complete user data even if Lucia's getUserAttributes isn't working properly
-      if (session && user && !user.email && user.id) {
-        const dbUser = await this.db
-          .select()
-          .from(coreSchema.coreUsers)
-          .where(eq(coreSchema.coreUsers.id, user.id))
-          .limit(1)
-          .then(rows => rows[0])
-
-        if (dbUser) {
-          // Return user with complete data from database
-          const completeUser = {
-            id: dbUser.id,
-            email: dbUser.email,
-            fullName: dbUser.fullName,
-            avatar: dbUser.avatar,
-            isActive: dbUser.isActive,
-            emailVerified: dbUser.emailVerified,
-            twoFactorEnabled: dbUser.twoFactorEnabled,
-          }
-
-          return { session, user: completeUser }
-        }
+      if (!session || !user) {
+        return { session: null, user: null }
       }
 
-      return { session, user }
+      // ALWAYS fetch fresh data from database to ensure accuracy
+      const dbUser = await this.db
+        .select()
+        .from(coreSchema.coreUsers)
+        .where(eq(coreSchema.coreUsers.id, user.id))
+        .limit(1)
+        .then(rows => rows[0])
+
+      if (!dbUser) {
+        console.error('User not found in database:', user.id)
+        return { session: null, user: null }
+      }
+
+      // Return user with fresh data from database
+      const completeUser = {
+        id: dbUser.id,
+        email: dbUser.email,
+        fullName: dbUser.fullName,
+        avatar: dbUser.avatar,
+        isActive: dbUser.isActive,
+        emailVerified: dbUser.emailVerified,
+        twoFactorEnabled: dbUser.twoFactorEnabled,
+        passwordExpiryDays: dbUser.passwordExpiryDays,
+        passwordChangedAt: dbUser.passwordChangedAt,
+        createdAt: dbUser.createdAt,
+        updatedAt: dbUser.updatedAt,
+      }
+
+
+      return { session, user: completeUser }
     } catch (error) {
       console.error('Session validation error:', error)
       return { session: null, user: null }
@@ -685,6 +692,38 @@ export class TenantAuthService {
   async validateSession(sessionId: string) {
     try {
       const { session, user } = await this.lucia.validateSession(sessionId)
+      
+      // Always fetch complete user data from database to ensure we have the latest information
+      // This fixes the 2FA status display issue where Lucia's getUserAttributes might not be up-to-date
+      if (session && user && user.id) {
+        const dbUser = await this.db
+          .select()
+          .from(tenantSchema.users)
+          .where(eq(tenantSchema.users.id, user.id))
+          .limit(1)
+          .then(rows => rows[0])
+
+        if (dbUser) {
+          // Return user with complete data from database
+          const completeUser = {
+            id: dbUser.id,
+            email: dbUser.email,
+            fullName: dbUser.fullName,
+            avatar: dbUser.avatar,
+            isActive: dbUser.isActive,
+            emailVerified: dbUser.emailVerified,
+            twoFactorEnabled: dbUser.twoFactorEnabled,
+            passwordExpiryDays: dbUser.passwordExpiryDays,
+            passwordChangedAt: dbUser.passwordChangedAt,
+            isApproved: dbUser.isApproved,
+            createdAt: dbUser.createdAt,
+            updatedAt: dbUser.updatedAt,
+          }
+
+          return { session, user: completeUser }
+        }
+      }
+      
       return { session, user }
     } catch (error) {
       console.error('Session validation error:', error)

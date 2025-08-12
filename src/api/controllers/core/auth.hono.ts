@@ -79,6 +79,7 @@ export const coreAuthRoutes = new Hono()
       return c.json({ success: false, error: 'Invalid session' }, 401)
     }
 
+
     return c.json({ success: true, data: user })
   })
   .post('/forgot-password', zValidator('json', forgotPasswordSchema), async c => {
@@ -351,3 +352,4 @@ export const coreAuthRoutes = new Hono()
     const result = await authService.getPasswordStatus(user.id)
     return c.json(result, result.success ? 200 : 500)
   })
+

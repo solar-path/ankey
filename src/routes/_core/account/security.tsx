@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { client, handleApiResponse } from '@/lib/rpc'
-import { createFileRoute } from '@tanstack/react-router'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Activity, Key, Shield, AlertTriangle, Clock } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { Activity, AlertTriangle, Clock, Key, Shield } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
@@ -115,21 +115,21 @@ function SecurityPage() {
     try {
       const response = await client.auth['password-expiry-settings'].$post({ json: data })
       const result = await handleApiResponse(response)
-      
+
       if (result.success) {
         // Refresh user data and password status
         const [userResponse, passwordStatusResponse] = await Promise.all([
           client.auth.me.$get(),
           client.auth['password-status'].$get(),
         ])
-        
+
         const userResult = await handleApiResponse(userResponse)
         const passwordStatusResult = await handleApiResponse(passwordStatusResponse)
-        
+
         if (userResult.success) {
           setUser(userResult.data)
         }
-        
+
         if (passwordStatusResult.success) {
           setPasswordStatus(passwordStatusResult.data)
         }
@@ -408,8 +408,8 @@ function SecurityPage() {
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 disabled={passwordExpiryForm.formState.isSubmitting}
               >
