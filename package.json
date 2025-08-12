@@ -81,6 +81,7 @@
     "drizzle-zod": "^0.8.3",
     "gray-matter": "^4.0.3",
     "hono": "^4.9.0",
+    "input-otp": "^1.4.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "lucia": "^3.2.2",

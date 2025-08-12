@@ -9,6 +9,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { loginSchema, type LoginData } from '@/shared'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -173,16 +174,21 @@ export function LoginForm({
                     Two-Factor Authentication Code
                   </FormLabel>
                   <FormControl>
-                    <Input 
-                      type="text" 
-                      placeholder="Enter 6-digit code" 
-                      maxLength={6} 
-                      className="text-center text-lg tracking-wider bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
-                      {...field} 
-                    />
+                    <div className="flex justify-center">
+                      <InputOTP maxLength={6} value={field.value} onChange={field.onChange}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
                   </FormControl>
                   <FormMessage />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
                     Enter the code from your authenticator app, or use a backup code.
                   </p>
                 </FormItem>
