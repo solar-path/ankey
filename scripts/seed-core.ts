@@ -89,13 +89,13 @@ async function seedCore() {
         .values([
           {
             name: 'Micro',
-            description: 'Just starting out, full of vision and ideas, building the foundation. Number of employees 1 to 5 full-time. Revenues 0 to 3 Million SR',
+            description: 'Just starting out, full of vision and ideas, building the foundation. Number of employees 1 to 10 full-time. Revenues 0 to 3 Million SR',
             pricePerUserPerMonth: 25,
             minUsers: 1,
-            maxUsers: 5,
+            maxUsers: 10,
             maxCompanies: 3,
             features: JSON.stringify([
-              '1 to 5 users',
+              '1 to 10 users',
               'Up to 3 companies',
               'Core business modules',
               'Email support',
@@ -111,13 +111,13 @@ async function seedCore() {
           },
           {
             name: 'Small',
-            description: 'Actively making things happen, turning ideas into reality. Number of employees 6 to 49 full-time. Revenues 3 to 40 Million SR',
+            description: 'Actively making things happen, turning ideas into reality. Number of employees 11 to 49 full-time. Revenues 3 to 40 Million SR',
             pricePerUserPerMonth: 50,
-            minUsers: 6,
+            minUsers: 11,
             maxUsers: 49,
             maxCompanies: 5,
             features: JSON.stringify([
-              '6 to 49 users',
+              '11 to 49 users',
               'Up to 5 companies',
               'All business modules',
               'Priority email & chat support',

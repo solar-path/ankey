@@ -170,23 +170,6 @@ function OffersPage() {
         </p>
       </div>
 
-      {/* Limited Time Offer */}
-      <div className="mb-12 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-semibold mb-2 text-green-900 dark:text-green-100">
-          🎉 Limited Time Offer
-        </h2>
-        <p className="text-green-700 dark:text-green-300 mb-6 text-lg">
-          Get full access to our platform with up to 5 users for 1 week - no credit card required!
-          Plus enjoy special pricing on your first year.
-        </p>
-        <Button
-          onClick={() => openDrawer(<RegisterWorkspaceForm />)}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          Claim Offer Now
-        </Button>
-      </div>
-
       {/* Billing Toggle */}
       <div className="flex justify-center mb-8">
         <ToggleGroup

@@ -23,23 +23,38 @@ export class PlanLimitsService {
   async getTenantPlanLimits(tenantId: string): Promise<PlanLimits | null> {
     try {
       // Get tenant's current subscription and plan
-      const subscription = await this.coreDb.query.tenantSubscriptions.findFirst({
-        where: and(
-          eq(coreSchema.tenantSubscriptions.tenantId, tenantId),
-          eq(coreSchema.tenantSubscriptions.status, 'active')
-        ),
-        with: {
-          plan: true,
-          tenant: true,
-        },
-      })
+      const subscriptions = await this.coreDb
+        .select({
+          subscription: coreSchema.tenantSubscriptions,
+          plan: coreSchema.pricingPlans,
+          tenant: coreSchema.tenants,
+        })
+        .from(coreSchema.tenantSubscriptions)
+        .innerJoin(
+          coreSchema.pricingPlans,
+          eq(coreSchema.tenantSubscriptions.planId, coreSchema.pricingPlans.id)
+        )
+        .innerJoin(
+          coreSchema.tenants,
+          eq(coreSchema.tenantSubscriptions.tenantId, coreSchema.tenants.id)
+        )
+        .where(
+          and(
+            eq(coreSchema.tenantSubscriptions.tenantId, tenantId),
+            eq(coreSchema.tenantSubscriptions.status, 'active')
+          )
+        )
+        .limit(1)
 
-      if (!subscription || !subscription.plan) {
+      if (subscriptions.length === 0) {
         return null
       }
 
-      const plan = subscription.plan
-      const tenant = subscription.tenant
+      const { subscription, plan, tenant } = subscriptions[0]
+
+      if (!plan || !tenant) {
+        return null
+      }
 
       // Get current user count from tenant database
       let currentUsers = 0

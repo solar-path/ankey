@@ -29,6 +29,13 @@
       "when": 1754819781111,
       "tag": "0003_big_aaron_stack",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754974794014,
+      "tag": "0004_cynical_paladin",
+      "breakpoints": true
     }
   ]
 }

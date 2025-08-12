@@ -281,30 +281,6 @@ export const productsRelations = relations(products, () => ({
   // Add relations here as needed
 }))
 
-// Companies relations
-export const companiesRelations = relations(companies, ({ many, one }) => ({
-  users: many(userCompanies),
-  parentCompany: one(companies, {
-    fields: [companies.parentCompanyId],
-    references: [companies.id],
-  }),
-  createdByUser: one(users, {
-    fields: [companies.createdBy],
-    references: [users.id],
-  }),
-}))
-
-// User-Company relations
-export const userCompaniesRelations = relations(userCompanies, ({ one }) => ({
-  user: one(users, {
-    fields: [userCompanies.userId],
-    references: [users.id],
-  }),
-  company: one(companies, {
-    fields: [userCompanies.companyId],
-    references: [companies.id],
-  }),
-}))
 
 // Companies table for multi-company support within a workspace
 export const companies = pgTable('companies', {
@@ -392,3 +368,28 @@ export const planLimits = pgTable('plan_limits', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
+
+// Companies relations - moved to end to avoid circular reference
+export const companiesRelations = relations(companies, ({ many, one }) => ({
+  users: many(userCompanies),
+  parentCompany: one(companies, {
+    fields: [companies.parentCompanyId],
+    references: [companies.id],
+  }),
+  createdByUser: one(users, {
+    fields: [companies.createdBy],
+    references: [users.id],
+  }),
+}))
+
+// User-Company relations - moved to end to avoid circular reference
+export const userCompaniesRelations = relations(userCompanies, ({ one }) => ({
+  user: one(users, {
+    fields: [userCompanies.userId],
+    references: [users.id],
+  }),
+  company: one(companies, {
+    fields: [userCompanies.companyId],
+    references: [companies.id],
+  }),
+}))

@@ -1,0 +1,1 @@
+ALTER TABLE "pricing_plans" ADD COLUMN "max_companies" integer DEFAULT 3;
