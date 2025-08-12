@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { client } from '@/lib/rpc'
 import { createFileRoute } from '@tanstack/react-router'
-import { Calendar, Check, Edit, Plus, Trash2, Users } from 'lucide-react'
+import { Building2, Calendar, Check, Edit, Plus, Trash2, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -20,6 +20,7 @@ interface PricingPlan {
   pricePerUserPerMonth: number
   minUsers?: number | null
   maxUsers?: number | null
+  maxCompanies?: number | null
   features: string
   trialDays?: number | null
   trialMaxUsers?: number | null
@@ -109,6 +110,7 @@ function PricingPlans() {
       pricePerUserPerMonth: plan.pricePerUserPerMonth,
       minUsers: plan.minUsers || undefined,
       maxUsers: plan.maxUsers || undefined,
+      maxCompanies: plan.maxCompanies || undefined,
       trialDays: plan.trialDays || undefined,
       trialMaxUsers: plan.trialMaxUsers || undefined,
       badge: plan.badge || '',
@@ -242,6 +244,14 @@ function PricingPlans() {
                       ) : (
                         <span>Max {plan.maxUsers} users</span>
                       )}
+                    </div>
+                  )}
+
+                  {/* Company Limits */}
+                  {plan.maxCompanies && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Building2 className="mr-2 h-4 w-4" />
+                      <span>Up to {plan.maxCompanies} companies</span>
                     </div>
                   )}
 

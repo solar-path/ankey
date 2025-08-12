@@ -93,8 +93,10 @@ async function seedCore() {
             pricePerUserPerMonth: 25,
             minUsers: 1,
             maxUsers: 5,
+            maxCompanies: 3,
             features: JSON.stringify([
               '1 to 5 users',
+              'Up to 3 companies',
               'Core business modules',
               'Email support',
               'Basic reporting',
@@ -113,8 +115,10 @@ async function seedCore() {
             pricePerUserPerMonth: 50,
             minUsers: 6,
             maxUsers: 49,
+            maxCompanies: 5,
             features: JSON.stringify([
               '6 to 49 users',
+              'Up to 5 companies',
               'All business modules',
               'Priority email & chat support',
               'Advanced reporting & analytics',
@@ -136,8 +140,10 @@ async function seedCore() {
             pricePerUserPerMonth: 75,
             minUsers: 50,
             maxUsers: 249,
+            maxCompanies: 15,
             features: JSON.stringify([
               '50 to 249 users',
+              'Up to 15 companies',
               'All modules + custom integrations',
               '24/7 priority support',
               'Advanced analytics & dashboards',
@@ -159,8 +165,10 @@ async function seedCore() {
             pricePerUserPerMonth: 100,
             minUsers: 250,
             maxUsers: null, // unlimited
+            maxCompanies: 25,
             features: JSON.stringify([
               'Unlimited users',
+              'Up to 25 companies',
               'All modules + custom development',
               '24/7 dedicated support team',
               'Custom analytics & dashboards',

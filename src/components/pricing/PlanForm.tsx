@@ -24,6 +24,7 @@ const planFormSchema = z.object({
   pricePerUserPerMonth: z.number().min(0, 'Price must be non-negative'),
   minUsers: z.number().min(1, 'Minimum users must be at least 1').optional(),
   maxUsers: z.number().min(1, 'Maximum users must be at least 1').optional(),
+  maxCompanies: z.number().min(1, 'Maximum companies must be at least 1').optional(),
   trialDays: z.number().min(0, 'Trial days must be non-negative').optional(),
   trialMaxUsers: z.number().min(1, 'Trial max users must be at least 1').optional(),
   badge: z.string().optional(),
@@ -50,6 +51,7 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
       pricePerUserPerMonth: initialData?.pricePerUserPerMonth || 0,
       minUsers: initialData?.minUsers,
       maxUsers: initialData?.maxUsers,
+      maxCompanies: initialData?.maxCompanies,
       trialDays: initialData?.trialDays,
       trialMaxUsers: initialData?.trialMaxUsers,
       badge: initialData?.badge || '',
@@ -223,6 +225,32 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="maxCompanies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Companies</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 3 for Micro, 5 for Small"
+                    value={field.value || ''}
+                    onChange={e => {
+                      const value = e.target.value
+                      field.onChange(value ? parseInt(value) : undefined)
+                    }}
+                  />
+                </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Maximum number of companies allowed in a workspace
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <FormField

@@ -3,6 +3,8 @@
 import { Link } from '@tanstack/react-router'
 import { BarChart3, LayoutDashboard, Package, Settings, ShoppingCart, Users } from 'lucide-react'
 import * as React from 'react'
+import { useEffect, useState } from 'react'
+import { client } from '@/lib/rpc'
 
 import { NavMain } from '@/components/QSideBar/nav-main'
 import { NavSecondary } from '@/components/QSideBar/nav-secondary'
@@ -55,6 +57,30 @@ const data = {
 }
 
 export function TenantSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [workspaceName, setWorkspaceName] = useState<string>('Workspace')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTenantInfo = async () => {
+      try {
+        const response = await client['tenant-info'].$get()
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setWorkspaceName(result.data.name)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch tenant info:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTenantInfo()
+  }, [])
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -62,7 +88,13 @@ export function TenantSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link to="/tenantDashboard">
-                <span className="text-base font-semibold">Workspace</span>
+                <span className="text-base font-semibold">
+                  {loading ? (
+                    <span className="text-muted-foreground">Loading...</span>
+                  ) : (
+                    workspaceName
+                  )}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

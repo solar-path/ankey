@@ -10,9 +10,13 @@ import { coreSettingsRoutes } from '@/api/controllers/core/settings.hono'
 import { coreTenantsRoutes } from '@/api/controllers/core/tenants.hono'
 import { coreUploadRoutes } from '@/api/controllers/core/upload.hono'
 import { tenantAuthRoutes } from '@/api/controllers/tenant/auth.hono'
+import { tenantCompaniesRoutes } from '@/api/controllers/tenant/companies.hono'
+import { tenantInfoRoutes } from '@/api/controllers/tenant/info.hono'
 import { productRoutes } from '@/api/controllers/tenant/product.hono'
 import { tenantRBACRoutes } from '@/api/controllers/tenant/rbac.hono'
 import { tenantSettingsRoutes } from '@/api/controllers/tenant/settings.hono'
+import { tenantUsageRoutes } from '@/api/controllers/tenant/usage.hono'
+import { tenantUsersRoutes } from '@/api/controllers/tenant/users.hono'
 import { optionalCoreAuth, optionalTenantAuth } from '@/api/middleware/auth.middleware'
 import { TenantService } from '@/api/tenant.settings'
 import { Hono } from 'hono'
@@ -156,8 +160,12 @@ const routes = app
   .route('/pricing', pricingRouter)
   .route('/services', servicesRouter)
   .route('/tenant-auth', tenantAuthRoutes)
+  .route('/tenant-info', tenantInfoRoutes)
   .route('/tenant-rbac', tenantRBACRoutes)
   .route('/tenant-settings', tenantSettingsRoutes)
+  .route('/tenant-users', tenantUsersRoutes)
+  .route('/tenant-companies', tenantCompaniesRoutes)
+  .route('/tenant-usage', tenantUsageRoutes)
   .route('/products', productRoutes)
 
 export type AppType = typeof routes

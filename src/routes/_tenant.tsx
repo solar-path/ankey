@@ -1,7 +1,7 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { TenantSidebar } from '@/components/QSideBar/TenantSidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 

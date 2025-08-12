@@ -105,6 +105,7 @@ export const pricingPlans = pgTable('pricing_plans', {
   pricePerUserPerMonth: integer('price_per_user_per_month').notNull(),
   minUsers: integer('min_users').default(1),
   maxUsers: integer('max_users'),
+  maxCompanies: integer('max_companies').default(3), // Maximum number of companies allowed
   features: text('features').notNull(), // JSON array of features
   trialDays: integer('trial_days').default(0),
   trialMaxUsers: integer('trial_max_users').default(5),

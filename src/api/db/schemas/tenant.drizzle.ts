@@ -163,6 +163,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   delegationsAsDelegator: many(delegations, { relationName: 'delegator' }),
   invitedUsers: many(users, { relationName: 'inviter' }),
   settings: one(userSettings),
+  companies: many(userCompanies),
   inviter: one(users, {
     fields: [users.invitedBy],
     references: [users.id],
@@ -279,6 +280,72 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 export const productsRelations = relations(products, () => ({
   // Add relations here as needed
 }))
+
+// Companies relations
+export const companiesRelations = relations(companies, ({ many, one }) => ({
+  users: many(userCompanies),
+  parentCompany: one(companies, {
+    fields: [companies.parentCompanyId],
+    references: [companies.id],
+  }),
+  createdByUser: one(users, {
+    fields: [companies.createdBy],
+    references: [users.id],
+  }),
+}))
+
+// User-Company relations
+export const userCompaniesRelations = relations(userCompanies, ({ one }) => ({
+  user: one(users, {
+    fields: [userCompanies.userId],
+    references: [users.id],
+  }),
+  company: one(companies, {
+    fields: [userCompanies.companyId],
+    references: [companies.id],
+  }),
+}))
+
+// Companies table for multi-company support within a workspace
+export const companies = pgTable('companies', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').unique(), // Company code/identifier
+  description: text('description'),
+  logo: text('logo'), // Logo URL
+  website: text('website'),
+  email: text('email'),
+  phone: text('phone'),
+  address: text('address'),
+  city: text('city'),
+  state: text('state'),
+  country: text('country'),
+  postalCode: text('postal_code'),
+  taxId: text('tax_id'),
+  registrationNumber: text('registration_number'),
+  industry: text('industry'),
+  size: text('size'), // 'small', 'medium', 'large', 'enterprise'
+  isActive: boolean('is_active').default(true),
+  parentCompanyId: uuid('parent_company_id').references((): any => companies.id),
+  metadata: jsonb('metadata'), // Additional flexible data
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Company-User junction table for multi-company access
+export const userCompanies = pgTable('user_companies', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  companyId: uuid('company_id')
+    .notNull()
+    .references(() => companies.id, { onDelete: 'cascade' }),
+  role: text('role').default('member'), // 'owner', 'admin', 'member', 'viewer'
+  isPrimary: boolean('is_primary').default(false), // User's primary company
+  joinedAt: timestamp('joined_at').defaultNow(),
+})
 
 // Tenant Subscription & Plan Information (Local Cache)
 // This mirrors core database data but provides local access for tenant operations
