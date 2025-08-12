@@ -62,7 +62,10 @@ export function LoginForm({
   const handleFormSubmit = async (data: LoginData) => {
     console.log('Submitting login form with data:', data)
     console.log('Tenant context detected:', isActuallyTenant)
-    console.log('Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server-side')
+    console.log(
+      'Hostname:',
+      typeof window !== 'undefined' ? window.location.hostname : 'server-side'
+    )
     setIsSubmitting(true)
     try {
       if (onSubmit) {
@@ -207,10 +210,13 @@ export function LoginForm({
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting || externalLoading}>
-            {isSubmitting || externalLoading 
-              ? (requires2FA ? 'Verifying...' : 'Signing In...') 
-              : (requires2FA ? 'Verify & Sign In' : 'Sign In')
-            }
+            {isSubmitting || externalLoading
+              ? requires2FA
+                ? 'Verifying...'
+                : 'Signing In...'
+              : requires2FA
+                ? 'Verify & Sign In'
+                : 'Sign In'}
           </Button>
 
           {isActuallyTenant && (

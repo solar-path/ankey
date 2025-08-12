@@ -48,45 +48,48 @@ export function RegisterWorkspaceForm({
   const workspaceName = form.watch('workspace')
 
   // Debounced workspace availability check
-  const checkWorkspaceAvailability = useCallback(async (workspace: string) => {
-    if (!workspace || workspace.length < 2) {
-      setWorkspaceAvailable(null)
-      return
-    }
-
-    const slug = generateSlug(workspace)
-    if (!slug) {
-      setWorkspaceAvailable(false)
-      return
-    }
-
-    setCheckingAvailability(true)
-    try {
-      const response = await client.auth['check-workspace'][':workspace'].$get({
-        param: { workspace: slug }
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        setWorkspaceAvailable(result.available)
-
-        // Set form error if not available
-        if (!result.available) {
-          form.setError('workspace', {
-            type: 'manual',
-            message: 'This workspace name is already taken'
-          })
-        } else {
-          form.clearErrors('workspace')
-        }
+  const checkWorkspaceAvailability = useCallback(
+    async (workspace: string) => {
+      if (!workspace || workspace.length < 2) {
+        setWorkspaceAvailable(null)
+        return
       }
-    } catch (error) {
-      console.error('Error checking workspace availability:', error)
-      setWorkspaceAvailable(null)
-    } finally {
-      setCheckingAvailability(false)
-    }
-  }, [form])
+
+      const slug = generateSlug(workspace)
+      if (!slug) {
+        setWorkspaceAvailable(false)
+        return
+      }
+
+      setCheckingAvailability(true)
+      try {
+        const response = await client.auth['check-workspace'][':workspace'].$get({
+          param: { workspace: slug },
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          setWorkspaceAvailable(result.available)
+
+          // Set form error if not available
+          if (!result.available) {
+            form.setError('workspace', {
+              type: 'manual',
+              message: 'This workspace name is already taken',
+            })
+          } else {
+            form.clearErrors('workspace')
+          }
+        }
+      } catch (error) {
+        console.error('Error checking workspace availability:', error)
+        setWorkspaceAvailable(null)
+      } finally {
+        setCheckingAvailability(false)
+      }
+    },
+    [form]
+  )
 
   // Debounce the availability check
   useEffect(() => {
@@ -117,11 +120,13 @@ export function RegisterWorkspaceForm({
           const errorMessage = result.error || 'Failed to set up workspace. Please try again.'
 
           // Check if it's a workspace availability error
-          if (errorMessage.toLowerCase().includes('already exists') ||
-              errorMessage.toLowerCase().includes('already taken')) {
+          if (
+            errorMessage.toLowerCase().includes('already exists') ||
+            errorMessage.toLowerCase().includes('already taken')
+          ) {
             form.setError('workspace', {
               type: 'manual',
-              message: 'This workspace name is already taken. Please choose another.'
+              message: 'This workspace name is already taken. Please choose another.',
             })
             return // Don't throw, just show field error
           }
@@ -130,8 +135,13 @@ export function RegisterWorkspaceForm({
         }
 
         const workspaceData = result.data as any
-        const workspaceUrl = workspaceData?.workspaceUrl ||
-          `http://${data.workspace.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}.localhost:3000`
+        const workspaceUrl =
+          workspaceData?.workspaceUrl ||
+          `http://${data.workspace
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')}.localhost:3000`
 
         // Show success with workspace URL
         toast.success(`${data.workspace} workspace created successfully!`, {
@@ -139,7 +149,10 @@ export function RegisterWorkspaceForm({
             <div className="space-y-2">
               <p>Your workspace is ready!</p>
               <p className="font-semibold">
-                Access it at: <a href={workspaceUrl} className="underline">{workspaceUrl}</a>
+                Access it at:{' '}
+                <a href={workspaceUrl} className="underline">
+                  {workspaceUrl}
+                </a>
               </p>
               <p className="text-sm">Check your email for login instructions.</p>
             </div>
@@ -287,26 +300,26 @@ export function RegisterWorkspaceForm({
                     onChange={e => field.onChange(e.target.checked)}
                   />
                 </FormControl>
-                  <FormLabel>
-                    I agree to the{' '}
-                    <Link
-                      to="/learn"
-                      search={{ doc: 'terms' }}
-                      className="text-blue-600 hover:text-blue-500 underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link
-                      to="/learn"
-                      search={{ doc: 'privacy' }}
-                      className="text-blue-600 hover:text-blue-500 underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      Privacy Policy
-                    </Link>
-                  </FormLabel>
+                <FormLabel>
+                  I agree to the{' '}
+                  <Link
+                    to="/learn"
+                    search={{ doc: 'terms' }}
+                    className="text-blue-600 hover:text-blue-500 underline"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link
+                    to="/learn"
+                    search={{ doc: 'privacy' }}
+                    className="text-blue-600 hover:text-blue-500 underline"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </Link>
+                </FormLabel>
                 <FormMessage />
               </FormItem>
             )}

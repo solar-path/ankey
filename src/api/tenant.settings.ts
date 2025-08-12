@@ -34,7 +34,7 @@ export class TenantService {
   async createTenant(data: RegisterData, createdBy?: string) {
     let tenantId: string | null = null
     let databaseCreated = false
-    
+
     try {
       const slug = this.slugifyWorkspace(data.workspace)
       const databaseName = slug
@@ -142,7 +142,7 @@ export class TenantService {
       }
     } catch (error) {
       console.error('❌ Create tenant error:', error)
-      
+
       // Cleanup on failure
       try {
         // If tenant record was created, remove it
@@ -150,10 +150,9 @@ export class TenantService {
           console.log(`🧹 Cleaning up tenant record: ${tenantId}`)
           await this.db.delete(coreSchema.tenants).where(eq(coreSchema.tenants.id, tenantId))
         }
-        
+
         // Note: We don't drop the database as it might contain data from previous attempts
         // The database and its tables will remain but can be reused if registration is retried
-        
       } catch (cleanupError) {
         console.error('❌ Cleanup error:', cleanupError)
       }
@@ -161,15 +160,15 @@ export class TenantService {
       // Return user-friendly error message
       const errorMessage = error instanceof Error ? error.message : 'Failed to create workspace'
       if (errorMessage.includes('already exists') || errorMessage.includes('unique')) {
-        return { 
-          success: false, 
-          error: 'Workspace name already exists. Please choose another name.' 
+        return {
+          success: false,
+          error: 'Workspace name already exists. Please choose another name.',
         }
       }
-      
-      return { 
-        success: false, 
-        error: 'Failed to create workspace. Please try again.' 
+
+      return {
+        success: false,
+        error: 'Failed to create workspace. Please try again.',
       }
     }
   }
@@ -379,7 +378,7 @@ export class TenantService {
         .limit(1)
 
       let defaultPlan = plans[0]
-      
+
       // If no plans exist, create a default trial plan
       if (!defaultPlan) {
         const [newPlan] = await this.db
@@ -390,14 +389,18 @@ export class TenantService {
             pricePerUserPerMonth: 0,
             minUsers: 1,
             maxUsers: 5,
-            features: JSON.stringify(['Core features included', 'Email support', 'Basic integrations']),
+            features: JSON.stringify([
+              'Core features included',
+              'Email support',
+              'Basic integrations',
+            ]),
             trialDays: 7,
             trialMaxUsers: 5,
             isActive: true,
             displayOrder: 0,
           })
           .returning()
-        
+
         defaultPlan = newPlan
       }
 
@@ -407,19 +410,17 @@ export class TenantService {
       trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
 
       // Create subscription record
-      await this.db
-        .insert(coreSchema.tenantSubscriptions)
-        .values({
-          tenantId,
-          planId: defaultPlan.id,
-          status: 'trial',
-          userCount: 1,
-          pricePerUser: defaultPlan.pricePerUserPerMonth,
-          totalMonthlyPrice: 0, // Free during trial
-          billingCycle: 'monthly',
-          trialEndsAt,
-          nextBillingDate: trialEndsAt, // Billing starts after trial ends
-        })
+      await this.db.insert(coreSchema.tenantSubscriptions).values({
+        tenantId,
+        planId: defaultPlan.id,
+        status: 'trial',
+        userCount: 1,
+        pricePerUser: defaultPlan.pricePerUserPerMonth,
+        totalMonthlyPrice: 0, // Free during trial
+        billingCycle: 'monthly',
+        trialEndsAt,
+        nextBillingDate: trialEndsAt, // Billing starts after trial ends
+      })
 
       return { success: true }
     } catch (error) {

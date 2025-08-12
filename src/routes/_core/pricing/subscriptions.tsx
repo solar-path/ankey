@@ -5,12 +5,7 @@ import { QDataTable } from '@/components/QDataTable'
 import { client } from '@/lib/rpc'
 import { createFileRoute } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
-import {
-  Calendar,
-  CreditCard,
-  User,
-  DollarSign,
-} from 'lucide-react'
+import { Calendar, CreditCard, User, DollarSign } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -49,7 +44,7 @@ function PricingSubscriptions() {
           <p className="font-medium">{row.original.tenantName || 'Unknown Tenant'}</p>
           <p className="text-sm text-muted-foreground">
             {row.original.tenantSubdomain ? (
-              <a 
+              <a
                 href={`http://${row.original.tenantSubdomain}.localhost:3000`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -59,7 +54,8 @@ function PricingSubscriptions() {
               </a>
             ) : (
               'No subdomain'
-            )} • Created {new Date(row.original.createdAt).toLocaleDateString()}
+            )}{' '}
+            • Created {new Date(row.original.createdAt).toLocaleDateString()}
           </p>
         </div>
       ),
@@ -97,9 +93,7 @@ function PricingSubscriptions() {
       cell: ({ row }) => (
         <div>
           <p className="font-medium">${row.original.totalMonthlyPrice}</p>
-          <p className="text-sm text-muted-foreground">
-            ${row.original.pricePerUser}/user
-          </p>
+          <p className="text-sm text-muted-foreground">${row.original.pricePerUser}/user</p>
         </div>
       ),
     },
@@ -112,14 +106,18 @@ function PricingSubscriptions() {
           return (
             <div>
               <p className="text-sm">Trial ends</p>
-              <p className="font-medium">{new Date(subscription.trialEndsAt).toLocaleDateString()}</p>
+              <p className="font-medium">
+                {new Date(subscription.trialEndsAt).toLocaleDateString()}
+              </p>
             </div>
           )
         } else if (subscription.nextBillingDate) {
           return (
             <div>
               <p className="text-sm">Next billing</p>
-              <p className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+              <p className="font-medium">
+                {new Date(subscription.nextBillingDate).toLocaleDateString()}
+              </p>
             </div>
           )
         }
@@ -157,21 +155,22 @@ function PricingSubscriptions() {
 
       if (response.ok) {
         const data = await response.json()
-        
+
         // Show detailed sync results
         const parts = []
         if (data.synced > 0) parts.push(`${data.synced} updated`)
         if (data.created > 0) parts.push(`${data.created} created`)
         if (data.errors > 0) parts.push(`${data.errors} errors`)
-        
-        const description = parts.length > 0 
-          ? `Subscriptions: ${parts.join(', ')}`
-          : 'All subscription data is up to date'
-        
+
+        const description =
+          parts.length > 0
+            ? `Subscriptions: ${parts.join(', ')}`
+            : 'All subscription data is up to date'
+
         toast.success('Subscription data synced successfully', {
-          description
+          description,
         })
-        
+
         // Refresh the data after sync
         await fetchSubscriptions()
       } else {

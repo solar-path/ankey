@@ -32,6 +32,8 @@ export function createCoreAuth() {
         isActive: attributes.isActive,
         emailVerified: attributes.emailVerified,
         twoFactorEnabled: attributes.twoFactorEnabled,
+        passwordExpiryDays: attributes.passwordExpiryDays,
+        passwordChangedAt: attributes.passwordChangedAt,
       }
     },
   })
@@ -59,6 +61,8 @@ export function createTenantAuth(tenantDatabase: string) {
         isActive: attributes.isActive,
         emailVerified: attributes.emailVerified,
         twoFactorEnabled: attributes.twoFactorEnabled,
+        passwordExpiryDays: attributes.passwordExpiryDays,
+        passwordChangedAt: attributes.passwordChangedAt,
         isApproved: attributes.isApproved,
       }
     },
@@ -295,7 +299,7 @@ export class CoreAuthService {
   async setup2FA(userId: string, userEmail: string) {
     try {
       const setupData = await TwoFactorService.generateTOTPSetup(userEmail)
-      
+
       return {
         success: true,
         data: setupData,
@@ -398,11 +402,11 @@ export class CoreAuthService {
       if (user.twoFactorBackupCodes) {
         const backupCodes = JSON.parse(user.twoFactorBackupCodes)
         const isValidBackupCode = TwoFactorService.verifyBackupCode(backupCodes, code)
-        
+
         if (isValidBackupCode) {
           // Remove used backup code
           const remainingCodes = TwoFactorService.removeUsedBackupCode(backupCodes, code)
-          
+
           await this.db
             .update(coreSchema.coreUsers)
             .set({
@@ -510,7 +514,7 @@ export class CoreAuthService {
       const backupCodes = Array.from({ length: 10 }, () =>
         crypto.randomBytes(4).toString('hex').toUpperCase()
       )
-      
+
       const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
 
       await this.db
@@ -525,6 +529,72 @@ export class CoreAuthService {
     } catch (error) {
       console.error('Backup codes regeneration error:', error)
       return { success: false, error: 'Failed to regenerate backup codes' }
+    }
+  }
+
+  async updatePasswordExpirySettings(userId: string, passwordExpiryDays: number) {
+    try {
+      await this.db
+        .update(coreSchema.coreUsers)
+        .set({
+          passwordExpiryDays,
+          updatedAt: new Date(),
+        })
+        .where(eq(coreSchema.coreUsers.id, userId))
+
+      return { success: true, message: 'Password expiry settings updated successfully' }
+    } catch (error) {
+      console.error('Password expiry settings update error:', error)
+      return { success: false, error: 'Failed to update password expiry settings' }
+    }
+  }
+
+  async getPasswordStatus(userId: string) {
+    try {
+      const user = await this.db.query.coreUsers.findFirst({
+        where: eq(coreSchema.coreUsers.id, userId),
+        columns: {
+          passwordExpiryDays: true,
+          passwordChangedAt: true,
+        },
+      })
+
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      if (user.passwordExpiryDays === 0) {
+        return {
+          success: true,
+          data: {
+            passwordExpiryDays: user.passwordExpiryDays,
+            passwordChangedAt: user.passwordChangedAt,
+            isExpired: false,
+            daysUntilExpiry: null,
+            showWarning: false,
+          },
+        }
+      }
+
+      const passwordChangedAt = new Date(user.passwordChangedAt)
+      const expiryDate = new Date(passwordChangedAt.getTime() + user.passwordExpiryDays * 24 * 60 * 60 * 1000)
+      const now = new Date()
+      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
+
+      return {
+        success: true,
+        data: {
+          passwordExpiryDays: user.passwordExpiryDays,
+          passwordChangedAt: user.passwordChangedAt,
+          expiryDate,
+          isExpired: daysUntilExpiry <= 0,
+          daysUntilExpiry,
+          showWarning: daysUntilExpiry <= 7 && daysUntilExpiry > 0,
+        },
+      }
+    } catch (error) {
+      console.error('Password status check error:', error)
+      return { success: false, error: 'Failed to check password status' }
     }
   }
 }
@@ -699,7 +769,7 @@ export class TenantAuthService {
   async setup2FA(userId: string, userEmail: string) {
     try {
       const setupData = await TwoFactorService.generateTOTPSetup(userEmail)
-      
+
       return {
         success: true,
         data: setupData,
@@ -794,10 +864,10 @@ export class TenantAuthService {
       if (user.twoFactorBackupCodes) {
         const backupCodes = JSON.parse(user.twoFactorBackupCodes)
         const isValidBackupCode = TwoFactorService.verifyBackupCode(backupCodes, code)
-        
+
         if (isValidBackupCode) {
           const remainingCodes = TwoFactorService.removeUsedBackupCode(backupCodes, code)
-          
+
           await this.db
             .update(tenantSchema.users)
             .set({
@@ -902,7 +972,7 @@ export class TenantAuthService {
       const backupCodes = Array.from({ length: 10 }, () =>
         crypto.randomBytes(4).toString('hex').toUpperCase()
       )
-      
+
       const hashedBackupCodes = TwoFactorService.hashBackupCodes(backupCodes)
 
       await this.db
@@ -933,6 +1003,8 @@ declare module 'lucia' {
       isActive: boolean
       emailVerified: boolean
       twoFactorEnabled: boolean
+      passwordExpiryDays: number
+      passwordChangedAt: Date
       isApproved?: boolean
     }
   }

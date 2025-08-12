@@ -10,20 +10,23 @@ export const tenantUsageRoutes = new Hono()
     try {
       const tenant = c.get('tenant')
       const limitsService = new PlanLimitsService()
-      
+
       const limits = await limitsService.getTenantPlanLimits(tenant.id)
-      
+
       if (!limits) {
-        return c.json({ 
-          success: false, 
-          error: 'Unable to fetch plan limits' 
-        }, 500)
+        return c.json(
+          {
+            success: false,
+            error: 'Unable to fetch plan limits',
+          },
+          500
+        )
       }
 
       const percentages = await limitsService.getUsagePercentages(tenant.id)
 
-      return c.json({ 
-        success: true, 
+      return c.json({
+        success: true,
         data: {
           users: {
             current: limits.currentUsers,
@@ -42,8 +45,8 @@ export const tenantUsageRoutes = new Hono()
           summary: {
             planName: tenant.name, // You might want to fetch actual plan name
             status: 'active', // You might want to fetch actual status
-          }
-        }
+          },
+        },
       })
     } catch (error) {
       console.error('Error fetching usage:', error)
@@ -57,21 +60,24 @@ export const tenantUsageRoutes = new Hono()
       const tenant = c.get('tenant')
       const body = await c.req.json()
       const { operation } = body as { operation: 'ADD_USER' | 'ADD_COMPANY' }
-      
+
       if (!operation || !['ADD_USER', 'ADD_COMPANY'].includes(operation)) {
-        return c.json({ 
-          success: false, 
-          error: 'Invalid operation. Must be ADD_USER or ADD_COMPANY' 
-        }, 400)
+        return c.json(
+          {
+            success: false,
+            error: 'Invalid operation. Must be ADD_USER or ADD_COMPANY',
+          },
+          400
+        )
       }
 
       const limitsService = new PlanLimitsService()
       const result = await limitsService.validateOperation(tenant.id, operation)
 
-      return c.json({ 
-        success: result.valid, 
+      return c.json({
+        success: result.valid,
         allowed: result.valid,
-        reason: result.error 
+        reason: result.error,
       })
     } catch (error) {
       console.error('Error validating operation:', error)

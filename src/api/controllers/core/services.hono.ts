@@ -180,20 +180,24 @@ export const servicesRouter = new Hono()
   })
 
   // Create service subscription
-  .post('/:serviceId/subscriptions', zValidator('json', createServiceSubscriptionSchema), async c => {
-    try {
-      const subscriptionData = c.req.valid('json')
+  .post(
+    '/:serviceId/subscriptions',
+    zValidator('json', createServiceSubscriptionSchema),
+    async c => {
+      try {
+        const subscriptionData = c.req.valid('json')
 
-      const [newSubscription] = await createCoreConnection()
-        .insert(serviceSubscriptions)
-        .values(subscriptionData)
-        .returning()
+        const [newSubscription] = await createCoreConnection()
+          .insert(serviceSubscriptions)
+          .values(subscriptionData)
+          .returning()
 
-      return c.json({ subscription: newSubscription }, 201)
-    } catch (_error) {
-      return c.json({ error: 'Failed to create service subscription' }, 500)
+        return c.json({ subscription: newSubscription }, 201)
+      } catch (_error) {
+        return c.json({ error: 'Failed to create service subscription' }, 500)
+      }
     }
-  })
+  )
 
   // Get service usage statistics
   .get('/:serviceId/usage', async c => {
@@ -207,10 +211,12 @@ export const servicesRouter = new Hono()
       const usage = await createCoreConnection()
         .select()
         .from(serviceUsage)
-        .where(and(
-          eq(serviceUsage.serviceId, serviceId),
-          eq(serviceUsage.usageDate, thirtyDaysAgo) // This would need proper date comparison
-        ))
+        .where(
+          and(
+            eq(serviceUsage.serviceId, serviceId),
+            eq(serviceUsage.usageDate, thirtyDaysAgo) // This would need proper date comparison
+          )
+        )
         .orderBy(desc(serviceUsage.usageDate))
 
       // Get total stats
@@ -220,10 +226,12 @@ export const servicesRouter = new Hono()
           totalActiveUsers: serviceSubscriptions.userCount,
         })
         .from(serviceSubscriptions)
-        .where(and(
-          eq(serviceSubscriptions.serviceId, serviceId),
-          eq(serviceSubscriptions.status, 'active')
-        ))
+        .where(
+          and(
+            eq(serviceSubscriptions.serviceId, serviceId),
+            eq(serviceSubscriptions.status, 'active')
+          )
+        )
 
       return c.json({ usage, stats })
     } catch (_error) {

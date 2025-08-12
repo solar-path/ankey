@@ -43,6 +43,13 @@
       "when": 1754977698212,
       "tag": "0005_light_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1754987821183,
+      "tag": "0006_kind_shiver_man",
+      "breakpoints": true
     }
   ]
 }

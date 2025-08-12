@@ -97,20 +97,20 @@ export async function createTenantDatabase(tenantDatabase: string): Promise<bool
 // Run tenant migrations
 export async function runTenantMigrations(tenantDatabase: string): Promise<boolean> {
   const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${tenantDatabase}`
-  
+
   const migrationClient = postgres(connectionString, {
     max: 1,
   })
-  
+
   try {
     const db = drizzle(migrationClient, { schema: tenantSchema })
-    
+
     console.log(`Running migrations for ${tenantDatabase}...`)
-    
+
     await migrate(db, { migrationsFolder: './src/api/db/migrations/tenant' })
-    
+
     console.log(`Migrations completed for ${tenantDatabase}`)
-    
+
     await migrationClient.end()
     return true
   } catch (error) {

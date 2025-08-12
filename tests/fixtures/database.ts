@@ -39,18 +39,19 @@ export interface TestPlan {
  */
 export async function setupTestDatabase() {
   // Core database setup
-  const coreDbUrl = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/ankey_test_core'
+  const coreDbUrl =
+    process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/ankey_test_core'
   coreConnection = postgres(coreDbUrl, { max: 1 })
   coreTestDb = drizzle(coreConnection, { schema: coreSchema })
 
-  // Test tenant database setup  
+  // Test tenant database setup
   const tenantDbUrl = 'postgresql://user:password@localhost:5432/ankey_test_tenant_default'
   tenantConnection = postgres(tenantDbUrl, { max: 1 })
   tenantTestDb = drizzle(tenantConnection, { schema: tenantSchema })
 
   // Run migrations
   await runTestMigrations()
-  
+
   console.log('📊 Test databases initialized')
 }
 
@@ -108,7 +109,7 @@ async function runTestMigrations() {
   try {
     // For simplicity, we'll create tables directly rather than running migration files
     // In a production setup, you'd run actual migration files
-    
+
     // This is a simplified approach - in reality you'd run the migration files
     console.log('📋 Test migrations completed')
   } catch (error) {
@@ -121,38 +122,41 @@ async function runTestMigrations() {
  * Create test pricing plans
  */
 export async function createTestPlans(): Promise<TestPlan[]> {
-  const plans = await coreTestDb.insert(coreSchema.pricingPlans).values([
-    {
-      name: 'Test Micro',
-      description: 'Test micro plan',
-      pricePerUserPerMonth: 25,
-      maxUsers: 5,
-      maxCompanies: 3,
-      features: JSON.stringify(['Basic features']),
-      isActive: true,
-      displayOrder: 1,
-    },
-    {
-      name: 'Test Small', 
-      description: 'Test small plan',
-      pricePerUserPerMonth: 50,
-      maxUsers: 49,
-      maxCompanies: 5,
-      features: JSON.stringify(['Advanced features']),
-      isActive: true,
-      displayOrder: 2,
-    },
-    {
-      name: 'Test Unlimited',
-      description: 'Test unlimited plan', 
-      pricePerUserPerMonth: 100,
-      maxUsers: null,
-      maxCompanies: null,
-      features: JSON.stringify(['All features']),
-      isActive: true,
-      displayOrder: 3,
-    },
-  ]).returning()
+  const plans = await coreTestDb
+    .insert(coreSchema.pricingPlans)
+    .values([
+      {
+        name: 'Test Micro',
+        description: 'Test micro plan',
+        pricePerUserPerMonth: 25,
+        maxUsers: 5,
+        maxCompanies: 3,
+        features: JSON.stringify(['Basic features']),
+        isActive: true,
+        displayOrder: 1,
+      },
+      {
+        name: 'Test Small',
+        description: 'Test small plan',
+        pricePerUserPerMonth: 50,
+        maxUsers: 49,
+        maxCompanies: 5,
+        features: JSON.stringify(['Advanced features']),
+        isActive: true,
+        displayOrder: 2,
+      },
+      {
+        name: 'Test Unlimited',
+        description: 'Test unlimited plan',
+        pricePerUserPerMonth: 100,
+        maxUsers: null,
+        maxCompanies: null,
+        features: JSON.stringify(['All features']),
+        isActive: true,
+        displayOrder: 3,
+      },
+    ])
+    .returning()
 
   return plans.map(plan => ({
     id: plan.id,
@@ -166,14 +170,17 @@ export async function createTestPlans(): Promise<TestPlan[]> {
  * Create test tenant with subscription
  */
 export async function createTestTenant(planId: string): Promise<TestTenant> {
-  const [tenant] = await coreTestDb.insert(coreSchema.tenants).values({
-    name: 'Test Workspace',
-    subdomain: 'test-workspace',
-    database: 'ankey_test_tenant_default',
-    billingEmail: 'test@example.com',
-    isActive: true,
-    userCount: 0,
-  }).returning()
+  const [tenant] = await coreTestDb
+    .insert(coreSchema.tenants)
+    .values({
+      name: 'Test Workspace',
+      subdomain: 'test-workspace',
+      database: 'ankey_test_tenant_default',
+      billingEmail: 'test@example.com',
+      isActive: true,
+      userCount: 0,
+    })
+    .returning()
 
   // Create subscription
   await coreTestDb.insert(coreSchema.tenantSubscriptions).values({
@@ -198,15 +205,18 @@ export async function createTestTenant(planId: string): Promise<TestTenant> {
  */
 export async function createTestUsers(count: number): Promise<TestUser[]> {
   const users: TestUser[] = []
-  
+
   for (let i = 0; i < count; i++) {
-    const [user] = await tenantTestDb.insert(tenantSchema.users).values({
-      email: `test-user-${i}@example.com`,
-      fullName: `Test User ${i}`,
-      passwordHash: 'hashed_password',
-      isActive: true,
-      emailVerified: true,
-    }).returning()
+    const [user] = await tenantTestDb
+      .insert(tenantSchema.users)
+      .values({
+        email: `test-user-${i}@example.com`,
+        fullName: `Test User ${i}`,
+        passwordHash: 'hashed_password',
+        isActive: true,
+        emailVerified: true,
+      })
+      .returning()
 
     users.push({
       id: user.id,
@@ -221,16 +231,22 @@ export async function createTestUsers(count: number): Promise<TestUser[]> {
 /**
  * Create test companies in tenant database
  */
-export async function createTestCompanies(count: number, createdBy: string): Promise<Array<{ id: string; name: string }>> {
+export async function createTestCompanies(
+  count: number,
+  createdBy: string
+): Promise<Array<{ id: string; name: string }>> {
   const companies = []
-  
+
   for (let i = 0; i < count; i++) {
-    const [company] = await tenantTestDb.insert(tenantSchema.companies).values({
-      name: `Test Company ${i}`,
-      code: `TEST${i}`,
-      createdBy,
-      isActive: true,
-    }).returning()
+    const [company] = await tenantTestDb
+      .insert(tenantSchema.companies)
+      .values({
+        name: `Test Company ${i}`,
+        code: `TEST${i}`,
+        createdBy,
+        isActive: true,
+      })
+      .returning()
 
     companies.push({
       id: company.id,

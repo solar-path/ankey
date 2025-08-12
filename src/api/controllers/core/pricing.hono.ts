@@ -2,8 +2,17 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { and, desc, eq, gte, lte, count, notInArray } from 'drizzle-orm'
 import { Hono } from 'hono'
-import { createCoreConnection, createTenantConnection, checkDatabaseExists } from '../../database.settings'
-import { pricingDiscounts, pricingPlans, tenantSubscriptions, tenants } from '../../db/schemas/core.drizzle'
+import {
+  createCoreConnection,
+  createTenantConnection,
+  checkDatabaseExists,
+} from '../../database.settings'
+import {
+  pricingDiscounts,
+  pricingPlans,
+  tenantSubscriptions,
+  tenants,
+} from '../../db/schemas/core.drizzle'
 import * as tenantSchema from '../../db/schemas/tenant.drizzle'
 import { requireCoreAuth, optionalCoreAuth } from '@/api/middleware'
 
@@ -297,12 +306,14 @@ export const pricingRouter = new Hono()
         .from(tenantSubscriptions)
         .leftJoin(pricingPlans, eq(tenantSubscriptions.planId, pricingPlans.id))
         .leftJoin(tenants, eq(tenantSubscriptions.tenantId, tenants.id))
-        .where(and(
-          // Exclude service tenants - only show actual customer tenants
-          notInArray(tenants.subdomain, ['shop', 'hunt', 'edu', 'swap']),
-          // Only show active tenants
-          eq(tenants.isActive, true)
-        ))
+        .where(
+          and(
+            // Exclude service tenants - only show actual customer tenants
+            notInArray(tenants.subdomain, ['shop', 'hunt', 'edu', 'swap']),
+            // Only show active tenants
+            eq(tenants.isActive, true)
+          )
+        )
         .orderBy(desc(tenantSubscriptions.createdAt))
 
       return c.json({ subscriptions })
@@ -423,76 +434,77 @@ export const pricingRouter = new Hono()
   .post('/subscriptions/sync', async c => {
     try {
       const db = createCoreConnection()
-      
+
       // Get all tenants that were active (to detect databases that went missing)
       // This includes both active and recently inactive tenants with subscriptions
       const tenantsToCheck = await db
         .select()
         .from(tenants)
-        .where(
-          notInArray(tenants.subdomain, ['shop', 'hunt', 'edu', 'swap'])
-        )
-      
+        .where(notInArray(tenants.subdomain, ['shop', 'hunt', 'edu', 'swap']))
+
       let syncedCount = 0
       let createdSubscriptions = 0
       let errors = 0
-      
+
       console.log(`🔄 Starting sync for ${tenantsToCheck.length} tenants...`)
-      
+
       for (const tenant of tenantsToCheck) {
         try {
           console.log(`📊 Syncing tenant: ${tenant.name} (${tenant.subdomain})`)
-          
+
           // First check if database exists
           let actualUserCount = 0
           const databaseExists = await checkDatabaseExists(tenant.database)
-          
+
           if (!databaseExists) {
             console.log(`   ⚠️  Database ${tenant.database} does not exist`)
             actualUserCount = 0 // Set to 0 for missing databases
           } else {
             try {
               const tenantDb = createTenantConnection(tenant.database)
-              
+
               // Get actual user count
               const userCountResult = await tenantDb
                 .select({ count: count() })
                 .from(tenantSchema.users)
                 .where(eq(tenantSchema.users.isActive, true))
-              
+
               actualUserCount = Number(userCountResult[0]?.count || 0)
               console.log(`   Users: ${tenant.userCount || 0} → ${actualUserCount}`)
             } catch (dbError: any) {
-              console.error(`   ❌ Database error for ${tenant.database}:`, dbError.message || dbError)
+              console.error(
+                `   ❌ Database error for ${tenant.database}:`,
+                dbError.message || dbError
+              )
               // Don't throw, just continue with 0 users
               actualUserCount = 0
             }
           }
-          
+
           // Update tenant record if user count has changed and database exists
           if (databaseExists && tenant.userCount !== actualUserCount) {
             await db
               .update(tenants)
-              .set({ 
+              .set({
                 userCount: actualUserCount,
-                updatedAt: new Date()
+                updatedAt: new Date(),
               })
               .where(eq(tenants.id, tenant.id))
-            
+
             console.log(`   ✅ Updated tenant user count`)
           }
-          
+
           // Check if subscription exists for this tenant
           const existingSubscription = await db
             .select()
             .from(tenantSubscriptions)
             .where(eq(tenantSubscriptions.tenantId, tenant.id))
             .limit(1)
-          
+
           if (existingSubscription.length === 0) {
             // Create missing subscription
             console.log(`   🚀 Creating missing subscription for ${tenant.name}`)
-            
+
             // Get default plan (first active plan)
             const defaultPlan = await db
               .select()
@@ -500,28 +512,28 @@ export const pricingRouter = new Hono()
               .where(eq(pricingPlans.isActive, true))
               .orderBy(pricingPlans.displayOrder)
               .limit(1)
-            
+
             if (defaultPlan.length > 0) {
               const plan = defaultPlan[0]
               const trialEndsAt = new Date()
               trialEndsAt.setDate(trialEndsAt.getDate() + (plan.trialDays || 7))
-              
-              await db
-                .insert(tenantSubscriptions)
-                .values({
-                  tenantId: tenant.id,
-                  planId: plan.id,
-                  status: databaseExists ? 'trial' : 'inactive', // Mark as inactive if database doesn't exist
-                  userCount: actualUserCount,
-                  pricePerUser: plan.pricePerUserPerMonth,
-                  totalMonthlyPrice: actualUserCount * plan.pricePerUserPerMonth,
-                  billingCycle: 'monthly',
-                  trialEndsAt,
-                  nextBillingDate: trialEndsAt,
-                })
-              
+
+              await db.insert(tenantSubscriptions).values({
+                tenantId: tenant.id,
+                planId: plan.id,
+                status: databaseExists ? 'trial' : 'inactive', // Mark as inactive if database doesn't exist
+                userCount: actualUserCount,
+                pricePerUser: plan.pricePerUserPerMonth,
+                totalMonthlyPrice: actualUserCount * plan.pricePerUserPerMonth,
+                billingCycle: 'monthly',
+                trialEndsAt,
+                nextBillingDate: trialEndsAt,
+              })
+
               createdSubscriptions++
-              console.log(`   ✅ Created subscription (${plan.name} plan${!databaseExists ? ' - marked as inactive due to missing database' : ''})`)
+              console.log(
+                `   ✅ Created subscription (${plan.name} plan${!databaseExists ? ' - marked as inactive due to missing database' : ''})`
+              )
             } else {
               console.log(`   ⚠️  No active plans found, skipping subscription creation`)
             }
@@ -530,65 +542,70 @@ export const pricingRouter = new Hono()
             const subscription = existingSubscription[0]
             if (databaseExists && subscription.userCount !== actualUserCount) {
               const newTotal = actualUserCount * subscription.pricePerUser
-              
+
               await db
                 .update(tenantSubscriptions)
                 .set({
                   userCount: actualUserCount,
                   totalMonthlyPrice: newTotal,
-                  updatedAt: new Date()
+                  updatedAt: new Date(),
                 })
                 .where(eq(tenantSubscriptions.id, subscription.id))
-              
+
               syncedCount++
-              console.log(`   ✅ Updated subscription billing: $${subscription.totalMonthlyPrice} → $${newTotal}`)
+              console.log(
+                `   ✅ Updated subscription billing: $${subscription.totalMonthlyPrice} → $${newTotal}`
+              )
             } else if (!databaseExists) {
               // Mark subscription as inactive if database doesn't exist
               console.log(`   ⚠️  Database missing - marking subscription as inactive`)
-              
+
               await db
                 .update(tenantSubscriptions)
                 .set({
                   status: 'inactive',
-                  updatedAt: new Date()
+                  updatedAt: new Date(),
                 })
                 .where(eq(tenantSubscriptions.id, subscription.id))
-              
+
               // Also mark tenant as inactive
               await db
                 .update(tenants)
                 .set({
                   isActive: false,
-                  updatedAt: new Date()
+                  updatedAt: new Date(),
                 })
                 .where(eq(tenants.id, tenant.id))
-              
-              console.log(`   ✅ Marked tenant and subscription as inactive due to missing database`)
+
+              console.log(
+                `   ✅ Marked tenant and subscription as inactive due to missing database`
+              )
               syncedCount++
             }
           }
-          
         } catch (tenantError) {
           console.error(`❌ Error syncing tenant ${tenant.name}:`, tenantError)
           errors++
           // Continue with other tenants
         }
       }
-      
+
       const message = [
         syncedCount > 0 ? `${syncedCount} subscriptions updated` : null,
         createdSubscriptions > 0 ? `${createdSubscriptions} subscriptions created` : null,
-        errors > 0 ? `${errors} errors` : null
-      ].filter(Boolean).join(', ')
-      
+        errors > 0 ? `${errors} errors` : null,
+      ]
+        .filter(Boolean)
+        .join(', ')
+
       console.log(`✅ Sync complete: ${message}`)
-      
-      return c.json({ 
-        success: true, 
+
+      return c.json({
+        success: true,
         synced: syncedCount,
         created: createdSubscriptions,
         errors,
-        message: message || 'No changes needed'
+        message: message || 'No changes needed',
       })
     } catch (error) {
       console.error('❌ Sync subscriptions error:', error)

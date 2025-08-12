@@ -62,11 +62,9 @@ export class PlanLimitsService {
 
       if (tenant.database) {
         const tenantDb = createTenantConnection(tenant.database)
-        
+
         // Count users
-        const userCount = await tenantDb
-          .select({ count: count() })
-          .from(tenantSchema.users)
+        const userCount = await tenantDb.select({ count: count() }).from(tenantSchema.users)
         currentUsers = userCount[0]?.count || 0
 
         // Count companies (assuming there's a companies table in tenant schema)
@@ -106,18 +104,18 @@ export class PlanLimitsService {
    */
   async canAddUser(tenantId: string): Promise<{ allowed: boolean; reason?: string }> {
     const limits = await this.getTenantPlanLimits(tenantId)
-    
+
     if (!limits) {
-      return { 
-        allowed: false, 
-        reason: 'Unable to verify plan limits. Please contact support.' 
+      return {
+        allowed: false,
+        reason: 'Unable to verify plan limits. Please contact support.',
       }
     }
 
     if (!limits.canAddUsers) {
       return {
         allowed: false,
-        reason: `User limit reached. Your plan allows maximum ${limits.maxUsers} users. Current: ${limits.currentUsers}`
+        reason: `User limit reached. Your plan allows maximum ${limits.maxUsers} users. Current: ${limits.currentUsers}`,
       }
     }
 
@@ -129,18 +127,18 @@ export class PlanLimitsService {
    */
   async canAddCompany(tenantId: string): Promise<{ allowed: boolean; reason?: string }> {
     const limits = await this.getTenantPlanLimits(tenantId)
-    
+
     if (!limits) {
-      return { 
-        allowed: false, 
-        reason: 'Unable to verify plan limits. Please contact support.' 
+      return {
+        allowed: false,
+        reason: 'Unable to verify plan limits. Please contact support.',
       }
     }
 
     if (!limits.canAddCompanies) {
       return {
         allowed: false,
-        reason: `Company limit reached. Your plan allows maximum ${limits.maxCompanies} companies. Current: ${limits.currentCompanies}`
+        reason: `Company limit reached. Your plan allows maximum ${limits.maxCompanies} companies. Current: ${limits.currentCompanies}`,
       }
     }
 
@@ -155,12 +153,12 @@ export class PlanLimitsService {
     companyUsagePercent: number | null
   }> {
     const limits = await this.getTenantPlanLimits(tenantId)
-    
+
     if (!limits) {
       return { userUsagePercent: null, companyUsagePercent: null }
     }
 
-    const userUsagePercent = limits.maxUsers 
+    const userUsagePercent = limits.maxUsers
       ? Math.round((limits.currentUsers / limits.maxUsers) * 100)
       : null
 
@@ -175,7 +173,7 @@ export class PlanLimitsService {
    * Validate operation against plan limits
    */
   async validateOperation(
-    tenantId: string, 
+    tenantId: string,
     operation: 'ADD_USER' | 'ADD_COMPANY'
   ): Promise<{ valid: boolean; error?: string }> {
     switch (operation) {

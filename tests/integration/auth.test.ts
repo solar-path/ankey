@@ -15,7 +15,7 @@ describe('Authentication & Authorization', () => {
     app = new Hono()
       .route('/api/tenant-auth', tenantAuthRoutes)
       .route('/api/tenant-info', tenantInfoRoutes)
-    
+
     // Create test tenant
     const plans = await createTestPlans()
     const tenant = await createTestTenant(plans[0].id)
@@ -195,9 +195,8 @@ describe('Authentication & Authorization', () => {
     })
 
     it('should handle requests without proper host header', async () => {
-      const response = await request(app.fetch)
-        .get('/api/tenant-info')
-        // No Host header
+      const response = await request(app.fetch).get('/api/tenant-info')
+      // No Host header
 
       expect(response.status).toBe(404)
     })

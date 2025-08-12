@@ -21,30 +21,35 @@ bun run test:watch
 ## Test Categories
 
 ### 1. Unit Tests (`tests/unit/`)
+
 - **Purpose**: Test individual functions and services in isolation
 - **Location**: `tests/unit/`
 - **Run**: `bun run test:unit`
 - **Coverage**: Business logic, utilities, validation schemas
 
 **Example**:
+
 ```bash
 bun run test:unit
 # Tests PlanLimitsService, utility functions, validation logic
 ```
 
 ### 2. Integration Tests (`tests/integration/`)
+
 - **Purpose**: Test API endpoints and service interactions
 - **Location**: `tests/integration/`
 - **Run**: `bun run test:integration`
 - **Coverage**: API routes, authentication, database interactions
 
 **Example**:
+
 ```bash
 bun run test:integration
 # Tests /api/tenant-users, /api/tenant-companies, auth flows
 ```
 
 ### 3. Database Tests (`tests/database/`)
+
 - **Purpose**: Test database schema, migrations, and relationships
 - **Location**: `tests/database/`
 - **Run**: `bun run test:db`
@@ -55,11 +60,13 @@ bun run test:integration
 ### Environment Configuration
 
 1. **Copy test environment**:
+
    ```bash
    cp .env.test .env.test.local
    ```
 
 2. **Configure test databases**:
+
    ```bash
    # PostgreSQL test databases
    createdb ankey_test_core
@@ -75,6 +82,7 @@ bun run test:integration
 ### Database Setup
 
 The testing framework automatically:
+
 - ✅ Sets up test database connections
 - ✅ Runs migrations before tests
 - ✅ Clears data between tests
@@ -102,21 +110,23 @@ tests/
 ## Key Testing Areas
 
 ### 1. Plan Limits Enforcement
+
 Tests the core business logic for subscription limits:
 
 ```typescript
 // Example test
 it('should prevent adding users when at limit', async () => {
   await createTestUsers(5) // Max for micro plan
-  
+
   const result = await service.canAddUser(tenantId)
-  
+
   expect(result.allowed).toBe(false)
   expect(result.reason).toContain('User limit reached')
 })
 ```
 
 **Coverage**:
+
 - ✅ User creation limits
 - ✅ Company creation limits
 - ✅ Plan upgrade/downgrade scenarios
@@ -124,6 +134,7 @@ it('should prevent adding users when at limit', async () => {
 - ✅ Edge cases (unlimited plans)
 
 ### 2. Multi-Tenant Isolation
+
 Ensures proper data separation:
 
 ```typescript
@@ -131,31 +142,33 @@ Ensures proper data separation:
 it('should isolate tenant data', async () => {
   const tenant1Data = await getTenantData(tenant1.id)
   const tenant2Data = await getTenantData(tenant2.id)
-  
+
   expect(tenant1Data).not.toContain(tenant2Data)
 })
 ```
 
 **Coverage**:
+
 - ✅ Database routing validation
 - ✅ Cross-tenant access prevention
 - ✅ Authentication context switching
 - ✅ Data isolation verification
 
 ### 3. API Security & Authentication
+
 Tests authentication and authorization:
 
 ```typescript
 // Example test
 it('should require authentication', async () => {
-  const response = await unauthenticatedRequest(app)
-    .get('/api/tenant-users')
-  
+  const response = await unauthenticatedRequest(app).get('/api/tenant-users')
+
   expect(response.status).toBe(401)
 })
 ```
 
 **Coverage**:
+
 - ✅ Authentication flows (core vs tenant)
 - ✅ Session management
 - ✅ Permission validation (RBAC)
@@ -163,9 +176,11 @@ it('should require authentication', async () => {
 - ✅ Security headers
 
 ### 4. Critical User Flows
+
 Tests end-to-end scenarios:
 
 **Coverage**:
+
 - ✅ Workspace creation & setup
 - ✅ User invitation & onboarding
 - ✅ Company management
@@ -175,6 +190,7 @@ Tests end-to-end scenarios:
 ## Test Data Management
 
 ### Fixtures
+
 Predefined test data in `tests/fixtures/data.ts`:
 
 ```typescript
@@ -191,6 +207,7 @@ export const testPlans = {
 ```
 
 ### Database Utilities
+
 Helper functions for test data:
 
 ```typescript
@@ -225,6 +242,7 @@ bun run test:ui
 ### CI/CD Pipeline
 
 The GitHub Actions workflow automatically:
+
 1. ✅ Sets up PostgreSQL service
 2. ✅ Installs dependencies
 3. ✅ Runs TypeScript checks
@@ -236,12 +254,14 @@ The GitHub Actions workflow automatically:
 ### Coverage Reports
 
 Coverage thresholds are set at **70%** for:
+
 - Branches
-- Functions  
+- Functions
 - Lines
 - Statements
 
 View coverage:
+
 ```bash
 bun run test:coverage
 open coverage/index.html
@@ -252,18 +272,20 @@ open coverage/index.html
 ### Writing Tests
 
 1. **Use descriptive test names**:
+
    ```typescript
    it('should prevent adding users when at plan limit', async () => {
    ```
 
 2. **Follow AAA pattern** (Arrange, Act, Assert):
+
    ```typescript
    // Arrange
    await createTestUsers(5)
-   
+
    // Act
    const result = await service.canAddUser(tenantId)
-   
+
    // Assert
    expect(result.allowed).toBe(false)
    ```
@@ -294,15 +316,17 @@ open coverage/index.html
 ### Common Issues
 
 1. **Database connection errors**:
+
    ```bash
    # Check PostgreSQL is running
    pg_isready -h localhost -p 5432
-   
+
    # Verify test databases exist
    psql -l | grep ankey_test
    ```
 
 2. **Test timeouts**:
+
    ```bash
    # Increase timeout in vitest.config.ts
    testTimeout: 10000
@@ -330,6 +354,7 @@ bun run test --reporter=verbose
 ## Future Enhancements
 
 ### Planned Additions
+
 - [ ] E2E tests with Playwright
 - [ ] Load testing with k6
 - [ ] Visual regression testing
@@ -337,6 +362,7 @@ bun run test --reporter=verbose
 - [ ] Mutation testing with Stryker
 
 ### Performance Testing
+
 - [ ] API response time benchmarks
 - [ ] Database query performance
 - [ ] Memory usage monitoring

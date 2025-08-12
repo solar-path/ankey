@@ -1,8 +1,24 @@
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { client, handleApiResponse } from '@/lib/rpc'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -187,18 +203,18 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {user.twoFactorEnabled
                   ? 'Your account is protected with 2FA'
-                  : 'Add an extra layer of security to your account'
-                }
+                  : 'Add an extra layer of security to your account'}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <Badge
               variant={user.twoFactorEnabled ? 'default' : 'secondary'}
-              className={user.twoFactorEnabled
-                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+              className={
+                user.twoFactorEnabled
+                  ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
               }
             >
               {user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
@@ -223,12 +239,16 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
                       Disable Two-Factor Authentication?
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-                      This will make your account less secure. You'll need to enter your password to confirm.
+                      This will make your account less secure. You'll need to enter your password to
+                      confirm.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
 
                   <Form {...disableForm}>
-                    <form onSubmit={disableForm.handleSubmit(handleDisable2FA)} className="space-y-4">
+                    <form
+                      onSubmit={disableForm.handleSubmit(handleDisable2FA)}
+                      className="space-y-4"
+                    >
                       <FormField
                         control={disableForm.control}
                         name="password"
@@ -290,8 +310,11 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
                   </p>
                 </div>
               </div>
-              
-              <Badge variant="default" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+
+              <Badge
+                variant="default"
+                className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+              >
                 Primary Method
               </Badge>
             </div>
@@ -313,9 +336,14 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
                   </p>
                 </div>
               </div>
-              
+
               {!emailCodeSent ? (
-                <Button onClick={sendEmailCode} variant="outline" disabled={isLoading} className="border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                <Button
+                  onClick={sendEmailCode}
+                  variant="outline"
+                  disabled={isLoading}
+                  className="border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                >
                   Test Email 2FA
                 </Button>
               ) : (
@@ -377,14 +405,12 @@ export function TwoFactorManagement({ user, onUpdate }: TwoFactorManagementProps
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-4 h-4 text-orange-500" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  5 codes remaining
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">5 codes remaining</span>
               </div>
-              
+
               <Button
                 onClick={regenerateBackupCodes}
                 variant="outline"

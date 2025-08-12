@@ -47,7 +47,9 @@ export function PlanForm({ onSuccess, planId, initialData }: PlanFormProps) {
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
-      features: initialData?.features || 'Core features included\nEmail support\nBasic integrations\nStandard security',
+      features:
+        initialData?.features ||
+        'Core features included\nEmail support\nBasic integrations\nStandard security',
       pricePerUserPerMonth: initialData?.pricePerUserPerMonth || 0,
       minUsers: initialData?.minUsers,
       maxUsers: initialData?.maxUsers,

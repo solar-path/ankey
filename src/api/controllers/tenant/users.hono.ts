@@ -29,7 +29,7 @@ export const tenantUsersRoutes = new Hono()
     try {
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const users = await db.query.users.findMany({
         with: {
           userRoles: {
@@ -59,32 +59,38 @@ export const tenantUsersRoutes = new Hono()
       const tenant = c.get('tenant')
       const currentUser = c.get('user')
       const tenantDatabase = c.get('tenantDatabase')
-      
+
       // Check plan limits
       const limitsService = new PlanLimitsService()
       const canAdd = await limitsService.canAddUser(tenant.id)
-      
+
       if (!canAdd.allowed) {
-        return c.json({ 
-          success: false, 
-          error: canAdd.reason 
-        }, 403)
+        return c.json(
+          {
+            success: false,
+            error: canAdd.reason,
+          },
+          403
+        )
       }
 
       // Create user invitation
       const authService = new TenantAuthService(tenantDatabase)
       const db = createTenantConnection(tenantDatabase)
-      
+
       // Check if user already exists
       const existingUser = await db.query.users.findFirst({
-        where: eq(tenantSchema.users.email, data.email)
+        where: eq(tenantSchema.users.email, data.email),
       })
 
       if (existingUser) {
-        return c.json({ 
-          success: false, 
-          error: 'User with this email already exists' 
-        }, 400)
+        return c.json(
+          {
+            success: false,
+            error: 'User with this email already exists',
+          },
+          400
+        )
       }
 
       // Generate invite token
@@ -92,15 +98,18 @@ export const tenantUsersRoutes = new Hono()
       const inviteExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
       // Create invited user
-      const [newUser] = await db.insert(tenantSchema.users).values({
-        email: data.email,
-        fullName: data.fullName,
-        invitedBy: currentUser.id,
-        inviteToken,
-        inviteExpiresAt,
-        isActive: false, // Inactive until they accept invitation
-        emailVerified: false,
-      }).returning()
+      const [newUser] = await db
+        .insert(tenantSchema.users)
+        .values({
+          email: data.email,
+          fullName: data.fullName,
+          invitedBy: currentUser.id,
+          inviteToken,
+          inviteExpiresAt,
+          isActive: false, // Inactive until they accept invitation
+          emailVerified: false,
+        })
+        .returning()
 
       // If companyId provided, add user to company
       if (data.companyId) {
@@ -114,13 +123,16 @@ export const tenantUsersRoutes = new Hono()
       // TODO: Send invitation email
       console.log(`Invitation token for ${data.email}: ${inviteToken}`)
 
-      return c.json({ 
-        success: true, 
-        data: {
-          userId: newUser.id,
-          inviteToken, // In production, don't return this
-        }
-      }, 201)
+      return c.json(
+        {
+          success: true,
+          data: {
+            userId: newUser.id,
+            inviteToken, // In production, don't return this
+          },
+        },
+        201
+      )
     } catch (error) {
       console.error('Error inviting user:', error)
       return c.json({ success: false, error: 'Failed to invite user' }, 500)
@@ -133,7 +145,7 @@ export const tenantUsersRoutes = new Hono()
       const userId = c.req.param('id')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const user = await db.query.users.findFirst({
         where: eq(tenantSchema.users.id, userId),
         with: {
@@ -168,7 +180,7 @@ export const tenantUsersRoutes = new Hono()
       const data = c.req.valid('json')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const [updatedUser] = await db
         .update(tenantSchema.users)
         .set({
@@ -195,14 +207,14 @@ export const tenantUsersRoutes = new Hono()
       const userId = c.req.param('id')
       const tenantDatabase = c.get('tenantDatabase')
       const currentUser = c.get('user')
-      
+
       // Prevent self-deletion
       if (userId === currentUser.id) {
         return c.json({ success: false, error: 'Cannot delete your own account' }, 400)
       }
 
       const db = createTenantConnection(tenantDatabase)
-      
+
       const [updatedUser] = await db
         .update(tenantSchema.users)
         .set({
@@ -228,26 +240,29 @@ export const tenantUsersRoutes = new Hono()
     try {
       const tenant = c.get('tenant')
       const limitsService = new PlanLimitsService()
-      
+
       const limits = await limitsService.getTenantPlanLimits(tenant.id)
-      
+
       if (!limits) {
-        return c.json({ 
-          success: false, 
-          error: 'Unable to fetch plan limits' 
-        }, 500)
+        return c.json(
+          {
+            success: false,
+            error: 'Unable to fetch plan limits',
+          },
+          500
+        )
       }
 
-      return c.json({ 
-        success: true, 
+      return c.json({
+        success: true,
         data: {
           users: {
             current: limits.currentUsers,
             max: limits.maxUsers,
             remaining: limits.remainingUsers,
             canAdd: limits.canAddUsers,
-          }
-        }
+          },
+        },
       })
     } catch (error) {
       console.error('Error fetching usage limits:', error)

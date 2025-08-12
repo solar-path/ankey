@@ -5,7 +5,7 @@ export const testUsers = {
     password: 'password123',
   },
   owner: {
-    email: 'owner@test.com', 
+    email: 'owner@test.com',
     fullName: 'Workspace Owner',
     password: 'password123',
   },
@@ -32,7 +32,7 @@ export const testCompanies = {
   },
   secondary: {
     name: 'Secondary Company',
-    code: 'SECONDARY', 
+    code: 'SECONDARY',
     description: 'Secondary testing company',
     email: 'info@secondary.com',
     industry: 'Finance',
@@ -55,12 +55,7 @@ export const testPlans = {
     pricePerUserPerMonth: 25,
     maxUsers: 5,
     maxCompanies: 3,
-    features: [
-      '1 to 5 users',
-      'Up to 3 companies',
-      'Basic features',
-      'Email support',
-    ],
+    features: ['1 to 5 users', 'Up to 3 companies', 'Basic features', 'Email support'],
     badge: 'Starter',
   },
   small: {
@@ -69,12 +64,7 @@ export const testPlans = {
     pricePerUserPerMonth: 50,
     maxUsers: 49,
     maxCompanies: 5,
-    features: [
-      '6 to 49 users',
-      'Up to 5 companies', 
-      'Advanced features',
-      'Priority support',
-    ],
+    features: ['6 to 49 users', 'Up to 5 companies', 'Advanced features', 'Priority support'],
     badge: 'Popular',
   },
   unlimited: {
@@ -83,12 +73,7 @@ export const testPlans = {
     pricePerUserPerMonth: 100,
     maxUsers: null,
     maxCompanies: null,
-    features: [
-      'Unlimited users',
-      'Unlimited companies',
-      'All features',
-      '24/7 support',
-    ],
+    features: ['Unlimited users', 'Unlimited companies', 'All features', '24/7 support'],
     badge: 'Enterprise',
   },
 }
@@ -100,7 +85,7 @@ export const testTenants = {
     billingEmail: 'billing@test.com',
   },
   premium: {
-    name: 'Premium Workspace', 
+    name: 'Premium Workspace',
     subdomain: 'premium-workspace',
     billingEmail: 'billing@premium.com',
   },
@@ -124,15 +109,42 @@ export const testPermissions = [
   { name: 'users.read', resource: 'users', action: 'read', description: 'View users' },
   { name: 'users.update', resource: 'users', action: 'update', description: 'Update users' },
   { name: 'users.delete', resource: 'users', action: 'delete', description: 'Delete users' },
-  { name: 'companies.create', resource: 'companies', action: 'create', description: 'Create companies' },
+  {
+    name: 'companies.create',
+    resource: 'companies',
+    action: 'create',
+    description: 'Create companies',
+  },
   { name: 'companies.read', resource: 'companies', action: 'read', description: 'View companies' },
-  { name: 'companies.update', resource: 'companies', action: 'update', description: 'Update companies' },
-  { name: 'companies.delete', resource: 'companies', action: 'delete', description: 'Delete companies' },
+  {
+    name: 'companies.update',
+    resource: 'companies',
+    action: 'update',
+    description: 'Update companies',
+  },
+  {
+    name: 'companies.delete',
+    resource: 'companies',
+    action: 'delete',
+    description: 'Delete companies',
+  },
 ]
 
 export const testRoles = [
-  { name: 'Admin', description: 'Full access to workspace', permissions: ['users.*', 'companies.*'] },
-  { name: 'Manager', description: 'Manage teams and projects', permissions: ['users.read', 'companies.*'] },
-  { name: 'Member', description: 'Standard team member', permissions: ['users.read', 'companies.read'] },
+  {
+    name: 'Admin',
+    description: 'Full access to workspace',
+    permissions: ['users.*', 'companies.*'],
+  },
+  {
+    name: 'Manager',
+    description: 'Manage teams and projects',
+    permissions: ['users.read', 'companies.*'],
+  },
+  {
+    name: 'Member',
+    description: 'Standard team member',
+    permissions: ['users.read', 'companies.read'],
+  },
   { name: 'Viewer', description: 'Read-only access', permissions: ['*.read'] },
 ]

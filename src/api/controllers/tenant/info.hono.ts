@@ -5,7 +5,7 @@ export const tenantInfoRoutes = new Hono()
   .get('/', async c => {
     try {
       const tenant = c.get('tenant')
-      
+
       if (!tenant) {
         return c.json({ success: false, error: 'Tenant not found' }, 404)
       }
@@ -19,7 +19,7 @@ export const tenantInfoRoutes = new Hono()
           isActive: tenant.isActive,
           userCount: tenant.userCount,
           createdAt: tenant.createdAt,
-        }
+        },
       })
     } catch (error) {
       console.error('Failed to get tenant info:', error)

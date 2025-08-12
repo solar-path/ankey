@@ -6,7 +6,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -119,10 +119,8 @@ export default function InquiryForm({
     }
   }
 
-
   return (
     <div className="space-y-6 p-2">
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           <FormField
@@ -226,11 +224,10 @@ export default function InquiryForm({
         </form>
       </Form>
 
-      <Button variant='ghost' className="w-full" onClick={() => openDrawer(<FindInquiryForm />)}>
+      <Button variant="ghost" className="w-full" onClick={() => openDrawer(<FindInquiryForm />)}>
         <Search className="mr-2 h-4 w-4" />
         Find Existing Inquiry
-            </Button>
-
+      </Button>
     </div>
   )
 }

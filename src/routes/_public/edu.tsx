@@ -13,7 +13,7 @@ import {
   Search,
   Star,
   TrendingUp,
-  Users
+  Users,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_public/edu')({
@@ -34,7 +34,7 @@ function EducationPage() {
       image: '💻',
       badge: 'Bestseller',
       discount: 55,
-      level: 'Intermediate'
+      level: 'Intermediate',
     },
     {
       id: 2,
@@ -48,7 +48,7 @@ function EducationPage() {
       image: '🐍',
       badge: 'Hot & New',
       discount: 47,
-      level: 'Beginner'
+      level: 'Beginner',
     },
     {
       id: 3,
@@ -62,7 +62,7 @@ function EducationPage() {
       image: '🎨',
       badge: 'Top Rated',
       discount: 46,
-      level: 'All Levels'
+      level: 'All Levels',
     },
     {
       id: 4,
@@ -76,8 +76,8 @@ function EducationPage() {
       image: '📱',
       badge: 'New',
       discount: 47,
-      level: 'Advanced'
-    }
+      level: 'Advanced',
+    },
   ]
 
   const categories = [
@@ -86,7 +86,7 @@ function EducationPage() {
     { name: 'Business', icon: '💼', courses: '3,200+ courses' },
     { name: 'Marketing', icon: '📈', courses: '1,500+ courses' },
     { name: 'Data Science', icon: '📊', courses: '980+ courses' },
-    { name: 'Photography', icon: '📸', courses: '650+ courses' }
+    { name: 'Photography', icon: '📸', courses: '650+ courses' },
   ]
 
   return (
@@ -98,8 +98,8 @@ function EducationPage() {
             Learn New Skills Online
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Master in-demand skills with expert-led courses. Join millions of learners
-            and advance your career with hands-on projects and certificates.
+            Master in-demand skills with expert-led courses. Join millions of learners and advance
+            your career with hands-on projects and certificates.
           </p>
 
           {/* Search Bar */}
@@ -108,10 +108,7 @@ function EducationPage() {
               <div className="flex gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    placeholder="What do you want to learn?"
-                    className="pl-10 h-12 text-lg"
-                  />
+                  <Input placeholder="What do you want to learn?" className="pl-10 h-12 text-lg" />
                 </div>
                 <Button size="lg" className="h-12 px-8">
                   Search
@@ -139,7 +136,10 @@ function EducationPage() {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categories.map((category, index) => (
-              <Card key={index} className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all cursor-pointer group">
+              <Card
+                key={index}
+                className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all cursor-pointer group"
+              >
                 <CardHeader className="text-center">
                   <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">
                     {category.icon}
@@ -158,14 +158,15 @@ function EducationPage() {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Featured Courses
             </h2>
-            <Button variant="outline">
-              View All Courses
-            </Button>
+            <Button variant="outline">View All Courses</Button>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredCourses.map((course) => (
-              <Card key={course.id} className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all group">
+            {featuredCourses.map(course => (
+              <Card
+                key={course.id}
+                className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all group"
+              >
                 <CardHeader className="relative">
                   <div className="absolute top-2 left-2 z-10">
                     <Badge variant="destructive">{course.discount}% OFF</Badge>
@@ -179,7 +180,9 @@ function EducationPage() {
                 </CardHeader>
                 <CardContent>
                   <CardTitle className="text-lg mb-2 line-clamp-2">{course.title}</CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">by {course.instructor}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    by {course.instructor}
+                  </p>
 
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center">
@@ -239,28 +242,36 @@ function EducationPage() {
                 <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-semibold mb-2">Expert Instructors</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Learn from industry professionals</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Learn from industry professionals
+              </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Download className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="font-semibold mb-2">Lifetime Access</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Access courses anytime, anywhere</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Access courses anytime, anywhere
+              </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-8 w-8 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="font-semibold mb-2">Certificates</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Get certified upon completion</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Get certified upon completion
+              </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Globe className="h-8 w-8 text-orange-600 dark:text-orange-400" />
               </div>
               <h3 className="font-semibold mb-2">Global Community</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Connect with learners worldwide</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Connect with learners worldwide
+              </p>
             </div>
           </div>
         </div>
@@ -290,13 +301,19 @@ function EducationPage() {
         {/* CTA Section */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 rounded-lg p-12 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Start Learning Today!</h2>
-          <p className="text-xl mb-8 opacity-90">Join millions of learners and unlock your potential</p>
+          <p className="text-xl mb-8 opacity-90">
+            Join millions of learners and unlock your potential
+          </p>
           <div className="flex justify-center gap-4">
             <Button variant="secondary" size="lg" className="px-8">
               <TrendingUp className="mr-2 h-5 w-5" />
               Browse Trending
             </Button>
-            <Button variant="outline" size="lg" className="px-8 text-white border-white hover:bg-white hover:text-blue-600">
+            <Button
+              variant="outline"
+              size="lg"
+              className="px-8 text-white border-white hover:bg-white hover:text-blue-600"
+            >
               Start Free Trial
             </Button>
           </div>

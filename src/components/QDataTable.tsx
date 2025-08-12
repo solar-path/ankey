@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -12,21 +12,21 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { 
-  ChevronDown, 
-  MoreHorizontal, 
-  Pencil, 
-  Trash, 
+} from '@tanstack/react-table'
+import {
+  ChevronDown,
+  MoreHorizontal,
+  Pencil,
+  Trash,
   Plus,
   FileSpreadsheet,
   FileText,
   Upload,
-  RefreshCw
-} from "lucide-react"
+  RefreshCw,
+} from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -34,9 +34,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -44,9 +44,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table'
 
-import { type DataTableProps } from "@/shared"
+import { type DataTableProps } from '@/shared'
 
 export function QDataTable<TData, TValue>({
   columns,
@@ -64,26 +64,26 @@ export function QDataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [globalFilter, setGlobalFilter] = React.useState("")
+  const [globalFilter, setGlobalFilter] = React.useState('')
 
   // Add selection and actions columns
   const enhancedColumns = React.useMemo(() => {
     const selectColumn: ColumnDef<TData, any> = {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           ref={(el: HTMLInputElement | null) => {
             if (el) el.indeterminate = table.getIsSomePageRowsSelected()
           }}
-          onChange={(e) => table.toggleAllPageRowsSelected(!!e.target.checked)}
+          onChange={e => table.toggleAllPageRowsSelected(!!e.target.checked)}
           aria-label="Select all"
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onChange={(e) => row.toggleSelected(!!e.target.checked)}
+          onChange={e => row.toggleSelected(!!e.target.checked)}
           aria-label="Select row"
         />
       ),
@@ -92,7 +92,7 @@ export function QDataTable<TData, TValue>({
     }
 
     const actionsColumn: ColumnDef<TData, any> = {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
         return (
@@ -138,7 +138,7 @@ export function QDataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: "includesString",
+    globalFilterFn: 'includesString',
     enableRowSelection: true,
     state: {
       sorting,
@@ -159,11 +159,11 @@ export function QDataTable<TData, TValue>({
       <div className="flex items-center justify-between py-4">
         <Input
           placeholder="Filter all columns..."
-          value={globalFilter ?? ""}
-          onChange={(event) => setGlobalFilter(event.target.value)}
+          value={globalFilter ?? ''}
+          onChange={event => setGlobalFilter(event.target.value)}
           className="max-w-sm"
         />
-        
+
         <div className="flex items-center space-x-2">
           <TooltipProvider>
             {onCreate && (
@@ -176,7 +176,7 @@ export function QDataTable<TData, TValue>({
                 <TooltipContent>Create new</TooltipContent>
               </Tooltip>
             )}
-            
+
             {onExportExcel && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -187,7 +187,7 @@ export function QDataTable<TData, TValue>({
                 <TooltipContent>Export to Excel</TooltipContent>
               </Tooltip>
             )}
-            
+
             {onExportPdf && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -198,7 +198,7 @@ export function QDataTable<TData, TValue>({
                 <TooltipContent>Export to PDF</TooltipContent>
               </Tooltip>
             )}
-            
+
             {onImport && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -209,7 +209,7 @@ export function QDataTable<TData, TValue>({
                 <TooltipContent>Import</TooltipContent>
               </Tooltip>
             )}
-            
+
             {onSync && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -221,7 +221,7 @@ export function QDataTable<TData, TValue>({
               </Tooltip>
             )}
           </TooltipProvider>
-          
+
           {table.getFilteredSelectedRowModel().rows.length > 0 && onDelete && (
             <Button
               variant="destructive"
@@ -233,7 +233,7 @@ export function QDataTable<TData, TValue>({
               Delete Selected ({table.getFilteredSelectedRowModel().rows.length})
             </Button>
           )}
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -243,16 +243,14 @@ export function QDataTable<TData, TValue>({
             <DropdownMenuContent align="end">
               {table
                 .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
+                .filter(column => column.getCanHide())
+                .map(column => {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       className="capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
+                      onCheckedChange={value => column.toggleVisibility(!!value)}
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -265,17 +263,14 @@ export function QDataTable<TData, TValue>({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers.map(header => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
                 })}
@@ -284,27 +279,18 @@ export function QDataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
+              table.getRowModel().rows.map(row => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={enhancedColumns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={enhancedColumns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -314,7 +300,7 @@ export function QDataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="space-x-2">

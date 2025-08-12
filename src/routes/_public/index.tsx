@@ -32,22 +32,21 @@ function Index() {
                   Enterprise Compliance & Management Platform
                 </h1>
                 <p className="mx-auto max-w-3xl text-muted-foreground lg:text-xl">
-                  Streamline your business operations with automated compliance, delegation of authority,
-                  and comprehensive audit trails. Start with our 7-day free trial.
+                  Streamline your business operations with automated compliance, delegation of
+                  authority, and comprehensive audit trails. Start with our 7-day free trial.
                 </p>
               </div>
               <div className="mt-6 flex justify-center gap-3">
-                <Button
-                  className="shadow-sm transition-shadow hover:shadow"
-                  asChild
-                >
-                  <Link to='/offers'>
+                <Button className="shadow-sm transition-shadow hover:shadow" asChild>
+                  <Link to="/offers">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button variant="outline" className="group" asChild>
-                  <Link to='/learn' search={{ doc: 'getting-started' }}>Learn more</Link>
+                  <Link to="/learn" search={{ doc: 'getting-started' }}>
+                    Learn more
+                  </Link>
                 </Button>
               </div>
               <div className="mt-20 flex flex-col items-center gap-5">
@@ -92,7 +91,8 @@ function Index() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">What Our Platform Does</h2>
             <p className="text-lg text-muted-foreground">
-              A comprehensive SaaS solution for managing business compliance, delegations, and operations
+              A comprehensive SaaS solution for managing business compliance, delegations, and
+              operations
             </p>
           </div>
 
@@ -103,8 +103,8 @@ function Index() {
               </div>
               <h3 className="font-semibold mb-2">SOC 2 Compliance</h3>
               <p className="text-sm text-muted-foreground">
-                Built-in audit logging, security controls, and compliance reporting for SOC 2 Type II certification.
-                Every action is tracked and logged automatically.
+                Built-in audit logging, security controls, and compliance reporting for SOC 2 Type
+                II certification. Every action is tracked and logged automatically.
               </p>
             </div>
 
@@ -114,8 +114,8 @@ function Index() {
               </div>
               <h3 className="font-semibold mb-2">Multi-Tenant Architecture</h3>
               <p className="text-sm text-muted-foreground">
-                Create isolated workspaces for different organizations or departments. Each tenant has its own
-                database, users, and configurations.
+                Create isolated workspaces for different organizations or departments. Each tenant
+                has its own database, users, and configurations.
               </p>
             </div>
 
@@ -125,8 +125,8 @@ function Index() {
               </div>
               <h3 className="font-semibold mb-2">Delegation of Authority</h3>
               <p className="text-sm text-muted-foreground">
-                Define approval workflows, delegate permissions, and manage authority levels. Track who approved
-                what and when with complete audit trails.
+                Define approval workflows, delegate permissions, and manage authority levels. Track
+                who approved what and when with complete audit trails.
               </p>
             </div>
           </div>
@@ -161,7 +161,8 @@ function Index() {
                 <div>
                   <h3 className="font-semibold mb-1">Choose Your Plan</h3>
                   <p className="text-muted-foreground">
-                    Select from our flexible pricing plans. Start with a 7-day free trial with up to 5 users.
+                    Select from our flexible pricing plans. Start with a 7-day free trial with up to
+                    5 users.
                   </p>
                 </div>
               </div>
@@ -173,7 +174,8 @@ function Index() {
                 <div>
                   <h3 className="font-semibold mb-1">Create Your Workspace</h3>
                   <p className="text-muted-foreground">
-                    Register your workspace with a unique subdomain. Your isolated environment will be ready instantly.
+                    Register your workspace with a unique subdomain. Your isolated environment will
+                    be ready instantly.
                   </p>
                 </div>
               </div>
@@ -185,7 +187,8 @@ function Index() {
                 <div>
                   <h3 className="font-semibold mb-1">Invite Your Team</h3>
                   <p className="text-muted-foreground">
-                    Add team members, assign roles, and set up approval workflows according to your organization's needs.
+                    Add team members, assign roles, and set up approval workflows according to your
+                    organization's needs.
                   </p>
                 </div>
               </div>
@@ -197,7 +200,8 @@ function Index() {
                 <div>
                   <h3 className="font-semibold mb-1">You're All Set!</h3>
                   <p className="text-muted-foreground">
-                    Start managing your business with automated compliance, comprehensive audit trails, and streamlined operations.
+                    Start managing your business with automated compliance, comprehensive audit
+                    trails, and streamlined operations.
                   </p>
                 </div>
               </div>

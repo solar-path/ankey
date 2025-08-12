@@ -39,12 +39,12 @@ export function useTheme(): UseThemeReturn {
     const loadTheme = async () => {
       try {
         const isTenant = detectTenantContext()
-        
+
         // Use appropriate settings endpoint based on context
-        const response = isTenant 
+        const response = isTenant
           ? await client['tenant-settings'].me.$get()
           : await client.settings.me.$get()
-          
+
         if (response.ok) {
           const data = await response.json()
           if (data.success && data.data?.appearance?.theme) {
@@ -81,7 +81,7 @@ export function useTheme(): UseThemeReturn {
       applyTheme(newTheme)
 
       const isTenant = detectTenantContext()
-      
+
       // Save to appropriate settings endpoint based on context
       if (isTenant) {
         await client['tenant-settings'].appearance.$patch({

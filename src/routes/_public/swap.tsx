@@ -3,15 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createFileRoute } from '@tanstack/react-router'
-import { 
-  ArrowRightLeft, 
-  Shield, 
-  Zap, 
-  Globe, 
-  BarChart3, 
-  Wallet,
-  Clock
-} from 'lucide-react'
+import { ArrowRightLeft, Shield, Zap, Globe, BarChart3, Wallet, Clock } from 'lucide-react'
 
 export const Route = createFileRoute('/_public/swap')({
   component: SwapPage,
@@ -27,7 +19,7 @@ function SwapPage() {
       rate: '15.234',
       change: '+2.45%',
       volume: '$2.4M',
-      isPositive: true
+      isPositive: true,
     },
     {
       from: 'ETH',
@@ -37,7 +29,7 @@ function SwapPage() {
       rate: '2,341.56',
       change: '+1.23%',
       volume: '$1.8M',
-      isPositive: true
+      isPositive: true,
     },
     {
       from: 'SOL',
@@ -47,7 +39,7 @@ function SwapPage() {
       rate: '156.78',
       change: '-0.89%',
       volume: '$1.2M',
-      isPositive: false
+      isPositive: false,
     },
     {
       from: 'ADA',
@@ -57,31 +49,31 @@ function SwapPage() {
       rate: '0.00001234',
       change: '+3.67%',
       volume: '$890K',
-      isPositive: true
-    }
+      isPositive: true,
+    },
   ]
 
   const features = [
     {
       icon: Zap,
       title: 'Lightning Fast',
-      description: 'Execute swaps in seconds with our optimized smart contracts'
+      description: 'Execute swaps in seconds with our optimized smart contracts',
     },
     {
       icon: Shield,
       title: 'Secure & Audited',
-      description: 'Multi-layer security with regular third-party audits'
+      description: 'Multi-layer security with regular third-party audits',
     },
     {
       icon: Globe,
       title: 'Multi-Chain',
-      description: 'Swap across 20+ blockchains seamlessly'
+      description: 'Swap across 20+ blockchains seamlessly',
     },
     {
       icon: BarChart3,
       title: 'Best Rates',
-      description: 'Access liquidity from 100+ DEXs for optimal pricing'
-    }
+      description: 'Access liquidity from 100+ DEXs for optimal pricing',
+    },
   ]
 
   return (
@@ -93,10 +85,10 @@ function SwapPage() {
             Crypto Swap Platform
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Swap cryptocurrencies instantly at the best rates. Access deep liquidity 
-            across multiple chains with zero slippage guarantee.
+            Swap cryptocurrencies instantly at the best rates. Access deep liquidity across multiple
+            chains with zero slippage guarantee.
           </p>
-          
+
           {/* Swap Interface */}
           <div className="max-w-md mx-auto mb-8">
             <Card className="bg-white dark:bg-gray-800 shadow-xl">
@@ -116,13 +108,13 @@ function SwapPage() {
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Balance: 0.025 BTC</p>
                 </div>
-                
+
                 <div className="flex justify-center">
                   <Button variant="outline" size="icon" className="rounded-full">
                     <ArrowRightLeft className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 block">
                     To
@@ -135,7 +127,7 @@ function SwapPage() {
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Balance: 1.234 ETH</p>
                 </div>
-                
+
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                   <div className="flex justify-between text-sm">
                     <span>Rate</span>
@@ -150,7 +142,7 @@ function SwapPage() {
                     <span className="text-green-600">0.1%</span>
                   </div>
                 </div>
-                
+
                 <Button size="lg" className="w-full">
                   <ArrowRightLeft className="mr-2 h-5 w-5" />
                   Swap Now
@@ -178,7 +170,10 @@ function SwapPage() {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {popularPairs.map((pair, index) => (
-              <Card key={index} className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
+              <Card
+                key={index}
+                className="bg-white dark:bg-gray-800 hover:shadow-lg transition-all cursor-pointer"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -186,8 +181,8 @@ function SwapPage() {
                       <ArrowRightLeft className="h-4 w-4 text-gray-400" />
                       <span className="text-2xl">{pair.toIcon}</span>
                     </div>
-                    <Badge 
-                      variant={pair.isPositive ? "default" : "destructive"}
+                    <Badge
+                      variant={pair.isPositive ? 'default' : 'destructive'}
                       className="text-xs"
                     >
                       {pair.change}
@@ -221,7 +216,10 @@ function SwapPage() {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-white dark:bg-gray-800 text-center hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="bg-white dark:bg-gray-800 text-center hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <feature.icon className="h-8 w-8 text-white" />
@@ -229,9 +227,7 @@ function SwapPage() {
                   <CardTitle className="text-xl">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-center">
-                    {feature.description}
-                  </CardDescription>
+                  <CardDescription className="text-center">{feature.description}</CardDescription>
                 </CardContent>
               </Card>
             ))}
@@ -242,7 +238,9 @@ function SwapPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-16">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div>
-              <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">$2.5B+</h3>
+              <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                $2.5B+
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">Total Volume</p>
             </div>
             <div>
@@ -272,9 +270,18 @@ function SwapPage() {
                   { from: 'ETH', to: 'USDC', amount: '2.5', time: '2m ago', user: '0x1234...5678' },
                   { from: 'BTC', to: 'ETH', amount: '0.1', time: '5m ago', user: '0xabcd...ef01' },
                   { from: 'SOL', to: 'USDT', amount: '50', time: '8m ago', user: '0x9876...4321' },
-                  { from: 'ADA', to: 'BTC', amount: '1000', time: '12m ago', user: '0x5555...aaaa' }
+                  {
+                    from: 'ADA',
+                    to: 'BTC',
+                    amount: '1000',
+                    time: '12m ago',
+                    user: '0x5555...aaaa',
+                  },
                 ].map((swap, index) => (
-                  <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
                         <span className="font-medium">{swap.from}</span>
@@ -307,7 +314,11 @@ function SwapPage() {
             <Button variant="secondary" size="lg" className="px-8">
               Connect Wallet
             </Button>
-            <Button variant="outline" size="lg" className="px-8 text-white border-white hover:bg-white hover:text-purple-600">
+            <Button
+              variant="outline"
+              size="lg"
+              className="px-8 text-white border-white hover:bg-white hover:text-purple-600"
+            >
               Learn More
             </Button>
           </div>

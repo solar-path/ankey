@@ -24,7 +24,7 @@ export function QDrawer() {
   return (
     <Sheet
       open={state.isOpen}
-      onOpenChange={(open) => {
+      onOpenChange={open => {
         if (!open) {
           closeDrawer()
         }

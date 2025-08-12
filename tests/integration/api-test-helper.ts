@@ -29,7 +29,7 @@ export async function createAuthenticatedSession(app: Hono): Promise<TestSession
 
   // Create test user in tenant database
   const authService = new TenantAuthService(tenant.database)
-  
+
   const userResult = await authService.register({
     email: 'test@example.com',
     password: 'password123',
@@ -53,30 +53,27 @@ export async function createAuthenticatedSession(app: Hono): Promise<TestSession
 /**
  * Helper to make authenticated requests
  */
-export function authenticatedRequest(
-  app: Hono, 
-  session: TestSession
-) {
+export function authenticatedRequest(app: Hono, session: TestSession) {
   return {
-    get: (path: string) => 
+    get: (path: string) =>
       request(app.fetch)
         .get(path)
         .set('Host', `${session.tenant.subdomain}.localhost:3000`)
         .set('Cookie', session.sessionCookie),
-    
-    post: (path: string) => 
+
+    post: (path: string) =>
       request(app.fetch)
         .post(path)
         .set('Host', `${session.tenant.subdomain}.localhost:3000`)
         .set('Cookie', session.sessionCookie),
-    
-    put: (path: string) => 
+
+    put: (path: string) =>
       request(app.fetch)
         .put(path)
         .set('Host', `${session.tenant.subdomain}.localhost:3000`)
         .set('Cookie', session.sessionCookie),
-    
-    delete: (path: string) => 
+
+    delete: (path: string) =>
       request(app.fetch)
         .delete(path)
         .set('Host', `${session.tenant.subdomain}.localhost:3000`)
@@ -89,25 +86,17 @@ export function authenticatedRequest(
  */
 export function unauthenticatedRequest(app: Hono, tenantSubdomain: string = 'test-workspace') {
   return {
-    get: (path: string) => 
-      request(app.fetch)
-        .get(path)
-        .set('Host', `${tenantSubdomain}.localhost:3000`),
-    
-    post: (path: string) => 
-      request(app.fetch)
-        .post(path)
-        .set('Host', `${tenantSubdomain}.localhost:3000`),
-    
-    put: (path: string) => 
-      request(app.fetch)
-        .put(path)
-        .set('Host', `${tenantSubdomain}.localhost:3000`),
-    
-    delete: (path: string) => 
-      request(app.fetch)
-        .delete(path)
-        .set('Host', `${tenantSubdomain}.localhost:3000`),
+    get: (path: string) =>
+      request(app.fetch).get(path).set('Host', `${tenantSubdomain}.localhost:3000`),
+
+    post: (path: string) =>
+      request(app.fetch).post(path).set('Host', `${tenantSubdomain}.localhost:3000`),
+
+    put: (path: string) =>
+      request(app.fetch).put(path).set('Host', `${tenantSubdomain}.localhost:3000`),
+
+    delete: (path: string) =>
+      request(app.fetch).delete(path).set('Host', `${tenantSubdomain}.localhost:3000`),
   }
 }
 

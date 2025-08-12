@@ -38,14 +38,18 @@ async function backfillSubscriptions() {
           pricePerUserPerMonth: 0,
           minUsers: 1,
           maxUsers: 5,
-          features: JSON.stringify(['Core features included', 'Email support', 'Basic integrations']),
+          features: JSON.stringify([
+            'Core features included',
+            'Email support',
+            'Basic integrations',
+          ]),
           trialDays: 7,
           trialMaxUsers: 5,
           isActive: true,
           displayOrder: 0,
         })
         .returning()
-      
+
       defaultPlan = newPlan
       console.log('Created default plan:', defaultPlan.name)
     } else {
@@ -72,19 +76,17 @@ async function backfillSubscriptions() {
       trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
 
       // Create subscription record
-      await db
-        .insert(coreSchema.tenantSubscriptions)
-        .values({
-          tenantId: tenant.id,
-          planId: defaultPlan.id,
-          status: 'trial',
-          userCount: tenant.userCount || 1,
-          pricePerUser: defaultPlan.pricePerUserPerMonth,
-          totalMonthlyPrice: 0, // Free during trial
-          billingCycle: 'monthly',
-          trialEndsAt,
-          nextBillingDate: trialEndsAt, // Billing starts after trial ends
-        })
+      await db.insert(coreSchema.tenantSubscriptions).values({
+        tenantId: tenant.id,
+        planId: defaultPlan.id,
+        status: 'trial',
+        userCount: tenant.userCount || 1,
+        pricePerUser: defaultPlan.pricePerUserPerMonth,
+        totalMonthlyPrice: 0, // Free during trial
+        billingCycle: 'monthly',
+        trialEndsAt,
+        nextBillingDate: trialEndsAt, // Billing starts after trial ends
+      })
 
       console.log(`Created trial subscription for tenant: ${tenant.name}`)
     }

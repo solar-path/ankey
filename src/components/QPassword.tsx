@@ -39,7 +39,7 @@ function PasswordComplexity({
       label: 'One symbol (@$!%*?&)',
       test: (pwd: string) => /[@$!%*?&]/.test(pwd),
     },
-  ]
+  ],
 }: PasswordComplexityProps) {
   const passedCount = requirements.filter(req => req.test(password)).length
   const progress = (passedCount / requirements.length) * 100
@@ -63,12 +63,17 @@ function PasswordComplexity({
       <div className="space-y-1">
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Password strength</span>
-          <span className={`text-sm font-medium ${
-            progress < 40 ? 'text-red-600 dark:text-red-400' :
-            progress < 60 ? 'text-yellow-600 dark:text-yellow-400' :
-            progress < 80 ? 'text-orange-600 dark:text-orange-400' :
-            'text-green-600 dark:text-green-400'
-          }`}>
+          <span
+            className={`text-sm font-medium ${
+              progress < 40
+                ? 'text-red-600 dark:text-red-400'
+                : progress < 60
+                  ? 'text-yellow-600 dark:text-yellow-400'
+                  : progress < 80
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-green-600 dark:text-green-400'
+            }`}
+          >
             {getStrengthLabel()}
           </span>
         </div>
@@ -91,9 +96,11 @@ function PasswordComplexity({
               ) : (
                 <X className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               )}
-              <span className={`text-sm ${
-                passed ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
-              }`}>
+              <span
+                className={`text-sm ${
+                  passed ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
                 {req.label}
               </span>
             </div>
@@ -111,14 +118,17 @@ interface QPasswordProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 }
 
 export const QPassword = forwardRef<HTMLInputElement, QPasswordProps>(
-  ({
-    showComplexity = false,
-    complexityClassName = 'mt-2',
-    requirements,
-    className = '',
-    value = '',
-    ...props
-  }, ref) => {
+  (
+    {
+      showComplexity = false,
+      complexityClassName = 'mt-2',
+      requirements,
+      className = '',
+      value = '',
+      ...props
+    },
+    ref
+  ) => {
     const [showPassword, setShowPassword] = useState(false)
 
     const togglePasswordVisibility = () => {

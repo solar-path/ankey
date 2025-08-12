@@ -42,7 +42,7 @@ export const tenantCompaniesRoutes = new Hono()
     try {
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const companies = await db.query.companies.findMany({
         with: {
           users: {
@@ -68,39 +68,48 @@ export const tenantCompaniesRoutes = new Hono()
       const tenant = c.get('tenant')
       const currentUser = c.get('user')
       const tenantDatabase = c.get('tenantDatabase')
-      
+
       // Check plan limits
       const limitsService = new PlanLimitsService()
       const canAdd = await limitsService.canAddCompany(tenant.id)
-      
+
       if (!canAdd.allowed) {
-        return c.json({ 
-          success: false, 
-          error: canAdd.reason 
-        }, 403)
+        return c.json(
+          {
+            success: false,
+            error: canAdd.reason,
+          },
+          403
+        )
       }
 
       const db = createTenantConnection(tenantDatabase)
-      
+
       // Check if company code already exists
       if (data.code) {
         const existingCompany = await db.query.companies.findFirst({
-          where: eq(tenantSchema.companies.code, data.code)
+          where: eq(tenantSchema.companies.code, data.code),
         })
 
         if (existingCompany) {
-          return c.json({ 
-            success: false, 
-            error: 'Company with this code already exists' 
-          }, 400)
+          return c.json(
+            {
+              success: false,
+              error: 'Company with this code already exists',
+            },
+            400
+          )
         }
       }
 
       // Create company
-      const [newCompany] = await db.insert(tenantSchema.companies).values({
-        ...data,
-        createdBy: currentUser.id,
-      }).returning()
+      const [newCompany] = await db
+        .insert(tenantSchema.companies)
+        .values({
+          ...data,
+          createdBy: currentUser.id,
+        })
+        .returning()
 
       // Add creator as company owner
       await db.insert(tenantSchema.userCompanies).values({
@@ -110,10 +119,13 @@ export const tenantCompaniesRoutes = new Hono()
         isPrimary: true,
       })
 
-      return c.json({ 
-        success: true, 
-        data: newCompany
-      }, 201)
+      return c.json(
+        {
+          success: true,
+          data: newCompany,
+        },
+        201
+      )
     } catch (error) {
       console.error('Error creating company:', error)
       return c.json({ success: false, error: 'Failed to create company' }, 500)
@@ -126,7 +138,7 @@ export const tenantCompaniesRoutes = new Hono()
       const companyId = c.req.param('id')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const company = await db.query.companies.findFirst({
         where: eq(tenantSchema.companies.id, companyId),
         with: {
@@ -158,21 +170,24 @@ export const tenantCompaniesRoutes = new Hono()
       const data = c.req.valid('json')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       // Check if company code already exists (if updating code)
       if (data.code) {
         const existingCompany = await db.query.companies.findFirst({
           where: and(
             eq(tenantSchema.companies.code, data.code),
             eq(tenantSchema.companies.id, companyId).not()
-          )
+          ),
         })
 
         if (existingCompany) {
-          return c.json({ 
-            success: false, 
-            error: 'Company with this code already exists' 
-          }, 400)
+          return c.json(
+            {
+              success: false,
+              error: 'Company with this code already exists',
+            },
+            400
+          )
         }
       }
 
@@ -202,7 +217,7 @@ export const tenantCompaniesRoutes = new Hono()
       const companyId = c.req.param('id')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const [updatedCompany] = await db
         .update(tenantSchema.companies)
         .set({
@@ -230,20 +245,23 @@ export const tenantCompaniesRoutes = new Hono()
       const data = c.req.valid('json')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       // Check if user is already in company
       const existingRelation = await db.query.userCompanies.findFirst({
         where: and(
           eq(tenantSchema.userCompanies.userId, data.userId),
           eq(tenantSchema.userCompanies.companyId, companyId)
-        )
+        ),
       })
 
       if (existingRelation) {
-        return c.json({ 
-          success: false, 
-          error: 'User is already in this company' 
-        }, 400)
+        return c.json(
+          {
+            success: false,
+            error: 'User is already in this company',
+          },
+          400
+        )
       }
 
       // If setting as primary, unset other primary companies for this user
@@ -255,12 +273,15 @@ export const tenantCompaniesRoutes = new Hono()
       }
 
       // Add user to company
-      const [newRelation] = await db.insert(tenantSchema.userCompanies).values({
-        userId: data.userId,
-        companyId,
-        role: data.role,
-        isPrimary: data.isPrimary,
-      }).returning()
+      const [newRelation] = await db
+        .insert(tenantSchema.userCompanies)
+        .values({
+          userId: data.userId,
+          companyId,
+          role: data.role,
+          isPrimary: data.isPrimary,
+        })
+        .returning()
 
       return c.json({ success: true, data: newRelation }, 201)
     } catch (error) {
@@ -276,13 +297,15 @@ export const tenantCompaniesRoutes = new Hono()
       const userId = c.req.param('userId')
       const tenantDatabase = c.get('tenantDatabase')
       const db = createTenantConnection(tenantDatabase)
-      
+
       const result = await db
         .delete(tenantSchema.userCompanies)
-        .where(and(
-          eq(tenantSchema.userCompanies.userId, userId),
-          eq(tenantSchema.userCompanies.companyId, companyId)
-        ))
+        .where(
+          and(
+            eq(tenantSchema.userCompanies.userId, userId),
+            eq(tenantSchema.userCompanies.companyId, companyId)
+          )
+        )
         .returning()
 
       if (result.length === 0) {
@@ -301,26 +324,29 @@ export const tenantCompaniesRoutes = new Hono()
     try {
       const tenant = c.get('tenant')
       const limitsService = new PlanLimitsService()
-      
+
       const limits = await limitsService.getTenantPlanLimits(tenant.id)
-      
+
       if (!limits) {
-        return c.json({ 
-          success: false, 
-          error: 'Unable to fetch plan limits' 
-        }, 500)
+        return c.json(
+          {
+            success: false,
+            error: 'Unable to fetch plan limits',
+          },
+          500
+        )
       }
 
-      return c.json({ 
-        success: true, 
+      return c.json({
+        success: true,
         data: {
           companies: {
             current: limits.currentCompanies,
             max: limits.maxCompanies,
             remaining: limits.remainingCompanies,
             canAdd: limits.canAddCompanies,
-          }
-        }
+          },
+        },
       })
     } catch (error) {
       console.error('Error fetching usage limits:', error)

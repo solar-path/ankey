@@ -27,6 +27,32 @@ async function seedCore() {
       fullName: 'Core Administrator',
     })
 
+    // Update the newly created admin user with password expiration settings
+    if (adminResult.success) {
+      try {
+        const adminUser = await db
+          .select()
+          .from(coreSchema.coreUsers)
+          .where(eq(coreSchema.coreUsers.email, 'itgroup.luck@gmail.com'))
+          .limit(1)
+
+        if (adminUser.length > 0) {
+          await db
+            .update(coreSchema.coreUsers)
+            .set({
+              passwordExpiryDays: 45, // Default 45 days expiration
+              passwordChangedAt: new Date(), // Set to current time
+              updatedAt: new Date(),
+            })
+            .where(eq(coreSchema.coreUsers.id, adminUser[0].id))
+          
+          console.log('✅ Updated admin user with password expiration settings')
+        }
+      } catch (error) {
+        console.log('⚠️  Could not update admin user password settings:', error)
+      }
+    }
+
     if (adminResult.success) {
       console.log('✅ Core admin user created successfully!')
     } else if (adminResult.error?.includes('already exists')) {
@@ -89,7 +115,8 @@ async function seedCore() {
         .values([
           {
             name: 'Micro',
-            description: 'Just starting out, full of vision and ideas, building the foundation. Number of employees 1 to 10 full-time. Revenues 0 to 3 Million SR',
+            description:
+              'Just starting out, full of vision and ideas, building the foundation. Number of employees 1 to 10 full-time. Revenues 0 to 3 Million SR',
             pricePerUserPerMonth: 25,
             minUsers: 1,
             maxUsers: 10,
@@ -111,7 +138,8 @@ async function seedCore() {
           },
           {
             name: 'Small',
-            description: 'Actively making things happen, turning ideas into reality. Number of employees 11 to 49 full-time. Revenues 3 to 40 Million SR',
+            description:
+              'Actively making things happen, turning ideas into reality. Number of employees 11 to 49 full-time. Revenues 3 to 40 Million SR',
             pricePerUserPerMonth: 50,
             minUsers: 11,
             maxUsers: 49,
@@ -136,7 +164,8 @@ async function seedCore() {
           },
           {
             name: 'Medium',
-            description: 'Expanding operations, building teams, systems, and sustainable growth. Number of employees 50 to 249 full-time. Revenues 40 to 200 Million SR',
+            description:
+              'Expanding operations, building teams, systems, and sustainable growth. Number of employees 50 to 249 full-time. Revenues 40 to 200 Million SR',
             pricePerUserPerMonth: 75,
             minUsers: 50,
             maxUsers: 249,
@@ -161,7 +190,8 @@ async function seedCore() {
           },
           {
             name: 'Large',
-            description: 'Industry influencers, setting trends, shaping the market. Number of employees 250 or more full-time. Revenues more than 200 Million SR',
+            description:
+              'Industry influencers, setting trends, shaping the market. Number of employees 250 or more full-time. Revenues more than 200 Million SR',
             pricePerUserPerMonth: 100,
             minUsers: 250,
             maxUsers: null, // unlimited
@@ -235,44 +265,133 @@ async function seedCore() {
 
       // Define core permissions
       const permissions = [
-        { name: 'users.create', resource: 'users', action: 'create', description: 'Create new user' },
+        {
+          name: 'users.create',
+          resource: 'users',
+          action: 'create',
+          description: 'Create new user',
+        },
         { name: 'users.read', resource: 'users', action: 'read', description: 'View users' },
         { name: 'users.update', resource: 'users', action: 'update', description: 'Update user' },
         { name: 'users.delete', resource: 'users', action: 'delete', description: 'Delete user' },
-        { name: 'tenants.create', resource: 'tenants', action: 'create', description: 'Create new tenant' },
+        {
+          name: 'tenants.create',
+          resource: 'tenants',
+          action: 'create',
+          description: 'Create new tenant',
+        },
         { name: 'tenants.read', resource: 'tenants', action: 'read', description: 'View tenants' },
-        { name: 'tenants.update', resource: 'tenants', action: 'update', description: 'Update tenant' },
-        { name: 'tenants.delete', resource: 'tenants', action: 'delete', description: 'Delete tenant' },
-        { name: 'roles.create', resource: 'roles', action: 'create', description: 'Create new role' },
+        {
+          name: 'tenants.update',
+          resource: 'tenants',
+          action: 'update',
+          description: 'Update tenant',
+        },
+        {
+          name: 'tenants.delete',
+          resource: 'tenants',
+          action: 'delete',
+          description: 'Delete tenant',
+        },
+        {
+          name: 'roles.create',
+          resource: 'roles',
+          action: 'create',
+          description: 'Create new role',
+        },
         { name: 'roles.read', resource: 'roles', action: 'read', description: 'View roles' },
         { name: 'roles.update', resource: 'roles', action: 'update', description: 'Update role' },
         { name: 'roles.delete', resource: 'roles', action: 'delete', description: 'Delete role' },
-        { name: 'permissions.create', resource: 'permissions', action: 'create', description: 'Create permission' },
-        { name: 'permissions.read', resource: 'permissions', action: 'read', description: 'View permissions' },
-        { name: 'permissions.update', resource: 'permissions', action: 'update', description: 'Update permission' },
-        { name: 'permissions.delete', resource: 'permissions', action: 'delete', description: 'Delete permission' },
-        { name: 'permissions.sync', resource: 'permissions', action: 'sync', description: 'Sync permissions' },
-        { name: 'settings.read', resource: 'settings', action: 'read', description: 'View system settings' },
-        { name: 'settings.update', resource: 'settings', action: 'update', description: 'Update system settings' },
-        { name: 'pricing.read', resource: 'pricing', action: 'read', description: 'View pricing plans' },
-        { name: 'pricing.update', resource: 'pricing', action: 'update', description: 'Update pricing plans' },
+        {
+          name: 'permissions.create',
+          resource: 'permissions',
+          action: 'create',
+          description: 'Create permission',
+        },
+        {
+          name: 'permissions.read',
+          resource: 'permissions',
+          action: 'read',
+          description: 'View permissions',
+        },
+        {
+          name: 'permissions.update',
+          resource: 'permissions',
+          action: 'update',
+          description: 'Update permission',
+        },
+        {
+          name: 'permissions.delete',
+          resource: 'permissions',
+          action: 'delete',
+          description: 'Delete permission',
+        },
+        {
+          name: 'permissions.sync',
+          resource: 'permissions',
+          action: 'sync',
+          description: 'Sync permissions',
+        },
+        {
+          name: 'settings.read',
+          resource: 'settings',
+          action: 'read',
+          description: 'View system settings',
+        },
+        {
+          name: 'settings.update',
+          resource: 'settings',
+          action: 'update',
+          description: 'Update system settings',
+        },
+        {
+          name: 'pricing.read',
+          resource: 'pricing',
+          action: 'read',
+          description: 'View pricing plans',
+        },
+        {
+          name: 'pricing.update',
+          resource: 'pricing',
+          action: 'update',
+          description: 'Update pricing plans',
+        },
         { name: 'audit.read', resource: 'audit', action: 'read', description: 'View audit logs' },
         { name: 'export.create', resource: 'export', action: 'create', description: 'Export data' },
         { name: 'import.create', resource: 'import', action: 'create', description: 'Import data' },
       ]
 
       // Insert permissions
-      const insertedPermissions = await db.insert(coreSchema.corePermissions).values(permissions).returning()
+      const insertedPermissions = await db
+        .insert(coreSchema.corePermissions)
+        .values(permissions)
+        .returning()
       console.log(`   ✅ Created ${insertedPermissions.length} permissions`)
 
       // Create core roles
       console.log('   👑 Creating core roles...')
 
       const roles = [
-        { name: 'Super Admin', description: 'Full system access - all permissions', isSystem: true },
-        { name: 'Admin', description: 'Administrative access to most system features', isSystem: true },
-        { name: 'Tenant Manager', description: 'Manage tenants and their settings', isSystem: true },
-        { name: 'Auditor', description: 'Read-only access to audit logs and reports', isSystem: true },
+        {
+          name: 'Super Admin',
+          description: 'Full system access - all permissions',
+          isSystem: true,
+        },
+        {
+          name: 'Admin',
+          description: 'Administrative access to most system features',
+          isSystem: true,
+        },
+        {
+          name: 'Tenant Manager',
+          description: 'Manage tenants and their settings',
+          isSystem: true,
+        },
+        {
+          name: 'Auditor',
+          description: 'Read-only access to audit logs and reports',
+          isSystem: true,
+        },
       ]
 
       const insertedRoles = await db.insert(coreSchema.coreRoles).values(roles).returning()
@@ -294,12 +413,21 @@ async function seedCore() {
 
       // Admin gets most permissions except critical system ones
       const adminPermissionNames = [
-        'users.read', 'users.create', 'users.update',
-        'tenants.read', 'tenants.create', 'tenants.update',
-        'roles.read', 'permissions.read',
-        'settings.read', 'settings.update',
-        'pricing.read', 'pricing.update',
-        'audit.read', 'export.create', 'import.create',
+        'users.read',
+        'users.create',
+        'users.update',
+        'tenants.read',
+        'tenants.create',
+        'tenants.update',
+        'roles.read',
+        'permissions.read',
+        'settings.read',
+        'settings.update',
+        'pricing.read',
+        'pricing.update',
+        'audit.read',
+        'export.create',
+        'import.create',
       ]
       const adminPermissions = insertedPermissions
         .filter(p => adminPermissionNames.includes(p.name))
@@ -307,8 +435,13 @@ async function seedCore() {
 
       // Tenant Manager gets tenant-related permissions
       const tenantManagerPermissionNames = [
-        'tenants.read', 'tenants.create', 'tenants.update',
-        'users.read', 'settings.read', 'audit.read', 'export.create',
+        'tenants.read',
+        'tenants.create',
+        'tenants.update',
+        'users.read',
+        'settings.read',
+        'audit.read',
+        'export.create',
       ]
       const tenantManagerPermissions = insertedPermissions
         .filter(p => tenantManagerPermissionNames.includes(p.name))
@@ -316,8 +449,14 @@ async function seedCore() {
 
       // Auditor gets read-only permissions
       const auditorPermissionNames = [
-        'users.read', 'tenants.read', 'roles.read', 'permissions.read',
-        'settings.read', 'pricing.read', 'audit.read', 'export.create',
+        'users.read',
+        'tenants.read',
+        'roles.read',
+        'permissions.read',
+        'settings.read',
+        'pricing.read',
+        'audit.read',
+        'export.create',
       ]
       const auditorPermissions = insertedPermissions
         .filter(p => auditorPermissionNames.includes(p.name))
@@ -337,10 +476,7 @@ async function seedCore() {
       // Assign Super Admin role to the first core user (if exists)
       console.log('   👤 Looking for core admin user to assign Super Admin role...')
 
-      const firstUser = await db
-        .select()
-        .from(coreSchema.coreUsers)
-        .limit(1)
+      const firstUser = await db.select().from(coreSchema.coreUsers).limit(1)
 
       if (firstUser.length > 0) {
         // Check if user already has the role
@@ -361,7 +497,9 @@ async function seedCore() {
           console.log(`   ℹ️  User ${firstUser[0].email} already has a role assigned`)
         }
       } else {
-        console.log('   ⚠️  No core users found - Super Admin role will need to be assigned manually')
+        console.log(
+          '   ⚠️  No core users found - Super Admin role will need to be assigned manually'
+        )
       }
     } else {
       console.log('   ℹ️  RBAC system already exists, skipping...')
@@ -372,15 +510,17 @@ async function seedCore() {
     // ========================================
     console.log('\n🎉 Core database seeding completed successfully!')
     console.log('\n📋 Summary:')
-    console.log('   👤 Core Admin: itgroup.luck@gmail.com / M1r@nd@32')
+    console.log('   👤 Core Admin: itgroup.luck@gmail.com / M1r@nd@32 (Password expires in 45 days)')
     console.log('   🏢 Reserved Tenants: shop, hunt, edu, swap')
-    console.log('   💰 Pricing Plans: Micro (Dreamers), Small (Doers), Medium (Builders), Large (Leaders)')
+    console.log(
+      '   💰 Pricing Plans: Micro (Dreamers), Small (Doers), Medium (Builders), Large (Leaders)'
+    )
     console.log('   🔧 RBAC Roles: Super Admin, Admin, Tenant Manager, Auditor')
     console.log('   🔐 Permissions: 24 core permissions assigned')
+    console.log('   🔒 Security: Password expiration system enabled (45-day default)')
     console.log('')
     console.log('⚠️  Important: Change the default password after first login!')
     console.log('🚀 Your core system is ready to use!')
-
   } catch (error) {
     console.error('\n❌ Core database seeding failed:', error)
     process.exit(1)

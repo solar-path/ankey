@@ -13,6 +13,8 @@ export const coreUsers = pgTable('core_users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: text('two_factor_secret'),
   twoFactorBackupCodes: text('two_factor_backup_codes'), // JSON array of hashed backup codes
+  passwordExpiryDays: integer('password_expiry_days').default(45), // Days until password expires (0 = never)
+  passwordChangedAt: timestamp('password_changed_at').defaultNow(), // Last password change
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

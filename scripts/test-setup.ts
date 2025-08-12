@@ -2,7 +2,7 @@
 
 /**
  * Test Setup Script
- * 
+ *
  * Sets up local testing environment with proper database configuration
  */
 
@@ -22,7 +22,7 @@ async function setupTestEnvironment() {
 
   // Check if test databases exist
   console.log('📊 Checking test databases...')
-  
+
   try {
     // You could add database checks here
     console.log('✅ Test databases ready')
@@ -44,7 +44,7 @@ async function runTests() {
   console.log(`🚀 Running ${testType} tests...\n`)
 
   let command: string[]
-  
+
   switch (testType) {
     case 'unit':
       command = ['bun', 'run', 'test:unit']
@@ -75,7 +75,7 @@ async function runTests() {
     },
   })
 
-  testProcess.on('close', (code) => {
+  testProcess.on('close', code => {
     if (code === 0) {
       console.log('\n✅ Tests completed successfully!')
     } else {
@@ -84,7 +84,7 @@ async function runTests() {
     }
   })
 
-  testProcess.on('error', (error) => {
+  testProcess.on('error', error => {
     console.error('❌ Test process error:', error)
     process.exit(1)
   })

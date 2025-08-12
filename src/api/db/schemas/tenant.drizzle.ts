@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, boolean, uuid, jsonb, integer, decimal } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  uuid,
+  jsonb,
+  integer,
+  decimal,
+} from 'drizzle-orm/pg-core'
 // import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
@@ -14,6 +23,8 @@ export const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: text('two_factor_secret'),
   twoFactorBackupCodes: text('two_factor_backup_codes'), // JSON array of hashed backup codes
+  passwordExpiryDays: integer('password_expiry_days').default(45), // Days until password expires (0 = never)
+  passwordChangedAt: timestamp('password_changed_at').defaultNow(), // Last password change
   invitedBy: uuid('invited_by').references((): any => users.id),
   inviteToken: text('invite_token'),
   inviteExpiresAt: timestamp('invite_expires_at'),
@@ -190,12 +201,15 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   }),
 }))
 
-export const tenantEmailTwoFactorTokensRelations = relations(tenantEmailTwoFactorTokens, ({ one }) => ({
-  user: one(users, {
-    fields: [tenantEmailTwoFactorTokens.userId],
-    references: [users.id],
-  }),
-}))
+export const tenantEmailTwoFactorTokensRelations = relations(
+  tenantEmailTwoFactorTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [tenantEmailTwoFactorTokens.userId],
+      references: [users.id],
+    }),
+  })
+)
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
@@ -302,7 +316,6 @@ export const productsRelations = relations(products, () => ({
   // Add relations here as needed
 }))
 
-
 // Companies table for multi-company support within a workspace
 export const companies = pgTable('companies', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -356,7 +369,9 @@ export const tenantSubscription = pgTable('tenant_subscription', {
   userCount: integer('user_count').default(0).notNull(),
   maxUsers: integer('max_users'), // null = unlimited
   pricePerUser: decimal('price_per_user', { precision: 10, scale: 2 }).default('0.00').notNull(),
-  totalMonthlyPrice: decimal('total_monthly_price', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  totalMonthlyPrice: decimal('total_monthly_price', { precision: 10, scale: 2 })
+    .default('0.00')
+    .notNull(),
   billingCycle: text('billing_cycle').default('monthly').notNull(), // 'monthly', 'yearly'
   trialEndsAt: timestamp('trial_ends_at'),
   nextBillingDate: timestamp('next_billing_date'),

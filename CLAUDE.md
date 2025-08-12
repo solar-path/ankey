@@ -306,7 +306,7 @@ Forms should be organized based on complexity and field count:
 ### Database & API Development
 
 - **Drizzle Kit** available for schema generation and migrations
-- **🚨 PROHIBITED: `drizzle-kit push` commands are FORBIDDEN** 
+- **🚨 PROHIBITED: `drizzle-kit push` commands are FORBIDDEN**
   - **NEVER use** `bun run db:push`, `bun run db:push:core`, or `bun run db:push:tenant`
   - **ONLY use** `drizzle-kit generate` and `drizzle-kit migrate` for safe schema changes
   - **Reason**: `push` bypasses migration history and can cause data loss in production
@@ -614,6 +614,7 @@ Real-time audit trail visible in server logs:
 ### Examples
 
 ❌ **FORBIDDEN**:
+
 ```tsx
 const mockUser = { name: 'John', email: 'john@example.com' }
 console.log('API call would go here')
@@ -621,6 +622,7 @@ setTimeout(() => setLoading(false), 1000)
 ```
 
 ✅ **REQUIRED**:
+
 ```tsx
 const { data: user, isLoading } = await client.core.auth.me.$get()
 if (!result.success) {

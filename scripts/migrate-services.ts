@@ -5,23 +5,23 @@ import { services } from '../src/api/db/schemas/services.drizzle'
 
 async function migrateServices() {
   const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
-  
+
   const migrationClient = postgres(connectionString, {
     max: 1,
   })
-  
+
   try {
     const db = drizzle(migrationClient)
-    
+
     console.log('🔄 Running services migrations...')
-    
+
     await migrate(db, { migrationsFolder: './src/api/db/migrations/services' })
-    
+
     console.log('✅ Services migrations completed')
-    
+
     // Seed initial services data
     console.log('🌱 Seeding services data...')
-    
+
     const serviceData = [
       {
         name: 'Educational Portal',
@@ -52,11 +52,11 @@ async function migrateServices() {
         maxUsers: 8000,
       },
     ]
-    
+
     await db.insert(services).values(serviceData).onConflictDoNothing()
-    
+
     console.log('✅ Services seeding completed')
-    
+
     await migrationClient.end()
   } catch (error) {
     console.error('❌ Services migration/seeding failed:', error)

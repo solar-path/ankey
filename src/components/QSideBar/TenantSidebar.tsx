@@ -64,7 +64,7 @@ export function TenantSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
     const fetchTenantInfo = async () => {
       try {
         const response = await client['tenant-info'].$get()
-        
+
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {

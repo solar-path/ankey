@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       const isTenant = detectTenantContext()
-      
+
       // Use appropriate auth endpoint based on context
       const response = isTenant
         ? await client['tenant-auth'].me.$get()
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, twoFactorCode?: string) => {
     try {
       const isTenant = detectTenantContext()
-      
+
       // Use appropriate login endpoint based on context
       const response = isTenant
         ? await client['tenant-auth'].login.$post({
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       const isTenant = detectTenantContext()
-      
+
       // Use appropriate logout endpoint based on context
       if (isTenant) {
         await client['tenant-auth'].logout.$post()

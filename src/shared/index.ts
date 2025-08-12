@@ -15,6 +15,8 @@ export const userSchema = z.object({
   isActive: z.boolean(),
   emailVerified: z.boolean(),
   twoFactorEnabled: z.boolean(),
+  passwordExpiryDays: z.number().default(45),
+  passwordChangedAt: z.date(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

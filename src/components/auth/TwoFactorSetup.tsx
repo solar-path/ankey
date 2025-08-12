@@ -2,7 +2,14 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Badge } from '@/components/ui/badge'
 import { Copy, CheckCircle, AlertTriangle, Smartphone } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -47,25 +54,25 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
       console.log('Starting 2FA setup...')
       const response = await client.auth['2fa'].setup.$post()
       console.log('API Response:', response)
-      
+
       const result = await handleApiResponse(response)
       console.log('Parsed result:', result)
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to generate 2FA setup')
       }
-      
+
       console.log('Setup data from API:', result.data)
-      
+
       const setupData: SetupData = {
         secret: (result.data as any).data.secret,
         backupCodes: (result.data as any).data.backupCodes,
         qrCodeUrl: (result.data as any).data.qrCodeUrl,
         manualEntryKey: (result.data as any).data.manualEntryKey,
       }
-      
+
       console.log('Processed setup data:', setupData)
-      
+
       setSetupData(setupData)
       setStep('verify')
     } catch (error) {
@@ -87,13 +94,13 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
           backupCodes: setupData.backupCodes,
         },
       })
-      
+
       const result = await handleApiResponse(response)
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Invalid verification code')
       }
-      
+
       setStep('backup')
       form.reset()
     } catch (error) {
@@ -127,7 +134,7 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
         backupCodes: setupData.backupCodes,
       })
     }
-    
+
     setStep('complete')
   }
 
@@ -140,7 +147,7 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
       '',
       'Keep these codes safe! Each can only be used once.',
       '',
-      ...setupData.backupCodes.map((code, index) => `${index + 1}. ${code}`)
+      ...setupData.backupCodes.map((code, index) => `${index + 1}. ${code}`),
     ].join('\n')
 
     const blob = new Blob([content], { type: 'text/plain' })
@@ -152,7 +159,7 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    
+
     setSavedBackupCodes(true)
     toast.success('Backup codes downloaded')
   }
@@ -165,7 +172,9 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
             <Smartphone className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Set Up Two-Factor Authentication</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Set Up Two-Factor Authentication
+            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               Secure your account with Google Authenticator or similar TOTP app
             </p>
@@ -188,15 +197,15 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
               Use your authenticator app to scan this QR code
             </p>
           </div>
-          
+
           <div className="flex justify-center">
-            <img 
-              src={setupData.qrCodeUrl} 
-              alt="QR Code" 
+            <img
+              src={setupData.qrCodeUrl}
+              alt="QR Code"
               className="w-48 h-48 border border-gray-200 dark:border-gray-700 rounded"
             />
           </div>
-          
+
           <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
               Manual Entry Key
@@ -231,7 +240,7 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
                       Verification Code
                     </FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         {...field}
                         placeholder="Enter 6-digit code"
                         maxLength={6}
@@ -258,39 +267,42 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Save Backup Codes</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Save Backup Codes
+            </h2>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Keep these codes safe. Each can only be used once to access your account if you lose your authenticator.
+            Keep these codes safe. Each can only be used once to access your account if you lose
+            your authenticator.
           </p>
-          
+
           <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             {setupData.backupCodes.map((code, _index) => (
-              <Badge 
-                key={code} 
-                variant="secondary" 
+              <Badge
+                key={code}
+                variant="secondary"
                 className="justify-center font-mono text-xs py-1 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               >
                 {code}
               </Badge>
             ))}
           </div>
-          
+
           <div className="space-y-2">
-            <Button 
-              onClick={downloadBackupCodes} 
-              variant="outline" 
+            <Button
+              onClick={downloadBackupCodes}
+              variant="outline"
               className="w-full border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
             >
               Download Backup Codes
             </Button>
-            
+
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="saved-codes"
                 checked={savedBackupCodes}
-                onChange={(e) => setSavedBackupCodes(e.target.checked)}
+                onChange={e => setSavedBackupCodes(e.target.checked)}
                 className="rounded"
               />
               <label htmlFor="saved-codes" className="text-sm text-gray-600 dark:text-gray-400">
@@ -299,9 +311,9 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
             </div>
           </div>
 
-          <Button 
-            onClick={completeFinalStep} 
-            className="w-full" 
+          <Button
+            onClick={completeFinalStep}
+            className="w-full"
             disabled={!savedBackupCodes || isLoading}
           >
             {isLoading ? 'Enabling 2FA...' : 'Complete Setup'}
@@ -319,12 +331,14 @@ export function TwoFactorSetup({ onComplete, isLoading = false }: TwoFactorSetup
             <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">2FA Enabled Successfully!</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              2FA Enabled Successfully!
+            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               Your account is now protected with two-factor authentication
             </p>
           </div>
-          
+
           <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <p className="text-sm text-green-800 dark:text-green-200">
               You'll now need to enter a code from your authenticator app each time you sign in.

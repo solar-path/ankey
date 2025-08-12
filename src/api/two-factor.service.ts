@@ -23,14 +23,14 @@ export class TwoFactorService {
     serviceName: string = 'Ankey'
   ): Promise<TwoFactorSetupData> {
     console.log('TwoFactorService.generateTOTPSetup called for:', userEmail)
-    
+
     // Generate secret
     const secret = speakeasy.generateSecret({
       name: userEmail,
       issuer: serviceName,
       length: 20,
     })
-    
+
     console.log('Generated secret:', secret)
     console.log('OTPAUTH URL:', secret.otpauth_url)
 
@@ -38,7 +38,7 @@ export class TwoFactorService {
     const backupCodes = Array.from({ length: 10 }, () =>
       randomBytes(4).toString('hex').toUpperCase()
     )
-    
+
     console.log('Generated backup codes:', backupCodes)
 
     // Generate QR code URL
@@ -51,9 +51,9 @@ export class TwoFactorService {
       qrCodeUrl,
       manualEntryKey: secret.base32!,
     }
-    
+
     console.log('Final result:', result)
-    
+
     return result
   }
 
@@ -107,19 +107,15 @@ export class TwoFactorService {
    * Hash backup codes for storage
    */
   static hashBackupCodes(codes: string[]): string[] {
-    return codes.map(code => 
-      createHash('sha256').update(code.toLowerCase()).digest('hex')
-    )
+    return codes.map(code => createHash('sha256').update(code.toLowerCase()).digest('hex'))
   }
 
   /**
    * Verify backup code
    */
   static verifyBackupCode(hashedCodes: string[], providedCode: string): boolean {
-    const hashedProvidedCode = createHash('sha256')
-      .update(providedCode.toLowerCase())
-      .digest('hex')
-    
+    const hashedProvidedCode = createHash('sha256').update(providedCode.toLowerCase()).digest('hex')
+
     return hashedCodes.includes(hashedProvidedCode)
   }
 
@@ -127,10 +123,8 @@ export class TwoFactorService {
    * Remove used backup code
    */
   static removeUsedBackupCode(hashedCodes: string[], usedCode: string): string[] {
-    const hashedUsedCode = createHash('sha256')
-      .update(usedCode.toLowerCase())
-      .digest('hex')
-    
+    const hashedUsedCode = createHash('sha256').update(usedCode.toLowerCase()).digest('hex')
+
     return hashedCodes.filter(code => code !== hashedUsedCode)
   }
 

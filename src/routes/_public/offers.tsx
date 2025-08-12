@@ -1,8 +1,20 @@
 import { RegisterWorkspaceForm } from '@/components/auth/RegisterWorkspaceForm'
 import { useDrawer } from '@/components/QDrawer/QDrawer.store'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -175,7 +187,7 @@ function OffersPage() {
         <ToggleGroup
           type="single"
           value={billingCycle}
-          onValueChange={(value) => value && setBillingCycle(value as 'monthly' | 'yearly')}
+          onValueChange={value => value && setBillingCycle(value as 'monthly' | 'yearly')}
           className="border rounded-lg"
         >
           <ToggleGroupItem value="monthly" className="px-6 py-2">
@@ -249,9 +261,7 @@ function OffersPage() {
               <Card
                 key={plan.id}
                 className={`relative flex flex-col h-full ${
-                  hasPopularBadge
-                    ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700'
-                    : ''
+                  hasPopularBadge ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-700' : ''
                 }`}
               >
                 {plan.badge && (
@@ -330,19 +340,19 @@ function OffersPage() {
                               </div>
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)} per user per month
+                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)}{' '}
+                              per user per month
                             </div>
                           </>
                         ) : (
                           <>
-                            <div className="text-4xl font-bold">
-                              ${calculation.finalPrice}
-                            </div>
+                            <div className="text-4xl font-bold">${calculation.finalPrice}</div>
                             <div className="text-gray-600 dark:text-gray-300 text-sm">
                               per month
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)} per user per month
+                              ${(calculation.pricePerUser || plan.pricePerUserPerMonth).toFixed(2)}{' '}
+                              per user per month
                             </div>
                           </>
                         )}
@@ -362,7 +372,8 @@ function OffersPage() {
                             <div className="text-gray-600 dark:text-gray-300 text-sm">
                               total annually
                               <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                (${Math.round(plan.pricePerUserPerMonth * userCount * 0.85)} per month)
+                                (${Math.round(plan.pricePerUserPerMonth * userCount * 0.85)} per
+                                month)
                               </div>
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -409,9 +420,7 @@ function OffersPage() {
 
                   {(plan.minUsers || plan.maxUsers) && (
                     <div className="mb-6">
-                      <h4 className="font-semibold mb-4 text-muted-foreground">
-                        User Limits:
-                      </h4>
+                      <h4 className="font-semibold mb-4 text-muted-foreground">User Limits:</h4>
                       <ul className="space-y-2">
                         {plan.minUsers && (
                           <li className="flex items-start">
@@ -441,9 +450,9 @@ function OffersPage() {
                     {plan.trialDays && plan.trialDays > 0 ? 'Start Free Trial' : 'Choose Plan'}
                   </Button>
                 </CardFooter>
-                </Card>
-              )
-            })}
+              </Card>
+            )
+          })}
       </div>
 
       {/* FAQ Section */}
@@ -451,15 +460,17 @@ function OffersPage() {
         <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">
           Frequently Asked Questions
         </h2>
-        <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
+        <Accordion
+          type="multiple"
+          defaultValue={['item-1', 'item-2', 'item-3', 'item-4']}
+          className="w-full"
+        >
           <AccordionItem value="item-1">
-            <AccordionTrigger className="text-left">
-              Can I change plans later?
-            </AccordionTrigger>
+            <AccordionTrigger className="text-left">Can I change plans later?</AccordionTrigger>
             <AccordionContent>
               <p className="text-gray-600 dark:text-gray-300">
-                Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in
-                your next billing cycle.
+                Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected
+                in your next billing cycle.
               </p>
             </AccordionContent>
           </AccordionItem>
@@ -470,9 +481,9 @@ function OffersPage() {
             </AccordionTrigger>
             <AccordionContent>
               <p className="text-gray-600 dark:text-gray-300">
-                After your 7-day free trial, you can choose to continue with a paid plan. If you don't
-                select a plan, your account will be suspended but your data will be preserved for 30
-                days.
+                After your 7-day free trial, you can choose to continue with a paid plan. If you
+                don't select a plan, your account will be suspended but your data will be preserved
+                for 30 days.
               </p>
             </AccordionContent>
           </AccordionItem>
@@ -483,16 +494,14 @@ function OffersPage() {
             </AccordionTrigger>
             <AccordionContent>
               <p className="text-gray-600 dark:text-gray-300">
-                Yes! Save 15% when you pay annually. We also offer promotional discounts from time to
-                time - use the promo code field above to apply any available discounts.
+                Yes! Save 15% when you pay annually. We also offer promotional discounts from time
+                to time - use the promo code field above to apply any available discounts.
               </p>
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-4">
-            <AccordionTrigger className="text-left">
-              What support is included?
-            </AccordionTrigger>
+            <AccordionTrigger className="text-left">What support is included?</AccordionTrigger>
             <AccordionContent>
               <p className="text-gray-600 dark:text-gray-300">
                 All plans include email support. Professional and Enterprise plans include priority
