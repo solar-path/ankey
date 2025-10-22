@@ -11,8 +11,9 @@ import {
   FormMessage,
 } from "@/lib/ui/form";
 import { QPassword } from "@/lib/ui/QPassword.ui";
-import { client } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import { AuthService } from "@/modules/auth/auth-service";
 
 const passwordSchema = v.pipe(
   v.object({
@@ -46,34 +47,30 @@ interface ChangePasswordFormProps {
 }
 
 export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
+  const { user } = useAuth();
   const form = useForm<PasswordFormData>({
     resolver: valibotResolver(passwordSchema),
   });
 
   const onSubmit = async (data: PasswordFormData) => {
     try {
-      const { error } = await (client as any)("/api/auth/change-password", {
-        method: "POST",
-        body: {
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-          confirmPassword: data.confirmPassword,
-        },
-      });
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to change password";
-        toast.error(errorMessage);
+      if (!user?._id) {
+        toast.error("User not found");
         return;
       }
+
+      await AuthService.changePassword(
+        user._id,
+        data.currentPassword,
+        data.newPassword
+      );
 
       toast.success("Password changed successfully!");
       form.reset();
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Password change error:", error);
-      toast.error("Failed to change password");
+      toast.error(error.message || "Failed to change password");
     }
   };
 

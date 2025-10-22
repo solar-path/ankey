@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { valibotResolver } from "@hookform/resolvers/valibot";
-import * as v from "valibot";
 import { Button } from "@/lib/ui/button";
-import { Label } from "@/lib/ui/label";
-import { QPassword } from "@/lib/ui/QPassword.ui";
 import {
   Card,
   CardContent,
@@ -14,36 +9,9 @@ import {
 } from "@/lib/ui/card";
 import { Alert, AlertDescription } from "@/lib/ui/alert";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/lib/ui/input-otp";
-import { client } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Shield, ShieldCheck, AlertTriangle, Key } from "lucide-react";
-
-const passwordSchema = v.pipe(
-  v.object({
-    currentPassword: v.pipe(
-      v.string(),
-      v.minLength(1, "Current password is required")
-    ),
-    newPassword: v.pipe(
-      v.string(),
-      v.minLength(8, "Password must be at least 8 characters")
-    ),
-    confirmPassword: v.pipe(
-      v.string(),
-      v.minLength(1, "Please confirm your password")
-    ),
-  }),
-  v.forward(
-    v.partialCheck(
-      [["newPassword"], ["confirmPassword"]],
-      (input) => input.newPassword === input.confirmPassword,
-      "Passwords don't match"
-    ),
-    ["confirmPassword"]
-  )
-);
-
-type PasswordFormData = v.InferOutput<typeof passwordSchema>;
+import { ChangePasswordForm } from "./changePassword.form";
 
 export default function SecurityPage() {
   const [twoFactorStatus, setTwoFactorStatus] = useState<{
@@ -58,29 +26,19 @@ export default function SecurityPage() {
   const [disableToken, setDisableToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<PasswordFormData>({
-    resolver: valibotResolver(passwordSchema),
-  });
-
   useEffect(() => {
     loadTwoFactorStatus();
   }, []);
 
   const loadTwoFactorStatus = async () => {
     try {
-      const { data, error } = await (client as any)("/api/auth/2fa/status", {});
-      if (error) {
-        console.error("Failed to load 2FA status:", error);
-        toast.error("Failed to load 2FA status");
-        return;
-      }
-
-      setTwoFactorStatus(data as any);
+      // TODO: Implement 2FA status check with PouchDB
+      // For now, just set default status
+      setTwoFactorStatus({
+        enabled: false,
+        required: false,
+        deadline: null,
+      });
     } catch (error) {
       console.error("Failed to load 2FA status:", error);
       toast.error("Failed to load 2FA status");
@@ -90,108 +48,18 @@ export default function SecurityPage() {
   };
 
   const handleSetup2FA = async () => {
-    try {
-      const { data, error } = await (client as any)("/api/auth/2fa/setup", {
-        method: "POST",
-      });
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to setup 2FA";
-        toast.error(errorMessage);
-        return;
-      }
-
-      const setupData = data as any;
-      setQrCode(setupData.qrCode);
-      setSecret(setupData.secret);
-      setSetupStep("qr");
-    } catch (error) {
-      console.error("2FA setup error:", error);
-      toast.error("Failed to setup 2FA");
-    }
+    // TODO: Implement 2FA setup with PouchDB
+    toast.info("2FA setup is not yet implemented");
   };
 
   const handleVerify2FA = async () => {
-    if (otpToken.length !== 6) {
-      toast.error("Please enter a 6-digit code");
-      return;
-    }
-
-    try {
-      const { error } = await (client as any)("/api/auth/2fa/verify", {
-        method: "POST",
-        body: { token: otpToken },
-      });
-
-      if (error) {
-        const errorMessage = (error.value as any)?.error || "Invalid code";
-        toast.error(errorMessage);
-        return;
-      }
-
-      toast.success("2FA enabled successfully!");
-      setSetupStep("idle");
-      setOtpToken("");
-      loadTwoFactorStatus();
-    } catch (error) {
-      console.error("2FA verification error:", error);
-      toast.error("Failed to verify 2FA");
-    }
+    // TODO: Implement 2FA verification with PouchDB
+    toast.info("2FA verification is not yet implemented");
   };
 
   const handleDisable2FA = async () => {
-    if (disableToken.length !== 6) {
-      toast.error("Please enter a 6-digit code");
-      return;
-    }
-
-    try {
-      const { error } = await (client as any)("/api/auth/2fa/disable", {
-        method: "POST",
-        body: { token: disableToken },
-      });
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to disable 2FA";
-        toast.error(errorMessage);
-        return;
-      }
-
-      toast.success("2FA disabled successfully");
-      setDisableToken("");
-      loadTwoFactorStatus();
-    } catch (error) {
-      console.error("2FA disable error:", error);
-      toast.error("Failed to disable 2FA");
-    }
-  };
-
-  const onPasswordSubmit = async (data: PasswordFormData) => {
-    try {
-      const { error } = await (client as any)("/api/auth/change-password", {
-        method: "POST",
-        body: {
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-          confirmPassword: data.confirmPassword,
-        },
-      });
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to change password";
-        toast.error(errorMessage);
-        return;
-      }
-
-      toast.success("Password changed successfully!");
-      reset();
-    } catch (error) {
-      console.error("Password change error:", error);
-      toast.error("Failed to change password");
-    }
+    // TODO: Implement 2FA disable with PouchDB
+    toast.info("2FA disable is not yet implemented");
   };
 
   if (loading) {
@@ -209,57 +77,9 @@ export default function SecurityPage() {
           </div>
           <CardDescription>Update your account password</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit(onPasswordSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <QPassword
-                id="currentPassword"
-                {...register("currentPassword")}
-              />
-              {errors.currentPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.currentPassword.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <QPassword
-                id="newPassword"
-                showStrength={true}
-                showGenerator={true}
-                onGeneratedPassword={(pwd) => {
-                  // Update both new password and confirm password with generated password
-                  const event = { target: { value: pwd } } as any;
-                  register("newPassword").onChange(event);
-                  register("confirmPassword").onChange(event);
-                }}
-                {...register("newPassword")}
-              />
-              {errors.newPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.newPassword.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <QPassword
-                id="confirmPassword"
-                {...register("confirmPassword")}
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Changing..." : "Change Password"}
-            </Button>
-          </CardContent>
-        </form>
+        <CardContent>
+          <ChangePasswordForm />
+        </CardContent>
       </Card>
 
       {/* 2FA Card */}

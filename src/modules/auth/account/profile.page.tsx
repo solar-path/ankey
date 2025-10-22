@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import * as v from "valibot";
 import { format } from "date-fns";
 import { Upload } from "lucide-react";
 import { Button } from "@/lib/ui/button";
@@ -25,17 +25,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/lib/ui/card";
-import { client } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
+import { updateProfileSchema } from "@/modules/auth/auth.valibot";
+import { AuthService } from "@/modules/auth/auth-service";
 
-const profileSchema = z.object({
-  fullname: z.string().min(1, "Full name is required"),
-  dob: z.string().optional(),
-  gender: z.enum(["male", "female", "other", "prefer-not-to-say"]).optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
+type ProfileFormData = v.InferOutput<typeof updateProfileSchema>;
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -51,45 +46,36 @@ export default function ProfilePage() {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
+    resolver: valibotResolver(updateProfileSchema),
+    defaultValues: {
+      fullname: "",
+      email: "",
+      dob: "",
+      gender: undefined,
+    },
   });
 
   const gender = watch("gender");
 
   useEffect(() => {
-    // Load user profile data
-    const loadProfile = async () => {
-      try {
-        const { data, error } = await (client as any)(
-          "/api/auth/profile/data",
-          {
-            method: "GET",
-          }
-        );
-        if (error) {
-          console.error("Failed to load profile:", error);
-          return;
-        }
+    // Load user profile data from auth context
+    if (user) {
+      setValue("fullname", user.fullname || "");
+      setValue("email", user.email || "");
+      setAvatarUrl(user.avatar || user.profile?.avatar || "");
 
-        setValue("fullname", data.profile.fullname || "");
-        setAvatarUrl(data.profile.avatar || "");
-
-        // Load DOB if exists
-        if (data.profile.dob) {
-          const dobDate = new Date(data.profile.dob);
-          setDate(dobDate);
-          setValue("dob", data.profile.dob);
-        }
-
-        // Load gender if exists
-        if (data.profile.gender) {
-          setValue("gender", data.profile.gender);
-        }
-      } catch (error) {
-        console.error("Failed to load profile:", error);
+      // Load DOB if exists
+      if (user.profile?.dob) {
+        const dobDate = new Date(user.profile.dob);
+        setDate(dobDate);
+        setValue("dob", user.profile.dob);
       }
-    };
-    loadProfile();
+
+      // Load gender if exists
+      if (user.profile?.gender) {
+        setValue("gender", user.profile.gender as any);
+      }
+    }
   }, [setValue, user]);
 
   const handleAvatarUpload = async (
@@ -140,23 +126,22 @@ export default function ProfilePage() {
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      const { error } = await (client as any)("/api/auth/profile", {
-        method: "PUT",
-        body: data,
-      });
-
-      if (error) {
-        toast.error(
-          (error.value as any)?.message || "Failed to update profile"
-        );
+      if (!user?._id) {
+        toast.error("User not found");
         return;
       }
 
+      await AuthService.updateProfile(user._id, {
+        fullname: data.fullname,
+        dob: data.dob,
+        gender: data.gender,
+      });
+
       await refreshUser(); // Refresh user data to update profile across the app
       toast.success("Profile updated successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error("Failed to update profile");
+      toast.error(error.message || "Failed to update profile");
     }
   };
 

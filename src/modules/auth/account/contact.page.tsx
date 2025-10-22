@@ -25,9 +25,11 @@ import {
   CommandList,
 } from "@/lib/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/lib/ui/popover";
-import { client } from "@/lib/api-client";
 import { toast } from "sonner";
-import { countries as countriesAPI, type Country } from "@/modules/shared/database/reference-data";
+import {
+  countries as countriesAPI,
+  type Country,
+} from "@/modules/shared/database/reference-data";
 import {
   Card,
   CardContent,
@@ -35,6 +37,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/lib/ui/card";
+import { useAuth } from "@/lib/auth-context";
+import { AuthService } from "@/modules/auth/auth-service";
 
 const contactSchema = v.object({
   phone: v.optional(v.string()),
@@ -52,6 +56,7 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ onSuccess }: ContactFormProps) {
+  const { user } = useAuth();
   const [phone, setPhone] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
@@ -72,54 +77,37 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
     };
     loadCountries();
 
-    // Load contact data
-    const loadContact = async () => {
-      try {
-        const { data, error } = await (client as any)(
-          "/api/auth/contact/data",
-          {}
-        );
-        if (error) {
-          console.error("Failed to load contact:", error);
-          return;
-        }
-
-        if (data.contact) {
-          const phoneValue = data.contact.phone || "";
-          setPhone(phoneValue);
-          form.setValue("phone", phoneValue);
-          form.setValue("address", data.contact.address || "");
-          form.setValue("city", data.contact.city || "");
-          form.setValue("state", data.contact.state || "");
-          form.setValue("zipCode", data.contact.zipCode || "");
-          form.setValue("country", data.contact.country || "");
-        }
-      } catch (error) {
-        console.error("Failed to load contact:", error);
-      }
-    };
-    loadContact();
-  }, [form]);
+    // Load contact data from user profile
+    if (user?.profile) {
+      const phoneValue = (user.profile as any).phone || "";
+      setPhone(phoneValue);
+      form.setValue("phone", phoneValue);
+      form.setValue("address", (user.profile as any).address || "");
+      form.setValue("city", (user.profile as any).city || "");
+      form.setValue("state", (user.profile as any).state || "");
+      form.setValue("zipCode", (user.profile as any).zipCode || "");
+      form.setValue("country", (user.profile as any).country || "");
+    }
+  }, [form, user]);
 
   const onSubmit = async (data: ContactFormData) => {
     try {
-      const { error } = await (client as any)("/api/auth/contact", {
-        method: "PUT",
-        body: data,
-      });
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to update contact information";
-        toast.error(errorMessage);
+      if (!user?._id) {
+        toast.error("User not found");
         return;
       }
 
+      // Update profile with contact information
+      await AuthService.updateProfile(user._id, {
+        ...(user.profile || {}),
+        ...data,
+      } as any);
+
       toast.success("Contact information updated successfully!");
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Contact update error:", error);
-      toast.error("Failed to update contact information");
+      toast.error(error.message || "Failed to update contact information");
     }
   };
 

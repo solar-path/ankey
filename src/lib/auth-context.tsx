@@ -14,6 +14,8 @@ export interface User {
   avatar?: string;
   profile?: {
     avatar?: string;
+    dob?: string;
+    gender?: string;
   };
 }
 

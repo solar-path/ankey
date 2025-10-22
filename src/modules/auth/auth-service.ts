@@ -335,4 +335,77 @@ export class AuthService {
       return null;
     }
   }
+
+  // Update Profile
+  static async updateProfile(userId: string, profileData: {
+    fullname?: string;
+    dob?: string;
+    gender?: string;
+    avatar?: string;
+  }) {
+    try {
+      // Find user by ID
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Update user profile
+      const updatedUser = {
+        ...user,
+        fullname: profileData.fullname ?? user.fullname,
+        profile: {
+          ...user.profile,
+          dob: profileData.dob ?? user.profile?.dob,
+          gender: profileData.gender ?? user.profile?.gender,
+          avatar: profileData.avatar ?? user.profile?.avatar,
+        },
+      };
+
+      // Save to database
+      await usersDB.put(updatedUser);
+
+      // Return sanitized user
+      return this.sanitizeUser(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw new Error("Failed to update profile");
+    }
+  }
+
+  // Change Password
+  static async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    try {
+      // Find user by ID
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Verify current password
+      const isValid = await verifyPassword(currentPassword, user.password);
+      if (!isValid) {
+        throw new Error("Current password is incorrect");
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(newPassword);
+
+      // Update password
+      const updatedUser = {
+        ...user,
+        password: hashedPassword,
+      };
+
+      // Save to database
+      await usersDB.put(updatedUser);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      throw new Error(error.message || "Failed to change password");
+    }
+  }
 }
