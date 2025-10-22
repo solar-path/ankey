@@ -1,0 +1,19 @@
+vite v7.1.11 building for production...
+transforming...
+[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-browser/lib/index.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-abstract-mapreduce/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-selector-core/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-mapreduce-utils/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 2098 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/assets/index-v-qBc2-x.css   72.09 kB │ gzip:  12.48 kB
+dist/assets/index-BKG8qKDV.js   794.37 kB │ gzip: 250.07 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.78s
