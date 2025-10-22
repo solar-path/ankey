@@ -12,8 +12,11 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/lib/ui/input-otp";
 import { toast } from "sonner";
 import { Shield, ShieldCheck, AlertTriangle, Key } from "lucide-react";
 import { ChangePasswordForm } from "./changePassword.form";
+import { useAuth } from "@/lib/auth-context";
+import { AuthService } from "@/modules/auth/auth-service";
 
 export default function SecurityPage() {
+  const { user } = useAuth();
   const [twoFactorStatus, setTwoFactorStatus] = useState<{
     enabled: boolean;
     required: boolean;
@@ -28,17 +31,17 @@ export default function SecurityPage() {
 
   useEffect(() => {
     loadTwoFactorStatus();
-  }, []);
+  }, [user]);
 
   const loadTwoFactorStatus = async () => {
     try {
-      // TODO: Implement 2FA status check with PouchDB
-      // For now, just set default status
-      setTwoFactorStatus({
-        enabled: false,
-        required: false,
-        deadline: null,
-      });
+      if (!user?._id) {
+        setLoading(false);
+        return;
+      }
+
+      const status = await AuthService.get2FAStatus(user._id);
+      setTwoFactorStatus(status);
     } catch (error) {
       console.error("Failed to load 2FA status:", error);
       toast.error("Failed to load 2FA status");
@@ -48,18 +51,68 @@ export default function SecurityPage() {
   };
 
   const handleSetup2FA = async () => {
-    // TODO: Implement 2FA setup with PouchDB
-    toast.info("2FA setup is not yet implemented");
+    try {
+      if (!user?._id) {
+        toast.error("User not found");
+        return;
+      }
+
+      const { secret: newSecret, qrCode: newQrCode } = await AuthService.setup2FA(user._id);
+      setSecret(newSecret);
+      setQrCode(newQrCode);
+      setSetupStep("qr");
+      toast.success("QR code generated successfully!");
+    } catch (error: any) {
+      console.error("2FA setup error:", error);
+      toast.error(error.message || "Failed to setup 2FA");
+    }
   };
 
   const handleVerify2FA = async () => {
-    // TODO: Implement 2FA verification with PouchDB
-    toast.info("2FA verification is not yet implemented");
+    try {
+      if (!user?._id) {
+        toast.error("User not found");
+        return;
+      }
+
+      if (otpToken.length !== 6) {
+        toast.error("Please enter a 6-digit code");
+        return;
+      }
+
+      await AuthService.enable2FA(user._id, otpToken);
+      toast.success("2FA enabled successfully!");
+      setSetupStep("idle");
+      setOtpToken("");
+      setQrCode("");
+      setSecret("");
+      await loadTwoFactorStatus();
+    } catch (error: any) {
+      console.error("2FA verification error:", error);
+      toast.error(error.message || "Invalid code. Please try again.");
+    }
   };
 
   const handleDisable2FA = async () => {
-    // TODO: Implement 2FA disable with PouchDB
-    toast.info("2FA disable is not yet implemented");
+    try {
+      if (!user?._id) {
+        toast.error("User not found");
+        return;
+      }
+
+      if (disableToken.length !== 6) {
+        toast.error("Please enter a 6-digit code");
+        return;
+      }
+
+      await AuthService.disable2FA(user._id, disableToken);
+      toast.success("2FA disabled successfully");
+      setDisableToken("");
+      await loadTwoFactorStatus();
+    } catch (error: any) {
+      console.error("2FA disable error:", error);
+      toast.error(error.message || "Failed to disable 2FA");
+    }
   };
 
   if (loading) {

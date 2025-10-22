@@ -6,6 +6,7 @@ import {
   type SignUpInput,
   type SignInInput,
 } from "./auth.valibot";
+import { generateTwoFactorSecret, generateQRCode, verifyTwoFactorToken } from "./account/twoFactor.utils";
 
 // Simple hash function (in production, use bcrypt or similar)
 async function hashPassword(password: string): Promise<string> {
@@ -406,6 +407,143 @@ export class AuthService {
     } catch (error: any) {
       console.error("Error changing password:", error);
       throw new Error(error.message || "Failed to change password");
+    }
+  }
+
+  // Setup 2FA - Generate secret and QR code
+  static async setup2FA(userId: string) {
+    try {
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (user.twoFactorEnabled) {
+        throw new Error("2FA is already enabled");
+      }
+
+      // Generate TOTP secret
+      const secret = generateTwoFactorSecret();
+
+      // Generate QR code
+      const qrCode = await generateQRCode(user.email, secret);
+
+      // Save secret to user (but don't enable 2FA yet)
+      const updatedUser = {
+        ...user,
+        twoFactorSecret: secret,
+        updatedAt: Date.now(),
+      };
+
+      await usersDB.put(updatedUser);
+
+      return {
+        secret,
+        qrCode,
+      };
+    } catch (error: any) {
+      console.error("Error setting up 2FA:", error);
+      throw new Error(error.message || "Failed to setup 2FA");
+    }
+  }
+
+  // Verify 2FA token and enable 2FA
+  static async enable2FA(userId: string, token: string) {
+    try {
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (!user.twoFactorSecret) {
+        throw new Error("2FA setup not initiated. Please start setup first.");
+      }
+
+      if (user.twoFactorEnabled) {
+        throw new Error("2FA is already enabled");
+      }
+
+      // Verify the token
+      const isValid = verifyTwoFactorToken(user.twoFactorSecret, token);
+      if (!isValid) {
+        throw new Error("Invalid verification code");
+      }
+
+      // Enable 2FA
+      const updatedUser = {
+        ...user,
+        twoFactorEnabled: true,
+        updatedAt: Date.now(),
+      };
+
+      await usersDB.put(updatedUser);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error enabling 2FA:", error);
+      throw new Error(error.message || "Failed to enable 2FA");
+    }
+  }
+
+  // Disable 2FA
+  static async disable2FA(userId: string, token: string) {
+    try {
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (!user.twoFactorEnabled) {
+        throw new Error("2FA is not enabled");
+      }
+
+      if (!user.twoFactorSecret) {
+        throw new Error("2FA secret not found");
+      }
+
+      // Verify the token
+      const isValid = verifyTwoFactorToken(user.twoFactorSecret, token);
+      if (!isValid) {
+        throw new Error("Invalid verification code");
+      }
+
+      // Disable 2FA and remove secret
+      const updatedUser = {
+        ...user,
+        twoFactorEnabled: false,
+        twoFactorSecret: undefined,
+        updatedAt: Date.now(),
+      };
+
+      await usersDB.put(updatedUser);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error disabling 2FA:", error);
+      throw new Error(error.message || "Failed to disable 2FA");
+    }
+  }
+
+  // Get 2FA status
+  static async get2FAStatus(userId: string) {
+    try {
+      const user = await usersDB.get(userId) as User;
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      return {
+        enabled: user.twoFactorEnabled || false,
+        required: false, // TODO: Implement organization-level 2FA requirement
+        deadline: null,
+      };
+    } catch (error: any) {
+      console.error("Error getting 2FA status:", error);
+      throw new Error(error.message || "Failed to get 2FA status");
     }
   }
 }
