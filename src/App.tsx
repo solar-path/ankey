@@ -14,6 +14,7 @@ import VerifyAccountPage from "./modules/auth/verifyAccount.page";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
+import { TaskProvider } from "./lib/task-context";
 
 function App() {
   const [location] = useLocation();
@@ -51,36 +52,38 @@ function App() {
   return (
     <AuthProvider>
       <CompanyProvider>
-        {isPublicRoute ? (
-          <PublicLayout>
-            <Switch>
-              <Route path="/" component={HomePage} />
-              <Route path="/learn" component={LearnPage} />
-              <Route path="/offers" component={OffersPage} />
-              <Route path="/contact" component={ContactPage} />
-              <Route path="/auth/signin" component={SignInPage} />
-              <Route path="/auth/signup" component={SignUpPage} />
-              <Route
-                path="/auth/forgot-password"
-                component={ForgotPasswordPage}
-              />
-              <Route
-                path="/auth/verify-account"
-                component={VerifyAccountPage}
-              />
-              <Route component={NotFoundPage} />
-            </Switch>
-          </PublicLayout>
-        ) : (
-          <PrivateLayout>
-            <Switch>
-              <Route path="/dashboard" component={CompanyDashboardPage} />
-              <Route component={NotFoundPage} />
-            </Switch>
-          </PrivateLayout>
-        )}
+        <TaskProvider>
+          {isPublicRoute ? (
+            <PublicLayout>
+              <Switch>
+                <Route path="/" component={HomePage} />
+                <Route path="/learn" component={LearnPage} />
+                <Route path="/offers" component={OffersPage} />
+                <Route path="/contact" component={ContactPage} />
+                <Route path="/auth/signin" component={SignInPage} />
+                <Route path="/auth/signup" component={SignUpPage} />
+                <Route
+                  path="/auth/forgot-password"
+                  component={ForgotPasswordPage}
+                />
+                <Route
+                  path="/auth/verify-account"
+                  component={VerifyAccountPage}
+                />
+                <Route component={NotFoundPage} />
+              </Switch>
+            </PublicLayout>
+          ) : (
+            <PrivateLayout>
+              <Switch>
+                <Route path="/dashboard" component={CompanyDashboardPage} />
+                <Route component={NotFoundPage} />
+              </Switch>
+            </PrivateLayout>
+          )}
 
-        <Toaster position="top-right" />
+          <Toaster position="top-right" />
+        </TaskProvider>
       </CompanyProvider>
     </AuthProvider>
   );
