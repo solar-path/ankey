@@ -1,8 +1,8 @@
-import PouchDB from 'pouchdb-node';
-import PouchDBFind from 'pouchdb-find';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import PouchDB from "pouchdb-node";
+import PouchDBFind from "pouchdb-find";
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 // Add the find plugin
 PouchDB.plugin(PouchDBFind);
@@ -11,21 +11,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Read JSON files
 const countries = JSON.parse(
-  readFileSync(join(__dirname, '../src/api/db/country.json'), 'utf-8')
+  readFileSync(join(__dirname, "./data/country.json"), "utf-8")
 );
 const industries = JSON.parse(
-  readFileSync(join(__dirname, '../src/api/db/industry.json'), 'utf-8')
+  readFileSync(join(__dirname, "./data/industry.json"), "utf-8")
 );
 
 // CouchDB configuration from .env file
-const COUCHDB_URL = process.env.VITE_COUCHDB_URL || 'http://admin:Miranda32@127.0.0.1:5984';
+const COUCHDB_URL =
+  process.env.VITE_COUCHDB_URL || "http://admin:Miranda32@127.0.0.1:5984";
 
 // Create database instances
 const countriesDB = new PouchDB(`${COUCHDB_URL}/countries`);
 const industriesDB = new PouchDB(`${COUCHDB_URL}/industries`);
 
 async function importCountries() {
-  console.log('📍 Importing countries...');
+  console.log("📍 Importing countries...");
 
   try {
     // Check if database exists and create if needed
@@ -36,7 +37,7 @@ async function importCountries() {
     const docs = countries.map((country) => ({
       _id: country.code,
       ...country,
-      type: 'country',
+      type: "country",
       importedAt: Date.now(),
     }));
 
@@ -46,18 +47,23 @@ async function importCountries() {
     const successful = result.filter((r: any) => r.ok).length;
     const failed = result.filter((r: any) => !r.ok).length;
 
-    console.log(`✅ Countries imported: ${successful} successful, ${failed} failed`);
+    console.log(
+      `✅ Countries imported: ${successful} successful, ${failed} failed`
+    );
 
     if (failed > 0) {
-      console.log('Failed documents:', result.filter((r: any) => !r.ok));
+      console.log(
+        "Failed documents:",
+        result.filter((r: any) => !r.ok)
+      );
     }
   } catch (error) {
-    console.error('❌ Error importing countries:', error);
+    console.error("❌ Error importing countries:", error);
   }
 }
 
 async function importIndustries() {
-  console.log('🏭 Importing industries...');
+  console.log("🏭 Importing industries...");
 
   try {
     // Check if database exists and create if needed
@@ -68,7 +74,7 @@ async function importIndustries() {
     const docs = industries.map((industry) => ({
       _id: industry.code.toString(),
       ...industry,
-      type: 'industry',
+      type: "industry",
       importedAt: Date.now(),
     }));
 
@@ -78,62 +84,69 @@ async function importIndustries() {
     const successful = result.filter((r: any) => r.ok).length;
     const failed = result.filter((r: any) => !r.ok).length;
 
-    console.log(`✅ Industries imported: ${successful} successful, ${failed} failed`);
+    console.log(
+      `✅ Industries imported: ${successful} successful, ${failed} failed`
+    );
 
     if (failed > 0) {
-      console.log('Failed documents:', result.filter((r: any) => !r.ok));
+      console.log(
+        "Failed documents:",
+        result.filter((r: any) => !r.ok)
+      );
     }
   } catch (error) {
-    console.error('❌ Error importing industries:', error);
+    console.error("❌ Error importing industries:", error);
   }
 }
 
 async function createIndexes() {
-  console.log('🔍 Creating indexes...');
+  console.log("🔍 Creating indexes...");
 
   try {
     // Create indexes for countries
     await countriesDB.createIndex({
-      index: { fields: ['name'] },
+      index: { fields: ["name"] },
     });
     await countriesDB.createIndex({
-      index: { fields: ['code'] },
+      index: { fields: ["code"] },
     });
     await countriesDB.createIndex({
-      index: { fields: ['type'] },
+      index: { fields: ["type"] },
     });
-    console.log('✅ Countries indexes created');
+    console.log("✅ Countries indexes created");
 
     // Create indexes for industries
     await industriesDB.createIndex({
-      index: { fields: ['code'] },
+      index: { fields: ["code"] },
     });
     await industriesDB.createIndex({
-      index: { fields: ['title'] },
+      index: { fields: ["title"] },
     });
     await industriesDB.createIndex({
-      index: { fields: ['type'] },
+      index: { fields: ["type"] },
     });
-    console.log('✅ Industries indexes created');
+    console.log("✅ Industries indexes created");
   } catch (error) {
-    console.error('❌ Error creating indexes:', error);
+    console.error("❌ Error creating indexes:", error);
   }
 }
 
 async function main() {
-  console.log('🚀 Starting data import...\n');
-  console.log(`CouchDB URL: ${COUCHDB_URL.replace(/\/\/.*:.*@/, '//***:***@')}\n`);
+  console.log("🚀 Starting data import...\n");
+  console.log(
+    `CouchDB URL: ${COUCHDB_URL.replace(/\/\/.*:.*@/, "//***:***@")}\n`
+  );
 
   await importCountries();
   await importIndustries();
   await createIndexes();
 
-  console.log('\n✨ Import completed!');
+  console.log("\n✨ Import completed!");
   process.exit(0);
 }
 
 // Run the import
 main().catch((error) => {
-  console.error('Fatal error:', error);
+  console.error("Fatal error:", error);
   process.exit(1);
 });

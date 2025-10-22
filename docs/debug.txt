@@ -1,19 +1,14 @@
-vite v7.1.11 building for production...
-transforming...
-[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-browser/lib/index.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-abstract-mapreduce/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-selector-core/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-[plugin vite:resolve] Module "events" has been externalized for browser compatibility, imported by "/Users/work/apps/ankey/node_modules/pouchdb-mapreduce-utils/node_modules/pouchdb-utils/lib/index-browser.es.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-✓ 2098 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/index.html                   0.45 kB │ gzip:   0.29 kB
-dist/assets/index-v-qBc2-x.css   72.09 kB │ gzip:  12.48 kB
-dist/assets/index-BKG8qKDV.js   794.37 kB │ gzip: 250.07 kB
-
-(!) Some chunks are larger than 500 kB after minification. Consider:
-- Using dynamic import() to code-split the application
-- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
-- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.78s
+src/lib/ui/QPhone.ui.tsx(19,23): error TS2307: Cannot find module '@/api/db/country.json' or its corresponding type declarations.
+src/lib/ui/QPhone.ui.tsx(53,38): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/ui/QPhone.ui.tsx(89,44): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/ui/QPhone.ui.tsx(99,17): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/ui/QPhone.ui.tsx(100,14): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/ui/QPhone.ui.tsx(127,21): error TS2322: Type 'unknown' is not assignable to type 'Key | null | undefined'.
+src/lib/ui/QPhone.ui.tsx(128,21): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/lib/ui/QPhone.ui.tsx(130,45): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/lib/ui/QPhone.ui.tsx(140,21): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/modules/shared/database/db.ts(31,20): error TS7006: Parameter 'info' implicitly has an 'any' type.
+src/modules/shared/database/db.ts(34,19): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/modules/shared/database/db.ts(44,20): error TS7006: Parameter 'info' implicitly has an 'any' type.
+src/modules/shared/database/db.ts(47,19): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/modules/shared/stores/auth.store.ts(4,26): error TS6133: 'Session' is declared but its value is never read.

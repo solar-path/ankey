@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/lib/ui/form";
 import { Link, useLocation } from "wouter";
-import { AuthService } from "@/lib/auth-service";
+import { AuthService } from "./auth-service";
 import { toast } from "sonner";
 
 export default function SignUpPage() {

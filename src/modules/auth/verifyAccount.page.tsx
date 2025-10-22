@@ -9,7 +9,7 @@ import {
 } from "@/lib/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/lib/ui/input-otp";
 import { useLocation } from "wouter";
-import { AuthService } from "@/lib/auth-service";
+import { AuthService } from "./auth-service";
 import { toast } from "sonner";
 import { useState } from "react";
 

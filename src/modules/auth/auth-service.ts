@@ -1,11 +1,11 @@
-import { usersDB, sessionsDB, type User, type Session } from "./db";
+import { usersDB, sessionsDB, type User, type Session } from "@/modules/shared/database/db";
 import * as v from "valibot";
 import {
   signUpSchema,
   signInSchema,
   type SignUpInput,
   type SignInInput,
-} from "@/modules/auth/auth.valibot";
+} from "./auth.valibot";
 
 // Simple hash function (in production, use bcrypt or similar)
 async function hashPassword(password: string): Promise<string> {
@@ -69,11 +69,31 @@ export class AuthService {
     // Save to database
     await usersDB.put(user);
 
-    // In a real app, send verification email here
-    console.log(`Verification code for ${user.email}: ${verificationCode}`);
+    // Send verification email via API
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/api/auth/send-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, code: verificationCode }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to send verification email:", error);
+        // Don't throw - user is created, email failure shouldn't block signup
+      } else {
+        const result = await response.json();
+        console.log("Verification email sent:", result.messageId);
+      }
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      // Fallback: log code to console for testing
+      console.log(`Verification code for ${user.email}: ${verificationCode}`);
+    }
 
     return {
-      message: "User created successfully. Please verify your account.",
+      message: "User created successfully. Please check your email for verification code.",
       userId: user._id,
     };
   }
@@ -275,8 +295,27 @@ export class AuthService {
       updatedAt: Date.now(),
     });
 
-    // In a real app, send reset email here
-    console.log(`Reset token for ${user.email}: ${resetToken}`);
+    // Send password reset email via API
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/api/auth/send-password-reset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, resetToken }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to send password reset email:", error);
+      } else {
+        const result = await response.json();
+        console.log("Password reset email sent:", result.messageId);
+      }
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      // Fallback: log token to console for testing
+      console.log(`Reset token for ${user.email}: ${resetToken}`);
+    }
 
     return { message: "If an account exists, a reset link will be sent" };
   }

@@ -1,10 +1,16 @@
 import { Button } from "@/lib/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/lib/ui/card";
 import { Input } from "@/lib/ui/input";
 import { Textarea } from "@/lib/ui/textarea";
 import { Label } from "@/lib/ui/label";
 
-export default function ContactPage() {
+export default function ContactUsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement contact form submission
@@ -38,7 +44,12 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="company">Company</Label>
@@ -46,7 +57,11 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>
@@ -90,7 +105,9 @@ export default function ContactPage() {
                   </svg>
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">sales@ysollo.com</p>
+                    <p className="text-sm text-muted-foreground">
+                      sales@ysollo.com
+                    </p>
                   </div>
                 </div>
 
@@ -110,7 +127,9 @@ export default function ContactPage() {
                   </svg>
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-sm text-muted-foreground">
+                      +1 (555) 123-4567
+                    </p>
                   </div>
                 </div>
 
@@ -153,11 +172,15 @@ export default function ContactPage() {
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Monday - Friday</span>
-                  <span className="text-sm text-muted-foreground">9:00 AM - 6:00 PM PST</span>
+                  <span className="text-sm text-muted-foreground">
+                    9:00 AM - 6:00 PM PST
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Saturday</span>
-                  <span className="text-sm text-muted-foreground">10:00 AM - 4:00 PM PST</span>
+                  <span className="text-sm text-muted-foreground">
+                    10:00 AM - 4:00 PM PST
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Sunday</span>

@@ -16,7 +16,7 @@ import {
   CardFooter,
 } from "@/lib/ui/card";
 import { Link } from "wouter";
-import { AuthService } from "@/lib/auth-service";
+import { AuthService } from "./auth-service";
 import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {

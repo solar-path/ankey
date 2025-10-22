@@ -26,7 +26,7 @@ import {
 import { QPassword } from "@/lib/ui/QPassword.ui";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/lib/ui/input-otp";
 import { Link, useLocation } from "wouter";
-import { AuthService } from "@/lib/auth-service";
+import { AuthService } from "./auth-service";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
