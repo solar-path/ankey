@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { AuthService } from "@/modules/auth/auth-service";
-import { type User, type Session, initializeDatabases, setupSync } from "@/modules/shared/database/db";
+import { type User, initializeDatabases, setupSync } from "@/modules/shared/database/db";
 
 interface AuthState {
   user: Omit<User, "password" | "verificationCode" | "resetToken"> | null;

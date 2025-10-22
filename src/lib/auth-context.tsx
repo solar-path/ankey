@@ -30,6 +30,7 @@ interface AuthContextType {
   login: (user: User, session: Session) => void;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     logout: store.logout,
     refreshAuth: store.refreshAuth,
+    refreshUser: store.refreshAuth, // Alias for refreshAuth
   };
 
   return (

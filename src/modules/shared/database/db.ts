@@ -28,10 +28,10 @@ export function setupSync() {
       live: true,
       retry: true,
     })
-    .on("change", (info) => {
+    .on("change", (info: any) => {
       console.log("Users DB sync change:", info);
     })
-    .on("error", (err) => {
+    .on("error", (err: any) => {
       console.error("Users DB sync error:", err);
     });
 
@@ -41,10 +41,10 @@ export function setupSync() {
       live: true,
       retry: true,
     })
-    .on("change", (info) => {
+    .on("change", (info: any) => {
       console.log("Sessions DB sync change:", info);
     })
-    .on("error", (err) => {
+    .on("error", (err: any) => {
       console.error("Sessions DB sync error:", err);
     });
 }

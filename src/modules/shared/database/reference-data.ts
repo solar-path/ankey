@@ -1,5 +1,14 @@
 // Reference data utilities for Countries and Industries
-import PouchDB from 'pouchdb';
+// PouchDB is loaded from CDN in index.html
+// Access it from the global window object
+declare global {
+  interface Window {
+    PouchDB: any;
+  }
+}
+
+// Get PouchDB from global scope
+const PouchDB = window.PouchDB;
 
 const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://127.0.0.1:5984';
 
@@ -39,7 +48,7 @@ export const countries = {
    */
   async getAll(): Promise<Country[]> {
     const result = await countriesDB.allDocs({ include_docs: true });
-    return result.rows.map((row) => row.doc as Country);
+    return result.rows.map((row: any) => row.doc as Country);
   },
 
   /**
@@ -98,7 +107,7 @@ export const industries = {
    */
   async getAll(): Promise<Industry[]> {
     const result = await industriesDB.allDocs({ include_docs: true });
-    return result.rows.map((row) => row.doc as Industry);
+    return result.rows.map((row: any) => row.doc as Industry);
   },
 
   /**

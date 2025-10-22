@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/ui/popover";
-import countries from "@/api/db/country.json";
+import { countries as countriesAPI, type Country } from "@/modules/shared/database/reference-data";
 
 interface QPhoneProps {
   value?: string;
@@ -32,6 +32,20 @@ export function QPhone({ value = "", onChange, onCountryDetected, countryCode, p
   const [phoneCode, setPhoneCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [open, setOpen] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+
+  // Load countries from PouchDB
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const allCountries = await countriesAPI.getAll();
+        setCountries(allCountries);
+      } catch (error) {
+        console.error("Failed to load countries:", error);
+      }
+    };
+    loadCountries();
+  }, []);
 
   // Parse initial value
   useEffect(() => {

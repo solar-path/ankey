@@ -7,6 +7,7 @@ import ContactPage from "./modules/inquiry/contactUs.page";
 import NotFoundPage from "./routes/404.page";
 import PrivateLayout from "./routes/private.layout";
 import { CompanyDashboardPage } from "./modules/company/companyDashboard.page";
+import AccountPage from "./modules/auth/account/account.page";
 import SignInPage from "./modules/auth/signin.page";
 import SignUpPage from "./modules/auth/signup.page";
 import ForgotPasswordPage from "./modules/auth/forgotPassword.page";
@@ -31,12 +32,13 @@ function App() {
     "/auth/verify-account",
   ];
 
-  const privateRoutes = ["/dashboard"];
+  const privateRoutes = ["/dashboard", "/account"];
 
   // Check if route exists in either public or private routes
   const isKnownRoute = [...publicRoutes, ...privateRoutes].some((route) => {
     if (location === route) return true;
     if (location.startsWith(route + "?")) return true;
+    if (location.startsWith(route + "/")) return true; // Support sub-routes like /account/profile
     return false;
   });
 
@@ -46,6 +48,7 @@ function App() {
     publicRoutes.some((route) => {
       if (location === route) return true;
       if (location.startsWith(route + "?")) return true;
+      if (location.startsWith(route + "/")) return true; // Support sub-routes
       return false;
     });
 
@@ -77,6 +80,7 @@ function App() {
             <PrivateLayout>
               <Switch>
                 <Route path="/dashboard" component={CompanyDashboardPage} />
+                <Route path="/account/:rest*" component={AccountPage} />
                 <Route component={NotFoundPage} />
               </Switch>
             </PrivateLayout>
