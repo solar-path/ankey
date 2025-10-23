@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { sendVerificationEmail, sendPasswordResetEmail } from "./mail.settings";
+import { sendVerificationEmail, sendPasswordResetEmail, sendInquiryConfirmationEmail } from "./mail.settings";
 
 const app = new Hono();
 
@@ -117,6 +117,70 @@ auth.post("/send-password-reset", async (c) => {
 
 // Mount auth routes
 app.route("/api/auth", auth);
+
+// Inquiry routes
+const inquiry = new Hono();
+
+/**
+ * Send inquiry confirmation email
+ * POST /api/inquiry/send-confirmation
+ * Body: { email: string, name: string, inquiryId: string }
+ */
+inquiry.post("/send-confirmation", async (c) => {
+  try {
+    const { email, name, inquiryId } = await c.req.json();
+
+    if (!email || !name || !inquiryId) {
+      return c.json({ error: "Email, name, and inquiryId are required" }, 400);
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return c.json({ error: "Invalid email format" }, 400);
+    }
+
+    // Validate inquiry ID format
+    if (!/^inquiry_/.test(inquiryId)) {
+      return c.json({ error: "Invalid inquiry ID format" }, 400);
+    }
+
+    const result = await sendInquiryConfirmationEmail({
+      email,
+      name,
+      inquiryId,
+    });
+
+    if (result.success) {
+      return c.json({
+        success: true,
+        message: "Inquiry confirmation email sent successfully",
+        messageId: result.messageId,
+      });
+    } else {
+      console.error("Failed to send inquiry confirmation email:", result.error);
+      return c.json(
+        {
+          error: "Failed to send inquiry confirmation email",
+          details: result.error instanceof Error ? result.error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  } catch (error) {
+    console.error("Error in send-inquiry-confirmation:", error);
+    return c.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
+// Mount inquiry routes
+app.route("/api/inquiry", inquiry);
 
 // 404 handler
 app.notFound((c) => {

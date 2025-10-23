@@ -15,10 +15,12 @@ const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || "http://127.0.0.1:5984";
 // Database instances
 export const usersDB = new PouchDB("users");
 export const sessionsDB = new PouchDB("sessions");
+export const inquiriesDB = new PouchDB("inquiries");
 
 // Remote databases for sync
 export const remoteUsersDB = new PouchDB(`${COUCHDB_URL}/users`);
 export const remoteSessionsDB = new PouchDB(`${COUCHDB_URL}/sessions`);
+export const remoteInquiriesDB = new PouchDB(`${COUCHDB_URL}/inquiries`);
 
 // Setup sync
 export function setupSync() {
@@ -47,6 +49,19 @@ export function setupSync() {
     .on("error", (err: any) => {
       console.error("Sessions DB sync error:", err);
     });
+
+  // Sync inquiries database
+  inquiriesDB
+    .sync(remoteInquiriesDB, {
+      live: true,
+      retry: true,
+    })
+    .on("change", (info: any) => {
+      console.log("Inquiries DB sync change:", info);
+    })
+    .on("error", (err: any) => {
+      console.error("Inquiries DB sync error:", err);
+    });
 }
 
 // Initialize databases with indexes
@@ -68,6 +83,19 @@ export async function initializeDatabases() {
 
     await sessionsDB.createIndex({
       index: { fields: ["expiresAt"] },
+    });
+
+    // Create indexes for inquiries
+    await inquiriesDB.createIndex({
+      index: { fields: ["email"] },
+    });
+
+    await inquiriesDB.createIndex({
+      index: { fields: ["status"] },
+    });
+
+    await inquiriesDB.createIndex({
+      index: { fields: ["createdAt"] },
     });
 
     console.log("Databases initialized successfully");
@@ -113,4 +141,25 @@ export interface Session {
   token: string;
   expiresAt: number;
   createdAt: number;
+}
+
+export interface Inquiry {
+  _id: string;
+  _rev?: string;
+  type: "inquiry";
+  name: string;
+  email: string;
+  company?: string;
+  phone?: string;
+  message: string;
+  attachments?: Array<{
+    name: string;
+    type: string;
+    size: number;
+    data: string; // base64
+  }>;
+  status: "pending" | "in-progress" | "resolved" | "closed";
+  response?: string;
+  createdAt: number;
+  updatedAt: number;
 }

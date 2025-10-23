@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import * as v from "valibot";
 import { Button } from "@/lib/ui/button";
 import {
   Card,
@@ -6,15 +10,157 @@ import {
   CardHeader,
   CardTitle,
 } from "@/lib/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/lib/ui/form";
 import { Input } from "@/lib/ui/input";
 import { Textarea } from "@/lib/ui/textarea";
-import { Label } from "@/lib/ui/label";
+import { toast } from "sonner";
+import { InquiryService } from "./inquiry-service";
+import { Upload, X, FileText } from "lucide-react";
+import { Link } from "wouter";
+
+const contactSchema = v.object({
+  name: v.pipe(v.string(), v.minLength(1, "Name is required")),
+  email: v.pipe(v.string(), v.email("Invalid email address")),
+  company: v.optional(v.string()),
+  phone: v.optional(v.string()),
+  message: v.pipe(v.string(), v.minLength(10, "Message must be at least 10 characters")),
+});
+
+type ContactFormData = v.InferOutput<typeof contactSchema>;
 
 export default function ContactUsPage() {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement contact form submission
-    alert("Contact form submission will be implemented soon!");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const form = useForm<ContactFormData>({
+    resolver: valibotResolver(contactSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      company: "",
+      phone: "",
+      message: "",
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+
+    // Validate file size (max 5MB per file)
+    const invalidFiles = selectedFiles.filter(f => f.size > 5 * 1024 * 1024);
+    if (invalidFiles.length > 0) {
+      toast.error("Some files are too large. Maximum size is 5MB per file.");
+      return;
+    }
+
+    // Validate total files (max 3)
+    if (files.length + selectedFiles.length > 3) {
+      toast.error("Maximum 3 files allowed");
+      return;
+    }
+
+    setFiles([...files, ...selectedFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index));
+  };
+
+  const convertFilesToBase64 = async (files: File[]): Promise<Array<{
+    name: string;
+    type: string;
+    size: number;
+    data: string;
+  }>> => {
+    const promises = files.map(file => {
+      return new Promise<{
+        name: string;
+        type: string;
+        size: number;
+        data: string;
+      }>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: (reader.result as string).split(',')[1], // Remove data URL prefix
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    return Promise.all(promises);
+  };
+
+  const onSubmit = async (data: ContactFormData) => {
+    try {
+      setUploading(true);
+
+      // Convert files to base64
+      const attachments = files.length > 0 ? await convertFilesToBase64(files) : [];
+
+      // Create inquiry
+      const inquiry = await InquiryService.createInquiry({
+        ...data,
+        attachments,
+      });
+
+      // Send email notification via API
+      try {
+        await fetch("http://localhost:3001/api/inquiry/send-confirmation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.email,
+            inquiryId: inquiry._id,
+            name: data.name,
+          }),
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Continue even if email fails
+      }
+
+      // Show success toast with inquiry ID
+      toast.success(
+        <div className="flex flex-col gap-2">
+          <p className="font-semibold">Inquiry submitted successfully!</p>
+          <p className="text-sm">Your inquiry ID: <span className="font-mono font-bold">{inquiry._id}</span></p>
+          <p className="text-xs text-muted-foreground">
+            Save this ID to track your inquiry status
+          </p>
+        </div>,
+        {
+          duration: 10000,
+        }
+      );
+
+      // Reset form
+      form.reset();
+      setFiles([]);
+    } catch (error: any) {
+      console.error("Inquiry submission error:", error);
+      toast.error(error.message || "Failed to submit inquiry");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   return (
@@ -37,45 +183,151 @@ export default function ContactUsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    required
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
-                  <Input id="company" placeholder="Acme Corp" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+1 (555) 000-0000"
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="john@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Tell us about your needs..."
-                    rows={5}
-                    required
+
+                  <FormField
+                    control={form.control}
+                    name="company"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Company (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Acme Corp" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <Button type="submit" className="w-full">
-                  Send Message
-                </Button>
-              </form>
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input type="tel" placeholder="+1 (555) 000-0000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Message</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Tell us about your needs..."
+                            rows={5}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* File Upload */}
+                  <div className="space-y-2">
+                    <FormLabel>Attachments (Optional)</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        id="file-upload"
+                        className="hidden"
+                        multiple
+                        accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        disabled={files.length >= 3}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                        disabled={files.length >= 3}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Files
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        Max 3 files, 5MB each
+                      </span>
+                    </div>
+
+                    {/* File List */}
+                    {files.length > 0 && (
+                      <div className="space-y-2 mt-2">
+                        {files.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 p-2 border rounded-md bg-muted/50"
+                          >
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm truncate">{file.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatFileSize(file.size)}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => removeFile(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={uploading || form.formState.isSubmitting}>
+                    {uploading || form.formState.isSubmitting ? "Sending..." : "Send Message"}
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    <Link href="/track-inquiry" className="text-primary hover:underline">
+                      Track your inquiry status →
+                    </Link>
+                  </p>
+                </form>
+              </Form>
             </CardContent>
           </Card>
 

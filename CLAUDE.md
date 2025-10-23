@@ -4,13 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Ankey** is a local-first authentication system built with React, TypeScript, and PouchDB/CouchDB. It features real-time bi-directional sync between local (IndexedDB) and remote (CouchDB) databases.
+**Ankey** is a local-first authentication system built with React, TypeScript, and PouchDB/CouchDB. It features:
+- Real-time bi-directional sync between local (IndexedDB) and remote (CouchDB) databases
+- Dual server architecture: Vite dev server (port 5173) + Hono API server (port 3001)
+- Email notifications via SMTP for verification, password reset, and inquiries
 
 ## Development Commands
 
 ```bash
-# Start development server (auto-kills port 5173)
+# Start both servers (Vite + Hono API, auto-kills ports 5173 & 3001)
 bun run dev
+
+# Start individual servers
+bun run dev:vite   # Frontend only
+bun run dev:api    # Backend API only
 
 # Build for production (outputs to dist/ and logs to docs/debug.txt)
 bun run build
@@ -27,46 +34,53 @@ bun run import:data
 
 ## Core Architecture
 
+### Dual Server Architecture
+
+**Frontend (Vite)**: Port 5173 - React SPA with PouchDB client-side databases
+**Backend (Hono)**: Port 3001 - Node.js API for email services (SMTP)
+
+**API Routes:**
+- `POST /api/auth/send-verification` - Send verification code email
+- `POST /api/auth/send-password-reset` - Send password reset email
+- `POST /api/inquiry/send-confirmation` - Send inquiry confirmation email
+
+**Why separate backend?** Email services (nodemailer/SMTP) require Node.js runtime and can't run in browser.
+
 ### Routing System (Wouter-based)
 
-The app uses a **two-layout system** where routes are determined at the `App.tsx` level:
+The app uses a **two-layout system** where routes are determined at [App.tsx](src/App.tsx):
 
-- **Public routes** (`/`, `/learn`, `/offers`, `/contact`, `/auth/*`) render in `PublicLayout`
-- **Private routes** (`/dashboard`) render in `PrivateLayout` with auth protection
-- Route matching is **exact** - `/auth/signin` matches but `/auth/signin123` does not (shows 404)
+- **Public routes** (`/`, `/learn`, `/offers`, `/contact`, `/track-inquiry`, `/auth/*`) render in `PublicLayout`
+- **Private routes** (`/dashboard`, `/account`) render in `PrivateLayout` with auth protection
+- Route matching is **exact with sub-route support** - uses `location === route || location.startsWith(route + "?") || location.startsWith(route + "/")`
 
-**Important:** Do NOT use `startsWith()` for route matching as it creates false positives. The current implementation checks exact matches and query params only (`route === location || location.startsWith(route + "?")`).
+**Important:** Route protection happens at the **layout level** (PrivateLayout), never in individual page components.
 
 ### Database Architecture (PouchDB + CouchDB)
 
-**Current Setup:** PouchDB loaded via CDN in `index.html`:
+**Current Setup:** PouchDB loaded via CDN in [index.html](index.html):
 ```html
 <script src="https://cdn.jsdelivr.net/npm/pouchdb@9.0.0/dist/pouchdb.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pouchdb@9.0.0/dist/pouchdb.find.min.js"></script>
 ```
 
-**Pattern:**
+**Three databases** (all with local + remote pairs):
 ```typescript
-// db.ts accesses global PouchDB
-const PouchDB = window.PouchDB;
-const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || "http://127.0.0.1:5984";
-
-// Local databases (browser IndexedDB)
-export const usersDB = new PouchDB("users");
-export const sessionsDB = new PouchDB("sessions");
-
-// Remote databases (CouchDB sync targets)
-export const remoteUsersDB = new PouchDB(`${COUCHDB_URL}/users`);
-export const remoteSessionsDB = new PouchDB(`${COUCHDB_URL}/sessions`);
+// Local (browser IndexedDB) + Remote (CouchDB)
+usersDB / remoteUsersDB          // User accounts
+sessionsDB / remoteSessionsDB    // Auth sessions
+inquiriesDB / remoteInquiriesDB  // Contact form inquiries
 ```
+
+**Location:** Database setup in [src/modules/shared/database/db.ts](src/modules/shared/database/db.ts)
 
 **Sync:** Real-time bi-directional sync configured with `{ live: true, retry: true }` in `setupSync()`.
 
-**Document Types:** All documents have a `type` field discriminator (`"user"` or `"session"`) for efficient querying in multi-type databases.
+**Document Types:** All documents have a `type` field discriminator (`"user"`, `"session"`, `"inquiry"`) for efficient querying.
 
 ### Authentication Flow
 
-1. **Sign Up** → `AuthService.signUp()` → Creates user with `verified: false` + 6-digit code
+1. **Sign Up** → [AuthService.signUp()](src/modules/auth/auth-service.ts) → Creates user with `verified: false` + sends email with 6-digit code via API
 2. **Verify** → `AuthService.verifyAccount(code)` → Sets `verified: true`
 3. **Sign In** → `AuthService.signIn()` → Validates credentials, creates session
 4. **Session** → Token stored in `localStorage.sessionToken`, expires in 7 days
@@ -74,16 +88,17 @@ export const remoteSessionsDB = new PouchDB(`${COUCHDB_URL}/sessions`);
 
 **Password hashing:** Currently SHA-256 (simple). For production, use bcrypt.
 
-**Session restoration:** `AuthProvider` checks `localStorage` on mount and validates session via `verifySession()`.
+**Session restoration:** [AuthProvider](src/lib/auth-context.tsx) checks `localStorage` on mount and validates session via `verifySession()`.
+
+**Email delivery:** AuthService calls Hono API (`/api/auth/send-verification`) which uses nodemailer to send emails via SMTP.
 
 ### State Management (Context Providers)
 
-Four context providers wrap the app in `App.tsx`:
+Three context providers wrap the app in [App.tsx](src/App.tsx):
 
 1. **AuthProvider** - User authentication state (`useAuth()`)
 2. **CompanyProvider** - Multi-tenancy/active company (`useCompany()`)
-3. **BreadcrumbProvider** - Navigation breadcrumbs (`useBreadcrumb()`)
-4. **TaskProvider** - Task management (`useTask()`)
+3. **TaskProvider** - Task management (`useTask()`)
 
 **Pattern:** Always throw error if context used outside provider:
 ```typescript
@@ -121,39 +136,49 @@ const form = useForm<SignUpInput>({
 
 - **Pages:** `*.page.tsx` (e.g., `signin.page.tsx`)
 - **Layouts:** `*.layout.tsx` (e.g., `public.layout.tsx`)
-- **Services:** `*-service.ts` (e.g., `auth-service.ts`)
+- **Services:** `*-service.ts` (e.g., `auth-service.ts`, `inquiry-service.ts`)
 - **Contexts:** `*-context.tsx` (e.g., `auth-context.tsx`)
-- **Schemas:** `*.valibot.ts` (centralized validation)
+- **Schemas:** `*.valibot.ts` (validation schemas)
 - **Custom UI:** `Q*.ui.tsx` (enhanced components like `QPassword.ui.tsx`)
 
 ### Directory Structure
 
 ```
 src/
+├── api/
+│   ├── server.ts                # Hono server entry point
+│   ├── api.hono.ts              # API routes (auth, inquiry)
+│   └── mail.settings.ts         # SMTP email configuration
 ├── lib/
-│   ├── db.ts                    # Database setup, types, sync
-│   ├── auth-service.ts          # Auth business logic
 │   ├── auth-context.tsx         # Auth state provider
 │   ├── company-context.tsx      # Multi-tenancy state
-│   ├── breadcrumb-context.tsx   # Navigation state
 │   ├── task-context.tsx         # Task state
 │   └── ui/                      # Shadcn/Radix components (~40 files)
 ├── modules/
 │   ├── auth/
-│   │   ├── auth.valibot.ts      # All auth validation schemas
+│   │   ├── auth-service.ts      # Auth business logic
+│   │   ├── auth.valibot.ts      # Auth validation schemas
 │   │   ├── signin.page.tsx
 │   │   ├── signup.page.tsx
 │   │   ├── verifyAccount.page.tsx
-│   │   └── forgotPassword.page.tsx
-│   └── company/
-│       └── companyDashboard.page.tsx
+│   │   ├── forgotPassword.page.tsx
+│   │   └── account/             # Account settings pages
+│   ├── company/
+│   │   └── companyDashboard.page.tsx
+│   ├── inquiry/
+│   │   ├── inquiry-service.ts   # Contact form business logic
+│   │   ├── contactUs.page.tsx
+│   │   └── trackInquiry.page.tsx
+│   ├── pricing/
+│   │   └── offers.page.tsx
+│   └── shared/
+│       └── database/
+│           └── db.ts            # PouchDB setup, types, sync
 └── routes/
     ├── public.layout.tsx        # Public wrapper (header/footer)
     ├── private.layout.tsx       # Protected wrapper (sidebar/breadcrumbs)
     ├── home.page.tsx
     ├── learn.page.tsx
-    ├── offers.page.tsx
-    ├── contact.page.tsx
     └── 404.page.tsx
 ```
 
@@ -183,7 +208,7 @@ const buttonVariants = cva("base-classes", {
 
 ### Route Protection
 
-**Do NOT add auth checks in individual page components.** Route protection happens at the layout level:
+**Do NOT add auth checks in individual page components.** Route protection happens at the layout level in [PrivateLayout](src/routes/private.layout.tsx):
 
 ```typescript
 // PrivateLayout handles auth redirect
@@ -202,10 +227,10 @@ export default function PrivateLayout({ children }) {
 
 ### Adding New Routes
 
-1. Create page component in appropriate module
-2. Add to `publicRoutes` or `privateRoutes` array in `App.tsx`
+1. Create page component in appropriate module (e.g., `src/modules/auth/signin.page.tsx`)
+2. Add to `publicRoutes` or `privateRoutes` array in [App.tsx](src/App.tsx)
 3. Add `<Route>` to corresponding `<Switch>` block
-4. Ensure exact path match (no trailing slashes)
+4. Ensure path matches route array entry (supports sub-routes with `/`)
 
 ### Database Queries
 
@@ -250,12 +275,12 @@ static sanitizeUser(user: User) {
 
 ### Environment Variables
 
-Required in `.env` (see `.env.example`):
+Required in `.env` (see [.env.example](.env.example)):
 ```bash
 # CouchDB Configuration
 VITE_COUCHDB_URL=http://admin:password@127.0.0.1:5984
 
-# SMTP Configuration (for email verification)
+# SMTP Configuration (for email services)
 SMTP_HOST=mail.privateemail.com
 SMTP_PORT=587
 SMTP_USER=notify@ysollo.com
@@ -263,24 +288,23 @@ SMTP_PASS=your_password
 FROM_EMAIL=notify@ysollo.com
 FROM_NAME=YSollo
 
-# Application URL
+# API Server
+API_PORT=3001
+VITE_API_URL=http://localhost:3001
+
+# Application URL (for email links)
 APP_URL=http://localhost:5173
 ```
 
-### Vite Configuration
-
-Current config is **minimal**. For production, consider recommendations in `POUCHDB_FIX.md`:
-- Add `mainFields: ['module', 'jsnext:main', 'jsnext']`
-- Include `optimizeDeps: { include: ["pouchdb", "pouchdb-find"] }`
-- Configure `build.commonjsOptions` with `transformMixedEsModules: true`
+**Note:** Environment variables prefixed with `VITE_` are exposed to the frontend. Backend-only variables (SMTP credentials) are NOT prefixed with `VITE_`.
 
 ### CouchDB Setup
 
-**Required steps** (see `docs/COUCHDB_SETUP.md`):
+**Required steps** (see [docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md)):
 1. Install: `brew install couchdb`
 2. Start: `brew services start couchdb`
-3. Configure CORS: `add-cors-to-couchdb http://admin:password@127.0.0.1:5984`
-4. Create databases: `users` and `sessions`
+3. Configure CORS: `npx add-cors-to-couchdb http://admin:password@127.0.0.1:5984`
+4. Create databases: `users`, `sessions`, and `inquiries`
 5. Access Fauxton: http://127.0.0.1:5984/_utils/
 
 ## Common Tasks
@@ -294,9 +318,26 @@ Current config is **minimal**. For production, consider recommendations in `POUC
 5. Sign in at `/auth/signin`
 6. Access protected `/dashboard`
 
+### Adding New API Endpoints
+
+Add routes to [src/api/api.hono.ts](src/api/api.hono.ts):
+```typescript
+// Create route group
+const myRoutes = new Hono();
+
+myRoutes.post("/my-endpoint", async (c) => {
+  const data = await c.req.json();
+  // Handle request
+  return c.json({ success: true });
+});
+
+// Mount routes
+app.route("/api/my-routes", myRoutes);
+```
+
 ### Adding Validation Schema
 
-Add to `src/modules/auth/auth.valibot.ts`:
+Add to module's `*.valibot.ts` file (e.g., [src/modules/auth/auth.valibot.ts](src/modules/auth/auth.valibot.ts)):
 ```typescript
 export const mySchema = v.object({
   field: v.pipe(v.string(), v.minLength(3)),
@@ -325,28 +366,37 @@ bun run dev
 
 ## Known Issues & Limitations
 
-1. **Email verification codes** are logged to console, not sent via email (email service not implemented)
+1. **Email delivery** depends on SMTP configuration being correct - if email sending fails, verification codes are logged to console as fallback
 2. **Password hashing** uses SHA-256 (upgrade to bcrypt for production)
 3. **Session expiration** is 7 days (not configurable)
-4. **PouchDB CDN approach** may have stability issues - consider npm package per `POUCHDB_FIX.md`
-5. **No 2FA implementation** yet (structure exists in schema)
+4. **PouchDB CDN approach** - loaded via CDN in index.html instead of npm package (see [POUCHDB_FIX.md](POUCHDB_FIX.md) for alternative approach)
+5. **No 2FA implementation** yet (structure exists in schema, utilities available in [twoFactor.utils.ts](src/modules/auth/account/twoFactor.utils.ts))
 
 ## Additional Documentation
 
-- **POUCHDB_FIX.md** - PouchDB integration troubleshooting
-- **docs/COUCHDB_SETUP.md** - Complete CouchDB setup guide
-- **docs/couchDb.llm.txt** - Comprehensive PouchDB/CouchDB reference
-- **README.md** - Project overview and quick start
+- [POUCHDB_FIX.md](POUCHDB_FIX.md) - PouchDB integration troubleshooting
+- [docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md) - Complete CouchDB setup guide
+- [docs/couchDb.llm.txt](docs/couchDb.llm.txt) - Comprehensive PouchDB/CouchDB reference
+- [README.md](README.md) - Project overview and quick start
 
 ## Technology Stack
 
-- **React 19.1.1** + **TypeScript ~5.9.3**
-- **Vite 7.1.7** (build tool)
-- **Wouter 3.7.1** (routing)
-- **PouchDB 9.0.0** + **CouchDB** (database & sync)
-- **Valibot 1.1.0** (validation)
-- **React Hook Form 7.65** (forms)
-- **Tailwind CSS 4.1.15** (styling)
-- **Shadcn/ui + Radix UI** (components)
-- **Sonner 2.0.7** (toasts)
-- **Bun** (package manager & runtime)
+**Frontend:**
+- React 19.1.1 + TypeScript ~5.9.3
+- Vite 7.1.7 (build tool)
+- Wouter 3.7.1 (routing)
+- PouchDB 9.0.0 (local database)
+- Valibot 1.1.0 (validation)
+- React Hook Form 7.65 (forms)
+- Tailwind CSS 4.1.15 (styling)
+- Shadcn/ui + Radix UI (components)
+- Sonner 2.0.7 (toasts)
+
+**Backend:**
+- Hono 4.10.2 (API framework)
+- @hono/node-server 1.19.5 (Node.js adapter)
+- Nodemailer 7.0.9 (SMTP email)
+- CouchDB (remote database & sync)
+
+**Runtime:**
+- Bun (package manager & runtime)

@@ -273,6 +273,57 @@ export const emailTemplates = {
     `,
     text: `Employment Agreement - ${data.positionTitle}\n\nDear ${data.employeeName},\n\nYour job offer has been approved! Please review and sign your employment agreement to complete the onboarding process.\n\nSign your agreement here: ${data.signLink}\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\n${data.companyName} HR Team`,
   }),
+
+  inquiryConfirmation: (data: {
+    name: string;
+    inquiryId: string;
+    trackLink: string;
+  }) => ({
+    subject: "Inquiry Received - YSollo Support",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h1 style="color: #000; margin: 0;">✉️ Inquiry Received</h1>
+          </div>
+
+          <div style="background-color: #fff; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px;">
+            <h2 style="color: #000; margin-top: 0;">Thank You for Contacting Us!</h2>
+            <p>Dear ${data.name},</p>
+
+            <p>We have successfully received your inquiry. Our team will review it and get back to you as soon as possible.</p>
+
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #000;">Your Inquiry ID</h3>
+              <p style="font-family: monospace; font-size: 14px; background-color: #fff; padding: 10px; border-radius: 4px; margin: 10px 0;">${data.inquiryId}</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 0;">Please save this ID to track the status of your inquiry.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.trackLink}" style="background-color: #000; color: #fff; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">📊 Track Your Inquiry</a>
+            </div>
+
+            <p style="font-size: 12px; color: #6c757d;">If the button doesn't work, you can copy and paste this link:</p>
+            <p style="font-size: 11px; background-color: #f8f9fa; padding: 8px; border-radius: 4px; word-break: break-all;">${data.trackLink}</p>
+
+            <p>We typically respond within 24-48 hours during business days.</p>
+
+            <p>Best regards,<br>YSollo Support Team</p>
+          </div>
+
+          <div style="margin-top: 20px; text-align: center; color: #6c757d; font-size: 12px;">
+            <p>© ${new Date().getFullYear()} YSollo. All rights reserved.</p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `Inquiry Received - YSollo Support\n\nDear ${data.name},\n\nWe have successfully received your inquiry. Our team will review it and get back to you as soon as possible.\n\nYour Inquiry ID: ${data.inquiryId}\n\nPlease save this ID to track the status of your inquiry.\n\nTrack your inquiry here: ${data.trackLink}\n\nWe typically respond within 24-48 hours during business days.\n\nBest regards,\nYSollo Support Team`,
+  }),
 };
 
 // Send email function
@@ -380,6 +431,23 @@ export async function sendEmployeeAgreementEmail(data: {
     companyName: data.companyName,
     positionTitle: data.positionTitle,
     signLink,
+  });
+
+  return sendEmail(data.email, template.subject, template.html, template.text);
+}
+
+export async function sendInquiryConfirmationEmail(data: {
+  email: string;
+  name: string;
+  inquiryId: string;
+}) {
+  const appUrl = process.env.APP_URL || "http://localhost:5173";
+  const trackLink = `${appUrl}/track-inquiry?id=${data.inquiryId}`;
+
+  const template = emailTemplates.inquiryConfirmation({
+    name: data.name,
+    inquiryId: data.inquiryId,
+    trackLink,
   });
 
   return sendEmail(data.email, template.subject, template.html, template.text);

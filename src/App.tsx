@@ -4,6 +4,7 @@ import HomePage from "./routes/home.page";
 import LearnPage from "./routes/learn.page";
 import OffersPage from "./modules/pricing/offers.page";
 import ContactPage from "./modules/inquiry/contactUs.page";
+import TrackInquiryPage from "./modules/inquiry/trackInquiry.page";
 import NotFoundPage from "./routes/404.page";
 import PrivateLayout from "./routes/private.layout";
 import { CompanyDashboardPage } from "./modules/company/companyDashboard.page";
@@ -26,6 +27,7 @@ function App() {
     "/learn",
     "/offers",
     "/contact",
+    "/track-inquiry",
     "/auth/signin",
     "/auth/signup",
     "/auth/forgot-password",
@@ -63,6 +65,7 @@ function App() {
                 <Route path="/learn" component={LearnPage} />
                 <Route path="/offers" component={OffersPage} />
                 <Route path="/contact" component={ContactPage} />
+                <Route path="/track-inquiry" component={TrackInquiryPage} />
                 <Route path="/auth/signin" component={SignInPage} />
                 <Route path="/auth/signup" component={SignUpPage} />
                 <Route
