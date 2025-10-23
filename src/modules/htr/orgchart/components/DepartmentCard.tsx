@@ -133,7 +133,7 @@ export function DepartmentCard({
           </div>
 
           <div>
-            <Label htmlFor="headcount">Max Headcount</Label>
+            <Label htmlFor="headcount">Headcount</Label>
             <Input
               id="headcount"
               type="number"

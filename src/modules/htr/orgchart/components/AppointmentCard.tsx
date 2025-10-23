@@ -4,12 +4,25 @@
  */
 
 import { useState, useEffect } from "react";
-import { UserCheck, Save, Trash2, FileDown, Check, ChevronsUpDown } from "lucide-react";
+import {
+  UserCheck,
+  Save,
+  Trash2,
+  FileDown,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
 import { Textarea } from "@/lib/ui/textarea";
 import { Label } from "@/lib/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/lib/ui/card";
 import { Badge } from "@/lib/ui/badge";
 import {
   Select,
@@ -26,14 +39,18 @@ import {
   CommandItem,
   CommandList,
 } from "@/lib/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/lib/ui/popover";
-import type { Appointment, OrgChartStatus, SalaryFrequency, Position } from "../orgchart.types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/lib/ui/popover";
+import type {
+  Appointment,
+  OrgChartStatus,
+  SalaryFrequency,
+  Position,
+} from "../orgchart.types";
 import { getAppointmentPermissions } from "../orgchart.types";
-import { CompanyMembersService, type CompanyMember } from "@/modules/company/company-members-service";
+import {
+  CompanyMembersService,
+  type CompanyMember,
+} from "@/modules/company/company-members-service";
 import { useCompany } from "@/lib/company-context";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +60,9 @@ interface AppointmentCardProps {
   orgChartStatus: OrgChartStatus;
   onSave: (updates: Partial<Appointment>) => Promise<void>;
   onDelete: () => void;
-  onGeneratePDF: (type: "jobOffer" | "employmentContract" | "terminationNotice") => void;
+  onGeneratePDF: (
+    type: "jobOffer" | "employmentContract" | "terminationNotice"
+  ) => void;
 }
 
 export function AppointmentCard({
@@ -65,8 +84,12 @@ export function AppointmentCard({
     userId: appointment.userId || "",
     isVacant: appointment.isVacant,
     salary: appointment.jobOffer?.salary || position.salaryMin || 0,
-    salaryCurrency: appointment.jobOffer?.salaryCurrency || position.salaryCurrency || "USD",
-    salaryFrequency: appointment.jobOffer?.salaryFrequency || position.salaryFrequency || "monthly",
+    salaryCurrency:
+      appointment.jobOffer?.salaryCurrency || position.salaryCurrency || "USD",
+    salaryFrequency:
+      appointment.jobOffer?.salaryFrequency ||
+      position.salaryFrequency ||
+      "monthly",
     startDate: appointment.jobOffer?.startDate
       ? new Date(appointment.jobOffer.startDate).toISOString().split("T")[0]
       : "",
@@ -86,7 +109,9 @@ export function AppointmentCard({
 
     try {
       setLoadingMembers(true);
-      const members = await CompanyMembersService.getCompanyMembers(activeCompany._id);
+      const members = await CompanyMembersService.getCompanyMembers(
+        activeCompany._id
+      );
       setCompanyMembers(members);
     } catch (error) {
       console.error("Failed to load company members:", error);
@@ -99,8 +124,13 @@ export function AppointmentCard({
     setIsSaving(true);
     try {
       // Validate salary is within min-max range
-      if (formData.salary < position.salaryMin || formData.salary > position.salaryMax) {
-        throw new Error(`Salary must be between ${position.salaryMin} and ${position.salaryMax}`);
+      if (
+        formData.salary < position.salaryMin ||
+        formData.salary > position.salaryMax
+      ) {
+        throw new Error(
+          `Salary must be between ${position.salaryMin} and ${position.salaryMax}`
+        );
       }
 
       await onSave({
@@ -110,7 +140,9 @@ export function AppointmentCard({
           salary: formData.salary,
           salaryCurrency: formData.salaryCurrency,
           salaryFrequency: formData.salaryFrequency as SalaryFrequency,
-          startDate: formData.startDate ? new Date(formData.startDate).getTime() : undefined,
+          startDate: formData.startDate
+            ? new Date(formData.startDate).getTime()
+            : undefined,
           benefits: formData.benefits.split("\n").filter(Boolean),
           conditions: formData.conditions.split("\n").filter(Boolean),
         },
@@ -125,8 +157,14 @@ export function AppointmentCard({
       userId: appointment.userId || "",
       isVacant: appointment.isVacant,
       salary: appointment.jobOffer?.salary || position.salaryMin || 0,
-      salaryCurrency: appointment.jobOffer?.salaryCurrency || position.salaryCurrency || "USD",
-      salaryFrequency: appointment.jobOffer?.salaryFrequency || position.salaryFrequency || "monthly",
+      salaryCurrency:
+        appointment.jobOffer?.salaryCurrency ||
+        position.salaryCurrency ||
+        "USD",
+      salaryFrequency:
+        appointment.jobOffer?.salaryFrequency ||
+        position.salaryFrequency ||
+        "monthly",
       startDate: appointment.jobOffer?.startDate
         ? new Date(appointment.jobOffer.startDate).toISOString().split("T")[0]
         : "",
@@ -139,7 +177,9 @@ export function AppointmentCard({
     // Request termination date
     const terminationDateStr = prompt(
       "Enter termination date (YYYY-MM-DD):",
-      new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // Default: 2 weeks from now
+      new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0] // Default: 2 weeks from now
     );
 
     if (!terminationDateStr) return;
@@ -178,8 +218,8 @@ export function AppointmentCard({
       } else {
         alert(
           `Termination notice issued. Employment will end on ${terminationDate.toLocaleDateString()}.` +
-          "\n\nNote: Automatic termination on the scheduled date is not yet implemented. " +
-          "You will need to manually process this termination on that date."
+            "\n\nNote: Automatic termination on the scheduled date is not yet implemented. " +
+            "You will need to manually process this termination on that date."
         );
       }
     } finally {
@@ -187,7 +227,9 @@ export function AppointmentCard({
     }
   };
 
-  const selectedMember = companyMembers.find((m) => m.userId === formData.userId);
+  const selectedMember = companyMembers.find(
+    (m) => m.userId === formData.userId
+  );
 
   return (
     <Card>
@@ -197,7 +239,9 @@ export function AppointmentCard({
             <UserCheck className="size-5 text-purple-500" />
             <div>
               <CardTitle>
-                {appointment.isVacant ? "Vacant Position" : selectedMember?.fullname || `User ${appointment.userId}`}
+                {appointment.isVacant
+                  ? "Vacant Position"
+                  : selectedMember?.fullname || `User ${appointment.userId}`}
               </CardTitle>
               <CardDescription>
                 {position.title} {position.code && `(${position.code})`}
@@ -244,19 +288,27 @@ export function AppointmentCard({
                           key={member.userId}
                           value={member.userId}
                           onSelect={() => {
-                            setFormData({ ...formData, userId: member.userId, isVacant: false });
+                            setFormData({
+                              ...formData,
+                              userId: member.userId,
+                              isVacant: false,
+                            });
                             setUserSelectOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              formData.userId === member.userId ? "opacity-100" : "opacity-0"
+                              formData.userId === member.userId
+                                ? "opacity-100"
+                                : "opacity-0"
                             )}
                           />
                           <div className="flex flex-col">
                             <span>{member.fullname}</span>
-                            <span className="text-xs text-muted-foreground">{member.email}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {member.email}
+                            </span>
                           </div>
                         </CommandItem>
                       ))}
@@ -273,12 +325,15 @@ export function AppointmentCard({
               id="salary"
               type="number"
               value={formData.salary}
-              onChange={(e) => setFormData({ ...formData, salary: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({ ...formData, salary: parseFloat(e.target.value) })
+              }
               min={position.salaryMin}
               max={position.salaryMax}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Range: {position.salaryMin.toLocaleString()} - {position.salaryMax.toLocaleString()} {position.salaryCurrency}
+              Range: {position.salaryMin.toLocaleString()} -{" "}
+              {position.salaryMax.toLocaleString()} {position.salaryCurrency}
             </p>
           </div>
 
@@ -288,7 +343,9 @@ export function AppointmentCard({
               <Input
                 id="salaryCurrency"
                 value={formData.salaryCurrency}
-                onChange={(e) => setFormData({ ...formData, salaryCurrency: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, salaryCurrency: e.target.value })
+                }
                 placeholder="USD"
               />
             </div>
@@ -321,36 +378,45 @@ export function AppointmentCard({
               id="startDate"
               type="date"
               value={formData.startDate}
-              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, startDate: e.target.value })
+              }
             />
           </div>
 
           {/* Termination Notice Alert */}
-          {appointment.terminationNoticeIssuedAt && appointment.employmentEndedAt && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-sm font-semibold text-destructive mb-1">
-                ⚠️ Termination Notice Issued
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Notice Date: {new Date(appointment.terminationNoticeIssuedAt).toLocaleDateString()}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Termination Date: {new Date(appointment.employmentEndedAt).toLocaleDateString()}
-              </p>
-              {appointment.terminationReason && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Reason: {appointment.terminationReason}
+          {appointment.terminationNoticeIssuedAt &&
+            appointment.employmentEndedAt && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                <p className="text-sm font-semibold text-destructive mb-1">
+                  ⚠️ Termination Notice Issued
                 </p>
-              )}
-            </div>
-          )}
+                <p className="text-xs text-muted-foreground">
+                  Notice Date:{" "}
+                  {new Date(
+                    appointment.terminationNoticeIssuedAt
+                  ).toLocaleDateString()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Termination Date:{" "}
+                  {new Date(appointment.employmentEndedAt).toLocaleDateString()}
+                </p>
+                {appointment.terminationReason && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Reason: {appointment.terminationReason}
+                  </p>
+                )}
+              </div>
+            )}
 
           <div>
             <Label htmlFor="benefits">Benefits (one per line)</Label>
             <Textarea
               id="benefits"
               value={formData.benefits}
-              onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, benefits: e.target.value })
+              }
               rows={3}
             />
           </div>
@@ -360,7 +426,9 @@ export function AppointmentCard({
             <Textarea
               id="conditions"
               value={formData.conditions}
-              onChange={(e) => setFormData({ ...formData, conditions: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, conditions: e.target.value })
+              }
               rows={3}
             />
           </div>
@@ -376,15 +444,27 @@ export function AppointmentCard({
           </Button>
           {!appointment.isVacant && (
             <>
-              <Button onClick={() => onGeneratePDF("jobOffer")} variant="outline" size="sm">
+              <Button
+                onClick={() => onGeneratePDF("jobOffer")}
+                variant="outline"
+                size="sm"
+              >
                 <FileDown className="size-4 mr-2" />
                 Job Offer
               </Button>
-              <Button onClick={() => onGeneratePDF("employmentContract")} variant="outline" size="sm">
+              <Button
+                onClick={() => onGeneratePDF("employmentContract")}
+                variant="outline"
+                size="sm"
+              >
                 <FileDown className="size-4 mr-2" />
                 Employment Contract
               </Button>
-              <Button onClick={() => handleTermination()} variant="outline" size="sm">
+              <Button
+                onClick={() => handleTermination()}
+                variant="outline"
+                size="sm"
+              >
                 <FileDown className="size-4 mr-2" />
                 Termination Notice
               </Button>

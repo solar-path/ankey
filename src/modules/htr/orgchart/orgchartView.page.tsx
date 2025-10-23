@@ -16,7 +16,7 @@ import {
 import { Button } from "@/lib/ui/button";
 import { Badge } from "@/lib/ui/badge";
 import { Input } from "@/lib/ui/input";
-import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2, ArrowUp } from "lucide-react";
+import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2, ArrowUp, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { DepartmentCard } from "./components/DepartmentCard";
 import { PositionCard } from "./components/PositionCard";
@@ -58,9 +58,8 @@ export default function OrgChartViewPage() {
         setOrgChartStatus(orgChart.status);
       }
 
-      // Auto-expand all on first load
-      const allIds = new Set(rows.map(r => r._id));
-      setExpandedIds(allIds);
+      // Start with collapsed tree (empty Set)
+      setExpandedIds(new Set());
     } catch (error) {
       console.error("Failed to load orgchart:", error);
       toast.error("Failed to load organizational chart");
@@ -101,8 +100,23 @@ export default function OrgChartViewPage() {
     setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
+        // Collapse: remove this id and all its descendants
+        const idsToRemove = new Set<string>();
+
+        const collectDescendants = (parentId: string) => {
+          orgChartRows
+            .filter(row => row.parentId === parentId)
+            .forEach(row => {
+              idsToRemove.add(row._id);
+              collectDescendants(row._id);
+            });
+        };
+
+        collectDescendants(id);
         next.delete(id);
+        idsToRemove.forEach(id => next.delete(id));
       } else {
+        // Expand: only add direct children (1 level)
         next.add(id);
       }
       return next;
@@ -154,16 +168,36 @@ export default function OrgChartViewPage() {
   const handleAddDepartment = async (parent?: OrgChartRow) => {
     if (!activeCompany || !user || !id || saving) return;
 
+    // Prompt for required fields
+    const title = prompt("Enter department title:");
+    if (!title || !title.trim()) {
+      toast.error("Department title is required");
+      return;
+    }
+
+    const code = prompt("Enter department code (e.g., FIN-001):");
+    if (!code || !code.trim()) {
+      toast.error("Department code is required");
+      return;
+    }
+
+    const headcountStr = prompt("Enter headcount (number of positions):");
+    const headcount = parseInt(headcountStr || "0");
+    if (isNaN(headcount) || headcount <= 0) {
+      toast.error("Headcount must be a positive number");
+      return;
+    }
+
     try {
       setSaving(true);
       const parentId = parent?.type === "department" ? parent._id.split(":").pop() : undefined;
 
       await OrgChartService.createDepartment(activeCompany._id, user._id, {
         orgChartId: id,
-        title: parentId ? "New Sub-Department" : "New Department",
+        title: title.trim(),
         description: "",
-        code: "",
-        headcount: 10,
+        code: code.trim(),
+        headcount,
         parentDepartmentId: parentId,
       });
 
@@ -223,6 +257,62 @@ export default function OrgChartViewPage() {
       await loadOrgChart();
     } catch (error: any) {
       toast.error(error.message || "Failed to delete");
+    }
+  };
+
+  const handleDuplicate = async (row: OrgChartRow) => {
+    if (!activeCompany || !user || !id) return;
+
+    try {
+      switch (row.type) {
+        case "department": {
+          const dept = row.original as unknown as Department;
+          await OrgChartService.createDepartment(activeCompany._id, user._id, {
+            orgChartId: id,
+            title: `${dept.title} (Copy)`,
+            description: dept.description || "",
+            code: `${dept.code || ""}-COPY`,
+            headcount: dept.headcount,
+            parentDepartmentId: dept.parentDepartmentId,
+          });
+          toast.success("Department duplicated");
+          break;
+        }
+
+        case "position": {
+          const pos = row.original as unknown as Position;
+          await OrgChartService.createPosition(activeCompany._id, user._id, {
+            orgChartId: id,
+            departmentId: pos.departmentId,
+            title: `${pos.title} (Copy)`,
+            description: pos.description || "",
+            salaryMin: pos.salaryMin,
+            salaryMax: pos.salaryMax,
+            salaryCurrency: pos.salaryCurrency,
+            salaryFrequency: pos.salaryFrequency,
+          });
+          toast.success("Position duplicated");
+          break;
+        }
+
+        case "appointment": {
+          const appt = row.original as unknown as Appointment;
+          await OrgChartService.createAppointment(activeCompany._id, user._id, {
+            orgChartId: id,
+            departmentId: appt.departmentId,
+            positionId: appt.positionId,
+            userId: appt.userId,
+            isVacant: appt.isVacant,
+            jobOffer: appt.jobOffer,
+          });
+          toast.success("Appointment duplicated");
+          break;
+        }
+      }
+
+      await loadOrgChart();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to duplicate");
     }
   };
 
@@ -300,9 +390,6 @@ export default function OrgChartViewPage() {
     }
 
     try {
-      const draggedId = draggedRow._id.split(":").pop()!;
-      const targetId = targetRow._id.split(":").pop()!;
-
       // Update parent relationship
       switch (draggedRow.type) {
         case "department":
@@ -359,6 +446,10 @@ export default function OrgChartViewPage() {
         if (row.type === "position") {
           toast.info("Appointments are auto-created with positions");
         }
+        break;
+
+      case "duplicate":
+        await handleDuplicate(row);
         break;
 
       case "delete":
@@ -422,7 +513,10 @@ export default function OrgChartViewPage() {
           if (pos) {
             const dept = orgChartRows.find((r) => r.type === "department" && r._id === pos.parentId);
             if (dept && !appt.isVacant) {
-              const userName = appt.userFullname || `User ${appt.userId}`;
+              // Get user name from title (format: "User: {name}") or fallback to userId
+              const userName = row.title.startsWith("User: ")
+                ? row.title.replace("User: ", "")
+                : appt.userId || "Unknown User";
               const userAddress = "123 Employee St, City, State 12345"; // TODO: Get from user profile
 
               switch (pdfType) {
@@ -838,6 +932,16 @@ export default function OrgChartViewPage() {
               Create Appointment
             </button>
           )}
+
+          {/* Duplicate option for all types */}
+          <div className="border-t my-1" />
+          <button
+            className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+            onClick={() => handleContextMenuAction("duplicate", contextMenu.row)}
+          >
+            <Copy className="size-4" />
+            Duplicate {contextMenu.row.type}
+          </button>
 
           {((contextMenu.row.type === "department" && getDepartmentPermissions(orgChartStatus).canDelete) ||
             (contextMenu.row.type === "position") ||

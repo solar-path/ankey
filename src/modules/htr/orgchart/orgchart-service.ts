@@ -202,6 +202,23 @@ export class OrgChartService {
     const deptId = this.generateId("dept");
     const deptPartitionKey = this.getPartitionKey(companyId, deptId);
 
+    // Check if title is unique within this orgchart
+    const existingDepts = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "department",
+        orgChartId: data.orgChartId,
+        title: data.title,
+      },
+    });
+
+    if (existingDepts.docs.length > 0) {
+      throw new Error(`Department with title "${data.title}" already exists in this organizational chart`);
+    }
+
     // Calculate level
     let level = 0;
     if (data.parentDepartmentId) {
@@ -291,6 +308,25 @@ export class OrgChartService {
     const fullId = this.getPartitionKey(companyId, departmentId);
     const doc = (await orgchartsDB.get(fullId)) as Department;
 
+    // If title is being changed, check uniqueness
+    if (updates.title && updates.title !== doc.title) {
+      const existingDepts = await orgchartsDB.find({
+        selector: {
+          _id: {
+            $gte: `company:${companyId}:`,
+            $lte: `company:${companyId}:\ufff0`,
+          },
+          type: "department",
+          orgChartId: doc.orgChartId,
+          title: updates.title,
+        },
+      });
+
+      if (existingDepts.docs.length > 0) {
+        throw new Error(`Department with title "${updates.title}" already exists in this organizational chart`);
+      }
+    }
+
     const updated: Department = {
       ...doc,
       ...updates,
@@ -374,7 +410,15 @@ export class OrgChartService {
       },
     });
 
-    const positionNumber = existingPositions.docs.length + 1;
+    // Validate headcount limit
+    const currentPositionCount = existingPositions.docs.length;
+    if (currentPositionCount >= dept.headcount) {
+      throw new Error(
+        `Cannot create position: Department "${dept.title}" has reached its headcount limit of ${dept.headcount}`
+      );
+    }
+
+    const positionNumber = currentPositionCount + 1;
     const deptCode = dept.code || "DEPT";
     const autoCode = `${deptCode}-${String(positionNumber).padStart(3, "0")}`;
 
