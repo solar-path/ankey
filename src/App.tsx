@@ -10,11 +10,14 @@ import PrivateLayout from "./routes/private.layout";
 import { CompanyDashboardPage } from "./modules/company/companyDashboard.page";
 import CompanyMembersPage from "./modules/company/companyMembers.page";
 import CompanyPage from "./modules/company/company.page";
+import CompanySettingsPage from "./modules/company/companySettings.page";
 import AccountPage from "./modules/auth/account/account.page";
 import SignInPage from "./modules/auth/signin.page";
 import SignUpPage from "./modules/auth/signup.page";
 import ForgotPasswordPage from "./modules/auth/forgotPassword.page";
 import VerifyAccountPage from "./modules/auth/verifyAccount.page";
+import OrgChartListPage from "./modules/htr/orgchart/orgchartList.page";
+import OrgChartViewPage from "./modules/htr/orgchart/orgchartView.page";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
@@ -38,7 +41,6 @@ function App() {
 
   // Private routes are protected by PrivateLayout component
   // All non-public routes will be rendered in PrivateLayout, which handles auth checks
-  const privateRoutes = ["/dashboard", "/account", "/company"];
 
   // Determine if the current route is public
   // Any route not in publicRoutes will be treated as private and rendered in PrivateLayout
@@ -79,8 +81,11 @@ function App() {
               <Switch>
                 <Route path="/dashboard" component={CompanyDashboardPage} />
                 <Route path="/company/new" component={CompanyPage} />
+                <Route path="/company/settings" component={CompanySettingsPage} />
                 <Route path="/company/:id" component={CompanyPage} />
                 <Route path="/company/:id/members" component={CompanyMembersPage} />
+                <Route path="/orgchart/:id" component={OrgChartViewPage} />
+                <Route path="/orgchart" component={OrgChartListPage} />
                 <Route path="/account/:rest*" component={AccountPage} />
                 <Route component={NotFoundPage} />
               </Switch>

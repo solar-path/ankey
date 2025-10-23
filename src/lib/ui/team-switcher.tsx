@@ -19,15 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/lib/ui/dropdown-menu"
 import { Input } from "@/lib/ui/input"
-import { useCompanyOptional } from "@/lib/company-context"
+import { useCompanyOptional, type Company } from "@/lib/company-context"
 import { useIsMobile } from "@/hooks/use-mobile"
-
-interface Company {
-  id: string
-  title: string
-  logo?: string
-  logoComponent?: React.ElementType
-}
 
 export function TeamSwitcher({
   companies,
@@ -53,7 +46,7 @@ export function TeamSwitcher({
   const handleCompanyChange = React.useCallback(async (company: Company) => {
     if (companyContext?.switchCompany) {
       try {
-        await companyContext.switchCompany(company.id)
+        await companyContext.switchCompany(company._id)
         console.log("[TeamSwitcher] Switched to company:", company.title)
       } catch (error) {
         console.error("[TeamSwitcher] Failed to switch company:", error)
@@ -220,10 +213,10 @@ export function TeamSwitcher({
               <>
                 {displayedCompanies.map((company, index) => (
                   <DropdownMenuItem
-                    key={company.id}
+                    key={company._id}
                     onClick={() => handleCompanyChange(company)}
                     className="gap-2 p-2"
-                    disabled={company.id === activeCompany.id}
+                    disabled={company._id === activeCompany._id}
                   >
                     <div className="flex size-6 items-center justify-center rounded-md overflow-hidden bg-sidebar-primary/10">
                       {company.logo ? (
@@ -233,7 +226,7 @@ export function TeamSwitcher({
                       )}
                     </div>
                     <span className="flex-1">{company.title}</span>
-                    {company.id === activeCompany.id && (
+                    {company._id === activeCompany._id && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
                     {index < 9 && <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>}

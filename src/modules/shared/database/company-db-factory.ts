@@ -8,14 +8,6 @@
 import { orgchartsDB, chartOfAccountsDB } from "./db";
 import type { OrgChart, ChartOfAccounts } from "./db";
 
-declare global {
-  interface Window {
-    PouchDB: any;
-  }
-}
-
-const PouchDB = window.PouchDB;
-
 /**
  * Active sync handlers for company databases
  * Used to cancel sync when switching companies

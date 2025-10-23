@@ -50,10 +50,25 @@ export const createCompanySchema = v.object({
 
 // Settings schema for workspace company
 export const settingsSchema = v.object({
+  // Regional Settings
   country: v.string(),
-  currency: v.string(),
   timezone: v.string(),
   language: v.string(),
+  dateFormat: v.optional(v.string()), // e.g., "DD/MM/YYYY", "MM/DD/YYYY"
+  numberFormat: v.optional(v.string()), // e.g., "1,234.56", "1.234,56"
+
+  // Financial Settings
+  fiscalYearStart: v.string(), // e.g., "01-01" (January 1st)
+  fiscalYearEnd: v.string(), // e.g., "12-31" (December 31st)
+  workingCurrency: v.string(), // Primary currency code (USD, EUR, etc.)
+  reportingCurrency: v.string(), // Reporting currency code
+  additionalCurrencies: v.optional(v.array(v.string())), // Other currencies in use
+
+  // Tax Settings
+  defaultTaxRate: v.optional(v.number()), // Default VAT/Tax rate percentage
+  taxIdLabel: v.optional(v.string()), // e.g., "VAT", "GST", "Tax ID"
+
+  // Security Settings
   twoFactorRequired: v.boolean(),
   twoFactorDeadline: v.nullable(v.string()),
   passwordChangeDays: v.number(),

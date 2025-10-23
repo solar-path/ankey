@@ -1,6 +1,22 @@
-src/App.tsx(41,9): error TS6133: 'privateRoutes' is declared but its value is never read.
-src/modules/company/company.form.tsx(13,1): error TS6192: All imports in import declaration are unused.
-src/modules/company/company.form.tsx(20,1): error TS6133: 'Checkbox' is declared but its value is never read.
-src/modules/company/company.form.tsx(47,10): error TS6133: 'Trash2' is declared but its value is never read.
-src/modules/company/company.form.tsx(47,18): error TS6133: 'Plus' is declared but its value is never read.
-src/modules/shared/database/company-db-factory.ts(17,7): error TS6133: 'PouchDB' is declared but its value is never read.
+vite v7.1.11 building for production...
+transforming...
+
+[2m[70.98ms][22m [@tailwindcss/vite] Generate CS
+[2m[70.98ms][22m [@tailwindcss/vite] Generate CSS (build)
+[2m[28.91ms][22m  [2m ↳ [22mSetup compiler
+[2m[ 0.80ms][22m  [2m ↳ [22mSetup scanner
+[2m[ 9.36ms][22m  [2m ↳ [22mScan for candidates
+[2m[22.72ms][22m  [2m ↳ [22mBuild CSS
+[2m[ 0.00ms][22m  [2m ↳ [22mBuild Source Map
+[✓ 2574 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.67 kB │ gzip:dist/index.dist/assets/index-B4yGrAjl.css   77.09 kB │ gzip:dist/assets/index-B4yGrAjl.css   77.09 kB │ gzip:  13.28 kB
+dist/assets
+(!) Some chunks are larger than 500 kB after minif
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit✓ built in 1.91s
+ia build.chunkSizeWarningLimit.
+✓ built in 1.91s

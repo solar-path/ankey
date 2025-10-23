@@ -11,14 +11,6 @@ import {
   SelectValue,
 } from "@/lib/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/lib/ui/dialog";
-import { Checkbox } from "@/lib/ui/checkbox";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -44,7 +36,7 @@ import {
 } from "@/lib/ui/form";
 import countries from "@/../scripts/data/country.json";
 import industries from "@/../scripts/data/industry.json";
-import { Trash2, Plus, Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { QPhone } from "@/lib/ui/QPhone.ui";
 import { cn } from "@/lib/utils";

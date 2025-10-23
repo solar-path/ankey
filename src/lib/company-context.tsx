@@ -3,11 +3,8 @@ import { CompanyService } from "@/modules/company/company-service";
 import { CompanyDatabaseFactory } from "@/modules/shared/database/company-db-factory";
 import type { Company as DBCompany } from "@/modules/shared/database/db";
 
-export interface Company {
-  id: string;
-  title: string;
-  logo?: string;
-}
+// Re-export full Company type from db
+export type Company = DBCompany;
 
 interface CompanyContextType {
   activeCompany: Company | null;
@@ -16,6 +13,7 @@ interface CompanyContextType {
   setActiveCompany: (company: Company | null) => void;
   setCompanies: (companies: Company[]) => void;
   reloadCompanies: (newCompanyId?: string) => Promise<void>;
+  refreshCompany: () => Promise<void>;
   switchCompany: (companyId: string) => Promise<void>;
 }
 
@@ -29,13 +27,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Convert DB Company to UI Company
+   * Convert DB Company to UI Company (now just returns the full DB company)
    */
-  const convertCompany = (dbCompany: DBCompany): Company => ({
-    id: dbCompany._id,
-    title: dbCompany.title,
-    logo: dbCompany.logo,
-  });
+  const convertCompany = (dbCompany: DBCompany): Company => dbCompany;
 
   /**
    * Switch to a different company (internal with company list parameter)
@@ -45,7 +39,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       console.log(`[CompanyProvider] Switching to company: ${companyId}`);
 
       // Find company in list
-      const company = companiesList.find((c) => c.id === companyId);
+      const company = companiesList.find((c) => c._id === companyId);
       if (!company) {
         throw new Error(`Company ${companyId} not found in list`);
       }
@@ -103,13 +97,13 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
       if (newCompanyId) {
         // New company created - activate it
-        companyToActivate = uiCompanies.find((c) => c.id === newCompanyId) || null;
+        companyToActivate = uiCompanies.find((c) => c._id === newCompanyId) || null;
         console.log("[CompanyProvider] Activating new company:", companyToActivate?.title);
       } else {
         // Try to restore from localStorage
         const savedCompanyId = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY);
         if (savedCompanyId) {
-          companyToActivate = uiCompanies.find((c) => c.id === savedCompanyId) || null;
+          companyToActivate = uiCompanies.find((c) => c._id === savedCompanyId) || null;
           console.log("[CompanyProvider] Restored company from localStorage:", companyToActivate?.title);
         }
 
@@ -121,7 +115,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (companyToActivate) {
-        await switchCompanyInternal(companyToActivate.id, uiCompanies);
+        await switchCompanyInternal(companyToActivate._id, uiCompanies);
       } else {
         setActiveCompanyState(null);
         await CompanyDatabaseFactory.disconnectFromCompany();
@@ -141,6 +135,25 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   }, [companies]);
 
   /**
+   * Refresh current company data from database
+   */
+  const refreshCompany = useCallback(async () => {
+    if (!activeCompany) return;
+
+    try {
+      const updatedCompany = await CompanyService.getCompanyById(activeCompany._id);
+      setActiveCompanyState(updatedCompany);
+
+      // Also update in companies list
+      setCompanies(prev => prev.map(c =>
+        c._id === updatedCompany._id ? updatedCompany : c
+      ));
+    } catch (error) {
+      console.error("[CompanyProvider] Failed to refresh company:", error);
+    }
+  }, [activeCompany]);
+
+  /**
    * Initialize companies on mount
    */
   useEffect(() => {
@@ -149,7 +162,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
   const setActiveCompany = useCallback((company: Company | null) => {
     if (company) {
-      switchCompany(company.id);
+      switchCompany(company._id);
     } else {
       setActiveCompanyState(null);
       localStorage.removeItem(STORAGE_KEY_ACTIVE_COMPANY);
@@ -165,6 +178,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       setActiveCompany,
       setCompanies,
       reloadCompanies,
+      refreshCompany,
       switchCompany
     }}>
       {children}

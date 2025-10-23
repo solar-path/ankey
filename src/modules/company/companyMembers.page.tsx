@@ -36,8 +36,8 @@ export default function CompanyMembersPage() {
     try {
       setLoading(true);
       const [membersData, role] = await Promise.all([
-        CompanyMembersService.getCompanyMembers(activeCompany.id),
-        CompanyMembersService.getUserRole(user._id, activeCompany.id),
+        CompanyMembersService.getCompanyMembers(activeCompany._id),
+        CompanyMembersService.getUserRole(user._id, activeCompany._id),
       ]);
 
       setMembers(membersData);
@@ -54,7 +54,7 @@ export default function CompanyMembersPage() {
     if (!activeCompany) return;
 
     try {
-      await CompanyMembersService.updateMemberRole(activeCompany.id, userId, newRole);
+      await CompanyMembersService.updateMemberRole(activeCompany._id, userId, newRole);
       toast.success("Role updated successfully");
       await loadMembers();
     } catch (error: any) {
@@ -72,7 +72,7 @@ export default function CompanyMembersPage() {
     if (!confirmed) return;
 
     try {
-      await CompanyMembersService.removeMember(activeCompany.id, member.userId);
+      await CompanyMembersService.removeMember(activeCompany._id, member.userId);
       toast.success("Member removed successfully");
       await loadMembers();
     } catch (error: any) {

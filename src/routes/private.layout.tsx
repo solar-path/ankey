@@ -40,9 +40,15 @@ function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
     const isOrgchartRoute = paths.includes("orgchart");
     const isDoaRoute = paths.includes("doa");
     const isDashboardRoute = paths.includes("dashboard");
+    const isCompanySettingsRoute = paths.includes("company") && paths.includes("settings");
 
     // Add page-specific breadcrumb based on route
-    if (isOrgchartRoute) {
+    if (isCompanySettingsRoute) {
+      breadcrumbs.push({
+        href: `/company/settings`,
+        label: "Settings",
+      });
+    } else if (isOrgchartRoute) {
       breadcrumbs.push({
         href: `/orgchart`,
         label: "Orgchart",

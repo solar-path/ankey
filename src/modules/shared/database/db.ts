@@ -267,10 +267,25 @@ export interface Company {
     country: string;
   };
   settings?: {
+    // Regional Settings
     country: string;
-    currency: string;
     timezone: string;
     language: string;
+    dateFormat?: string;
+    numberFormat?: string;
+
+    // Financial Settings
+    fiscalYearStart: string;
+    fiscalYearEnd: string;
+    workingCurrency: string;
+    reportingCurrency: string;
+    additionalCurrencies?: string[];
+
+    // Tax Settings
+    defaultTaxRate?: number;
+    taxIdLabel?: string;
+
+    // Security Settings
     twoFactorRequired: boolean;
     twoFactorDeadline: string | null;
     passwordChangeDays: number;
