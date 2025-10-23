@@ -39,6 +39,7 @@ export interface OrgChart extends BaseOrgDocument {
   title: string;
   description?: string;
   status: OrgChartStatus;
+  version: string; // Format: "1.0" - major.minor (major = approved count, minor = draft version)
 
   // Temporal validity
   enforcedAt?: number; // When this orgchart becomes active
@@ -163,6 +164,15 @@ export interface OrgChartRow {
   title: string;
   description?: string;
   code?: string;
+
+  // Department-specific fields
+  headcount?: number;
+
+  // Position-specific fields
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryCurrency?: string;
+  salaryFrequency?: SalaryFrequency;
 
   // Hierarchy
   parentId?: string; // orgChartId, departmentId, or positionId

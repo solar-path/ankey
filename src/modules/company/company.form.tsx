@@ -34,8 +34,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/lib/ui/form";
-import countries from "@/../scripts/data/country.json";
-import industries from "@/../scripts/data/industry.json";
+import { countries, industries } from "@/modules/shared/database/reference-data";
+import type { Country, Industry } from "@/modules/shared/database/reference-data";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { QPhone } from "@/lib/ui/QPhone.ui";
@@ -99,6 +99,32 @@ export function CompanyForm({
   const [countryOpen, setCountryOpen] = useState(false);
   const [industryOpen, setIndustryOpen] = useState(false);
   const [contactCountryOpen, setContactCountryOpen] = useState(false);
+
+  // Reference data states
+  const [countriesData, setCountriesData] = useState<Country[]>([]);
+  const [industriesData, setIndustriesData] = useState<Industry[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Load reference data on mount
+  useEffect(() => {
+    const loadReferenceData = async () => {
+      try {
+        const [countriesList, industriesList] = await Promise.all([
+          countries.getAll(),
+          industries.getAll(),
+        ]);
+        setCountriesData(countriesList);
+        setIndustriesData(industriesList);
+      } catch (error) {
+        console.error("Failed to load reference data:", error);
+        toast.error("Failed to load countries and industries");
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    loadReferenceData();
+  }, []);
 
   useEffect(() => {
     if (companyId) {
@@ -249,6 +275,16 @@ export function CompanyForm({
     supplier: "Supplier",
     customer: "Customer",
   };
+
+  if (dataLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Loading form data...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -431,7 +467,7 @@ export function CompanyForm({
                               )}
                             >
                               {field.value
-                                ? countries.find((c) => c.code === field.value)
+                                ? countriesData.find((c) => c.code === field.value)
                                     ?.name
                                 : "Select country"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -444,7 +480,7 @@ export function CompanyForm({
                             <CommandList>
                               <CommandEmpty>No country found.</CommandEmpty>
                               <CommandGroup>
-                                {countries.map((country) => (
+                                {countriesData.map((country) => (
                                   <CommandItem
                                     key={country.code}
                                     value={country.name}
@@ -500,8 +536,8 @@ export function CompanyForm({
                             )}
                           >
                             {field.value
-                              ? industries.find(
-                                  (i: any) => i.code.toString() === field.value
+                              ? industriesData.find(
+                                  (i) => i.code.toString() === field.value
                                 )?.title
                               : "Select industry"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -514,7 +550,7 @@ export function CompanyForm({
                           <CommandList>
                             <CommandEmpty>No industry found.</CommandEmpty>
                             <CommandGroup>
-                              {industries.map((industry: any) => (
+                              {industriesData.map((industry) => (
                                 <CommandItem
                                   key={industry.code}
                                   value={industry.title}
@@ -671,7 +707,7 @@ export function CompanyForm({
                                   )}
                                 >
                                   {field.value
-                                    ? countries.find(
+                                    ? countriesData.find(
                                         (c) => c.code === field.value
                                       )?.name
                                     : "Select country"}
@@ -688,7 +724,7 @@ export function CompanyForm({
                                 <CommandList>
                                   <CommandEmpty>No country found.</CommandEmpty>
                                   <CommandGroup>
-                                    {countries.map((country) => (
+                                    {countriesData.map((country) => (
                                       <CommandItem
                                         key={`contact-${country.code}`}
                                         value={country.name}

@@ -37,6 +37,8 @@ import { Separator } from "@/lib/ui/separator";
 import { useState, useEffect } from "react";
 import { Badge } from "@/lib/ui/badge";
 import { X } from "lucide-react";
+import { countries } from "@/modules/shared/database/reference-data";
+import type { Country } from "@/modules/shared/database/reference-data";
 
 // Common currencies
 const CURRENCIES = [
@@ -54,8 +56,8 @@ const CURRENCIES = [
   { code: "TRY", name: "Turkish Lira", symbol: "₺" },
 ];
 
-// Timezones (common ones)
-const TIMEZONES = [
+// Default fallback timezones if country data not available
+const DEFAULT_TIMEZONES = [
   "UTC",
   "America/New_York",
   "America/Chicago",
@@ -113,6 +115,8 @@ export default function CompanySettingsPage() {
   const { activeCompany, refreshCompany } = useCompany();
   const [isLoading, setIsLoading] = useState(false);
   const [additionalCurrency, setAdditionalCurrency] = useState("");
+  const [residenceCountry, setResidenceCountry] = useState<Country | null>(null);
+  const [availableTimezones, setAvailableTimezones] = useState<string[]>(DEFAULT_TIMEZONES);
 
   // Initialize form with current settings or defaults
   const form = useForm({
@@ -143,19 +147,49 @@ export default function CompanySettingsPage() {
     },
   });
 
-  // Update form when company changes
+  // Load residence country data on mount or when activeCompany changes
+  useEffect(() => {
+    const loadCountryData = async () => {
+      if (activeCompany?.residence) {
+        try {
+          const country = await countries.getByCode(activeCompany.residence);
+          setResidenceCountry(country);
+
+          // Extract timezones from country data
+          if (country.timezones && country.timezones.length > 0) {
+            const timezoneNames = country.timezones.map(tz => tz.name);
+            setAvailableTimezones(timezoneNames);
+          } else {
+            setAvailableTimezones(DEFAULT_TIMEZONES);
+          }
+        } catch (error) {
+          console.error("Failed to load country data:", error);
+          setAvailableTimezones(DEFAULT_TIMEZONES);
+        }
+      }
+    };
+
+    loadCountryData();
+  }, [activeCompany?.residence]);
+
+  // Update form when company changes or residence country is loaded
   useEffect(() => {
     if (activeCompany) {
+      // Use country data to pre-fill defaults if settings don't exist
+      const defaultTimezone = residenceCountry?.timezones[0]?.name || "UTC";
+      const defaultLanguage = residenceCountry?.language || "en";
+      const defaultCurrency = residenceCountry?.currency || "USD";
+
       form.reset({
         country: activeCompany.residence || "",
-        timezone: activeCompany.settings?.timezone || "UTC",
-        language: activeCompany.settings?.language || "en",
+        timezone: activeCompany.settings?.timezone || defaultTimezone,
+        language: activeCompany.settings?.language || defaultLanguage,
         dateFormat: activeCompany.settings?.dateFormat || "DD/MM/YYYY",
         numberFormat: activeCompany.settings?.numberFormat || "1,234.56",
         fiscalYearStart: activeCompany.settings?.fiscalYearStart || "01-01",
         fiscalYearEnd: activeCompany.settings?.fiscalYearEnd || "12-31",
-        workingCurrency: activeCompany.settings?.workingCurrency || "USD",
-        reportingCurrency: activeCompany.settings?.reportingCurrency || "USD",
+        workingCurrency: activeCompany.settings?.workingCurrency || defaultCurrency,
+        reportingCurrency: activeCompany.settings?.reportingCurrency || defaultCurrency,
         additionalCurrencies: activeCompany.settings?.additionalCurrencies || [],
         defaultTaxRate: activeCompany.settings?.defaultTaxRate || 0,
         taxIdLabel: activeCompany.settings?.taxIdLabel || "VAT",
@@ -164,7 +198,7 @@ export default function CompanySettingsPage() {
         passwordChangeDays: activeCompany.settings?.passwordChangeDays || 90,
       });
     }
-  }, [activeCompany, form]);
+  }, [activeCompany, residenceCountry, form]);
 
   const onSubmit = async (data: any) => {
     if (!activeCompany) {
@@ -216,6 +250,27 @@ export default function CompanySettingsPage() {
     toast.success(`Applied ${preset.name} fiscal year`);
   };
 
+  const applyCountryDefaults = () => {
+    if (!residenceCountry) {
+      toast.error("No residence country data available");
+      return;
+    }
+
+    // Apply country defaults
+    if (residenceCountry.timezones[0]?.name) {
+      form.setValue("timezone", residenceCountry.timezones[0].name);
+    }
+    if (residenceCountry.language) {
+      form.setValue("language", residenceCountry.language);
+    }
+    if (residenceCountry.currency) {
+      form.setValue("workingCurrency", residenceCountry.currency);
+      form.setValue("reportingCurrency", residenceCountry.currency);
+    }
+
+    toast.success(`Applied defaults from ${residenceCountry.name}`);
+  };
+
   if (!activeCompany) {
     return (
       <div className="container mx-auto p-6">
@@ -242,6 +297,18 @@ export default function CompanySettingsPage() {
               <CardDescription>
                 Configure location, timezone, language, and format preferences
               </CardDescription>
+              {residenceCountry && (
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={applyCountryDefaults}
+                  >
+                    Apply defaults from {residenceCountry.name}
+                  </Button>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -251,9 +318,16 @@ export default function CompanySettingsPage() {
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="United States" {...field} />
+                      <Input
+                        placeholder="United States"
+                        {...field}
+                        value={residenceCountry?.name || field.value}
+                        disabled
+                      />
                     </FormControl>
-                    <FormDescription>Primary country of operation</FormDescription>
+                    <FormDescription>
+                      Primary country of operation (set from company residence)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -272,14 +346,19 @@ export default function CompanySettingsPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {TIMEZONES.map((tz) => (
+                        {availableTimezones.map((tz) => (
                           <SelectItem key={tz} value={tz}>
                             {tz}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Company timezone for timestamps</FormDescription>
+                    <FormDescription>
+                      Company timezone for timestamps
+                      {residenceCountry && availableTimezones.length > 1 &&
+                        ` (${availableTimezones.length} zones available for ${residenceCountry.name})`
+                      }
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

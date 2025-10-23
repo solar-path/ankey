@@ -4,20 +4,21 @@
  */
 
 import { useEffect, useState } from "react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useCompany } from "@/lib/company-context";
 import { OrgChartService } from "./orgchart-service";
 import type { OrgChart } from "./orgchart.types";
-import { Button } from "@/lib/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/ui/card";
+import { QTable } from "@/lib/ui/QTable.ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/lib/ui/badge";
-import { Plus, Building2, Calendar, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 export default function OrgChartListPage() {
   const { user } = useAuth();
   const { activeCompany } = useCompany();
+  const [, setLocation] = useLocation();
   const [orgCharts, setOrgCharts] = useState<OrgChart[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,7 @@ export default function OrgChartListPage() {
 
     try {
       setLoading(true);
-      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany.id);
+      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany._id);
       setOrgCharts(charts);
     } catch (error) {
       console.error("Failed to load orgcharts:", error);
@@ -44,7 +45,7 @@ export default function OrgChartListPage() {
     if (!activeCompany || !user) return;
 
     try {
-      const newChart = await OrgChartService.createOrgChart(activeCompany.id, user._id, {
+      await OrgChartService.createOrgChart(activeCompany._id, user._id, {
         title: `Organizational Chart ${new Date().getFullYear()}`,
         description: "New organizational structure",
       });
@@ -56,19 +57,9 @@ export default function OrgChartListPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "draft":
-        return <Clock className="size-4 text-gray-500" />;
-      case "pending_approval":
-        return <Clock className="size-4 text-yellow-500" />;
-      case "approved":
-        return <CheckCircle className="size-4 text-green-500" />;
-      case "revoked":
-        return <XCircle className="size-4 text-red-500" />;
-      default:
-        return null;
-    }
+  const handleRowClick = (chart: OrgChart) => {
+    const chartId = chart._id.split(":").pop()!;
+    setLocation(`/orgchart/${chartId}`);
   };
 
   const getStatusBadge = (status: string) => {
@@ -86,24 +77,66 @@ export default function OrgChartListPage() {
     );
   };
 
+  const columns: ColumnDef<OrgChart>[] = [
+    {
+      accessorKey: "version",
+      header: "Version",
+      cell: ({ row }) => <span className="font-mono font-semibold">{row.original.version}</span>,
+    },
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.description || "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => getStatusBadge(row.original.status),
+    },
+    {
+      accessorKey: "enforcedAt",
+      header: "Enforced",
+      cell: ({ row }) =>
+        row.original.enforcedAt ? (
+          <span className="text-sm">
+            {new Date(row.original.enforcedAt).toLocaleDateString()}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        ),
+    },
+    {
+      accessorKey: "revokedAt",
+      header: "Revoked",
+      cell: ({ row }) =>
+        row.original.revokedAt ? (
+          <span className="text-sm text-red-600">
+            {new Date(row.original.revokedAt).toLocaleDateString()}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => (
+        <span className="text-sm">{new Date(row.original.createdAt).toLocaleDateString()}</span>
+      ),
+    },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-muted-foreground">Loading organizational charts...</p>
-      </div>
-    );
-  }
-
-  if (!activeCompany) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Please select a company first
-            </p>
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -118,88 +151,32 @@ export default function OrgChartListPage() {
             Manage your organizational structures and hierarchies
           </p>
         </div>
-
-        <Button onClick={handleCreateOrgChart}>
-          <Plus className="size-4 mr-2" />
-          Create OrgChart
-        </Button>
       </div>
 
-      {/* OrgCharts List */}
-      {orgCharts.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <Building2 className="size-12 mx-auto text-muted-foreground" />
-              <div>
-                <h3 className="font-semibold text-lg">No organizational charts yet</h3>
-                <p className="text-muted-foreground">
-                  Create your first organizational chart to get started
-                </p>
-              </div>
-              <Button onClick={handleCreateOrgChart}>
-                <Plus className="size-4 mr-2" />
-                Create First OrgChart
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {orgCharts.map((chart) => {
-            const chartId = chart._id.split(":").pop()!;
-
-            return (
-              <Link key={chart._id} href={`/orgchart/${chartId}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="size-5 text-blue-500" />
-                        <CardTitle className="text-lg">{chart.title}</CardTitle>
-                      </div>
-                      {getStatusIcon(chart.status)}
-                    </div>
-                    {chart.description && (
-                      <CardDescription>{chart.description}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Status</span>
-                        {getStatusBadge(chart.status)}
-                      </div>
-
-                      {chart.enforcedAt && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="size-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            Enforced: {new Date(chart.enforcedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-
-                      {chart.revokedAt && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <XCircle className="size-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            Revoked: {new Date(chart.revokedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="text-xs text-muted-foreground pt-2 border-t">
-                        Created {new Date(chart.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      {/* Table */}
+      <QTable
+        columns={columns}
+        data={orgCharts}
+        searchable
+        searchPlaceholder="Search organizational charts..."
+        onRowClick={handleRowClick}
+        mainButton={{
+          label: "Create OrgChart",
+          icon: <Plus className="size-4 mr-2" />,
+          onClick: handleCreateOrgChart,
+        }}
+        rowActions={(chart) => (
+          <button
+            onClick={() => handleRowClick(chart)}
+            className="flex items-center gap-2 text-sm hover:text-primary"
+          >
+            <Eye className="size-4" />
+            View
+          </button>
+        )}
+        emptyMessage="No organizational charts yet. Create your first one to get started."
+        enableRowSelection={false}
+      />
     </div>
   );
 }

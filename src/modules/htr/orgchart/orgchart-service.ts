@@ -1,4 +1,4 @@
-import { orgchartsDB } from "@/modules/shared/database/db";
+import { orgchartsDB, usersDB, type User } from "@/modules/shared/database/db";
 import type {
   OrgChart,
   Department,
@@ -37,6 +37,12 @@ export class OrgChartService {
     const now = Date.now();
     const docId = this.generateId("orgchart");
 
+    // Calculate version: major = count of approved/revoked orgcharts, minor = draft count
+    const allOrgCharts = await this.getCompanyOrgCharts(companyId);
+    const approvedCount = allOrgCharts.filter((o) => o.status === "approved" || o.status === "revoked").length;
+    const draftCount = allOrgCharts.filter((o) => o.status === "draft" || o.status === "pending_approval").length;
+    const version = `${approvedCount + 1}.${draftCount}`;
+
     const orgChart: OrgChart = {
       _id: this.getPartitionKey(companyId, docId),
       type: "orgchart",
@@ -44,6 +50,7 @@ export class OrgChartService {
       title: data.title,
       description: data.description,
       status: "draft",
+      version,
       createdAt: now,
       updatedAt: now,
       createdBy: userId,
@@ -76,9 +83,52 @@ export class OrgChartService {
       },
     });
 
+    console.log("[OrgChartService] Raw orgcharts from DB:", result.docs);
+
     // Sort in memory (since PouchDB requires index for sorting)
     const orgCharts = result.docs as OrgChart[];
-    return orgCharts.sort((a, b) => b.createdAt - a.createdAt);
+
+    // Migrate old documents without version field
+    const chartsWithVersion = await Promise.all(
+      orgCharts.map(async (chart) => {
+        if (!chart.version) {
+          console.warn("[OrgChartService] Migrating OrgChart without version:", chart._id);
+
+          // Calculate proper version
+          const allCharts = orgCharts.filter((c) => c._id !== chart._id);
+          const approvedCount = allCharts.filter(
+            (c) => (c.status === "approved" || c.status === "revoked") && c.version
+          ).length;
+          const draftCount = allCharts.filter(
+            (c) => (c.status === "draft" || c.status === "pending_approval") && c.version
+          ).length;
+
+          const version =
+            chart.status === "approved" || chart.status === "revoked"
+              ? `${approvedCount + 1}.0`
+              : `${approvedCount + 1}.${draftCount}`;
+
+          // Update document in database
+          const updated = {
+            ...chart,
+            version,
+          };
+
+          try {
+            await orgchartsDB.put(updated);
+            console.log(`[OrgChartService] Migrated ${chart._id} to version ${version}`);
+            return updated as OrgChart;
+          } catch (error) {
+            console.error("[OrgChartService] Failed to migrate:", error);
+            // Return with version in memory only
+            return updated as OrgChart;
+          }
+        }
+        return chart;
+      })
+    );
+
+    return chartsWithVersion.sort((a, b) => b.createdAt - a.createdAt);
   }
 
   static async updateOrgChart(
@@ -112,9 +162,14 @@ export class OrgChartService {
     const fullId = this.getPartitionKey(companyId, orgChartId);
     const doc = (await orgchartsDB.get(fullId)) as OrgChart;
 
+    // Update version: set minor to 0 (approved version)
+    const [major] = doc.version.split(".");
+    const version = `${major}.0`;
+
     const updated: OrgChart = {
       ...doc,
       status: "approved",
+      version,
       approvedAt: now,
       approvedBy: userId,
       enforcedAt: doc.enforcedAt || now,
@@ -248,8 +303,26 @@ export class OrgChartService {
   }
 
   static async deleteDepartment(companyId: string, departmentId: string): Promise<void> {
-    // Cascade delete: Department -> Positions -> Appointments
+    // Cascade delete: Department -> Sub-Departments -> Positions -> Appointments
     const fullId = this.getPartitionKey(companyId, departmentId);
+
+    // Find all sub-departments in this department
+    const subDepartments = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "department",
+        parentDepartmentId: departmentId,
+      },
+    });
+
+    // Recursively delete all sub-departments
+    for (const subDept of subDepartments.docs as Department[]) {
+      const subDeptId = subDept._id.split(":").pop()!;
+      await this.deleteDepartment(companyId, subDeptId);
+    }
 
     // Find all positions in this department
     const positions = await orgchartsDB.find({
@@ -281,13 +354,29 @@ export class OrgChartService {
   static async createPosition(
     companyId: string,
     userId: string,
-    data: Pick<Position, "orgChartId" | "departmentId" | "title" | "description" | "code" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency">
+    data: Pick<Position, "orgChartId" | "departmentId" | "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency">
   ): Promise<{ position: Position; vacantAppointment: Appointment }> {
     const now = Date.now();
     const posId = this.generateId("pos");
 
-    // Get department to calculate level
+    // Get department to calculate level and generate code
     const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
+
+    // Count existing positions in this department to generate sequential code
+    const existingPositions = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "position",
+        departmentId: data.departmentId,
+      },
+    });
+
+    const positionNumber = existingPositions.docs.length + 1;
+    const deptCode = dept.code || "DEPT";
+    const autoCode = `${deptCode}-${String(positionNumber).padStart(3, "0")}`;
 
     // Create position
     const position: Position = {
@@ -295,6 +384,7 @@ export class OrgChartService {
       type: "position",
       companyId,
       ...data,
+      code: autoCode,
       level: dept.level + 1,
       sortOrder: now,
       createdAt: now,
@@ -335,7 +425,7 @@ export class OrgChartService {
     companyId: string,
     positionId: string,
     userId: string,
-    updates: Partial<Pick<Position, "title" | "description" | "code" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency" | "jobDescription">>
+    updates: Partial<Pick<Position, "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency" | "jobDescription">>
   ): Promise<Position> {
     const fullId = this.getPartitionKey(companyId, positionId);
     const doc = (await orgchartsDB.get(fullId)) as Position;
@@ -436,6 +526,62 @@ export class OrgChartService {
   }
 
   // ============================================================================
+  // Data Cleanup Utilities
+  // ============================================================================
+
+  /**
+   * Remove duplicate documents from database
+   * WARNING: This will permanently delete duplicate documents!
+   */
+  static async removeDuplicates(companyId: string): Promise<{ removed: number; kept: number }> {
+    const result = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+      },
+    });
+
+    const docs = result.docs;
+    const uniqueMap = new Map<string, any>();
+    const duplicates: any[] = [];
+
+    // Group by unique key (type + title + parentId)
+    for (const doc of docs) {
+      const uniqueKey = `${doc.type}:${(doc as any).title}:${(doc as any).parentDepartmentId || (doc as any).departmentId || (doc as any).positionId || "root"}`;
+
+      if (uniqueMap.has(uniqueKey)) {
+        // This is a duplicate - keep the older one (lower createdAt)
+        const existing = uniqueMap.get(uniqueKey);
+        if (doc.createdAt < existing.createdAt) {
+          duplicates.push(existing);
+          uniqueMap.set(uniqueKey, doc);
+        } else {
+          duplicates.push(doc);
+        }
+      } else {
+        uniqueMap.set(uniqueKey, doc);
+      }
+    }
+
+    console.log(`[removeDuplicates] Found ${duplicates.length} duplicates to remove`);
+    console.log(`[removeDuplicates] Keeping ${uniqueMap.size} unique documents`);
+
+    // Remove duplicates
+    for (const duplicate of duplicates) {
+      try {
+        await orgchartsDB.remove(duplicate);
+        console.log(`[removeDuplicates] Removed duplicate: ${duplicate._id}`);
+      } catch (error) {
+        console.error(`[removeDuplicates] Failed to remove ${duplicate._id}:`, error);
+      }
+    }
+
+    return { removed: duplicates.length, kept: uniqueMap.size };
+  }
+
+  // ============================================================================
   // Hierarchical Data Retrieval (for Table Display)
   // ============================================================================
 
@@ -456,35 +602,43 @@ export class OrgChartService {
       },
     });
 
-    const orgChart = result.docs.find((d: any) => d.type === "orgchart") as OrgChart;
+    console.log("[getOrgChartHierarchy] All docs:", result.docs.length);
+    console.log("[getOrgChartHierarchy] All docs details:", result.docs.map((d: any) => ({
+      _id: d._id,
+      type: d.type,
+      title: d.title || (d.isVacant ? "Vacant" : ""),
+      departmentId: d.departmentId,
+      positionId: d.positionId,
+      parentDepartmentId: d.parentDepartmentId,
+    })));
+
     const departments = result.docs.filter((d: any) => d.type === "department") as Department[];
     const positions = result.docs.filter((d: any) => d.type === "position") as Position[];
     const appointments = result.docs.filter((d: any) => d.type === "appointment") as Appointment[];
 
+    console.log("[getOrgChartHierarchy] Filtered:", {
+      departments: departments.length,
+      positions: positions.length,
+      appointments: appointments.length,
+    });
+    console.log("[getOrgChartHierarchy] Positions:", positions.map(p => ({ _id: p._id, title: p.title, departmentId: p.departmentId })));
+    console.log("[getOrgChartHierarchy] Appointments:", appointments.map(a => ({ _id: a._id, positionId: a.positionId, isVacant: a.isVacant })));
+
     const rows: OrgChartRow[] = [];
 
-    // Add orgchart root
-    if (orgChart) {
-      rows.push({
-        _id: orgChart._id,
-        _rev: orgChart._rev,
-        type: "orgchart",
-        companyId,
-        title: orgChart.title,
-        description: orgChart.description,
-        level: 0,
-        sortOrder: orgChart.createdAt,
-        hasChildren: departments.length > 0,
-        status: orgChart.status,
-        createdAt: orgChart.createdAt,
-        updatedAt: orgChart.updatedAt,
-        original: orgChart,
-      });
-    }
+    // Note: OrgChart itself is not added to rows - it's shown in the page header
+    // Only departments, positions, and appointments are shown in the hierarchical table
 
     // Add departments
     for (const dept of departments.sort((a, b) => a.sortOrder - b.sortOrder)) {
       const deptPositions = positions.filter((p) => p.departmentId === dept._id.split(":").pop());
+
+      // For nested departments, parentId should be the full _id of parent department
+      // For top-level departments, parentId is undefined
+      const parentId = dept.parentDepartmentId
+        ? this.getPartitionKey(companyId, dept.parentDepartmentId)
+        : undefined;
+
       rows.push({
         _id: dept._id,
         _rev: dept._rev,
@@ -493,7 +647,8 @@ export class OrgChartService {
         title: dept.title,
         description: dept.description,
         code: dept.code,
-        parentId: dept.orgChartId,
+        headcount: dept.headcount,
+        parentId,
         level: dept.level,
         sortOrder: dept.sortOrder,
         hasChildren: deptPositions.length > 0,
@@ -513,6 +668,10 @@ export class OrgChartService {
           title: pos.title,
           description: pos.description,
           code: pos.code,
+          salaryMin: pos.salaryMin,
+          salaryMax: pos.salaryMax,
+          salaryCurrency: pos.salaryCurrency,
+          salaryFrequency: pos.salaryFrequency,
           parentId: dept._id,
           level: pos.level,
           sortOrder: pos.sortOrder,
@@ -524,12 +683,23 @@ export class OrgChartService {
 
         // Add appointments for this position
         for (const appt of posAppointments.sort((a, b) => a.sortOrder - b.sortOrder)) {
+          // Load user fullname if not vacant
+          let displayTitle = "Vacant";
+          if (!appt.isVacant && appt.userId) {
+            try {
+              const user = (await usersDB.get(appt.userId)) as User;
+              displayTitle = user.fullname || `User ${appt.userId}`;
+            } catch (error) {
+              displayTitle = `User ${appt.userId}`;
+            }
+          }
+
           rows.push({
             _id: appt._id,
             _rev: appt._rev,
             type: "appointment",
             companyId,
-            title: appt.isVacant ? "Vacant" : `User ${appt.userId}`,
+            title: displayTitle,
             parentId: pos._id,
             level: appt.level,
             sortOrder: appt.sortOrder,

@@ -221,14 +221,7 @@ export class DepartmentCharterPDF extends PDFGenerator {
       });
     }
 
-    // KPIs
-    if (department.charter?.kpis && department.charter.kpis.length > 0) {
-      this.addSpace(10);
-      this.addSection("Key Performance Indicators");
-      department.charter.kpis.forEach((kpi) => {
-        this.addBullet(kpi);
-      });
-    }
+    // KPIs section removed per requirements
 
     // Approval Section
     this.addSpace(20);
@@ -312,14 +305,7 @@ export class JobDescriptionPDF extends PDFGenerator {
       });
     }
 
-    // Benefits
-    if (position.jobDescription?.benefits && position.jobDescription.benefits.length > 0) {
-      this.addSpace(10);
-      this.addSection("Benefits");
-      position.jobDescription.benefits.forEach((benefit) => {
-        this.addBullet(benefit);
-      });
-    }
+    // Benefits section removed per requirements
 
     // Footer note
     this.addSpace(15);
