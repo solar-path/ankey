@@ -156,7 +156,7 @@ export default function CompanySettingsPage() {
           setResidenceCountry(country);
 
           // Extract timezones from country data
-          if (country.timezones && country.timezones.length > 0) {
+          if (country && country.timezones && country.timezones.length > 0) {
             const timezoneNames = country.timezones.map(tz => tz.name);
             setAvailableTimezones(timezoneNames);
           } else {

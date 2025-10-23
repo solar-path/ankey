@@ -43,7 +43,7 @@ interface AppointmentCardProps {
   orgChartStatus: OrgChartStatus;
   onSave: (updates: Partial<Appointment>) => Promise<void>;
   onDelete: () => void;
-  onGeneratePDF: () => void;
+  onGeneratePDF: (type: "jobOffer" | "employmentContract" | "terminationNotice") => void;
 }
 
 export function AppointmentCard({
@@ -136,18 +136,52 @@ export function AppointmentCard({
   };
 
   const handleTermination = async () => {
-    if (!window.confirm("Are you sure you want to terminate this appointment? The position will remain but user link will be removed.")) {
+    // Request termination date
+    const terminationDateStr = prompt(
+      "Enter termination date (YYYY-MM-DD):",
+      new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // Default: 2 weeks from now
+    );
+
+    if (!terminationDateStr) return;
+
+    const terminationDate = new Date(terminationDateStr);
+    if (isNaN(terminationDate.getTime())) {
+      alert("Invalid date format. Please use YYYY-MM-DD");
       return;
     }
 
+    // Request termination reason
+    const reason = prompt("Enter termination reason (optional):", "");
+
     try {
       setIsSaving(true);
-      // Remove user link and set position as vacant
+
+      // First, issue termination notice (update appointment with notice date and reason)
       await onSave({
-        userId: undefined,
-        isVacant: true,
-        employmentEndedAt: Date.now(),
+        terminationNoticeIssuedAt: Date.now(),
+        employmentEndedAt: terminationDate.getTime(),
+        terminationReason: reason || undefined,
       });
+
+      // Generate termination notice PDF
+      onGeneratePDF("terminationNotice");
+
+      // Check if termination date is today or in the past
+      if (terminationDate <= new Date()) {
+        // Immediately terminate employment
+        await onSave({
+          userId: undefined,
+          isVacant: true,
+          employmentEndedAt: Date.now(),
+        });
+        alert("Employment terminated immediately. The position is now vacant.");
+      } else {
+        alert(
+          `Termination notice issued. Employment will end on ${terminationDate.toLocaleDateString()}.` +
+          "\n\nNote: Automatic termination on the scheduled date is not yet implemented. " +
+          "You will need to manually process this termination on that date."
+        );
+      }
     } finally {
       setIsSaving(false);
     }
@@ -291,6 +325,26 @@ export function AppointmentCard({
             />
           </div>
 
+          {/* Termination Notice Alert */}
+          {appointment.terminationNoticeIssuedAt && appointment.employmentEndedAt && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm font-semibold text-destructive mb-1">
+                ⚠️ Termination Notice Issued
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Notice Date: {new Date(appointment.terminationNoticeIssuedAt).toLocaleDateString()}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Termination Date: {new Date(appointment.employmentEndedAt).toLocaleDateString()}
+              </p>
+              {appointment.terminationReason && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Reason: {appointment.terminationReason}
+                </p>
+              )}
+            </div>
+          )}
+
           <div>
             <Label htmlFor="benefits">Benefits (one per line)</Label>
             <Textarea
@@ -322,11 +376,11 @@ export function AppointmentCard({
           </Button>
           {!appointment.isVacant && (
             <>
-              <Button onClick={onGeneratePDF} variant="outline" size="sm">
+              <Button onClick={() => onGeneratePDF("jobOffer")} variant="outline" size="sm">
                 <FileDown className="size-4 mr-2" />
                 Job Offer
               </Button>
-              <Button onClick={onGeneratePDF} variant="outline" size="sm">
+              <Button onClick={() => onGeneratePDF("employmentContract")} variant="outline" size="sm">
                 <FileDown className="size-4 mr-2" />
                 Employment Contract
               </Button>

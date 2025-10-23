@@ -39,7 +39,6 @@ import { cn } from "@/lib/utils";
 
 interface PositionCardProps {
   position: Position;
-  departmentCode: string;
   orgChartStatus: OrgChartStatus;
   onSave: (updates: Partial<Position>) => Promise<void>;
   onDelete: () => void;
@@ -48,7 +47,6 @@ interface PositionCardProps {
 
 export function PositionCard({
   position,
-  departmentCode,
   orgChartStatus,
   onSave,
   onDelete,
@@ -77,10 +75,10 @@ export function PositionCard({
 
   // Load available positions for reporting relationship
   useEffect(() => {
-    if (activeCompany && isEditing && position.orgChartId) {
+    if (activeCompany && position.orgChartId) {
       loadAvailablePositions();
     }
-  }, [activeCompany, isEditing, position.orgChartId]);
+  }, [activeCompany, position.orgChartId]);
 
   const loadAvailablePositions = async () => {
     if (!activeCompany || !position.orgChartId) return;
@@ -143,7 +141,6 @@ export function PositionCard({
   };
 
   const selectedReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === formData.reportsToPositionId);
-  const currentReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === position.reportsToPositionId);
 
   return (
     <Card>

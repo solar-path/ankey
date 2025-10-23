@@ -162,6 +162,7 @@ export default function OrgChartViewPage() {
         orgChartId: id,
         title: parentId ? "New Sub-Department" : "New Department",
         description: "",
+        code: "",
         headcount: 10,
         parentDepartmentId: parentId,
       });
@@ -196,27 +197,6 @@ export default function OrgChartViewPage() {
       await loadOrgChart();
     } catch (error: any) {
       toast.error(error.message || "Failed to create position");
-    }
-  };
-
-  const handleAppointUser = async (row: OrgChartRow) => {
-    if (!activeCompany || !user || !id || row.type !== "appointment") return;
-
-    const userId = prompt("Enter User ID to appoint:");
-    if (!userId) return;
-
-    try {
-      const appointmentId = row._id.split(":").pop()!;
-
-      await OrgChartService.updateAppointment(activeCompany._id, appointmentId, user._id, {
-        userId,
-        isVacant: false,
-      });
-
-      toast.success("User appointed successfully");
-      await loadOrgChart();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to appoint user");
     }
   };
 
@@ -326,10 +306,8 @@ export default function OrgChartViewPage() {
       // Update parent relationship
       switch (draggedRow.type) {
         case "department":
-          await OrgChartService.updateDepartment(activeCompany._id, draggedId, user._id, {
-            parentDepartmentId: targetId,
-          });
-          toast.success("Department moved successfully");
+          // TODO: Department hierarchy not yet implemented
+          toast.info("Moving departments not yet supported");
           break;
 
         case "position":
@@ -402,7 +380,7 @@ export default function OrgChartViewPage() {
   // PDF Generation
   // ============================================================================
 
-  const handleGeneratePDF = async (row: OrgChartRow) => {
+  const handleGeneratePDF = async (row: OrgChartRow, pdfType?: "jobOffer" | "employmentContract" | "terminationNotice") => {
     if (!activeCompany) return;
 
     try {
@@ -444,14 +422,62 @@ export default function OrgChartViewPage() {
           if (pos) {
             const dept = orgChartRows.find((r) => r.type === "department" && r._id === pos.parentId);
             if (dept && !appt.isVacant) {
-              PDFGeneratorFactory.generateJobOffer(
-                appt,
-                pos.original as unknown as Position,
-                dept.original as unknown as Department,
-                `User ${appt.userId}`,
-                "123 Candidate St, City, State 12345"
-              );
-              toast.success("Job Offer PDF generated");
+              const userName = appt.userFullname || `User ${appt.userId}`;
+              const userAddress = "123 Employee St, City, State 12345"; // TODO: Get from user profile
+
+              switch (pdfType) {
+                case "jobOffer":
+                  PDFGeneratorFactory.generateJobOffer(
+                    appt,
+                    pos.original as unknown as Position,
+                    dept.original as unknown as Department,
+                    userName,
+                    userAddress
+                  );
+                  toast.success("Job Offer PDF generated");
+                  break;
+
+                case "employmentContract":
+                  PDFGeneratorFactory.generateEmploymentContract(
+                    appt,
+                    pos.original as unknown as Position,
+                    dept.original as unknown as Department,
+                    userName,
+                    userAddress,
+                    appt.userId || "N/A"
+                  );
+                  toast.success("Employment Contract PDF generated");
+                  break;
+
+                case "terminationNotice":
+                  // Use the termination date from appointment, or current date as fallback
+                  const terminationDate = appt.employmentEndedAt
+                    ? new Date(appt.employmentEndedAt)
+                    : new Date();
+
+                  PDFGeneratorFactory.generateTerminationNotice(
+                    appt,
+                    pos.original as unknown as Position,
+                    dept.original as unknown as Department,
+                    userName,
+                    appt.userId || "N/A",
+                    terminationDate,
+                    appt.terminationReason
+                  );
+                  toast.success("Termination Notice PDF generated");
+                  break;
+
+                default:
+                  // Default to job offer for backward compatibility
+                  PDFGeneratorFactory.generateJobOffer(
+                    appt,
+                    pos.original as unknown as Position,
+                    dept.original as unknown as Department,
+                    userName,
+                    userAddress
+                  );
+                  toast.success("Job Offer PDF generated");
+              }
             }
           }
           break;
@@ -741,20 +767,15 @@ export default function OrgChartViewPage() {
                 />
               )}
 
-              {selectedRow.type === "position" && (() => {
-                const dept = orgChartRows.find((r) => r.type === "department" && r._id === selectedRow.parentId);
-                const departmentCode = dept?.code || "";
-                return (
-                  <PositionCard
-                    position={selectedRow.original as unknown as Position}
-                    departmentCode={departmentCode}
-                    orgChartStatus={orgChartStatus}
-                    onSave={(updates) => handleInlineEdit(selectedRow, updates)}
-                    onDelete={() => handleDelete(selectedRow)}
-                    onGeneratePDF={() => handleGeneratePDF(selectedRow)}
-                  />
-                );
-              })()}
+              {selectedRow.type === "position" && (
+                <PositionCard
+                  position={selectedRow.original as unknown as Position}
+                  orgChartStatus={orgChartStatus}
+                  onSave={(updates) => handleInlineEdit(selectedRow, updates)}
+                  onDelete={() => handleDelete(selectedRow)}
+                  onGeneratePDF={() => handleGeneratePDF(selectedRow)}
+                />
+              )}
 
               {selectedRow.type === "appointment" && (() => {
                 const pos = orgChartRows.find((r) => r.type === "position" && r._id === selectedRow.parentId);
@@ -766,7 +787,7 @@ export default function OrgChartViewPage() {
                     orgChartStatus={orgChartStatus}
                     onSave={(updates) => handleInlineEdit(selectedRow, updates)}
                     onDelete={() => handleDelete(selectedRow)}
-                    onGeneratePDF={() => handleGeneratePDF(selectedRow)}
+                    onGeneratePDF={(type) => handleGeneratePDF(selectedRow, type)}
                   />
                 );
               })()}
