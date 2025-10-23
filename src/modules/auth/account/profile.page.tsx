@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import * as v from "valibot";
 import { format } from "date-fns";
@@ -37,13 +37,15 @@ export default function ProfilePage() {
   const [date, setDate] = useState<Date | undefined>();
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
+    control,
     handleSubmit,
     setValue,
-    watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
     resolver: valibotResolver(updateProfileSchema),
@@ -55,28 +57,30 @@ export default function ProfilePage() {
     },
   });
 
-  const gender = watch("gender");
-
   useEffect(() => {
-    // Load user profile data from auth context
-    if (user) {
-      setValue("fullname", user.fullname || "");
-      setValue("email", user.email || "");
+    // Load user profile data from auth context only on initial mount
+    if (user && !isInitialized) {
+      const genderValue = user.profile?.gender;
+
+      // Use reset to set all values at once
+      reset({
+        fullname: user.fullname || "",
+        email: user.email || "",
+        dob: user.profile?.dob || "",
+        gender: genderValue as any,
+      });
+
       setAvatarUrl(user.avatar || user.profile?.avatar || "");
 
       // Load DOB if exists
       if (user.profile?.dob) {
         const dobDate = new Date(user.profile.dob);
         setDate(dobDate);
-        setValue("dob", user.profile.dob);
       }
 
-      // Load gender if exists
-      if (user.profile?.gender) {
-        setValue("gender", user.profile.gender as any);
-      }
+      setIsInitialized(true);
     }
-  }, [setValue, user]);
+  }, [user, isInitialized, reset]);
 
   const handleAvatarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -137,6 +141,7 @@ export default function ProfilePage() {
         gender: data.gender,
       });
 
+      setIsInitialized(false); // Reset to allow reloading from refreshed user data
       await refreshUser(); // Refresh user data to update profile across the app
       toast.success("Profile updated successfully!");
     } catch (error: any) {
@@ -232,27 +237,29 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <Label htmlFor="gender">Gender</Label>
-            <Select
-              value={gender}
-              onValueChange={(value) =>
-                setValue(
-                  "gender",
-                  value as "male" | "female" | "other" | "prefer-not-to-say"
-                )
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-                <SelectItem value="prefer-not-to-say">
-                  Prefer not to say
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Controller
+              name="gender"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  key={user?.profile?.gender || "no-gender"}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="prefer-not-to-say">
+                      Prefer not to say
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <Button type="submit" disabled={isSubmitting}>

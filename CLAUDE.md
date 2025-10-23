@@ -4,10 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Ankey** is a local-first authentication system built with React, TypeScript, and PouchDB/CouchDB. It features:
+**Ankey** is a local-first multi-tenant authentication and company management system built with React, TypeScript, and PouchDB/CouchDB. It features:
 - Real-time bi-directional sync between local (IndexedDB) and remote (CouchDB) databases
+- **Multi-tenancy with data isolation** using CouchDB partitioned databases
 - Dual server architecture: Vite dev server (port 5173) + Hono API server (port 3001)
 - Email notifications via SMTP for verification, password reset, and inquiries
+- Team member management with roles (owner, admin, member)
 
 ## Development Commands
 
@@ -51,7 +53,7 @@ bun run import:data
 The app uses a **two-layout system** where routes are determined at [App.tsx](src/App.tsx):
 
 - **Public routes** (`/`, `/learn`, `/offers`, `/contact`, `/track-inquiry`, `/auth/*`) render in `PublicLayout`
-- **Private routes** (`/dashboard`, `/account`) render in `PrivateLayout` with auth protection
+- **Private routes** (`/dashboard`, `/account`, `/company`) render in `PrivateLayout` with auth protection
 - Route matching is **exact with sub-route support** - uses `location === route || location.startsWith(route + "?") || location.startsWith(route + "/")`
 
 **Important:** Route protection happens at the **layout level** (PrivateLayout), never in individual page components.
@@ -64,12 +66,18 @@ The app uses a **two-layout system** where routes are determined at [App.tsx](sr
 <script src="https://cdn.jsdelivr.net/npm/pouchdb@9.0.0/dist/pouchdb.find.min.js"></script>
 ```
 
-**Three databases** (all with local + remote pairs):
+**Seven databases** (all with local + remote pairs):
 ```typescript
-// Local (browser IndexedDB) + Remote (CouchDB)
-usersDB / remoteUsersDB          // User accounts
-sessionsDB / remoteSessionsDB    // Auth sessions
-inquiriesDB / remoteInquiriesDB  // Contact form inquiries
+// Global databases
+usersDB / remoteUsersDB                   // User accounts
+sessionsDB / remoteSessionsDB             // Auth sessions
+inquiriesDB / remoteInquiriesDB           // Contact form inquiries
+companiesDB / remoteCompaniesDB           // Company metadata
+userCompaniesDB / remoteUserCompaniesDB   // User-company relationships
+
+// Partitioned databases (isolated by company)
+orgchartsDB / remoteOrgchartsDB           // Organization structures
+chartOfAccountsDB / remoteChartOfAccountsDB // Chart of accounts
 ```
 
 **Location:** Database setup in [src/modules/shared/database/db.ts](src/modules/shared/database/db.ts)
@@ -91,6 +99,38 @@ inquiriesDB / remoteInquiriesDB  // Contact form inquiries
 **Session restoration:** [AuthProvider](src/lib/auth-context.tsx) checks `localStorage` on mount and validates session via `verifySession()`.
 
 **Email delivery:** AuthService calls Hono API (`/api/auth/send-verification`) which uses nodemailer to send emails via SMTP.
+
+### Multi-tenancy & Company Management
+
+**Architecture:** Uses CouchDB 3.5+ partitioned databases for data isolation between companies.
+
+**Key Files:**
+- [CompanyService](src/modules/company/company-service.ts) - Company CRUD operations
+- [CompanyMembersService](src/modules/company/company-members-service.ts) - Team member management
+- [CompanyDatabaseFactory](src/modules/shared/database/company-db-factory.ts) - Partitioned database access
+- [CompanyContext](src/lib/company-context.tsx) - Active company state management
+- [TeamSwitcher](src/lib/ui/team-switcher.tsx) - UI for switching between companies
+
+**Data Isolation:**
+- **Global data**: `companies`, `user_companies` - company metadata and memberships
+- **Partitioned data**: `orgcharts`, `chartofaccounts` - isolated by partition key `company:{companyId}:`
+- **Auto-filtering**: All queries automatically scoped to active company via CompanyDatabaseFactory
+
+**Roles:**
+- **Owner**: Full control, can transfer ownership, manage all members
+- **Admin**: Can manage members (except owners), edit company settings
+- **Member**: Read-only access to company data
+
+**User Flow:**
+1. User creates workspace company → becomes owner
+2. Owner invites members → assigned roles
+3. User switches companies via TeamSwitcher
+4. CompanyContext loads active company → CompanyDatabaseFactory connects to partitions
+5. All data queries automatically filtered by `companyId`
+
+**Scalability:** Supports 100,000+ companies using 4 partitioned databases vs 300,000+ individual databases.
+
+See [docs/MULTITENANCY.md](docs/MULTITENANCY.md) for detailed architecture and examples.
 
 ### State Management (Context Providers)
 

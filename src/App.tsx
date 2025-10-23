@@ -8,6 +8,8 @@ import TrackInquiryPage from "./modules/inquiry/trackInquiry.page";
 import NotFoundPage from "./routes/404.page";
 import PrivateLayout from "./routes/private.layout";
 import { CompanyDashboardPage } from "./modules/company/companyDashboard.page";
+import CompanyMembersPage from "./modules/company/companyMembers.page";
+import CompanyPage from "./modules/company/company.page";
 import AccountPage from "./modules/auth/account/account.page";
 import SignInPage from "./modules/auth/signin.page";
 import SignUpPage from "./modules/auth/signup.page";
@@ -34,25 +36,18 @@ function App() {
     "/auth/verify-account",
   ];
 
-  const privateRoutes = ["/dashboard", "/account"];
+  // Private routes are protected by PrivateLayout component
+  // All non-public routes will be rendered in PrivateLayout, which handles auth checks
+  const privateRoutes = ["/dashboard", "/account", "/company"];
 
-  // Check if route exists in either public or private routes
-  const isKnownRoute = [...publicRoutes, ...privateRoutes].some((route) => {
+  // Determine if the current route is public
+  // Any route not in publicRoutes will be treated as private and rendered in PrivateLayout
+  const isPublicRoute = publicRoutes.some((route) => {
     if (location === route) return true;
     if (location.startsWith(route + "?")) return true;
-    if (location.startsWith(route + "/")) return true; // Support sub-routes like /account/profile
+    if (location.startsWith(route + "/")) return true; // Support sub-routes
     return false;
   });
-
-  // If route is not known, show 404 in public layout
-  const isPublicRoute =
-    !isKnownRoute ||
-    publicRoutes.some((route) => {
-      if (location === route) return true;
-      if (location.startsWith(route + "?")) return true;
-      if (location.startsWith(route + "/")) return true; // Support sub-routes
-      return false;
-    });
 
   return (
     <AuthProvider>
@@ -83,6 +78,9 @@ function App() {
             <PrivateLayout>
               <Switch>
                 <Route path="/dashboard" component={CompanyDashboardPage} />
+                <Route path="/company/new" component={CompanyPage} />
+                <Route path="/company/:id" component={CompanyPage} />
+                <Route path="/company/:id/members" component={CompanyMembersPage} />
                 <Route path="/account/:rest*" component={AccountPage} />
                 <Route component={NotFoundPage} />
               </Switch>

@@ -1,8 +1,10 @@
 import { useLocation } from "wouter";
 import { Button } from "@/lib/ui/button";
+import { useAuth } from "@/lib/auth-context";
 
 export default function NotFoundPage() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="container mx-auto px-4 py-20 flex flex-col items-center justify-center min-h-[60vh]">
@@ -12,12 +14,14 @@ export default function NotFoundPage() {
         <p className="text-muted-foreground max-w-md">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="flex gap-4 justify-center pt-4">
-          <Button onClick={() => setLocation("/")}>Go Home</Button>
-          <Button variant="outline" onClick={() => setLocation("/auth/signin")}>
-            Sign In
-          </Button>
-        </div>
+        {!isAuthenticated && (
+          <div className="flex gap-4 justify-center pt-4">
+            <Button onClick={() => setLocation("/")}>Go Home</Button>
+            <Button variant="outline" onClick={() => setLocation("/auth/signin")}>
+              Sign In
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

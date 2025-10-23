@@ -1,14 +1,6 @@
-vite v7.1.11 building for production...
-transforming...
-✓ 2562 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/index.html                   0.67 kB │ gzip:   0.36 kB
-dist/assets/index-D2UvrKLV.css   74.73 kB │ gzip:  12.92 kB
-dist/assets/index-C27whABO.js   838.65 kB │ gzip: 258.86 kB
-
-(!) Some chunks are larger than 500 kB after minification. Consider:
-- Using dynamic import() to code-split the application
-- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
-- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.90s
+src/App.tsx(41,9): error TS6133: 'privateRoutes' is declared but its value is never read.
+src/modules/company/company.form.tsx(13,1): error TS6192: All imports in import declaration are unused.
+src/modules/company/company.form.tsx(20,1): error TS6133: 'Checkbox' is declared but its value is never read.
+src/modules/company/company.form.tsx(47,10): error TS6133: 'Trash2' is declared but its value is never read.
+src/modules/company/company.form.tsx(47,18): error TS6133: 'Plus' is declared but its value is never read.
+src/modules/shared/database/company-db-factory.ts(17,7): error TS6133: 'PouchDB' is declared but its value is never read.
