@@ -16,7 +16,7 @@ import {
 import { Button } from "@/lib/ui/button";
 import { Badge } from "@/lib/ui/badge";
 import { Input } from "@/lib/ui/input";
-import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2 } from "lucide-react";
+import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2, ArrowUp } from "lucide-react";
 import { toast } from "sonner";
 import { DepartmentCard } from "./components/DepartmentCard";
 import { PositionCard } from "./components/PositionCard";
@@ -487,6 +487,19 @@ export default function OrgChartViewPage() {
       return row.title;
     };
 
+    // Get reporting relationship info
+    const getReportsToPosition = () => {
+      if (row.type === "position" && row.reportsToPositionId) {
+        const manager = orgChartRows.find(
+          (r) => r.type === "position" && r._id.split(":").pop() === row.reportsToPositionId
+        );
+        return manager;
+      }
+      return null;
+    };
+
+    const reportsTo = getReportsToPosition();
+
     return (
       <>
         <div
@@ -527,6 +540,14 @@ export default function OrgChartViewPage() {
 
           {/* Title */}
           <span className="flex-1 text-sm truncate">{getDisplayTitle()}</span>
+
+          {/* Reporting indicator */}
+          {reportsTo && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground" title={`Reports to: ${reportsTo.title}`}>
+              <ArrowUp className="size-3" />
+              <span className="max-w-[100px] truncate">{reportsTo.title}</span>
+            </div>
+          )}
 
           {/* Badges */}
           {row.isVacant && (

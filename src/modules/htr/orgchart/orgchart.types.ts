@@ -95,6 +95,9 @@ export interface Position extends BaseOrgDocument {
   description?: string;
   code?: string; // Position code (e.g., "FIN-001-MGR")
 
+  // Reporting relationship (management hierarchy)
+  reportsToPositionId?: string; // Position ID that this position reports to
+
   // Salary range
   salaryMin: number;
   salaryMax: number;
@@ -127,6 +130,9 @@ export interface Appointment extends BaseOrgDocument {
 
   userId?: string; // If vacant, this is undefined
   isVacant: boolean;
+
+  // Reporting relationship (inherited from position, can be overridden)
+  reportsToPositionId?: string; // Position ID that this appointment reports to
 
   // Job Offer data (when user is appointed)
   jobOffer?: {
@@ -173,6 +179,9 @@ export interface OrgChartRow {
   salaryMax?: number;
   salaryCurrency?: string;
   salaryFrequency?: SalaryFrequency;
+
+  // Reporting relationship
+  reportsToPositionId?: string;
 
   // Hierarchy
   parentId?: string; // orgChartId, departmentId, or positionId

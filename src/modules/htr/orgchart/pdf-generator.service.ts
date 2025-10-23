@@ -192,9 +192,18 @@ export class DepartmentCharterPDF extends PDFGenerator {
     this.addKeyValue("Department Name", department.title);
     if (department.code) this.addKeyValue("Department Code", department.code);
     this.addKeyValue("Organizational Chart", orgChartTitle);
-    if (department.description) this.addKeyValue("Description", department.description);
     this.addKeyValue("Headcount Limit", department.headcount.toString());
     this.addKeyValue("Created", new Date(department.createdAt).toLocaleDateString());
+
+    // Description as paragraph (can be long)
+    if (department.description) {
+      this.addSpace(5);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text("Description:", this.margin, this.currentY);
+      this.currentY += 6;
+      this.doc.setFont("helvetica", "normal");
+      this.addParagraph(department.description);
+    }
 
     // Mission
     if (department.charter?.mission) {
@@ -256,7 +265,16 @@ export class JobDescriptionPDF extends PDFGenerator {
     if (position.code) this.addKeyValue("Position Code", position.code);
     this.addKeyValue("Department", department.title);
     this.addKeyValue("Organizational Chart", orgChartTitle);
-    if (position.description) this.addKeyValue("Description", position.description);
+
+    // Description as paragraph (can be long)
+    if (position.description) {
+      this.addSpace(5);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text("Description:", this.margin, this.currentY);
+      this.currentY += 6;
+      this.doc.setFont("helvetica", "normal");
+      this.addParagraph(position.description);
+    }
 
     // Compensation
     this.addSpace(10);

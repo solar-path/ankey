@@ -3,8 +3,8 @@
  * Editable card for position details
  */
 
-import { useState } from "react";
-import { Users, Save, Trash2, FileDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, Save, Trash2, FileDown, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
 import { Textarea } from "@/lib/ui/textarea";
@@ -18,8 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/lib/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/lib/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/lib/ui/popover";
 import type { Position, OrgChartStatus, SalaryFrequency } from "../orgchart.types";
 import { getPositionPermissions } from "../orgchart.types";
+import { OrgChartService } from "../orgchart-service";
+import { useCompany } from "@/lib/company-context";
+import { cn } from "@/lib/utils";
 
 interface PositionCardProps {
   position: Position;
@@ -38,11 +54,17 @@ export function PositionCard({
   onDelete,
   onGeneratePDF,
 }: PositionCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const { activeCompany } = useCompany();
+  const permissions = getPositionPermissions(orgChartStatus);
   const [isSaving, setIsSaving] = useState(false);
+  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
+  const [positionSelectOpen, setPositionSelectOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     title: position.title,
     description: position.description || "",
+    reportsToPositionId: position.reportsToPositionId || "",
     salaryMin: position.salaryMin,
     salaryMax: position.salaryMax,
     salaryCurrency: position.salaryCurrency,
@@ -53,7 +75,32 @@ export function PositionCard({
     qualifications: position.jobDescription?.qualifications?.join("\n") || "",
   });
 
-  const permissions = getPositionPermissions(orgChartStatus);
+  // Load available positions for reporting relationship
+  useEffect(() => {
+    if (activeCompany && isEditing && position.orgChartId) {
+      loadAvailablePositions();
+    }
+  }, [activeCompany, isEditing, position.orgChartId]);
+
+  const loadAvailablePositions = async () => {
+    if (!activeCompany || !position.orgChartId) return;
+
+    try {
+      setLoadingPositions(true);
+      const hierarchy = await OrgChartService.getOrgChartHierarchy(activeCompany._id, position.orgChartId);
+
+      // Filter only positions, exclude current position
+      const positions = hierarchy
+        .filter((row) => row.type === "position" && row._id !== position._id)
+        .map((row) => row.original as Position);
+
+      setAvailablePositions(positions);
+    } catch (error) {
+      console.error("Failed to load positions:", error);
+    } finally {
+      setLoadingPositions(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -61,6 +108,7 @@ export function PositionCard({
       await onSave({
         title: formData.title,
         description: formData.description,
+        reportsToPositionId: formData.reportsToPositionId || undefined,
         // Code is auto-generated and readonly
         salaryMin: formData.salaryMin,
         salaryMax: formData.salaryMax,
@@ -73,7 +121,6 @@ export function PositionCard({
           qualifications: formData.qualifications.split("\n").filter(Boolean),
         },
       });
-      setIsEditing(false);
     } finally {
       setIsSaving(false);
     }
@@ -83,6 +130,7 @@ export function PositionCard({
     setFormData({
       title: position.title,
       description: position.description || "",
+      reportsToPositionId: position.reportsToPositionId || "",
       salaryMin: position.salaryMin,
       salaryMax: position.salaryMax,
       salaryCurrency: position.salaryCurrency,
@@ -92,8 +140,10 @@ export function PositionCard({
       requirements: position.jobDescription?.requirements?.join("\n") || "",
       qualifications: position.jobDescription?.qualifications?.join("\n") || "",
     });
-    setIsEditing(false);
   };
+
+  const selectedReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === formData.reportsToPositionId);
+  const currentReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === position.reportsToPositionId);
 
   return (
     <Card>
@@ -110,10 +160,7 @@ export function PositionCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isEditing ? (
-          <>
-            {/* Edit Mode */}
-            <div className="space-y-4">
+        <div className="space-y-4">
               <div>
                 <Label htmlFor="title">Title</Label>
                 <Input
@@ -124,13 +171,72 @@ export function PositionCard({
               </div>
 
               <div>
-                <Label htmlFor="code">Code (Auto-generated)</Label>
-                <Input
-                  id="code"
-                  value={position.code || ""}
-                  disabled
-                  className="bg-muted"
-                />
+                <Label htmlFor="reportsTo">Reports To (Manager)</Label>
+                <Popover open={positionSelectOpen} onOpenChange={setPositionSelectOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={positionSelectOpen}
+                      className="w-full justify-between"
+                      disabled={loadingPositions}
+                    >
+                      {formData.reportsToPositionId
+                        ? selectedReportsToPosition?.title || formData.reportsToPositionId
+                        : "No manager (top position)"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search positions..." />
+                      <CommandList>
+                        <CommandEmpty>No position found.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value=""
+                            onSelect={() => {
+                              setFormData({ ...formData, reportsToPositionId: "" });
+                              setPositionSelectOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                !formData.reportsToPositionId ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            No manager (top position)
+                          </CommandItem>
+                          {availablePositions.map((pos) => {
+                            const posId = pos._id.split(":").pop()!;
+                            return (
+                              <CommandItem
+                                key={pos._id}
+                                value={posId}
+                                onSelect={() => {
+                                  setFormData({ ...formData, reportsToPositionId: posId });
+                                  setPositionSelectOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.reportsToPositionId === posId ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span>{pos.title}</span>
+                                  {pos.code && <span className="text-xs text-muted-foreground">{pos.code}</span>}
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -238,98 +344,25 @@ export function PositionCard({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button onClick={handleSave} disabled={isSaving}>
-                <Save className="size-4 mr-2" />
-                Save
-              </Button>
-              <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
-                Cancel
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* View Mode */}
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Code</Label>
-                <p className="text-sm font-mono">{position.code || "-"}</p>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">Salary Range</Label>
-                <p className="text-sm">
-                  {position.salaryMin.toLocaleString()} - {position.salaryMax.toLocaleString()}{" "}
-                  {position.salaryCurrency} / {position.salaryFrequency}
-                </p>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">Description</Label>
-                <p className="text-sm">{position.description || "-"}</p>
-              </div>
-
-              {position.jobDescription?.summary && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Summary</Label>
-                  <p className="text-sm">{position.jobDescription.summary}</p>
-                </div>
-              )}
-
-              {position.jobDescription?.responsibilities && position.jobDescription.responsibilities.length > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Responsibilities</Label>
-                  <ul className="text-sm list-disc list-inside">
-                    {position.jobDescription.responsibilities.map((resp, i) => (
-                      <li key={i}>{resp}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {position.jobDescription?.requirements && position.jobDescription.requirements.length > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Requirements</Label>
-                  <ul className="text-sm list-disc list-inside">
-                    {position.jobDescription.requirements.map((req, i) => (
-                      <li key={i}>{req}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {position.jobDescription?.qualifications && position.jobDescription.qualifications.length > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Qualifications</Label>
-                  <ul className="text-sm list-disc list-inside">
-                    {position.jobDescription.qualifications.map((qual, i) => (
-                      <li key={i}>{qual}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 pt-4 border-t">
-              {permissions.canUpdate && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                  Edit
-                </Button>
-              )}
-              <Button onClick={onGeneratePDF} variant="outline" size="sm">
-                <FileDown className="size-4 mr-2" />
-                Job Description PDF
-              </Button>
-              {permissions.canDelete && (
-                <Button onClick={onDelete} variant="destructive" size="sm">
-                  <Trash2 className="size-4 mr-2" />
-                  Delete
-                </Button>
-              )}
-            </div>
-          </>
-        )}
+        <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
+          <Button onClick={handleSave} disabled={isSaving}>
+            <Save className="size-4 mr-2" />
+            Save
+          </Button>
+          <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button onClick={onGeneratePDF} variant="outline" size="sm">
+            <FileDown className="size-4 mr-2" />
+            Job Description
+          </Button>
+          {permissions.canDelete && (
+            <Button onClick={onDelete} variant="destructive" size="sm">
+              <Trash2 className="size-4 mr-2" />
+              Delete Position
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

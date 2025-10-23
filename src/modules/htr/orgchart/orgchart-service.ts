@@ -395,7 +395,7 @@ export class OrgChartService {
 
     const posResult = await orgchartsDB.put(position);
 
-    // Auto-create "Vacant" appointment
+    // Auto-create "Vacant" appointment (inherit reportsToPositionId from position)
     const apptId = this.generateId("appt");
     const vacantAppointment: Appointment = {
       _id: this.getPartitionKey(companyId, apptId),
@@ -405,6 +405,7 @@ export class OrgChartService {
       departmentId: data.departmentId,
       positionId: posId,
       isVacant: true,
+      reportsToPositionId: position.reportsToPositionId, // Inherit from position
       level: dept.level + 2,
       sortOrder: now,
       createdAt: now,
@@ -425,7 +426,7 @@ export class OrgChartService {
     companyId: string,
     positionId: string,
     userId: string,
-    updates: Partial<Pick<Position, "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency" | "jobDescription">>
+    updates: Partial<Pick<Position, "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency" | "jobDescription" | "reportsToPositionId">>
   ): Promise<Position> {
     const fullId = this.getPartitionKey(companyId, positionId);
     const doc = (await orgchartsDB.get(fullId)) as Position;
@@ -503,7 +504,7 @@ export class OrgChartService {
     companyId: string,
     appointmentId: string,
     userId: string,
-    updates: Partial<Pick<Appointment, "userId" | "isVacant" | "jobOffer" | "employmentContractSignedAt" | "employmentStartedAt" | "employmentEndedAt" | "terminationNoticeIssuedAt" | "terminationReason">>
+    updates: Partial<Pick<Appointment, "userId" | "isVacant" | "jobOffer" | "reportsToPositionId" | "employmentContractSignedAt" | "employmentStartedAt" | "employmentEndedAt" | "terminationNoticeIssuedAt" | "terminationReason">>
   ): Promise<Appointment> {
     const fullId = this.getPartitionKey(companyId, appointmentId);
     const doc = (await orgchartsDB.get(fullId)) as Appointment;
@@ -672,6 +673,7 @@ export class OrgChartService {
           salaryMax: pos.salaryMax,
           salaryCurrency: pos.salaryCurrency,
           salaryFrequency: pos.salaryFrequency,
+          reportsToPositionId: pos.reportsToPositionId,
           parentId: dept._id,
           level: pos.level,
           sortOrder: pos.sortOrder,

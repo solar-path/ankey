@@ -1,3 +1,9 @@
 src/modules/company/companySettings.page.tsx(159,15): error TS18047: 'country' is possibly 'null'.
 src/modules/company/companySettings.page.tsx(159,36): error TS18047: 'country' is possibly 'null'.
 src/modules/company/companySettings.page.tsx(160,35): error TS18047: 'country' is possibly 'null'.
+src/modules/htr/orgchart/components/PositionCard.tsx(51,3): error TS6133: 'departmentCode' is declared but its value is never read.
+src/modules/htr/orgchart/components/PositionCard.tsx(80,26): error TS2304: Cannot find name 'isEditing'.
+src/modules/htr/orgchart/components/PositionCard.tsx(83,22): error TS2304: Cannot find name 'isEditing'.
+src/modules/htr/orgchart/components/PositionCard.tsx(146,9): error TS6133: 'currentReportsToPosition' is declared but its value is never read.
+src/modules/htr/orgchart/orgchartView.page.tsx(202,9): error TS6133: 'handleAppointUser' is declared but its value is never read.
+src/modules/htr/orgchart/orgchartView.page.tsx(330,13): error TS2353: Object literal may only specify known properties, and 'parentDepartmentId' does not exist in type 'Partial<Pick<Department, "title" | "code" | "description" | "charter" | "headcount">>'.
