@@ -12,9 +12,31 @@ const PouchDB = window.PouchDB;
 
 const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://127.0.0.1:5984';
 
-// Initialize reference databases
-export const countriesDB = new PouchDB(`${COUCHDB_URL}/countries`);
-export const industriesDB = new PouchDB(`${COUCHDB_URL}/industries`);
+// Parse CouchDB URL to extract credentials
+const parseDBUrl = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    const username = urlObj.username || 'admin';
+    const password = urlObj.password || '';
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return { baseUrl, username, password };
+  } catch {
+    return { baseUrl: 'http://127.0.0.1:5984', username: 'admin', password: '' };
+  }
+};
+
+const { baseUrl, username, password } = parseDBUrl(COUCHDB_URL);
+
+// Initialize reference databases with proper authentication
+export const countriesDB = new PouchDB(`${baseUrl}/countries`, {
+  auth: username && password ? { username, password } : undefined,
+  skip_setup: true,
+});
+
+export const industriesDB = new PouchDB(`${baseUrl}/industries`, {
+  auth: username && password ? { username, password } : undefined,
+  skip_setup: true,
+});
 
 // Types
 export interface Country {

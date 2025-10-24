@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
@@ -35,6 +35,7 @@ export default function InviteUserPage() {
   const companyContext = useCompanyOptional();
   const companies = companyContext?.companies || [];
   const activeCompany = companyContext?.activeCompany;
+  const activeCompanyId = activeCompany?._id ?? null;
 
   const form = useForm<InviteUserInput>({
     resolver: valibotResolver(inviteUserSchema),
@@ -53,6 +54,7 @@ export default function InviteUserPage() {
         setIndustriesData(list);
       } catch (error) {
         console.error("Failed to load industries:", error);
+        toast.error("Failed to load industries data. Industry names will show as codes.");
       }
     };
     loadIndustries();
@@ -60,10 +62,29 @@ export default function InviteUserPage() {
 
   // Auto-select active company when it changes
   useEffect(() => {
-    if (activeCompany) {
-      form.setValue("companyIds", [activeCompany._id]);
+    const currentIds = form.getValues("companyIds") || [];
+
+    if (!activeCompanyId) {
+      if (currentIds.length === 0) {
+        return;
+      }
+
+      form.setValue("companyIds", [], {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+      return;
     }
-  }, [activeCompany]);
+
+    if (currentIds.length === 1 && currentIds[0] === activeCompanyId) {
+      return;
+    }
+
+    form.setValue("companyIds", [activeCompanyId], {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [activeCompanyId, form]);
 
   // Helper function to get industry title from code
   const getIndustryTitle = (code: string) => {
@@ -99,6 +120,29 @@ export default function InviteUserPage() {
   };
 
   const selectedCompanyIds = form.watch("companyIds") || [];
+
+  const toggleCompanySelection = useCallback(
+    (companyId: string, forceChecked?: boolean) => {
+      const currentIds = form.getValues("companyIds") || [];
+      const isSelected = currentIds.includes(companyId);
+      const shouldSelect =
+        typeof forceChecked === "boolean" ? forceChecked : !isSelected;
+
+      if (shouldSelect === isSelected) {
+        return;
+      }
+
+      const updatedIds = shouldSelect
+        ? [...currentIds, companyId]
+        : currentIds.filter((id) => id !== companyId);
+
+      form.setValue("companyIds", updatedIds, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    },
+    [form]
+  );
 
   return (
     <div className="container mx-auto py-6 max-w-2xl">
@@ -194,20 +238,13 @@ export default function InviteUserPage() {
                         <div
                           key={company._id}
                           className="flex items-center space-x-3 p-3 hover:bg-accent cursor-pointer"
-                          onClick={() => {
-                            const currentIds = form.getValues("companyIds") || [];
-                            if (isSelected) {
-                              form.setValue(
-                                "companyIds",
-                                currentIds.filter((id) => id !== company._id)
-                              );
-                            } else {
-                              form.setValue("companyIds", [...currentIds, company._id]);
-                            }
-                          }}
+                          onClick={() => toggleCompanySelection(company._id)}
                         >
                           <Checkbox
                             checked={isSelected}
+                            onCheckedChange={(checked) =>
+                              toggleCompanySelection(company._id, !!checked)
+                            }
                             onClick={(e) => e.stopPropagation()}
                           />
                           <div className="flex-1">
