@@ -32,6 +32,7 @@ export default function InviteUserPage() {
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [industriesData, setIndustriesData] = useState<Industry[]>([]);
+  const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
   const companyContext = useCompanyOptional();
   const companies = companyContext?.companies || [];
   const activeCompany = companyContext?.activeCompany;
@@ -46,11 +47,21 @@ export default function InviteUserPage() {
     },
   });
 
+  // Subscribe to form changes for selectedCompanyIds
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const ids = value.companyIds as string[] | undefined;
+      setSelectedCompanyIds(ids || []);
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   // Load industries data
   useEffect(() => {
     const loadIndustries = async () => {
       try {
         const list = await industries.getAll();
+        console.log(`Loaded ${list.length} industries`);
         setIndustriesData(list);
       } catch (error) {
         console.error("Failed to load industries:", error);
@@ -87,10 +98,11 @@ export default function InviteUserPage() {
   }, [activeCompanyId, form]);
 
   // Helper function to get industry title from code
-  const getIndustryTitle = (code: string) => {
+  const getIndustryTitle = (code: string | number) => {
     if (!code) return "Unknown";
-    const industry = industriesData.find((i) => i.code.toString() === code);
-    return industry?.title || code;
+    const codeStr = code.toString();
+    const industry = industriesData.find((i) => i.code.toString() === codeStr);
+    return industry?.title || codeStr;
   };
 
   const onSubmit = async (data: InviteUserInput) => {
@@ -119,22 +131,14 @@ export default function InviteUserPage() {
     }
   };
 
-  const selectedCompanyIds = form.watch("companyIds") || [];
-
   const toggleCompanySelection = useCallback(
-    (companyId: string, forceChecked?: boolean) => {
+    (companyId: string) => {
       const currentIds = form.getValues("companyIds") || [];
       const isSelected = currentIds.includes(companyId);
-      const shouldSelect =
-        typeof forceChecked === "boolean" ? forceChecked : !isSelected;
 
-      if (shouldSelect === isSelected) {
-        return;
-      }
-
-      const updatedIds = shouldSelect
-        ? [...currentIds, companyId]
-        : currentIds.filter((id) => id !== companyId);
+      const updatedIds = isSelected
+        ? currentIds.filter((id) => id !== companyId)
+        : [...currentIds, companyId];
 
       form.setValue("companyIds", updatedIds, {
         shouldDirty: true,
@@ -235,17 +239,15 @@ export default function InviteUserPage() {
                       const isSelected = selectedCompanyIds.includes(company._id);
 
                       return (
-                        <div
+                        <label
                           key={company._id}
-                          className="flex items-center space-x-3 p-3 hover:bg-accent cursor-pointer"
-                          onClick={() => toggleCompanySelection(company._id)}
+                          htmlFor={`company-${company._id}`}
+                          className="flex items-center space-x-3 p-3 hover:bg-accent cursor-pointer transition-colors"
                         >
                           <Checkbox
+                            id={`company-${company._id}`}
                             checked={isSelected}
-                            onCheckedChange={(checked) =>
-                              toggleCompanySelection(company._id, !!checked)
-                            }
-                            onClick={(e) => e.stopPropagation()}
+                            onCheckedChange={() => toggleCompanySelection(company._id)}
                           />
                           <div className="flex-1">
                             <p className="text-sm font-medium">{company.title}</p>
@@ -253,7 +255,7 @@ export default function InviteUserPage() {
                               {company.type} • {getIndustryTitle(company.industry)}
                             </p>
                           </div>
-                        </div>
+                        </label>
                       );
                     })}
                   </div>
