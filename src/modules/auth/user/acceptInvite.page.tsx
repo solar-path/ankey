@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import * as v from "valibot";
 import { UserService } from "./user-service";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/lib/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/ui/card";
 import {
@@ -38,6 +39,7 @@ type AcceptInvitationExistingUserInput = v.InferOutput<typeof acceptInvitationEx
 
 export default function AcceptInvitePage() {
   const [location, navigate] = useLocation();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -46,11 +48,15 @@ export default function AcceptInvitePage() {
 
   // Get email from URL query params
   useEffect(() => {
-    const params = new URLSearchParams(location.split("?")[1]);
+    const params = new URLSearchParams(window.location.search);
     const email = params.get("email");
     if (email) {
-      setUserEmail(decodeURIComponent(email));
-      checkUserStatus(decodeURIComponent(email));
+      const decodedEmail = decodeURIComponent(email);
+      console.log("Email from URL:", decodedEmail);
+      setUserEmail(decodedEmail);
+      checkUserStatus(decodedEmail);
+    } else {
+      console.warn("No email parameter found in URL");
     }
   }, [location]);
 
@@ -58,8 +64,9 @@ export default function AcceptInvitePage() {
     setCheckingUser(true);
     try {
       const user = await UserService.getUserByEmail(email);
-      // If user has a password set, they're an existing user
-      setIsNewUser(user === null);
+      // If user is not verified, they're a new user who needs to set password
+      // Invited users are created with verified: false
+      setIsNewUser(user === null || !user.verified);
     } catch (error) {
       // If user not found, they're new
       setIsNewUser(true);
@@ -102,9 +109,10 @@ export default function AcceptInvitePage() {
 
     setLoading(true);
     try {
+      // Сценарий №1: Новый пользователь - verify account + set password
       await UserService.acceptInvitation(data.email, data.code, data.password);
       setSuccess(true);
-      toast.success("Invitation accepted! You can now sign in.");
+      toast.success("Account verified! Please sign in.");
 
       setTimeout(() => {
         navigate("/auth/signin");
@@ -119,13 +127,23 @@ export default function AcceptInvitePage() {
   const onSubmitExistingUser = async (data: AcceptInvitationExistingUserInput) => {
     setLoading(true);
     try {
+      // Существующий пользователь - просто ассоциируем с компанией
       await UserService.acceptInvitation(data.email, data.code);
       setSuccess(true);
-      toast.success("Invitation accepted! You can now sign in.");
 
-      setTimeout(() => {
-        navigate("/auth/signin");
-      }, 2000);
+      // Сценарий №2: Зарегистрирован, но НЕ авторизован
+      if (!isAuthenticated) {
+        toast.success("Invitation accepted! Please sign in.");
+        setTimeout(() => {
+          navigate("/auth/signin");
+        }, 2000);
+      } else {
+        // Сценарий №3: Зарегистрирован И авторизован
+        toast.success("Invitation accepted! Redirecting to company dashboard...");
+        setTimeout(() => {
+          navigate("/company");
+        }, 2000);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to accept invitation");
     } finally {
@@ -157,7 +175,11 @@ export default function AcceptInvitePage() {
             </div>
             <CardTitle>Invitation Accepted!</CardTitle>
             <CardDescription>
-              Your invitation has been successfully accepted. Redirecting to sign in...
+              {isNewUser
+                ? "Your account has been verified. Redirecting to sign in..."
+                : isAuthenticated
+                  ? "Redirecting to company dashboard..."
+                  : "Redirecting to sign in..."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -165,16 +187,22 @@ export default function AcceptInvitePage() {
     );
   }
 
-  if (isNewUser === null) {
+  // If email is missing or user status not determined, show error
+  if (!userEmail || isNewUser === null) {
     return (
       <div className="container mx-auto px-4 py-20 flex justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Accept Invitation</CardTitle>
+            <CardTitle>Invalid Invitation Link</CardTitle>
             <CardDescription>
-              Please check your email for the invitation
+              This invitation link is invalid or incomplete. Please check your email for the correct invitation link.
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/auth/signin")} className="w-full">
+              Go to Sign In
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
@@ -187,8 +215,8 @@ export default function AcceptInvitePage() {
           <CardTitle>Accept Invitation</CardTitle>
           <CardDescription>
             {isNewUser
-              ? "Enter your 6-digit code and create a password"
-              : "Enter your 6-digit code to confirm"}
+              ? "Enter your 6-digit code and create a password to verify your account"
+              : "Enter your 6-digit code to accept the invitation"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -347,7 +375,9 @@ export default function AcceptInvitePage() {
                 />
 
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
-                  You'll use your existing password to sign in after accepting this invitation.
+                  {isAuthenticated
+                    ? "You will be redirected to the company dashboard after accepting this invitation."
+                    : "You'll use your existing password to sign in after accepting this invitation."}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
