@@ -131,8 +131,12 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
    * Switch to a different company (public API)
    */
   const switchCompany = useCallback(async (companyId: string) => {
-    await switchCompanyInternal(companyId, companies);
-  }, [companies]);
+    // Use the latest companies from state via a ref pattern to avoid dependency
+    setCompanies(currentCompanies => {
+      switchCompanyInternal(companyId, currentCompanies);
+      return currentCompanies;
+    });
+  }, []);
 
   /**
    * Refresh current company data from database

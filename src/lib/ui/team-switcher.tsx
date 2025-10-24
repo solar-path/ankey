@@ -104,7 +104,7 @@ export function TeamSwitcher({
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{activeCompany?.title}</span>
-                  <span className="truncate text-xs text-muted-foreground">Workspace</span>
+                  <span className="truncate text-xs text-muted-foreground capitalize">{activeCompany?.type || 'Company'}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -179,7 +179,7 @@ export function TeamSwitcher({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeCompany.title}</span>
-                <span className="truncate text-xs text-muted-foreground">Workspace</span>
+                <span className="truncate text-xs text-muted-foreground capitalize">{activeCompany.type || 'Company'}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>

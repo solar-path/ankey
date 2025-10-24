@@ -12,8 +12,17 @@ import type { OrgChart } from "./orgchart.types";
 import { QTable } from "@/lib/ui/QTable.ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/lib/ui/badge";
-import { Plus, Eye } from "lucide-react";
+import { Button } from "@/lib/ui/button";
+import { Plus, Eye, MoreHorizontal, Copy, Send } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/lib/ui/dropdown-menu";
 
 export default function OrgChartListPage() {
   const { user } = useAuth();
@@ -60,6 +69,40 @@ export default function OrgChartListPage() {
   const handleRowClick = (chart: OrgChart) => {
     const chartId = chart._id.split(":").pop()!;
     setLocation(`/orgchart/${chartId}`);
+  };
+
+  const handleDuplicate = async (chart: OrgChart, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeCompany || !user) return;
+
+    try {
+      const chartId = chart._id.split(":").pop()!;
+      await OrgChartService.duplicateOrgChart(activeCompany._id, chartId, user._id);
+      toast.success("Organizational chart duplicated successfully");
+      await loadOrgCharts();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to duplicate orgchart");
+    }
+  };
+
+  const handleSendForApproval = async (chart: OrgChart, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeCompany || !user) return;
+
+    // Only draft charts can be sent for approval
+    if (chart.status !== "draft") {
+      toast.error("Only draft charts can be sent for approval");
+      return;
+    }
+
+    try {
+      const chartId = chart._id.split(":").pop()!;
+      await OrgChartService.submitForApproval(activeCompany._id, chartId, user._id);
+      toast.success("Organizational chart sent for approval");
+      await loadOrgCharts();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send for approval");
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -166,13 +209,37 @@ export default function OrgChartListPage() {
           onClick: handleCreateOrgChart,
         }}
         rowActions={(chart) => (
-          <button
-            onClick={() => handleRowClick(chart)}
-            className="flex items-center gap-2 text-sm hover:text-primary"
-          >
-            <Eye className="size-4" />
-            View
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleRowClick(chart)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={(e) => handleDuplicate(chart, e)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => handleSendForApproval(chart, e)}
+                disabled={chart.status !== "draft"}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Send for Approval
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
         emptyMessage="No organizational charts yet. Create your first one to get started."
         enableRowSelection={false}

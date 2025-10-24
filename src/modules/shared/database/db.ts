@@ -198,6 +198,8 @@ export interface User {
   verificationCode?: string;
   resetToken?: string;
   resetTokenExpiry?: number;
+  invitationToken?: string; // 6-digit token for invitation
+  invitationExpiry?: number; // 24 hours from invitation
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   createdAt: number;

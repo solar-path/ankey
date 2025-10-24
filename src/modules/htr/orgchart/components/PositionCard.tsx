@@ -55,11 +55,12 @@ export function PositionCard({
   const { activeCompany } = useCompany();
   const permissions = getPositionPermissions(orgChartStatus);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [positionSelectOpen, setPositionSelectOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [originalData, setOriginalData] = useState({
     title: position.title,
     description: position.description || "",
     reportsToPositionId: position.reportsToPositionId || "",
@@ -72,6 +73,8 @@ export function PositionCard({
     requirements: position.jobDescription?.requirements?.join("\n") || "",
     qualifications: position.jobDescription?.qualifications?.join("\n") || "",
   });
+
+  const [formData, setFormData] = useState(originalData);
 
   // Load available positions for reporting relationship
   useEffect(() => {
@@ -100,7 +103,21 @@ export function PositionCard({
     }
   };
 
+  // Check if form has changes
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+
+  // Validate required fields
+  const isValid =
+    formData.title.trim() !== "" &&
+    formData.salaryMin > 0 &&
+    formData.salaryMax > 0 &&
+    formData.salaryMax > formData.salaryMin; // Max must be greater than Min
+
   const handleSave = async () => {
+    if (!isValid) {
+      return;
+    }
+
     setIsSaving(true);
     try {
       await onSave({
@@ -119,13 +136,29 @@ export function PositionCard({
           qualifications: formData.qualifications.split("\n").filter(Boolean),
         },
       });
+
+      // Update original data and exit editing mode
+      setOriginalData(formData);
+      setIsEditing(false);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setFormData({
+    setFormData(originalData);
+    setIsEditing(false);
+  };
+
+  const handleFieldClick = () => {
+    if (!isEditing) {
+      setIsEditing(true);
+    }
+  };
+
+  // Sync with position changes
+  useEffect(() => {
+    const newData = {
       title: position.title,
       description: position.description || "",
       reportsToPositionId: position.reportsToPositionId || "",
@@ -137,8 +170,11 @@ export function PositionCard({
       responsibilities: position.jobDescription?.responsibilities?.join("\n") || "",
       requirements: position.jobDescription?.requirements?.join("\n") || "",
       qualifications: position.jobDescription?.qualifications?.join("\n") || "",
-    });
-  };
+    };
+    setOriginalData(newData);
+    setFormData(newData);
+    setIsEditing(false);
+  }, [position]);
 
   const selectedReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === formData.reportsToPositionId);
 
@@ -159,12 +195,22 @@ export function PositionCard({
       <CardContent className="space-y-4">
         <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
+                <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+                {isEditing ? (
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className={formData.title.trim() === "" ? "border-destructive" : ""}
+                  />
+                ) : (
+                  <div
+                    onClick={handleFieldClick}
+                    className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+                  >
+                    <p className="text-sm font-medium">{formData.title}</p>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -238,22 +284,51 @@ export function PositionCard({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="salaryMin">Min Salary</Label>
-                  <Input
-                    id="salaryMin"
-                    type="number"
-                    value={formData.salaryMin}
-                    onChange={(e) => setFormData({ ...formData, salaryMin: parseFloat(e.target.value) })}
-                  />
+                  <Label htmlFor="salaryMin">Min Salary <span className="text-destructive">*</span></Label>
+                  {isEditing ? (
+                    <Input
+                      id="salaryMin"
+                      type="number"
+                      value={formData.salaryMin}
+                      onChange={(e) => setFormData({ ...formData, salaryMin: parseFloat(e.target.value) })}
+                      className={formData.salaryMin <= 0 ? "border-destructive" : ""}
+                    />
+                  ) : (
+                    <div
+                      onClick={handleFieldClick}
+                      className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+                    >
+                      <p className="text-sm font-medium">
+                        {formData.salaryMin.toLocaleString()} {formData.salaryCurrency}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="salaryMax">Max Salary</Label>
-                  <Input
-                    id="salaryMax"
-                    type="number"
-                    value={formData.salaryMax}
-                    onChange={(e) => setFormData({ ...formData, salaryMax: parseFloat(e.target.value) })}
-                  />
+                  <Label htmlFor="salaryMax">Max Salary <span className="text-destructive">*</span></Label>
+                  {isEditing ? (
+                    <>
+                      <Input
+                        id="salaryMax"
+                        type="number"
+                        value={formData.salaryMax}
+                        onChange={(e) => setFormData({ ...formData, salaryMax: parseFloat(e.target.value) })}
+                        className={formData.salaryMax <= 0 || formData.salaryMax <= formData.salaryMin ? "border-destructive" : ""}
+                      />
+                      {formData.salaryMax <= formData.salaryMin && formData.salaryMax > 0 && (
+                        <p className="text-xs text-destructive mt-1">Must be greater than Min Salary</p>
+                      )}
+                    </>
+                  ) : (
+                    <div
+                      onClick={handleFieldClick}
+                      className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+                    >
+                      <p className="text-sm font-medium">
+                        {formData.salaryMax.toLocaleString()} {formData.salaryCurrency}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -342,13 +417,22 @@ export function PositionCard({
             </div>
 
         <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
-          <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="size-4 mr-2" />
-            Save
-          </Button>
-          <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
-            Cancel
-          </Button>
+          {hasChanges && (
+            <>
+              <Button onClick={handleSave} disabled={isSaving || !isValid}>
+                <Save className="size-4 mr-2" />
+                Save
+              </Button>
+              <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
+                Cancel
+              </Button>
+            </>
+          )}
+          {!isValid && isEditing && (
+            <p className="text-sm text-destructive">
+              * Title, Min Salary, and Max Salary are required. Max Salary must be greater than Min Salary.
+            </p>
+          )}
           <Button onClick={onGeneratePDF} variant="outline" size="sm">
             <FileDown className="size-4 mr-2" />
             Job Description

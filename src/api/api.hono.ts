@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { sendVerificationEmail, sendPasswordResetEmail, sendInquiryConfirmationEmail } from "./mail.settings";
+import { sendVerificationEmail, sendPasswordResetEmail, sendInquiryConfirmationEmail, sendUserInvitationEmail } from "./mail.settings";
 
 const app = new Hono();
 
@@ -181,6 +181,65 @@ inquiry.post("/send-confirmation", async (c) => {
 
 // Mount inquiry routes
 app.route("/api/inquiry", inquiry);
+
+// User routes
+const users = new Hono();
+
+/**
+ * Send user invitation email
+ * POST /api/users/send-invitation
+ * Body: { email: string, invitationCode: string, isNewUser: boolean }
+ */
+users.post("/send-invitation", async (c) => {
+  try {
+    const { email, invitationCode, isNewUser } = await c.req.json();
+
+    if (!email || !invitationCode || typeof isNewUser !== 'boolean') {
+      return c.json({ error: "Email, invitationCode, and isNewUser are required" }, 400);
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return c.json({ error: "Invalid email format" }, 400);
+    }
+
+    const result = await sendUserInvitationEmail({
+      email,
+      invitationCode,
+      isNewUser,
+    });
+
+    if (result.success) {
+      return c.json({
+        success: true,
+        message: "User invitation email sent successfully",
+        messageId: result.messageId,
+      });
+    } else {
+      console.error("Failed to send user invitation email:", result.error);
+      return c.json(
+        {
+          error: "Failed to send user invitation email",
+          details: result.error instanceof Error ? result.error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  } catch (error) {
+    console.error("Error in send-user-invitation:", error);
+    return c.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
+// Mount user routes
+app.route("/api/users", users);
 
 // 404 handler
 app.notFound((c) => {

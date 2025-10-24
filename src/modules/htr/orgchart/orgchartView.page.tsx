@@ -43,7 +43,7 @@ export default function OrgChartViewPage() {
     loadOrgChart();
   }, [activeCompany, id]);
 
-  const loadOrgChart = async () => {
+  const loadOrgChart = async (preserveExpandedState = false) => {
     if (!activeCompany || !id || !user) return;
 
     try {
@@ -58,8 +58,10 @@ export default function OrgChartViewPage() {
         setOrgChartStatus(orgChart.status);
       }
 
-      // Start with collapsed tree (empty Set)
-      setExpandedIds(new Set());
+      // Only reset expanded state on initial load
+      if (!preserveExpandedState) {
+        setExpandedIds(new Set());
+      }
     } catch (error) {
       console.error("Failed to load orgchart:", error);
       toast.error("Failed to load organizational chart");
@@ -158,7 +160,7 @@ export default function OrgChartViewPage() {
       }
 
       toast.success("Updated successfully");
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to update");
       throw error;
@@ -168,41 +170,33 @@ export default function OrgChartViewPage() {
   const handleAddDepartment = async (parent?: OrgChartRow) => {
     if (!activeCompany || !user || !id || saving) return;
 
-    // Prompt for required fields
-    const title = prompt("Enter department title:");
-    if (!title || !title.trim()) {
-      toast.error("Department title is required");
-      return;
-    }
-
-    const code = prompt("Enter department code (e.g., FIN-001):");
-    if (!code || !code.trim()) {
-      toast.error("Department code is required");
-      return;
-    }
-
-    const headcountStr = prompt("Enter headcount (number of positions):");
-    const headcount = parseInt(headcountStr || "0");
-    if (isNaN(headcount) || headcount <= 0) {
-      toast.error("Headcount must be a positive number");
-      return;
-    }
-
     try {
       setSaving(true);
       const parentId = parent?.type === "department" ? parent._id.split(":").pop() : undefined;
 
-      await OrgChartService.createDepartment(activeCompany._id, user._id, {
+      // Create empty department with default values
+      const result = await OrgChartService.createDepartment(activeCompany._id, user._id, {
         orgChartId: id,
-        title: title.trim(),
+        title: parentId ? "New Sub-Department" : "New Department",
         description: "",
-        code: code.trim(),
-        headcount,
+        code: `DEPT-${Date.now()}`, // Temporary unique code
+        headcount: 1,
         parentDepartmentId: parentId,
       });
 
       toast.success(parentId ? "Sub-department created" : "Department created");
-      await loadOrgChart();
+
+      // Reload and auto-select the newly created department
+      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      setOrgChartRows(rows);
+
+      const newDeptRow = rows.find(
+        (r) => r.type === "department" && r._id === result.department._id
+      );
+
+      if (newDeptRow) {
+        setSelectedRow(newDeptRow);
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to create department");
     } finally {
@@ -216,19 +210,30 @@ export default function OrgChartViewPage() {
     try {
       const deptId = parent._id.split(":").pop()!;
 
-      await OrgChartService.createPosition(activeCompany._id, user._id, {
+      const result = await OrgChartService.createPosition(activeCompany._id, user._id, {
         orgChartId: id,
         departmentId: deptId,
         title: "New Position",
         description: "",
-        salaryMin: 0,
-        salaryMax: 0,
+        salaryMin: 1, // Default minimum salary
+        salaryMax: 2, // Default maximum salary (must be > min)
         salaryCurrency: "USD",
         salaryFrequency: "monthly",
       });
 
       toast.success("Position created with auto-generated code");
-      await loadOrgChart();
+
+      // Reload and auto-select the newly created position
+      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      setOrgChartRows(rows);
+
+      const newPosRow = rows.find(
+        (r) => r.type === "position" && r._id === result.position._id
+      );
+
+      if (newPosRow) {
+        setSelectedRow(newPosRow);
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to create position");
     }
@@ -254,7 +259,7 @@ export default function OrgChartViewPage() {
 
       toast.success("Deleted successfully");
       setSelectedRow(null);
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to delete");
     }
@@ -310,7 +315,7 @@ export default function OrgChartViewPage() {
         }
       }
 
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to duplicate");
     }
@@ -322,7 +327,7 @@ export default function OrgChartViewPage() {
     try {
       await OrgChartService.submitForApproval(activeCompany._id, id, user._id);
       toast.success("Submitted for approval");
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to submit");
     }
@@ -334,7 +339,7 @@ export default function OrgChartViewPage() {
     try {
       await OrgChartService.approve(activeCompany._id, id, user._id);
       toast.success("Approved successfully");
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to approve");
     }
@@ -345,7 +350,7 @@ export default function OrgChartViewPage() {
 
     try {
       // Just reload to ensure sync
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
       toast.success("Organizational chart saved");
     } catch (error: any) {
       toast.error(error.message || "Failed to save");
@@ -409,7 +414,7 @@ export default function OrgChartViewPage() {
           break;
       }
 
-      await loadOrgChart();
+      await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
       toast.error(error.message || "Failed to move item");
     } finally {

@@ -157,6 +157,41 @@ export class OrgChartService {
     });
   }
 
+  static async duplicateOrgChart(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
+    const now = Date.now();
+
+    // Get the original orgchart
+    const original = await this.getOrgChart(companyId, orgChartId);
+    if (!original) {
+      throw new Error("OrgChart not found");
+    }
+
+    // Calculate new version
+    const allOrgCharts = await this.getCompanyOrgCharts(companyId);
+    const approvedCount = allOrgCharts.filter((o) => o.status === "approved" || o.status === "revoked").length;
+    const draftCount = allOrgCharts.filter((o) => o.status === "draft" || o.status === "pending_approval").length;
+    const version = `${approvedCount + 1}.${draftCount}`;
+
+    // Create new orgchart with duplicated data
+    const newDocId = this.generateId("orgchart");
+    const duplicated: OrgChart = {
+      _id: this.getPartitionKey(companyId, newDocId),
+      type: "orgchart",
+      companyId,
+      title: `${original.title} (Copy)`,
+      description: original.description,
+      status: "draft",
+      version,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: userId,
+      updatedBy: userId,
+    };
+
+    const result = await orgchartsDB.put(duplicated);
+    return { ...duplicated, _rev: result.rev };
+  }
+
   static async approve(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
     const now = Date.now();
     const fullId = this.getPartitionKey(companyId, orgChartId);
@@ -201,23 +236,6 @@ export class OrgChartService {
     const now = Date.now();
     const deptId = this.generateId("dept");
     const deptPartitionKey = this.getPartitionKey(companyId, deptId);
-
-    // Check if title is unique within this orgchart
-    const existingDepts = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "department",
-        orgChartId: data.orgChartId,
-        title: data.title,
-      },
-    });
-
-    if (existingDepts.docs.length > 0) {
-      throw new Error(`Department with title "${data.title}" already exists in this organizational chart`);
-    }
 
     // Calculate level
     let level = 0;
@@ -410,15 +428,7 @@ export class OrgChartService {
       },
     });
 
-    // Validate headcount limit
-    const currentPositionCount = existingPositions.docs.length;
-    if (currentPositionCount >= dept.headcount) {
-      throw new Error(
-        `Cannot create position: Department "${dept.title}" has reached its headcount limit of ${dept.headcount}`
-      );
-    }
-
-    const positionNumber = currentPositionCount + 1;
+    const positionNumber = existingPositions.docs.length + 1;
     const deptCode = dept.code || "DEPT";
     const autoCode = `${deptCode}-${String(positionNumber).padStart(3, "0")}`;
 
@@ -527,6 +537,32 @@ export class OrgChartService {
     // Get position to calculate level
     const pos = (await orgchartsDB.get(this.getPartitionKey(companyId, data.positionId))) as Position;
 
+    // Get department to check headcount limit
+    const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
+
+    // Count existing NON-VACANT appointments in this department
+    const existingAppointments = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "appointment",
+        departmentId: data.departmentId,
+        isVacant: false, // Only count actual people, not vacancies
+      },
+    });
+
+    // If creating a non-vacant appointment, check headcount limit
+    if (!data.isVacant) {
+      const currentHeadcount = existingAppointments.docs.length;
+      if (currentHeadcount >= dept.headcount) {
+        throw new Error(
+          `Cannot create appointment: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} people`
+        );
+      }
+    }
+
     const appointment: Appointment = {
       _id: this.getPartitionKey(companyId, apptId),
       type: "appointment",
@@ -552,6 +588,31 @@ export class OrgChartService {
   ): Promise<Appointment> {
     const fullId = this.getPartitionKey(companyId, appointmentId);
     const doc = (await orgchartsDB.get(fullId)) as Appointment;
+
+    // If changing from vacant to non-vacant, check headcount limit
+    if (doc.isVacant && updates.isVacant === false) {
+      const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, doc.departmentId))) as Department;
+
+      // Count existing NON-VACANT appointments in this department (excluding current)
+      const existingAppointments = await orgchartsDB.find({
+        selector: {
+          _id: {
+            $gte: `company:${companyId}:`,
+            $lte: `company:${companyId}:\ufff0`,
+          },
+          type: "appointment",
+          departmentId: doc.departmentId,
+          isVacant: false,
+        },
+      });
+
+      const currentHeadcount = existingAppointments.docs.filter((a: any) => a._id !== fullId).length;
+      if (currentHeadcount >= dept.headcount) {
+        throw new Error(
+          `Cannot assign user: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} people`
+        );
+      }
+    }
 
     const updated: Appointment = {
       ...doc,

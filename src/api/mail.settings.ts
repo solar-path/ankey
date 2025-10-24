@@ -274,6 +274,81 @@ export const emailTemplates = {
     text: `Employment Agreement - ${data.positionTitle}\n\nDear ${data.employeeName},\n\nYour job offer has been approved! Please review and sign your employment agreement to complete the onboarding process.\n\nSign your agreement here: ${data.signLink}\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\n${data.companyName} HR Team`,
   }),
 
+  userInvitation: (data: {
+    email: string;
+    invitationCode: string;
+    invitationLink: string;
+    isNewUser: boolean;
+  }) => ({
+    subject: "You've been invited to join YSollo",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h1 style="color: #000; margin: 0;">Welcome to YSollo!</h1>
+          </div>
+
+          <div style="background-color: #fff; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px;">
+            <h2 style="color: #000; margin-top: 0;">You've Been Invited</h2>
+            <p>${
+              data.isNewUser
+                ? "You've been invited to join YSollo. To complete your registration, please use the verification code below:"
+                : "You've been invited to join a new company. Please use the verification code below to confirm:"
+            }</p>
+
+            <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6c757d;">Your verification code:</p>
+              <h1 style="color: #000; font-size: 36px; letter-spacing: 8px; margin: 0; font-family: monospace;">${
+                data.invitationCode
+              }</h1>
+            </div>
+
+            ${
+              data.isNewUser
+                ? '<p><strong>Important:</strong> You will need to create a password when accepting the invitation.</p>'
+                : '<p><strong>Note:</strong> Use your existing password to sign in after accepting the invitation.</p>'
+            }
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${
+                data.invitationLink
+              }" style="background-color: #000; color: #fff; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Accept Invitation</a>
+            </div>
+
+            <p style="font-size: 12px; color: #6c757d;">If the button doesn't work, you can copy and paste this link:</p>
+            <p style="font-size: 11px; background-color: #f8f9fa; padding: 8px; border-radius: 4px; word-break: break-all;">${
+              data.invitationLink
+            }</p>
+
+            <p><strong>This invitation will expire in 24 hours.</strong></p>
+
+            <p>If you didn't expect this invitation, please ignore this email or contact support.</p>
+          </div>
+
+          <div style="margin-top: 20px; text-align: center; color: #6c757d; font-size: 12px;">
+            <p>© ${new Date().getFullYear()} YSollo. All rights reserved.</p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `Welcome to YSollo!\n\n${
+      data.isNewUser
+        ? "You've been invited to join YSollo. To complete your registration, use the verification code below."
+        : "You've been invited to join a new company. Use the verification code below to confirm."
+    }\n\nYour verification code: ${data.invitationCode}\n\n${
+      data.isNewUser
+        ? "Important: You will need to create a password when accepting the invitation."
+        : "Note: Use your existing password to sign in after accepting the invitation."
+    }\n\nAccept invitation: ${
+      data.invitationLink
+    }\n\nThis invitation will expire in 24 hours.\n\nIf you didn't expect this invitation, please ignore this email.`,
+  }),
+
   inquiryConfirmation: (data: {
     name: string;
     inquiryId: string;
@@ -448,6 +523,24 @@ export async function sendInquiryConfirmationEmail(data: {
     name: data.name,
     inquiryId: data.inquiryId,
     trackLink,
+  });
+
+  return sendEmail(data.email, template.subject, template.html, template.text);
+}
+
+export async function sendUserInvitationEmail(data: {
+  email: string;
+  invitationCode: string;
+  isNewUser: boolean;
+}) {
+  const appUrl = process.env.APP_URL || "http://localhost:5173";
+  const invitationLink = `${appUrl}/auth/accept-invitation?email=${encodeURIComponent(data.email)}`;
+
+  const template = emailTemplates.userInvitation({
+    email: data.email,
+    invitationCode: data.invitationCode,
+    invitationLink,
+    isNewUser: data.isNewUser,
   });
 
   return sendEmail(data.email, template.subject, template.html, template.text);

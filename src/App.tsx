@@ -18,6 +18,9 @@ import ForgotPasswordPage from "./modules/auth/forgotPassword.page";
 import VerifyAccountPage from "./modules/auth/verifyAccount.page";
 import OrgChartListPage from "./modules/htr/orgchart/orgchartList.page";
 import OrgChartViewPage from "./modules/htr/orgchart/orgchartView.page";
+import UserManagementPage from "./modules/auth/user/user.page";
+import InviteUserPage from "./modules/auth/user/invite.user.page";
+import AcceptInvitePage from "./modules/auth/user/acceptInvite.page";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
@@ -37,6 +40,7 @@ function App() {
     "/auth/signup",
     "/auth/forgot-password",
     "/auth/verify-account",
+    "/auth/accept-invitation",
   ];
 
   // Private routes are protected by PrivateLayout component
@@ -73,6 +77,10 @@ function App() {
                   path="/auth/verify-account"
                   component={VerifyAccountPage}
                 />
+                <Route
+                  path="/auth/accept-invitation"
+                  component={AcceptInvitePage}
+                />
                 <Route component={NotFoundPage} />
               </Switch>
             </PublicLayout>
@@ -86,6 +94,8 @@ function App() {
                 <Route path="/company/:id/members" component={CompanyMembersPage} />
                 <Route path="/orgchart/:id" component={OrgChartViewPage} />
                 <Route path="/orgchart" component={OrgChartListPage} />
+                <Route path="/users/invite" component={InviteUserPage} />
+                <Route path="/users" component={UserManagementPage} />
                 <Route path="/account/:rest*" component={AccountPage} />
                 <Route component={NotFoundPage} />
               </Switch>

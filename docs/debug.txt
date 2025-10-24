@@ -1,26 +1,17 @@
 vite v7.1.11 building for production...
 transforming...
-
-[2m[71.67ms][22m [@tailwindcss/vite] Generate CSS (build)
-[2m[29.78ms][22m  [2m ↳ [22mSetup compiler
-[2m[ 1.33ms][22m  [2m ↳ [22mSetup scanner
-[2m[ 8.85ms][22m  [2m ↳ [22mScan for candidates
-[2m[22.65ms][22m  [2m ↳ [22mBuild CSS
-[2m[ 0.00ms][22m  [2m ↳ [22mBuild Source Map
-[2m[15.94ms][22m [@tailwindcss/vite] Optimize CSS
-
-✓ 2833 modules transformed.
+✓ 2837 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                              0.67 kB │ gzip:   0.36 kB
-dist/assets/index-CzmUfL-3.css              77.77 kB │ gzip:  13.40 kB
+dist/assets/index-CaFgJiVk.css              79.71 kB │ gzip:  13.71 kB
 dist/assets/purify.es-B6FQ9oRL.js           22.57 kB │ gzip:   8.71 kB
-dist/assets/index.es-BnX7c1-Q.js           159.36 kB │ gzip:  53.24 kB
+dist/assets/index.es-C0hIyvrK.js           159.36 kB │ gzip:  53.24 kB
 dist/assets/html2canvas.esm-B0tyYwQk.js    202.36 kB │ gzip:  47.70 kB
-dist/assets/index-BmL56ld3.js            1,436.65 kB │ gzip: 437.81 kB
+dist/assets/index-DULp0ls8.js            1,469.78 kB │ gzip: 445.11 kB
 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 2.76s
+✓ built in 2.79s
