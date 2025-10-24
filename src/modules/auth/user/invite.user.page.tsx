@@ -105,6 +105,16 @@ export default function InviteUserPage() {
     return industry?.title || codeStr;
   };
 
+  // Helper function to get company type label
+  const getCompanyTypeLabel = (type: "workspace" | "supplier" | "customer") => {
+    const labels = {
+      workspace: "Workspace",
+      supplier: "Supplier",
+      customer: "Customer",
+    };
+    return labels[type] || type;
+  };
+
   const onSubmit = async (data: InviteUserInput) => {
     try {
       setLoading(true);
@@ -252,7 +262,7 @@ export default function InviteUserPage() {
                           <div className="flex-1">
                             <p className="text-sm font-medium">{company.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {company.type} • {getIndustryTitle(company.industry)}
+                              {getCompanyTypeLabel(company.type)} • {getIndustryTitle(company.industry)}
                             </p>
                           </div>
                         </label>
