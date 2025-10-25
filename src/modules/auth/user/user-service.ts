@@ -134,6 +134,7 @@ export class UserService {
       user.invitationToken = invitationCode;
       user.invitationExpiry = invitationExpiry;
       user.updatedAt = Date.now();
+      console.log(`[inviteUser] 🔄 Updating existing user ${user.email} with NEW invitationCode: ${invitationCode}`);
       await usersDB.put(user);
     } else {
       // New user - create with temporary password
@@ -155,7 +156,9 @@ export class UserService {
       };
 
       // Save user to database
+      console.log(`[inviteUser] Creating new user with email: ${user.email}, invitationCode: ${invitationCode}`);
       await usersDB.put(user);
+      console.log(`[inviteUser] User created successfully with ID: ${user._id}`);
     }
 
     // Associate user with companies if provided
@@ -207,11 +210,17 @@ export class UserService {
         }
       } catch (error) {
         console.error("Error sending invitation email:", error);
-        // Log code to console as fallback
-        console.log(`Invitation for ${user.email}:`);
-        console.log(`Code: ${invitationCode}`);
       }
     }
+
+    // ALWAYS log invitation code to console for development
+    console.log(`\n🔑 ═══════════════════════════════════════════`);
+    console.log(`📧 Invitation for: ${user.email}`);
+    console.log(`🔢 Code: ${invitationCode}`);
+    console.log(`👤 New User: ${isNewUser ? 'Yes' : 'No (existing user)'}`);
+    console.log(`⏰ Expires: ${new Date(invitationExpiry).toLocaleString()}`);
+    console.log(`🔗 Link: ${import.meta.env.VITE_APP_URL || 'http://localhost:5173'}/auth/accept-invitation?email=${encodeURIComponent(user.email)}`);
+    console.log(`═══════════════════════════════════════════\n`);
 
     return {
       message: isNewUser
@@ -334,8 +343,11 @@ export class UserService {
         limit: 1,
       });
 
+      console.log(`[acceptInvitation] Searching for user with email: ${email}`);
+      console.log(`[acceptInvitation] Found ${users.docs.length} users`);
+
       if (users.docs.length === 0) {
-        throw new Error("User not found");
+        throw new Error("User not found. Please check if the invitation email is correct or contact support.");
       }
 
       const user = users.docs[0] as User;
