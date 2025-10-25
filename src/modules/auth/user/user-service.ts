@@ -118,10 +118,14 @@ export class UserService {
 
   // Invite user (creates user and sends invitation email)
   static async inviteUser(input: InviteUserInput) {
+    console.log(`[inviteUser] ▶️ Starting invitation process for email: ${input.email}`);
     const validated = v.parse(inviteUserSchema, input);
+    console.log(`[inviteUser] ✅ Validation passed`);
 
     // Check if user already exists
+    console.log(`[inviteUser] 🔍 Checking if user exists...`);
     const existingUser = await this.getUserByEmail(validated.email);
+    console.log(`[inviteUser] User exists:`, existingUser ? 'YES' : 'NO');
 
     let user: User;
     let isNewUser = false;
@@ -222,6 +226,7 @@ export class UserService {
     console.log(`🔗 Link: ${import.meta.env.VITE_APP_URL || 'http://localhost:5173'}/auth/accept-invitation?email=${encodeURIComponent(user.email)}`);
     console.log(`═══════════════════════════════════════════\n`);
 
+    console.log(`[inviteUser] ✅ Invitation process completed successfully`);
     return {
       message: isNewUser
         ? "User invited successfully. They will receive an email with a 6-digit code."
