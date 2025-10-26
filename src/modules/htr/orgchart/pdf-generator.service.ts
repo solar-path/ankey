@@ -3,16 +3,9 @@
  * Generates professional PDF documents for organizational chart entities
  */
 
-import { jsPDF } from "jspdf";
+import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Department, Position, Appointment } from "./orgchart.types";
-
-// Extend jsPDF type to include autoTable
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: typeof autoTable;
-  }
-}
 
 // Company info for headers/footers
 interface CompanyInfo {
@@ -709,6 +702,74 @@ export class TerminationNoticePDF extends PDFGenerator {
 }
 
 // ============================================================================
+// 6. OrgChart Table Generator (Landscape)
+// ============================================================================
+
+export class OrgChartTablePDF extends PDFGenerator {
+  constructor(companyInfo: CompanyInfo) {
+    super(companyInfo);
+    // Override to landscape orientation
+    this.doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+    this.pageWidth = this.doc.internal.pageSize.getWidth();
+    this.pageHeight = this.doc.internal.pageSize.getHeight();
+  }
+
+  generate(rows: any[], orgChartTitle: string) {
+    this.addHeader(`ORGANIZATIONAL CHART: ${orgChartTitle}`);
+
+    // Prepare table data
+    const tableData: any[] = [];
+
+    rows.forEach((row: any) => {
+      if (row.type === "department" || row.type === "position" || row.type === "appointment") {
+        const indent = "  ".repeat(row.level);
+
+        tableData.push([
+          `${indent}${row.title}`,
+          row.type,
+          row.code || "-",
+          row.headcount?.toString() || "-",
+          row.salaryMin ? `${row.salaryMin}-${row.salaryMax} ${row.salaryCurrency}` : "-",
+          row.isVacant !== undefined ? (row.isVacant ? "Vacant" : "Filled") : "-",
+        ]);
+      }
+    });
+
+    // Add table using autoTable
+    autoTable(this.doc, {
+      head: [["Title", "Type", "Code", "Headcount", "Salary Range", "Status"]],
+      body: tableData,
+      startY: this.currentY,
+      theme: "grid",
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+      },
+      columnStyles: {
+        0: { cellWidth: 80 }, // Title with indentation
+        1: { cellWidth: 30 }, // Type
+        2: { cellWidth: 30 }, // Code
+        3: { cellWidth: 25 }, // Headcount
+        4: { cellWidth: 50 }, // Salary
+        5: { cellWidth: 25 }, // Status
+      },
+      margin: { top: this.margin, left: this.margin, right: this.margin },
+    });
+
+    this.save(`OrgChart_${orgChartTitle.replace(/\s+/g, "_")}.pdf`);
+  }
+}
+
+// ============================================================================
 // Factory Function
 // ============================================================================
 
@@ -769,5 +830,10 @@ export class PDFGeneratorFactory {
   ) {
     const generator = new TerminationNoticePDF(this.companyInfo);
     generator.generate(appointment, position, department, employeeName, employeeId, terminationDate, reason);
+  }
+
+  static generateOrgChartTable(rows: any[], orgChartTitle: string) {
+    const generator = new OrgChartTablePDF(this.companyInfo);
+    generator.generate(rows, orgChartTitle);
   }
 }

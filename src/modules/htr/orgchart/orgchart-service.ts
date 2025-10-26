@@ -712,6 +712,97 @@ export class OrgChartService {
   }
 
   // ============================================================================
+  // Payroll Forecast
+  // ============================================================================
+
+  /**
+   * Calculate payroll forecast for 18 months
+   * Returns min, max, and average monthly costs
+   */
+  static async getPayrollForecast(
+    companyId: string,
+    orgChartId: string
+  ): Promise<{
+    months: string[];
+    minPayroll: number[];
+    maxPayroll: number[];
+    avgPayroll: number[];
+  }> {
+    // Get all positions for this orgchart
+    const result = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "position",
+        orgChartId,
+      },
+    });
+
+    const positions = result.docs as Position[];
+
+    // Calculate total min, max, and average salaries
+    let totalMin = 0;
+    let totalMax = 0;
+
+    for (const pos of positions) {
+      // Convert all salaries to monthly
+      const monthlyMin = this.convertToMonthly(pos.salaryMin, pos.salaryFrequency);
+      const monthlyMax = this.convertToMonthly(pos.salaryMax, pos.salaryFrequency);
+
+      totalMin += monthlyMin;
+      totalMax += monthlyMax;
+    }
+
+    const totalAvg = (totalMin + totalMax) / 2;
+
+    // Generate 18 months of data
+    const months: string[] = [];
+    const minPayroll: number[] = [];
+    const maxPayroll: number[] = [];
+    const avgPayroll: number[] = [];
+
+    const now = new Date();
+    for (let i = 0; i < 18; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      months.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+      minPayroll.push(totalMin);
+      maxPayroll.push(totalMax);
+      avgPayroll.push(totalAvg);
+    }
+
+    return {
+      months,
+      minPayroll,
+      maxPayroll,
+      avgPayroll,
+    };
+  }
+
+  /**
+   * Convert salary to monthly amount based on frequency
+   */
+  private static convertToMonthly(amount: number, frequency: string): number {
+    switch (frequency) {
+      case 'monthly':
+        return amount;
+      case 'annual':
+        return amount / 12;
+      case 'weekly':
+        return amount * 52 / 12;
+      case 'daily':
+        return amount * 260 / 12; // Assuming 260 working days per year
+      case 'hourly':
+        return amount * 2080 / 12; // Assuming 2080 working hours per year
+      case 'per_job':
+        return amount; // Treat as monthly for simplicity
+      default:
+        return amount;
+    }
+  }
+
+  // ============================================================================
   // Hierarchical Data Retrieval (for Table Display)
   // ============================================================================
 

@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCompany } from "@/lib/company-context";
 import { OrgChartService } from "./orgchart-service";
 import { PDFGeneratorFactory } from "./pdf-generator.service";
+import { XLSXExportService } from "./xlsx-export.service";
 import type { OrgChartRow, OrgChartStatus, Department, Position, Appointment } from "./orgchart.types";
 import {
   getDepartmentPermissions,
@@ -16,11 +17,13 @@ import {
 import { Button } from "@/lib/ui/button";
 import { Badge } from "@/lib/ui/badge";
 import { Input } from "@/lib/ui/input";
-import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2, ArrowUp, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/lib/ui/dialog";
+import { Building2, Search, Send, FileText, ChevronRight, ChevronDown, Plus, Users, UserCheck, Save, Trash2, ArrowUp, Copy, BarChart3, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { DepartmentCard } from "./components/DepartmentCard";
 import { PositionCard } from "./components/PositionCard";
 import { AppointmentCard } from "./components/AppointmentCard";
+import { PayrollForecastChart } from "./components/PayrollForecastChart";
 import { cn } from "@/lib/utils";
 
 export default function OrgChartViewPage() {
@@ -38,6 +41,8 @@ export default function OrgChartViewPage() {
   const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set(["department", "position", "appointment"]));
   const [draggedRow, setDraggedRow] = useState<OrgChartRow | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; row: OrgChartRow } | null>(null);
+  const [showPayrollForecast, setShowPayrollForecast] = useState(false);
+  const [payrollForecastData, setPayrollForecastData] = useState<any>(null);
 
   useEffect(() => {
     loadOrgChart();
@@ -355,6 +360,57 @@ export default function OrgChartViewPage() {
       toast.success("Organizational chart saved");
     } catch (error: any) {
       toast.error(error.message || "Failed to save");
+    }
+  };
+
+  // ============================================================================
+  // Report Generation Handlers
+  // ============================================================================
+
+  const handleExportToPDF = async () => {
+    if (!activeCompany || !id) return;
+
+    try {
+      PDFGeneratorFactory.setCompanyInfo({
+        name: activeCompany.title,
+        email: "hr@company.com",
+        phone: "+1 (555) 123-4567",
+        address: "123 Business St, City, State 12345",
+      });
+
+      const orgChart = orgChartRows.find((r) => r.type === "orgchart");
+      const orgChartTitle = orgChart?.title || "Organizational Chart";
+
+      PDFGeneratorFactory.generateOrgChartTable(orgChartRows, orgChartTitle);
+      toast.success("PDF generated successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate PDF");
+    }
+  };
+
+  const handleExportToExcel = async () => {
+    if (!activeCompany || !id) return;
+
+    try {
+      const orgChart = orgChartRows.find((r) => r.type === "orgchart");
+      const orgChartTitle = orgChart?.title || "Organizational Chart";
+
+      XLSXExportService.exportOrgChartToExcel(orgChartRows, orgChartTitle);
+      toast.success("Excel file generated successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate Excel file");
+    }
+  };
+
+  const handleShowPayrollForecast = async () => {
+    if (!activeCompany || !id) return;
+
+    try {
+      const data = await OrgChartService.getPayrollForecast(activeCompany._id, id);
+      setPayrollForecastData(data);
+      setShowPayrollForecast(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load payroll forecast");
     }
   };
 
@@ -760,6 +816,37 @@ export default function OrgChartViewPage() {
               <Save className="size-4 mr-2" />
               Save
             </Button>
+
+            {/* Reports Menu */}
+            <Button onClick={handleExportToPDF} variant="outline" size="sm" title="Export to PDF">
+              <FileDown className="size-4 mr-2" />
+              PDF
+            </Button>
+
+            <Button onClick={handleExportToExcel} variant="outline" size="sm" title="Export to Excel">
+              <FileDown className="size-4 mr-2" />
+              Excel
+            </Button>
+
+            <Dialog open={showPayrollForecast} onOpenChange={setShowPayrollForecast}>
+              <DialogTrigger asChild>
+                <Button onClick={handleShowPayrollForecast} variant="outline" size="sm" title="Payroll Forecast">
+                  <BarChart3 className="size-4 mr-2" />
+                  Payroll Forecast
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl">
+                <DialogHeader>
+                  <DialogTitle>Payroll Forecast</DialogTitle>
+                  <DialogDescription>
+                    18-month payroll projection based on current organizational structure
+                  </DialogDescription>
+                </DialogHeader>
+                {payrollForecastData && (
+                  <PayrollForecastChart data={payrollForecastData} currency="USD" />
+                )}
+              </DialogContent>
+            </Dialog>
 
             {orgChartStatus === "draft" && (
               <Button onClick={handleSubmitForApproval} size="sm">
