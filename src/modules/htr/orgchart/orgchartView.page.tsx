@@ -235,6 +235,7 @@ export default function OrgChartViewPage() {
         setSelectedRow(newPosRow);
       }
     } catch (error: any) {
+      // Display error message from service (includes headcount details)
       toast.error(error.message || "Failed to create position");
     }
   };

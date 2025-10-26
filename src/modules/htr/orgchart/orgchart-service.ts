@@ -402,6 +402,45 @@ export class OrgChartService {
   }
 
   // ============================================================================
+  // Headcount Utilities
+  // ============================================================================
+
+  /**
+   * Get headcount statistics for a department
+   * Returns total headcount limit, filled count (non-vacant appointments), unfilled count, and total appointments
+   */
+  static async getDepartmentHeadcount(
+    companyId: string,
+    departmentId: string
+  ): Promise<{ headcount: number; filled: number; unfilled: number; totalAppointments: number }> {
+    // Get department
+    const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, departmentId))) as Department;
+
+    // Get ALL appointments in this department
+    const allAppointments = await orgchartsDB.find({
+      selector: {
+        _id: {
+          $gte: `company:${companyId}:`,
+          $lte: `company:${companyId}:\ufff0`,
+        },
+        type: "appointment",
+        departmentId,
+      },
+    });
+
+    const totalAppointments = allAppointments.docs.length;
+    const filled = allAppointments.docs.filter((a: any) => !a.isVacant).length;
+    const unfilled = Math.max(0, dept.headcount - totalAppointments);
+
+    return {
+      headcount: dept.headcount,
+      filled,
+      unfilled,
+      totalAppointments,
+    };
+  }
+
+  // ============================================================================
   // Position CRUD
   // ============================================================================
 
@@ -415,6 +454,17 @@ export class OrgChartService {
 
     // Get department to calculate level and generate code
     const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
+
+    // Check headcount limit before creating position
+    // Creating position will auto-create 1 vacant appointment, so check total appointments
+    const headcountStats = await this.getDepartmentHeadcount(companyId, data.departmentId);
+
+    // Total appointments (including the one we're about to create) cannot exceed headcount
+    if (headcountStats.totalAppointments >= dept.headcount) {
+      throw new Error(
+        `Cannot create position: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${dept.headcount - headcountStats.filled} vacant)`
+      );
+    }
 
     // Count existing positions in this department to generate sequential code
     const existingPositions = await orgchartsDB.find({
@@ -540,27 +590,14 @@ export class OrgChartService {
     // Get department to check headcount limit
     const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
 
-    // Count existing NON-VACANT appointments in this department
-    const existingAppointments = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "appointment",
-        departmentId: data.departmentId,
-        isVacant: false, // Only count actual people, not vacancies
-      },
-    });
+    // Check headcount limit: total appointments cannot exceed headcount
+    const headcountStats = await this.getDepartmentHeadcount(companyId, data.departmentId);
 
-    // If creating a non-vacant appointment, check headcount limit
-    if (!data.isVacant) {
-      const currentHeadcount = existingAppointments.docs.length;
-      if (currentHeadcount >= dept.headcount) {
-        throw new Error(
-          `Cannot create appointment: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} people`
-        );
-      }
+    if (headcountStats.totalAppointments >= dept.headcount) {
+      const appointmentType = data.isVacant ? "vacant appointment" : "appointment";
+      throw new Error(
+        `Cannot create ${appointmentType}: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${headcountStats.totalAppointments - headcountStats.filled} vacant)`
+      );
     }
 
     const appointment: Appointment = {
@@ -592,24 +629,11 @@ export class OrgChartService {
     // If changing from vacant to non-vacant, check headcount limit
     if (doc.isVacant && updates.isVacant === false) {
       const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, doc.departmentId))) as Department;
+      const headcountStats = await this.getDepartmentHeadcount(companyId, doc.departmentId);
 
-      // Count existing NON-VACANT appointments in this department (excluding current)
-      const existingAppointments = await orgchartsDB.find({
-        selector: {
-          _id: {
-            $gte: `company:${companyId}:`,
-            $lte: `company:${companyId}:\ufff0`,
-          },
-          type: "appointment",
-          departmentId: doc.departmentId,
-          isVacant: false,
-        },
-      });
-
-      const currentHeadcount = existingAppointments.docs.filter((a: any) => a._id !== fullId).length;
-      if (currentHeadcount >= dept.headcount) {
+      if (headcountStats.filled >= dept.headcount) {
         throw new Error(
-          `Cannot assign user: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} people`
+          `Cannot assign user: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${headcountStats.totalAppointments - headcountStats.filled} vacant)`
         );
       }
     }

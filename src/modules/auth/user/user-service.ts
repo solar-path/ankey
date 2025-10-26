@@ -1,4 +1,4 @@
-import { usersDB, userCompaniesDB, type User, type UserCompany } from "@/modules/shared/database/db";
+import { usersDB, remoteUsersDB, userCompaniesDB, remoteUserCompaniesDB, type User, type UserCompany } from "@/modules/shared/database/db";
 import * as v from "valibot";
 import {
   inviteUserSchema,
@@ -97,7 +97,7 @@ export class UserService {
     }
   }
 
-  // Get user by email
+  // Get user by email from LOCAL PouchDB
   static async getUserByEmail(email: string) {
     try {
       const result = await usersDB.find({
@@ -116,16 +116,36 @@ export class UserService {
     }
   }
 
+  // Get user by email from REMOTE CouchDB (for invitation flow)
+  static async getUserByEmailFromRemote(email: string) {
+    try {
+      const result = await remoteUsersDB.find({
+        selector: { email, type: "user" },
+        limit: 1,
+      });
+
+      if (result.docs.length === 0) {
+        return null;
+      }
+
+      return this.sanitizeUser(result.docs[0] as User);
+    } catch (error) {
+      console.error("Error fetching user by email from remote:", error);
+      throw new Error("Failed to fetch user from remote");
+    }
+  }
+
   // Invite user (creates user and sends invitation email)
+  // IMPORTANT: Works directly with REMOTE CouchDB to ensure cross-device availability
   static async inviteUser(input: InviteUserInput) {
     console.log(`[inviteUser] ▶️ Starting invitation process for email: ${input.email}`);
     const validated = v.parse(inviteUserSchema, input);
     console.log(`[inviteUser] ✅ Validation passed`);
 
-    // Check if user already exists
-    console.log(`[inviteUser] 🔍 Checking if user exists...`);
-    const existingUser = await this.getUserByEmail(validated.email);
-    console.log(`[inviteUser] User exists:`, existingUser ? 'YES' : 'NO');
+    // Check if user already exists in REMOTE CouchDB (not local)
+    console.log(`[inviteUser] 🔍 Checking if user exists in REMOTE CouchDB...`);
+    const existingUser = await this.getUserByEmailFromRemote(validated.email);
+    console.log(`[inviteUser] User exists in remote:`, existingUser ? 'YES' : 'NO');
 
     let user: User;
     let isNewUser = false;
@@ -133,15 +153,16 @@ export class UserService {
     const invitationExpiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     if (existingUser) {
-      // Existing user - just update invitation token
-      user = await usersDB.get(existingUser._id) as User;
+      // Existing user - just update invitation token in REMOTE
+      user = await remoteUsersDB.get(existingUser._id) as User;
       user.invitationToken = invitationCode;
       user.invitationExpiry = invitationExpiry;
       user.updatedAt = Date.now();
       console.log(`[inviteUser] 🔄 Updating existing user ${user.email} with NEW invitationCode: ${invitationCode}`);
-      await usersDB.put(user);
+      await remoteUsersDB.put(user);
+      console.log(`[inviteUser] ✅ User updated in REMOTE CouchDB`);
     } else {
-      // New user - create with temporary password
+      // New user - create with temporary password directly in REMOTE
       isNewUser = true;
       const tempPassword = generateRandomPassword();
       const hashedPassword = await hashPassword(tempPassword);
@@ -159,17 +180,18 @@ export class UserService {
         updatedAt: Date.now(),
       };
 
-      // Save user to database
-      console.log(`[inviteUser] Creating new user with email: ${user.email}, invitationCode: ${invitationCode}`);
-      await usersDB.put(user);
-      console.log(`[inviteUser] User created successfully with ID: ${user._id}`);
+      // Save user to REMOTE database (CouchDB directly)
+      console.log(`[inviteUser] 💾 Creating new user in REMOTE CouchDB with email: ${user.email}, invitationCode: ${invitationCode}`);
+      await remoteUsersDB.put(user);
+      console.log(`[inviteUser] ✅ User created successfully in REMOTE CouchDB with ID: ${user._id}`);
     }
 
-    // Associate user with companies if provided
+    // Associate user with companies if provided (save to REMOTE)
     if (validated.companyIds && validated.companyIds.length > 0) {
+      console.log(`[inviteUser] 🏢 Associating user with ${validated.companyIds.length} companies in REMOTE...`);
       for (const companyId of validated.companyIds) {
-        // Check if association already exists
-        const existing = await userCompaniesDB.find({
+        // Check if association already exists in REMOTE
+        const existing = await remoteUserCompaniesDB.find({
           selector: {
             type: "user_company",
             userId: user._id,
@@ -186,7 +208,10 @@ export class UserService {
             role: "member",
             createdAt: Date.now(),
           };
-          await userCompaniesDB.put(userCompany);
+          await remoteUserCompaniesDB.put(userCompany);
+          console.log(`[inviteUser] ✅ Associated with company: ${companyId}`);
+        } else {
+          console.log(`[inviteUser] ⏭️ Association already exists for company: ${companyId}`);
         }
       }
     }
@@ -340,16 +365,17 @@ export class UserService {
   }
 
   // Accept invitation
+  // IMPORTANT: Works directly with REMOTE CouchDB to ensure cross-device availability
   static async acceptInvitation(email: string, invitationCode: string, newPassword?: string) {
     try {
-      // Find user by email
-      const users = await usersDB.find({
+      // Find user by email in REMOTE CouchDB
+      console.log(`[acceptInvitation] 🔍 Searching for user in REMOTE CouchDB with email: ${email}`);
+      const users = await remoteUsersDB.find({
         selector: { email, type: "user" },
         limit: 1,
       });
 
-      console.log(`[acceptInvitation] Searching for user with email: ${email}`);
-      console.log(`[acceptInvitation] Found ${users.docs.length} users`);
+      console.log(`[acceptInvitation] Found ${users.docs.length} users in remote`);
 
       if (users.docs.length === 0) {
         throw new Error("User not found. Please check if the invitation email is correct or contact support.");
@@ -372,13 +398,15 @@ export class UserService {
         user.password = await hashPassword(newPassword);
       }
 
-      // Mark user as verified and clear invitation token
+      // Mark user as verified and clear invitation token in REMOTE
       user.verified = true;
       user.invitationToken = undefined;
       user.invitationExpiry = undefined;
       user.updatedAt = Date.now();
 
-      await usersDB.put(user);
+      console.log(`[acceptInvitation] ✅ Updating user in REMOTE CouchDB: verified=true`);
+      await remoteUsersDB.put(user);
+      console.log(`[acceptInvitation] ✅ Invitation accepted successfully in REMOTE CouchDB`);
 
       return {
         message: "Invitation accepted successfully. You can now sign in.",
