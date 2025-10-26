@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Reference for LLMs
+
+When working with this codebase, always reference these comprehensive guides:
+- **[@docs/couchDb.llm.txt](docs/couchDb.llm.txt)** - Complete PouchDB/CouchDB reference (1200+ lines)
+- **[@docs/shadcn.llm.txt](docs/shadcn.llm.txt)** - Shadcn/ui components reference
+
+These files contain detailed API documentation, best practices, and examples for the core technologies used in this project.
+
 ## Project Overview
 
 **Ankey** is a local-first multi-tenant authentication and company management system built with React, TypeScript, and PouchDB/CouchDB. It features:
@@ -35,6 +43,16 @@ bun run import:data
 ```
 
 ## Core Architecture
+
+### Data & State Management Philosophy
+
+Ankey uses a three-layer architecture with clear separation of concerns:
+
+1. **PouchDB/CouchDB** - Persistent data (users, sessions, reference data, company data)
+2. **Zustand** - UI state (auth state, active company, breadcrumbs, tasks)
+3. **Hono API** - Backend operations (email sending, external integrations)
+
+**Key Principle:** PouchDB for data that needs offline-first sync, Zustand for ephemeral UI state.
 
 ### Dual Server Architecture
 
@@ -132,22 +150,37 @@ chartOfAccountsDB / remoteChartOfAccountsDB // Chart of accounts
 
 See [docs/MULTITENANCY.md](docs/MULTITENANCY.md) for detailed architecture and examples.
 
-### State Management (Context Providers)
+### State Management (Zustand + Legacy Context Wrappers)
 
-Three context providers wrap the app in [App.tsx](src/App.tsx):
+**Current approach:** Zustand stores with legacy Context API wrappers for backward compatibility.
 
-1. **AuthProvider** - User authentication state (`useAuth()`)
-2. **CompanyProvider** - Multi-tenancy/active company (`useCompany()`)
-3. **TaskProvider** - Task management (`useTask()`)
-
-**Pattern:** Always throw error if context used outside provider:
+**Zustand Stores** (recommended for new code):
 ```typescript
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
-  return context;
-}
+// Located in src/modules/shared/stores/
+import { useAuthStore } from "@/modules/shared/stores";
+import { useCompanyStore } from "@/modules/shared/stores";
+import { useBreadcrumbStore } from "@/modules/shared/stores";
+import { useTaskStore } from "@/modules/shared/stores";
+
+const { user, isAuthenticated, login, logout } = useAuthStore();
+const { activeCompany, setActiveCompany } = useCompanyStore();
 ```
+
+**Legacy Context Wrappers** (for backward compatibility):
+```typescript
+// Located in src/lib/
+import { useAuth } from "@/lib/auth-context";
+import { useCompany } from "@/lib/company-context";
+import { useBreadcrumb } from "@/lib/breadcrumb-context";
+import { useTask } from "@/lib/task-context";
+```
+
+**Why Zustand?**
+- Better performance (no unnecessary re-renders)
+- Built-in localStorage persistence
+- Simpler testing
+- Less boilerplate
+- DevTools support
 
 ### Form Validation (Valibot)
 
@@ -185,38 +218,69 @@ const form = useForm<SignUpInput>({
 
 ```
 src/
-├── api/
-│   ├── server.ts                # Hono server entry point
-│   ├── api.hono.ts              # API routes (auth, inquiry)
-│   └── mail.settings.ts         # SMTP email configuration
-├── lib/
-│   ├── auth-context.tsx         # Auth state provider
-│   ├── company-context.tsx      # Multi-tenancy state
-│   ├── task-context.tsx         # Task state
-│   └── ui/                      # Shadcn/Radix components (~40 files)
+├── api/                                 # Backend API (Hono)
+│   ├── server.ts                        # Server entry point
+│   ├── api.hono.ts                      # API routes
+│   └── mail.settings.ts                 # SMTP email configuration
+│
 ├── modules/
-│   ├── auth/
-│   │   ├── auth-service.ts      # Auth business logic
-│   │   ├── auth.valibot.ts      # Auth validation schemas
+│   ├── auth/                            # Authentication module
+│   │   ├── auth.valibot.ts             # Validation schemas
+│   │   ├── auth-service.ts             # Business logic
 │   │   ├── signin.page.tsx
 │   │   ├── signup.page.tsx
 │   │   ├── verifyAccount.page.tsx
 │   │   ├── forgotPassword.page.tsx
-│   │   └── account/             # Account settings pages
-│   ├── company/
+│   │   └── account/                    # Account settings pages
+│   │
+│   ├── company/                         # Company module
+│   │   ├── company-service.ts          # Company CRUD
+│   │   ├── company-members-service.ts  # Team management
 │   │   └── companyDashboard.page.tsx
-│   ├── inquiry/
-│   │   ├── inquiry-service.ts   # Contact form business logic
+│   │
+│   ├── htr/                            # Human Resources module
+│   │   └── orgchart/                   # Org chart management
+│   │       ├── orgchart.types.ts
+│   │       ├── orgchart-service.ts
+│   │       ├── pdf-generator.service.ts
+│   │       └── orgchartView.page.tsx
+│   │
+│   ├── inquiry/                        # Inquiry module
+│   │   ├── inquiry-service.ts
 │   │   ├── contactUs.page.tsx
 │   │   └── trackInquiry.page.tsx
+│   │
 │   ├── pricing/
 │   │   └── offers.page.tsx
-│   └── shared/
-│       └── database/
-│           └── db.ts            # PouchDB setup, types, sync
-└── routes/
-    ├── public.layout.tsx        # Public wrapper (header/footer)
-    ├── private.layout.tsx       # Protected wrapper (sidebar/breadcrumbs)
+│   │
+│   └── shared/                          # Shared modules
+│       ├── database/                    # PouchDB layer
+│       │   ├── db.ts                   # Global DBs (users, sessions, etc.)
+│       │   ├── company-db-factory.ts   # Partitioned DB access
+│       │   ├── reference-data.ts       # Countries, Industries
+│       │   └── index.ts
+│       │
+│       └── stores/                      # Zustand stores
+│           ├── auth.store.ts           # Auth UI state
+│           ├── company.store.ts        # Company UI state
+│           ├── breadcrumb.store.ts     # Breadcrumb UI state
+│           ├── task.store.ts           # Task UI state
+│           └── index.ts
+│
+├── lib/                                # Legacy & UI components
+│   ├── auth-context.tsx                # Legacy wrapper (uses Zustand)
+│   ├── company-context.tsx             # Legacy wrapper
+│   ├── breadcrumb-context.tsx          # Legacy wrapper
+│   ├── task-context.tsx                # Legacy wrapper
+│   └── ui/                             # Shadcn/Radix components
+│       ├── button.tsx
+│       ├── input.tsx
+│       ├── QTableHierarchical.ui.tsx  # Custom hierarchical table
+│       └── ... (~40 components)
+│
+└── routes/                             # Page layouts
+    ├── public.layout.tsx               # Public wrapper
+    ├── private.layout.tsx              # Protected wrapper
     ├── home.page.tsx
     ├── learn.page.tsx
     └── 404.page.tsx
@@ -236,12 +300,13 @@ const buttonVariants = cva("base-classes", {
 });
 ```
 
-**Custom components** (prefixed with `Q`):
+**Custom enhanced components** (prefixed with `Q`):
 - `QPassword.ui.tsx` - Password with strength meter
 - `QPhone.ui.tsx` - Phone input
 - `QDatePicker.ui.tsx` - Date picker
 - `QBadge.ui.tsx` - Enhanced badge
 - `QTable.ui.tsx` - Data table
+- `QTableHierarchical.ui.tsx` - Hierarchical table with expand/collapse, inline editing (Asana-style)
 - `QuillEditor.ui.tsx` - Rich text editor
 
 ## Important Patterns
@@ -412,11 +477,75 @@ bun run dev
 4. **PouchDB CDN approach** - loaded via CDN in index.html instead of npm package (see [POUCHDB_FIX.md](POUCHDB_FIX.md) for alternative approach)
 5. **No 2FA implementation** yet (structure exists in schema, utilities available in [twoFactor.utils.ts](src/modules/auth/account/twoFactor.utils.ts))
 
+## Key Features
+
+### Organizational Chart Module
+
+The OrgChart module provides hierarchical organizational structure management:
+
+**Hierarchy:**
+```
+OrgChart (level 0)
+  ├─ Department (level 1)
+  │   ├─ Position (level 2)
+  │   │   └─ Appointment (level 3)
+  │   └─ Sub-Department (level 2)
+  │       └─ Position (level 3)
+```
+
+**Document Types:**
+- **OrgChart** - Top-level organizational chart with statuses (draft, pending_approval, approved, revoked)
+- **Department** - Organizational units with headcount limits and charters
+- **Position** - Job positions with salary ranges and job descriptions
+- **Appointment** - User assignments to positions (can be vacant)
+
+**Features:**
+- Inline editing (Asana-style)
+- Cascade delete protection
+- Auto-creation of head positions when creating departments
+- Status-based permissions
+- **PDF Generation**: Department charters, job descriptions, job offers, employment contracts, termination notices
+
+**Files:**
+- [src/modules/htr/orgchart/orgchart-service.ts](src/modules/htr/orgchart/orgchart-service.ts)
+- [src/modules/htr/orgchart/pdf-generator.service.ts](src/modules/htr/orgchart/pdf-generator.service.ts)
+- [src/lib/ui/QTableHierarchical.ui.tsx](src/lib/ui/QTableHierarchical.ui.tsx)
+
+See [docs/ORGCHART.md](docs/ORGCHART.md) for detailed documentation.
+
+### Reference Data
+
+**Pre-loaded reference data:**
+- **Countries** - 244 countries with currency, phone codes, timezones
+- **Industries** - 170 industries with GICS codes and descriptions
+
+**Usage:**
+```typescript
+import { countries, industries } from '@/modules/shared/database/reference-data';
+
+const allCountries = await countries.getAll();
+const usa = await countries.getByCode('US');
+const options = await countries.getOptions(); // For select dropdowns
+```
+
+**Import data:**
+```bash
+bun run import:data
+```
+
+See [docs/reference-data-guide.md](docs/reference-data-guide.md) for examples.
+
 ## Additional Documentation
 
-- [POUCHDB_FIX.md](POUCHDB_FIX.md) - PouchDB integration troubleshooting
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Complete architecture guide (PouchDB/Zustand/Hono separation)
+- [docs/MULTITENANCY.md](docs/MULTITENANCY.md) - Multi-tenancy architecture and partitioned databases
+- [docs/ORGCHART.md](docs/ORGCHART.md) - Organizational chart module documentation
 - [docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md) - Complete CouchDB setup guide
+- [docs/reference-data-guide.md](docs/reference-data-guide.md) - Working with countries and industries
+- [docs/REFACTORING_SUMMARY.md](docs/REFACTORING_SUMMARY.md) - State management migration summary
+- [POUCHDB_FIX.md](POUCHDB_FIX.md) - PouchDB integration troubleshooting
 - [docs/couchDb.llm.txt](docs/couchDb.llm.txt) - Comprehensive PouchDB/CouchDB reference
+- [docs/shadcn.llm.txt](docs/shadcn.llm.txt) - Shadcn/ui components reference
 - [README.md](README.md) - Project overview and quick start
 
 ## Technology Stack
@@ -426,17 +555,79 @@ bun run dev
 - Vite 7.1.7 (build tool)
 - Wouter 3.7.1 (routing)
 - PouchDB 9.0.0 (local database)
+- Zustand 5.0.8 (state management)
 - Valibot 1.1.0 (validation)
 - React Hook Form 7.65 (forms)
 - Tailwind CSS 4.1.15 (styling)
 - Shadcn/ui + Radix UI (components)
 - Sonner 2.0.7 (toasts)
+- jsPDF 3.0.3 + jspdf-autotable 5.0.2 (PDF generation)
 
 **Backend:**
 - Hono 4.10.2 (API framework)
 - @hono/node-server 1.19.5 (Node.js adapter)
 - Nodemailer 7.0.9 (SMTP email)
-- CouchDB (remote database & sync)
+- CouchDB 3.5+ (remote database & sync, partitioned databases)
 
 **Runtime:**
 - Bun (package manager & runtime)
+
+## Best Practices
+
+### When to use PouchDB vs Zustand
+
+**Use PouchDB for:**
+✅ User credentials and profiles
+✅ Session tokens
+✅ Reference data (countries, industries)
+✅ Company data (orgcharts, chart of accounts)
+✅ Any data that needs offline-first functionality
+✅ Data that needs to sync across devices
+
+**Use Zustand for:**
+✅ Current user UI representation
+✅ Active company selection
+✅ Breadcrumb state
+✅ Modal open/closed states
+✅ Form state (temporary input values)
+✅ Any ephemeral UI state
+
+**Use Hono API for:**
+✅ Email sending
+✅ External API calls
+✅ Server-side validation
+✅ File uploads (future)
+✅ Operations that cannot run in browser
+
+### Database Query Performance
+
+Always include `type` discriminator and use indexes:
+
+```typescript
+// ✅ Good - uses index
+await usersDB.find({
+  selector: {
+    email: email,
+    type: "user"  // Type discriminator
+  },
+  limit: 1
+});
+
+// ❌ Bad - slow full table scan
+await usersDB.allDocs({ include_docs: true });
+```
+
+### Multi-tenancy Data Access
+
+Always use CompanyDatabaseFactory for partitioned data:
+
+```typescript
+// ✅ Good - uses partitioned queries
+import { CompanyDatabaseFactory } from "@/modules/shared/database/company-db-factory";
+const orgcharts = await CompanyDatabaseFactory.getOrgCharts();
+
+// ❌ Bad - manual partitioning error-prone
+const orgcharts = await orgchartsDB.find({
+  selector: { companyId: activeCompanyId }
+});
+```

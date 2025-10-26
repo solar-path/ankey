@@ -7,6 +7,7 @@ import {
   Shield,
   FileText,
   Users,
+  BookUser,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -130,6 +131,11 @@ export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
       title: "Personnel management",
       url: `/orgchart`,
       icon: Network,
+    },
+    {
+      title: "Address Book",
+      url: "/address-book",
+      icon: BookUser,
     },
     {
       title: "DOA Matrix",

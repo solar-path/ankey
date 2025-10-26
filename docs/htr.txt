@@ -1,0 +1,50 @@
+The Hire-to-Retire (H2R) process — also called the Employee Lifecycle — covers every stage of an employee’s journey within an organization, from recruiting to exit. It’s a core HR and finance process that integrates with payroll, finance, compliance, and internal controls.
+Here’s a structured breakdown of the main components / phases:
+🧭 1. Workforce Planning
+Headcount planning and budgeting
+Organizational structure design
+Position management (roles, grades, pay bands)
+Job descriptions and approvals
+🎯 2. Recruit-to-Hire
+Job posting and candidate sourcing
+Screening, interviewing, and shortlisting
+Offer management and background verification
+Hiring approvals and onboarding initiation
+🚀 3. Onboarding
+Completion of joining formalities (contracts, ID, tax forms, etc.)
+System access provisioning (IT, facilities, email, etc.)
+Induction and training programs
+Assignment to department and manager
+💼 4. Core HR / Employee Management
+Maintenance of employee master data (personal, job, and compensation details)
+Time and attendance management
+Leave and absence management
+Policy acknowledgments and compliance tracking
+💰 5. Payroll and Benefits Administration
+Payroll calculation (earnings, deductions, taxes)
+Benefits enrollment and management (health, pension, allowances, etc.)
+Statutory deductions and filings (e.g., social insurance, taxes)
+Payslip generation and payment processing
+📈 6. Performance & Development
+Goal setting and appraisal process
+Learning and development plans
+Promotions, transfers, and career progression
+Succession planning
+🏆 7. Compensation & Rewards
+Salary adjustments and merit increases
+Incentives, bonuses, and commissions
+Non-monetary rewards and recognition programs
+🔒 8. Employee Relations & Compliance
+Grievance management
+Disciplinary actions
+Policy enforcement
+HR audits and compliance reporting
+🔁 9. Offboarding / Retirement
+Resignation, retirement, or termination processing
+Exit interviews and clearance
+Final settlement (payroll, benefits, unused leave)
+Return of assets and system access revocation
+🧾 10. Post-Employment / Alumni
+Reference letters and employment verification
+Pension/benefit continuation (if applicable)
+Alumni engagement

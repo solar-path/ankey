@@ -331,7 +331,10 @@ export default function OrgChartViewPage() {
     if (!activeCompany || !user || !id) return;
 
     try {
-      await OrgChartService.submitForApproval(activeCompany._id, id, user._id);
+      // Use the new approval service
+      const { OrgChartApprovalService } = await import("./orgchart-approval.service");
+      await OrgChartApprovalService.submitForApproval(activeCompany._id, id, user._id);
+
       toast.success("Submitted for approval");
       await loadOrgChart(true); // Preserve expanded state
     } catch (error: any) {
@@ -343,9 +346,8 @@ export default function OrgChartViewPage() {
     if (!activeCompany || !user || !id) return;
 
     try {
-      await OrgChartService.approve(activeCompany._id, id, user._id);
-      toast.success("Approved successfully");
-      await loadOrgChart(true); // Preserve expanded state
+      toast.info("Approval workflow is now managed through the Tasks page. Please check your tasks.");
+      // Note: Approval is now done through tasks, not directly here
     } catch (error: any) {
       toast.error(error.message || "Failed to approve");
     }

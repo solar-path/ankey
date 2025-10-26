@@ -21,6 +21,7 @@ import OrgChartViewPage from "./modules/htr/orgchart/orgchartView.page";
 import UserManagementPage from "./modules/auth/user/user.page";
 import InviteUserPage from "./modules/auth/user/invite.user.page";
 import AcceptInvitePage from "./modules/auth/user/acceptInvite.page";
+import AddressBookPage from "./modules/company/employee-address-book/addressBook.page";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
@@ -92,6 +93,7 @@ function App() {
                 <Route path="/company/settings" component={CompanySettingsPage} />
                 <Route path="/company/:id" component={CompanyPage} />
                 <Route path="/company/:id/members" component={CompanyMembersPage} />
+                <Route path="/address-book" component={AddressBookPage} />
                 <Route path="/orgchart/:id" component={OrgChartViewPage} />
                 <Route path="/orgchart" component={OrgChartListPage} />
                 <Route path="/users/invite" component={InviteUserPage} />

@@ -97,7 +97,11 @@ export default function OrgChartListPage() {
 
     try {
       const chartId = chart._id.split(":").pop()!;
-      await OrgChartService.submitForApproval(activeCompany._id, chartId, user._id);
+
+      // Use the new approval service
+      const { OrgChartApprovalService } = await import("./orgchart-approval.service");
+      await OrgChartApprovalService.submitForApproval(activeCompany._id, chartId, user._id);
+
       toast.success("Organizational chart sent for approval");
       await loadOrgCharts();
     } catch (error: any) {
