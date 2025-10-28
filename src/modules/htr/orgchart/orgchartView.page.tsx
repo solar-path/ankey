@@ -233,7 +233,7 @@ export default function OrgChartViewPage() {
       setOrgChartRows(rows);
 
       const newPosRow = rows.find(
-        (r) => r.type === "position" && r._id === result.position._id
+        (r) => r.type === "position" && r._id === result._id
       );
 
       if (newPosRow) {

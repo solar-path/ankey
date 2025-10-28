@@ -99,7 +99,6 @@ export default function TasksPage() {
       // Load orgchart approval tasks from PouchDB
       const { OrgChartApprovalService } = await import("@/modules/htr/orgchart/orgchart-approval.service");
       const orgchartTasks = await OrgChartApprovalService.getUserTasks(
-        activeCompany._id,
         user._id
       );
 
@@ -108,11 +107,11 @@ export default function TasksPage() {
         id: task._id,
         userId: task.userId,
         tenantId: task.companyId,
-        type: task.taskType === "approval_pending" ? "approval" : "approval_response",
-        title: task.title,
-        description: task.description,
+        type: task.taskType === "approval_request" ? "approval" : "approval_response",
+        title: task.title || 'Untitled Task',
+        description: task.description || '',
         deadline: null,
-        completed: task.completed,
+        completed: task.completed || false,
         createdAt: new Date(task.createdAt).toISOString(),
         workflowId: task.workflowId,
         entityType: task.entityType,

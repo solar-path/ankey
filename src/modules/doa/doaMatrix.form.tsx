@@ -8,7 +8,7 @@
 import { Button } from "@/lib/ui/button";
 import { Card, CardContent } from "@/lib/ui/card";
 import { AlertCircle } from "lucide-react";
-import type { ApprovalMatrix } from "@/modules/shared/database/db";
+import type { ApprovalMatrix } from "@/modules/shared/types/database.types";
 
 interface DOAMatrixFormProps {
   companyId: string;

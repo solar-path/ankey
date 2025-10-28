@@ -21,8 +21,7 @@ import {
 } from "@/lib/ui/card";
 import { Badge } from "@/lib/ui/badge";
 import { toast } from "sonner";
-import { InquiryService } from "./inquiry-service";
-import type { Inquiry } from "@/modules/shared/database/db";
+import { InquiryService, type Inquiry } from "./inquiry-service";
 import { Search, FileDown, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -243,13 +242,14 @@ export default function TrackInquiryPage() {
                           {attachment.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {(attachment.size / 1024).toFixed(1)} KB
+                          {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : "Unknown size"}
                         </p>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => downloadAttachment(attachment)}
+                        onClick={() => attachment.data && downloadAttachment({ name: attachment.name, type: attachment.type, data: attachment.data })}
+                        disabled={!attachment.data}
                       >
                         <FileDown className="h-4 w-4" />
                       </Button>

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { AuthService } from "@/modules/auth/auth-service";
-import { type User, initializeDatabases, setupSync } from "@/modules/shared/database/db";
+import type { User } from "@/modules/shared/types/database.types";
 
 interface AuthState {
   user: Omit<User, "password" | "verificationCode" | "resetToken"> | null;
@@ -84,13 +84,7 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         try {
-          // Initialize databases
-          await initializeDatabases();
-
-          // Setup sync
-          setupSync();
-
-          // Check for existing session
+          // Check for existing session (PostgreSQL handles all data persistence)
           await get().refreshAuth();
         } catch (error) {
           console.error("Failed to initialize auth:", error);

@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { CompanyService } from "@/modules/company/company-service";
-import { CompanyDatabaseFactory } from "@/modules/shared/database/company-db-factory";
-import type { Company as DBCompany } from "@/modules/shared/database/db";
+import type { Company as DBCompany } from "@/modules/shared/types/database.types";
 
-// Re-export full Company type from db
+// Re-export full Company type
 export type Company = DBCompany;
 
 interface CompanyContextType {
@@ -44,10 +43,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Company ${companyId} not found in list`);
       }
 
-      // Connect to company databases
-      await CompanyDatabaseFactory.connectToCompany(companyId);
-
-      // Update state
+      // Update state (PostgreSQL handles company isolation automatically)
       setActiveCompanyState(company);
 
       // Save to localStorage
@@ -97,20 +93,20 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
       if (newCompanyId) {
         // New company created - activate it
-        companyToActivate = uiCompanies.find((c) => c._id === newCompanyId) || null;
+        companyToActivate = uiCompanies.find((c: Company) => c._id === newCompanyId) || null;
         console.log("[CompanyProvider] Activating new company:", companyToActivate?.title);
       } else {
         // Try to restore from localStorage
         const savedCompanyId = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY);
         if (savedCompanyId) {
-          companyToActivate = uiCompanies.find((c) => c._id === savedCompanyId) || null;
+          companyToActivate = uiCompanies.find((c: Company) => c._id === savedCompanyId) || null;
           console.log("[CompanyProvider] Restored company from localStorage:", companyToActivate?.title);
         }
 
         // If not found in localStorage, activate first company
         if (!companyToActivate && uiCompanies.length > 0) {
           companyToActivate = uiCompanies[0];
-          console.log("[CompanyProvider] Activating first company:", companyToActivate.title);
+          console.log("[CompanyProvider] Activating first company:", companyToActivate?.title);
         }
       }
 
@@ -118,7 +114,6 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         await switchCompanyInternal(companyToActivate._id, uiCompanies);
       } else {
         setActiveCompanyState(null);
-        await CompanyDatabaseFactory.disconnectFromCompany();
       }
     } catch (error) {
       console.error("[CompanyProvider] Failed to reload companies:", error);
@@ -170,7 +165,6 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     } else {
       setActiveCompanyState(null);
       localStorage.removeItem(STORAGE_KEY_ACTIVE_COMPANY);
-      CompanyDatabaseFactory.disconnectFromCompany();
     }
   }, [switchCompany]);
 

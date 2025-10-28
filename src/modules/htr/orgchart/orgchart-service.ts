@@ -1,959 +1,382 @@
-import { orgchartsDB, usersDB, type User } from "@/modules/shared/database/db";
+/**
+ * OrgChart Service - Thin Client Layer
+ *
+ * All business logic is in PostgreSQL functions (orgchart.sql)
+ * This service just calls Hono API which executes SQL functions
+ */
+
 import type {
   OrgChart,
   Department,
   Position,
-  Appointment,
-  OrgChartRow,
 } from "./orgchart.types";
 
+// TODO: OrgChartNode type should be exported from orgchart.types.ts
+type OrgChartNode = OrgChart | Department | Position | any;
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 /**
- * OrgChart Service
- * Handles CRUD operations for organizational charts with cascade delete support
+ * Helper function to call Postgres functions via Hono API
  */
+async function callFunction(functionName: string, params: Record<string, any> = {}) {
+  const response = await fetch(`${API_URL}/api/${functionName}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || `Failed to call ${functionName}`);
+  }
+
+  return response.json();
+}
+
 export class OrgChartService {
   /**
-   * Partition key pattern: company:{companyId}:orgchart_{id}
+   * Create root organizational chart
    */
-  private static getPartitionKey(companyId: string, docId: string): string {
-    return `company:${companyId}:${docId}`;
-  }
-
-  private static generateId(prefix: string): string {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 11);
-    return `${prefix}_${timestamp}_${random}`;
-  }
-
-  // ============================================================================
-  // OrgChart CRUD
-  // ============================================================================
-
   static async createOrgChart(
     companyId: string,
     userId: string,
-    data: Pick<OrgChart, "title" | "description">
+    data: {
+      title: string;
+      description?: string;
+      code?: string;
+      version?: string;
+      status?: 'draft' | 'pending_approval' | 'approved' | 'revoked';
+    }
   ): Promise<OrgChart> {
-    const now = Date.now();
-    const docId = this.generateId("orgchart");
-
-    // Calculate version: major = count of approved/revoked orgcharts, minor = draft count
-    const allOrgCharts = await this.getCompanyOrgCharts(companyId);
-    const approvedCount = allOrgCharts.filter((o) => o.status === "approved" || o.status === "revoked").length;
-    const draftCount = allOrgCharts.filter((o) => o.status === "draft" || o.status === "pending_approval").length;
-    const version = `${approvedCount + 1}.${draftCount}`;
-
-    const orgChart: OrgChart = {
-      _id: this.getPartitionKey(companyId, docId),
-      type: "orgchart",
-      companyId,
+    return callFunction("orgchart.create_orgchart", {
+      company_id: companyId,
+      user_id: userId,
       title: data.title,
       description: data.description,
-      status: "draft",
-      version,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(orgChart);
-    return { ...orgChart, _rev: result.rev };
-  }
-
-  static async getOrgChart(companyId: string, orgChartId: string): Promise<OrgChart | null> {
-    try {
-      const doc = await orgchartsDB.get(this.getPartitionKey(companyId, orgChartId));
-      return doc.type === "orgchart" ? (doc as OrgChart) : null;
-    } catch (error: any) {
-      if (error.status === 404) return null;
-      throw error;
-    }
-  }
-
-  static async getCompanyOrgCharts(companyId: string): Promise<OrgChart[]> {
-    // Get all orgcharts for this company
-    const result = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "orgchart",
-      },
-    });
-
-    console.log("[OrgChartService] Raw orgcharts from DB:", result.docs);
-
-    // Sort in memory (since PouchDB requires index for sorting)
-    const orgCharts = result.docs as OrgChart[];
-
-    // Migrate old documents without version field
-    const chartsWithVersion = await Promise.all(
-      orgCharts.map(async (chart) => {
-        if (!chart.version) {
-          console.warn("[OrgChartService] Migrating OrgChart without version:", chart._id);
-
-          // Calculate proper version
-          const allCharts = orgCharts.filter((c) => c._id !== chart._id);
-          const approvedCount = allCharts.filter(
-            (c) => (c.status === "approved" || c.status === "revoked") && c.version
-          ).length;
-          const draftCount = allCharts.filter(
-            (c) => (c.status === "draft" || c.status === "pending_approval") && c.version
-          ).length;
-
-          const version =
-            chart.status === "approved" || chart.status === "revoked"
-              ? `${approvedCount + 1}.0`
-              : `${approvedCount + 1}.${draftCount}`;
-
-          // Update document in database
-          const updated = {
-            ...chart,
-            version,
-          };
-
-          try {
-            await orgchartsDB.put(updated);
-            console.log(`[OrgChartService] Migrated ${chart._id} to version ${version}`);
-            return updated as OrgChart;
-          } catch (error) {
-            console.error("[OrgChartService] Failed to migrate:", error);
-            // Return with version in memory only
-            return updated as OrgChart;
-          }
-        }
-        return chart;
-      })
-    );
-
-    return chartsWithVersion.sort((a, b) => b.createdAt - a.createdAt);
-  }
-
-  static async updateOrgChart(
-    companyId: string,
-    orgChartId: string,
-    userId: string,
-    updates: Partial<Pick<OrgChart, "title" | "description" | "status" | "enforcedAt" | "revokedAt">>
-  ): Promise<OrgChart> {
-    const fullId = this.getPartitionKey(companyId, orgChartId);
-    const doc = (await orgchartsDB.get(fullId)) as OrgChart;
-
-    const updated: OrgChart = {
-      ...doc,
-      ...updates,
-      updatedAt: Date.now(),
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(updated);
-    return { ...updated, _rev: result.rev };
-  }
-
-  static async submitForApproval(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
-    return this.updateOrgChart(companyId, orgChartId, userId, {
-      status: "pending_approval",
+      code: data.code,
+      version: data.version,
+      status: data.status,
     });
   }
 
-  static async duplicateOrgChart(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
-    const now = Date.now();
-
-    // Get the original orgchart
-    const original = await this.getOrgChart(companyId, orgChartId);
-    if (!original) {
-      throw new Error("OrgChart not found");
-    }
-
-    // Calculate new version
-    const allOrgCharts = await this.getCompanyOrgCharts(companyId);
-    const approvedCount = allOrgCharts.filter((o) => o.status === "approved" || o.status === "revoked").length;
-    const draftCount = allOrgCharts.filter((o) => o.status === "draft" || o.status === "pending_approval").length;
-    const version = `${approvedCount + 1}.${draftCount}`;
-
-    // Create new orgchart with duplicated data
-    const newDocId = this.generateId("orgchart");
-    const duplicated: OrgChart = {
-      _id: this.getPartitionKey(companyId, newDocId),
-      type: "orgchart",
-      companyId,
-      title: `${original.title} (Copy)`,
-      description: original.description,
-      status: "draft",
-      version,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(duplicated);
-    return { ...duplicated, _rev: result.rev };
-  }
-
-  static async approve(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
-    const now = Date.now();
-    const fullId = this.getPartitionKey(companyId, orgChartId);
-    const doc = (await orgchartsDB.get(fullId)) as OrgChart;
-
-    // Update version: set minor to 0 (approved version)
-    const [major] = doc.version.split(".");
-    const version = `${major}.0`;
-
-    const updated: OrgChart = {
-      ...doc,
-      status: "approved",
-      version,
-      approvedAt: now,
-      approvedBy: userId,
-      enforcedAt: doc.enforcedAt || now,
-      updatedAt: now,
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(updated);
-    return { ...updated, _rev: result.rev };
-  }
-
-  static async revoke(companyId: string, orgChartId: string, userId: string): Promise<OrgChart> {
-    const now = Date.now();
-    return this.updateOrgChart(companyId, orgChartId, userId, {
-      status: "revoked",
-      revokedAt: now,
-    });
-  }
-
-  // ============================================================================
-  // Department CRUD
-  // ============================================================================
-
+  /**
+   * Create department (auto-creates head position)
+   */
   static async createDepartment(
     companyId: string,
     userId: string,
-    data: Pick<Department, "orgChartId" | "title" | "description" | "code" | "headcount" | "parentDepartmentId">
-  ): Promise<{ department: Department; headPosition: Position; vacantAppointment: Appointment }> {
-    const now = Date.now();
-    const deptId = this.generateId("dept");
-    const deptPartitionKey = this.getPartitionKey(companyId, deptId);
-
-    // Calculate level
-    let level = 0;
-    if (data.parentDepartmentId) {
-      const parent = (await orgchartsDB.get(this.getPartitionKey(companyId, data.parentDepartmentId))) as Department;
-      level = parent.level + 1;
+    data: {
+      orgChartId: string;
+      title: string;
+      description?: string;
+      code?: string;
+      headcount?: number;
+      charter?: string;
+      parentDepartmentId?: string;
     }
-
-    // Create department
-    const department: Department = {
-      _id: deptPartitionKey,
-      type: "department",
-      companyId,
-      orgChartId: data.orgChartId,
-      parentDepartmentId: data.parentDepartmentId,
+  ): Promise<{ department: Department; headPosition: Position }> {
+    return callFunction("orgchart.create_department", {
+      company_id: companyId,
+      user_id: userId,
+      orgchart_id: data.orgChartId,
+      parent_department_id: data.parentDepartmentId,
       title: data.title,
       description: data.description,
       code: data.code,
       headcount: data.headcount,
-      currentPositionCount: 0,
-      level,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const deptResult = await orgchartsDB.put(department);
-
-    // Auto-create "Head of {department}" position
-    const headPosId = this.generateId("pos");
-    const headPosition: Position = {
-      _id: this.getPartitionKey(companyId, headPosId),
-      type: "position",
-      companyId,
-      orgChartId: data.orgChartId,
-      departmentId: deptId,
-      title: `Head of ${data.title}`,
-      description: `Head of ${data.title} department`,
-      salaryMin: 0,
-      salaryMax: 0,
-      salaryCurrency: "USD",
-      salaryFrequency: "monthly",
-      level: level + 1,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const posResult = await orgchartsDB.put(headPosition);
-
-    // Auto-create "Vacant" appointment for head position
-    const apptId = this.generateId("appt");
-    const vacantAppointment: Appointment = {
-      _id: this.getPartitionKey(companyId, apptId),
-      type: "appointment",
-      companyId,
-      orgChartId: data.orgChartId,
-      departmentId: deptId,
-      positionId: headPosId,
-      isVacant: true,
-      level: level + 2,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const apptResult = await orgchartsDB.put(vacantAppointment);
-
-    return {
-      department: { ...department, _rev: deptResult.rev },
-      headPosition: { ...headPosition, _rev: posResult.rev },
-      vacantAppointment: { ...vacantAppointment, _rev: apptResult.rev },
-    };
-  }
-
-  static async updateDepartment(
-    companyId: string,
-    departmentId: string,
-    userId: string,
-    updates: Partial<Pick<Department, "title" | "description" | "code" | "headcount" | "charter">>
-  ): Promise<Department> {
-    const fullId = this.getPartitionKey(companyId, departmentId);
-    const doc = (await orgchartsDB.get(fullId)) as Department;
-
-    // If title is being changed, check uniqueness
-    if (updates.title && updates.title !== doc.title) {
-      const existingDepts = await orgchartsDB.find({
-        selector: {
-          _id: {
-            $gte: `company:${companyId}:`,
-            $lte: `company:${companyId}:\ufff0`,
-          },
-          type: "department",
-          orgChartId: doc.orgChartId,
-          title: updates.title,
-        },
-      });
-
-      if (existingDepts.docs.length > 0) {
-        throw new Error(`Department with title "${updates.title}" already exists in this organizational chart`);
-      }
-    }
-
-    const updated: Department = {
-      ...doc,
-      ...updates,
-      updatedAt: Date.now(),
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(updated);
-    return { ...updated, _rev: result.rev };
-  }
-
-  static async deleteDepartment(companyId: string, departmentId: string): Promise<void> {
-    // Cascade delete: Department -> Sub-Departments -> Positions -> Appointments
-    const fullId = this.getPartitionKey(companyId, departmentId);
-
-    // Find all sub-departments in this department
-    const subDepartments = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "department",
-        parentDepartmentId: departmentId,
-      },
+      charter: data.charter,
     });
-
-    // Recursively delete all sub-departments
-    for (const subDept of subDepartments.docs as Department[]) {
-      const subDeptId = subDept._id.split(":").pop()!;
-      await this.deleteDepartment(companyId, subDeptId);
-    }
-
-    // Find all positions in this department
-    const positions = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "position",
-        departmentId,
-      },
-    });
-
-    // Delete all appointments for each position
-    for (const position of positions.docs as Position[]) {
-      const positionId = position._id.split(":").pop()!;
-      await this.deletePosition(companyId, positionId);
-    }
-
-    // Delete the department
-    const dept = await orgchartsDB.get(fullId);
-    await orgchartsDB.remove(dept);
   }
-
-  // ============================================================================
-  // Headcount Utilities
-  // ============================================================================
 
   /**
-   * Get headcount statistics for a department
-   * Returns total headcount limit, filled count (non-vacant appointments), unfilled count, and total appointments
+   * Create position within department
    */
-  static async getDepartmentHeadcount(
-    companyId: string,
-    departmentId: string
-  ): Promise<{ headcount: number; filled: number; unfilled: number; totalAppointments: number }> {
-    // Get department
-    const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, departmentId))) as Department;
-
-    // Get ALL appointments in this department
-    const allAppointments = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "appointment",
-        departmentId,
-      },
-    });
-
-    const totalAppointments = allAppointments.docs.length;
-    const filled = allAppointments.docs.filter((a: any) => !a.isVacant).length;
-    const unfilled = Math.max(0, dept.headcount - totalAppointments);
-
-    return {
-      headcount: dept.headcount,
-      filled,
-      unfilled,
-      totalAppointments,
-    };
-  }
-
-  // ============================================================================
-  // Position CRUD
-  // ============================================================================
-
   static async createPosition(
     companyId: string,
     userId: string,
-    data: Pick<Position, "orgChartId" | "departmentId" | "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency">
-  ): Promise<{ position: Position; vacantAppointment: Appointment }> {
-    const now = Date.now();
-    const posId = this.generateId("pos");
-
-    // Get department to calculate level and generate code
-    const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
-
-    // Check headcount limit before creating position
-    // Creating position will auto-create 1 vacant appointment, so check total appointments
-    const headcountStats = await this.getDepartmentHeadcount(companyId, data.departmentId);
-
-    // Total appointments (including the one we're about to create) cannot exceed headcount
-    if (headcountStats.totalAppointments >= dept.headcount) {
-      throw new Error(
-        `Cannot create position: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${dept.headcount - headcountStats.filled} vacant)`
-      );
+    data: {
+      orgChartId: string;
+      departmentId: string;
+      title: string;
+      description?: string;
+      salaryMin?: number;
+      salaryMax?: number;
+      salaryCurrency?: string;
+      salaryFrequency?: string;
+      jobDescription?: string;
     }
-
-    // Count existing positions in this department to generate sequential code
-    const existingPositions = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "position",
-        departmentId: data.departmentId,
-      },
-    });
-
-    const positionNumber = existingPositions.docs.length + 1;
-    const deptCode = dept.code || "DEPT";
-    const autoCode = `${deptCode}-${String(positionNumber).padStart(3, "0")}`;
-
-    // Create position
-    const position: Position = {
-      _id: this.getPartitionKey(companyId, posId),
-      type: "position",
-      companyId,
-      ...data,
-      code: autoCode,
-      level: dept.level + 1,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const posResult = await orgchartsDB.put(position);
-
-    // Auto-create "Vacant" appointment (inherit reportsToPositionId from position)
-    const apptId = this.generateId("appt");
-    const vacantAppointment: Appointment = {
-      _id: this.getPartitionKey(companyId, apptId),
-      type: "appointment",
-      companyId,
-      orgChartId: data.orgChartId,
-      departmentId: data.departmentId,
-      positionId: posId,
-      isVacant: true,
-      reportsToPositionId: position.reportsToPositionId, // Inherit from position
-      level: dept.level + 2,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const apptResult = await orgchartsDB.put(vacantAppointment);
-
-    return {
-      position: { ...position, _rev: posResult.rev },
-      vacantAppointment: { ...vacantAppointment, _rev: apptResult.rev },
-    };
-  }
-
-  static async updatePosition(
-    companyId: string,
-    positionId: string,
-    userId: string,
-    updates: Partial<Pick<Position, "title" | "description" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryFrequency" | "jobDescription" | "reportsToPositionId">>
   ): Promise<Position> {
-    const fullId = this.getPartitionKey(companyId, positionId);
-    const doc = (await orgchartsDB.get(fullId)) as Position;
-
-    const updated: Position = {
-      ...doc,
-      ...updates,
-      updatedAt: Date.now(),
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(updated);
-    return { ...updated, _rev: result.rev };
-  }
-
-  static async deletePosition(companyId: string, positionId: string): Promise<void> {
-    // Cascade delete: Position -> Appointments
-    const fullId = this.getPartitionKey(companyId, positionId);
-
-    // Find all appointments for this position
-    const appointments = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "appointment",
-        positionId,
-      },
+    return callFunction("orgchart.create_position", {
+      company_id: companyId,
+      user_id: userId,
+      orgchart_id: data.orgChartId,
+      department_id: data.departmentId,
+      title: data.title,
+      description: data.description,
+      salary_min: data.salaryMin,
+      salary_max: data.salaryMax,
+      salary_currency: data.salaryCurrency,
+      salary_frequency: data.salaryFrequency,
+      job_description: data.jobDescription,
     });
-
-    // Delete all appointments
-    for (const appt of appointments.docs) {
-      await orgchartsDB.remove(appt);
-    }
-
-    // Delete the position
-    const pos = await orgchartsDB.get(fullId);
-    await orgchartsDB.remove(pos);
   }
 
-  // ============================================================================
-  // Appointment CRUD
-  // ============================================================================
-
+  /**
+   * Appoint user to position
+   */
   static async createAppointment(
     companyId: string,
     userId: string,
-    data: Pick<Appointment, "orgChartId" | "departmentId" | "positionId" | "userId" | "isVacant" | "jobOffer">
-  ): Promise<Appointment> {
-    const now = Date.now();
-    const apptId = this.generateId("appt");
-
-    // Get position to calculate level
-    const pos = (await orgchartsDB.get(this.getPartitionKey(companyId, data.positionId))) as Position;
-
-    // Get department to check headcount limit
-    const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, data.departmentId))) as Department;
-
-    // Check headcount limit: total appointments cannot exceed headcount
-    const headcountStats = await this.getDepartmentHeadcount(companyId, data.departmentId);
-
-    if (headcountStats.totalAppointments >= dept.headcount) {
-      const appointmentType = data.isVacant ? "vacant appointment" : "appointment";
-      throw new Error(
-        `Cannot create ${appointmentType}: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${headcountStats.totalAppointments - headcountStats.filled} vacant)`
-      );
+    data: {
+      orgChartId: string;
+      departmentId: string;
+      positionId: string;
+      userId?: string;
+      isVacant: boolean;
+      jobOffer?: any;
     }
-
-    const appointment: Appointment = {
-      _id: this.getPartitionKey(companyId, apptId),
-      type: "appointment",
-      companyId,
-      ...data,
-      level: pos.level + 1,
-      sortOrder: now,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(appointment);
-    return { ...appointment, _rev: result.rev };
+  ): Promise<any> {
+    return callFunction("orgchart.create_appointment", {
+      company_id: companyId,
+      user_id: userId,
+      orgchart_id: data.orgChartId,
+      department_id: data.departmentId,
+      position_id: data.positionId,
+      appointee_user_id: data.userId,
+      is_vacant: data.isVacant,
+      job_offer: data.jobOffer,
+    });
   }
 
+  /**
+   * Remove appointment from position
+   */
+  static async removeAppointment(positionId: string): Promise<void> {
+    await callFunction("orgchart.remove_appointment", {
+      position_id: positionId,
+    });
+  }
+
+  /**
+   * Get complete orgchart tree with all descendants
+   */
+  static async getOrgChartTree(
+    companyId: string,
+    orgchartId: string
+  ): Promise<OrgChartNode[]> {
+    const result = await callFunction("orgchart.get_tree", {
+      company_id: companyId,
+      orgchart_id: orgchartId,
+    });
+    return result as OrgChartNode[];
+  }
+
+  /**
+   * Update any node (orgchart/department/position)
+   */
+  static async updateNode(
+    nodeId: string,
+    data: {
+      title?: string;
+      description?: string;
+      code?: string;
+      version?: string;
+      status?: string;
+      headcount?: number;
+      charter?: string;
+      salaryMin?: number;
+      salaryMax?: number;
+      jobDescription?: string;
+    }
+  ): Promise<any> {
+    return callFunction("orgchart.update_node", {
+      node_id: nodeId,
+      title: data.title,
+      description: data.description,
+      code: data.code,
+      version: data.version,
+      status: data.status,
+      headcount: data.headcount,
+      charter: data.charter,
+      salary_min: data.salaryMin,
+      salary_max: data.salaryMax,
+      job_description: data.jobDescription,
+    });
+  }
+
+  /**
+   * Delete node (with optional cascade)
+   */
+  static async deleteNode(nodeId: string, cascade: boolean = false): Promise<void> {
+    await callFunction("orgchart.delete_node", {
+      node_id: nodeId,
+      cascade: cascade,
+    });
+  }
+
+  /**
+   * Get all orgcharts for company
+   */
+  static async getAllOrgCharts(companyId: string): Promise<OrgChart[]> {
+    const result = await callFunction("orgchart.get_all_orgcharts", {
+      company_id: companyId,
+    });
+    return result as OrgChart[];
+  }
+
+  /**
+   * Update orgchart status (approval workflow)
+   */
+  static async updateStatus(
+    orgchartId: string,
+    status: 'draft' | 'pending_approval' | 'approved' | 'revoked'
+  ): Promise<void> {
+    await callFunction("orgchart.update_status", {
+      orgchart_id: orgchartId,
+      status: status,
+    });
+  }
+
+  /**
+   * Get orgchart by ID (get root node from tree)
+   */
+  static async getOrgChartById(
+    companyId: string,
+    orgchartId: string
+  ): Promise<OrgChart | null> {
+    const tree = await this.getOrgChartTree(companyId, orgchartId);
+    return tree.find(node => node.id === orgchartId) as OrgChart || null;
+  }
+
+  /**
+   * Get departments for orgchart
+   */
+  static async getDepartments(
+    companyId: string,
+    orgchartId: string
+  ): Promise<Department[]> {
+    const tree = await this.getOrgChartTree(companyId, orgchartId);
+    return tree.filter(node => node.type === 'department') as Department[];
+  }
+
+  /**
+   * Get positions for department
+   */
+  static async getPositions(
+    companyId: string,
+    orgchartId: string,
+    departmentId: string
+  ): Promise<Position[]> {
+    const tree = await this.getOrgChartTree(companyId, orgchartId);
+    return tree.filter(
+      node => node.type === 'position' && node.parentId === departmentId
+    ) as Position[];
+  }
+
+  /**
+   * Get all orgcharts for company
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async getCompanyOrgCharts(_companyId: string): Promise<OrgChart[]> {
+    console.warn("[OrgChartService] getCompanyOrgCharts: Not fully implemented - awaiting complete migration");
+    return [];
+  }
+
+  /**
+   * Get orgchart hierarchy (tree structure)
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async getOrgChartHierarchy(_companyId: string, _orgChartId: string): Promise<any[]> {
+    console.warn("[OrgChartService] getOrgChartHierarchy: Not fully implemented - awaiting complete migration");
+    return [];
+  }
+
+  /**
+   * Update department
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async updateDepartment(
+    _companyId: string,
+    _departmentId: string,
+    _userId: string,
+    _data: Partial<Department>
+  ): Promise<Department> {
+    console.warn("[OrgChartService] updateDepartment: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
+  }
+
+  /**
+   * Update position
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async updatePosition(
+    _companyId: string,
+    _positionId: string,
+    _userId: string,
+    _data: Partial<Position>
+  ): Promise<Position> {
+    console.warn("[OrgChartService] updatePosition: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
+  }
+
+  /**
+   * Update appointment
+   * TODO: Implement via PostgreSQL function call
+   */
   static async updateAppointment(
-    companyId: string,
-    appointmentId: string,
-    userId: string,
-    updates: Partial<Pick<Appointment, "userId" | "isVacant" | "jobOffer" | "reportsToPositionId" | "employmentContractSignedAt" | "employmentStartedAt" | "employmentEndedAt" | "terminationNoticeIssuedAt" | "terminationReason">>
-  ): Promise<Appointment> {
-    const fullId = this.getPartitionKey(companyId, appointmentId);
-    const doc = (await orgchartsDB.get(fullId)) as Appointment;
-
-    // If changing from vacant to non-vacant, check headcount limit
-    if (doc.isVacant && updates.isVacant === false) {
-      const dept = (await orgchartsDB.get(this.getPartitionKey(companyId, doc.departmentId))) as Department;
-      const headcountStats = await this.getDepartmentHeadcount(companyId, doc.departmentId);
-
-      if (headcountStats.filled >= dept.headcount) {
-        throw new Error(
-          `Cannot assign user: Department "${dept.title}" has reached its headcount limit of ${dept.headcount} appointments (${headcountStats.totalAppointments} current: ${headcountStats.filled} filled, ${headcountStats.totalAppointments - headcountStats.filled} vacant)`
-        );
-      }
-    }
-
-    const updated: Appointment = {
-      ...doc,
-      ...updates,
-      updatedAt: Date.now(),
-      updatedBy: userId,
-    };
-
-    const result = await orgchartsDB.put(updated);
-    return { ...updated, _rev: result.rev };
-  }
-
-  static async deleteAppointment(companyId: string, appointmentId: string): Promise<void> {
-    const fullId = this.getPartitionKey(companyId, appointmentId);
-    const appt = await orgchartsDB.get(fullId);
-    await orgchartsDB.remove(appt);
-  }
-
-  // ============================================================================
-  // Data Cleanup Utilities
-  // ============================================================================
-
-  /**
-   * Remove duplicate documents from database
-   * WARNING: This will permanently delete duplicate documents!
-   */
-  static async removeDuplicates(companyId: string): Promise<{ removed: number; kept: number }> {
-    const result = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-      },
-    });
-
-    const docs = result.docs;
-    const uniqueMap = new Map<string, any>();
-    const duplicates: any[] = [];
-
-    // Group by unique key (type + title + parentId)
-    for (const doc of docs) {
-      const uniqueKey = `${doc.type}:${(doc as any).title}:${(doc as any).parentDepartmentId || (doc as any).departmentId || (doc as any).positionId || "root"}`;
-
-      if (uniqueMap.has(uniqueKey)) {
-        // This is a duplicate - keep the older one (lower createdAt)
-        const existing = uniqueMap.get(uniqueKey);
-        if (doc.createdAt < existing.createdAt) {
-          duplicates.push(existing);
-          uniqueMap.set(uniqueKey, doc);
-        } else {
-          duplicates.push(doc);
-        }
-      } else {
-        uniqueMap.set(uniqueKey, doc);
-      }
-    }
-
-    console.log(`[removeDuplicates] Found ${duplicates.length} duplicates to remove`);
-    console.log(`[removeDuplicates] Keeping ${uniqueMap.size} unique documents`);
-
-    // Remove duplicates
-    for (const duplicate of duplicates) {
-      try {
-        await orgchartsDB.remove(duplicate);
-        console.log(`[removeDuplicates] Removed duplicate: ${duplicate._id}`);
-      } catch (error) {
-        console.error(`[removeDuplicates] Failed to remove ${duplicate._id}:`, error);
-      }
-    }
-
-    return { removed: duplicates.length, kept: uniqueMap.size };
-  }
-
-  // ============================================================================
-  // Payroll Forecast
-  // ============================================================================
-
-  /**
-   * Calculate payroll forecast for 18 months
-   * Returns min, max, and average monthly costs
-   */
-  static async getPayrollForecast(
-    companyId: string,
-    orgChartId: string
-  ): Promise<{
-    months: string[];
-    minPayroll: number[];
-    maxPayroll: number[];
-    avgPayroll: number[];
-  }> {
-    // Get all positions for this orgchart
-    const result = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        type: "position",
-        orgChartId,
-      },
-    });
-
-    const positions = result.docs as Position[];
-
-    // Calculate total min, max, and average salaries
-    let totalMin = 0;
-    let totalMax = 0;
-
-    for (const pos of positions) {
-      // Convert all salaries to monthly
-      const monthlyMin = this.convertToMonthly(pos.salaryMin, pos.salaryFrequency);
-      const monthlyMax = this.convertToMonthly(pos.salaryMax, pos.salaryFrequency);
-
-      totalMin += monthlyMin;
-      totalMax += monthlyMax;
-    }
-
-    const totalAvg = (totalMin + totalMax) / 2;
-
-    // Generate 18 months of data
-    const months: string[] = [];
-    const minPayroll: number[] = [];
-    const maxPayroll: number[] = [];
-    const avgPayroll: number[] = [];
-
-    const now = new Date();
-    for (let i = 0; i < 18; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      months.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
-      minPayroll.push(totalMin);
-      maxPayroll.push(totalMax);
-      avgPayroll.push(totalAvg);
-    }
-
-    return {
-      months,
-      minPayroll,
-      maxPayroll,
-      avgPayroll,
-    };
+    _companyId: string,
+    _appointmentId: string,
+    _userId: string,
+    _data: any
+  ): Promise<any> {
+    console.warn("[OrgChartService] updateAppointment: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
   }
 
   /**
-   * Convert salary to monthly amount based on frequency
+   * Delete department
+   * TODO: Implement via PostgreSQL function call
    */
-  private static convertToMonthly(amount: number, frequency: string): number {
-    switch (frequency) {
-      case 'monthly':
-        return amount;
-      case 'annual':
-        return amount / 12;
-      case 'weekly':
-        return amount * 52 / 12;
-      case 'daily':
-        return amount * 260 / 12; // Assuming 260 working days per year
-      case 'hourly':
-        return amount * 2080 / 12; // Assuming 2080 working hours per year
-      case 'per_job':
-        return amount; // Treat as monthly for simplicity
-      default:
-        return amount;
-    }
+  static async deleteDepartment(_companyId: string, _departmentId: string): Promise<void> {
+    console.warn("[OrgChartService] deleteDepartment: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
   }
 
-  // ============================================================================
-  // Hierarchical Data Retrieval (for Table Display)
-  // ============================================================================
+  /**
+   * Delete position
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async deletePosition(_companyId: string, _positionId: string): Promise<void> {
+    console.warn("[OrgChartService] deletePosition: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
+  }
 
-  static async getOrgChartHierarchy(companyId: string, orgChartId: string): Promise<OrgChartRow[]> {
-    // Get all documents for this orgchart
-    const result = await orgchartsDB.find({
-      selector: {
-        _id: {
-          $gte: `company:${companyId}:`,
-          $lte: `company:${companyId}:\ufff0`,
-        },
-        $or: [
-          { type: "orgchart", _id: this.getPartitionKey(companyId, orgChartId) },
-          { type: "department", orgChartId },
-          { type: "position", orgChartId },
-          { type: "appointment", orgChartId },
-        ],
-      },
-    });
+  /**
+   * Delete appointment
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async deleteAppointment(_companyId: string, _appointmentId: string): Promise<void> {
+    console.warn("[OrgChartService] deleteAppointment: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
+  }
 
-    console.log("[getOrgChartHierarchy] All docs:", result.docs.length);
-    console.log("[getOrgChartHierarchy] All docs details:", result.docs.map((d: any) => ({
-      _id: d._id,
-      type: d.type,
-      title: d.title || (d.isVacant ? "Vacant" : ""),
-      departmentId: d.departmentId,
-      positionId: d.positionId,
-      parentDepartmentId: d.parentDepartmentId,
-    })));
+  /**
+   * Duplicate orgchart
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async duplicateOrgChart(_companyId: string, _orgChartId: string, _userId: string, _newTitle?: string): Promise<OrgChart> {
+    console.warn("[OrgChartService] duplicateOrgChart: Not fully implemented - awaiting complete migration");
+    throw new Error("Method not yet migrated to PostgreSQL");
+  }
 
-    const departments = result.docs.filter((d: any) => d.type === "department") as Department[];
-    const positions = result.docs.filter((d: any) => d.type === "position") as Position[];
-    const appointments = result.docs.filter((d: any) => d.type === "appointment") as Appointment[];
-
-    console.log("[getOrgChartHierarchy] Filtered:", {
-      departments: departments.length,
-      positions: positions.length,
-      appointments: appointments.length,
-    });
-    console.log("[getOrgChartHierarchy] Positions:", positions.map(p => ({ _id: p._id, title: p.title, departmentId: p.departmentId })));
-    console.log("[getOrgChartHierarchy] Appointments:", appointments.map(a => ({ _id: a._id, positionId: a.positionId, isVacant: a.isVacant })));
-
-    const rows: OrgChartRow[] = [];
-
-    // Add OrgChart itself to rows (needed for status tracking in UI)
-    const orgChart = result.docs.find((d: any) => d.type === "orgchart") as OrgChart | undefined;
-    if (orgChart) {
-      rows.push({
-        _id: orgChart._id,
-        _rev: orgChart._rev,
-        type: "orgchart",
-        companyId,
-        title: orgChart.title,
-        description: orgChart.description,
-        version: orgChart.version,
-        status: orgChart.status,
-        parentId: undefined,
-        level: 0,
-        sortOrder: 0,
-        hasChildren: true,
-        createdAt: orgChart.createdAt,
-        updatedAt: orgChart.updatedAt,
-        original: orgChart,
-      });
-    }
-
-    // Add departments
-    for (const dept of departments.sort((a, b) => a.sortOrder - b.sortOrder)) {
-      const deptPositions = positions.filter((p) => p.departmentId === dept._id.split(":").pop());
-
-      // For nested departments, parentId should be the full _id of parent department
-      // For top-level departments, parentId is undefined
-      const parentId = dept.parentDepartmentId
-        ? this.getPartitionKey(companyId, dept.parentDepartmentId)
-        : undefined;
-
-      rows.push({
-        _id: dept._id,
-        _rev: dept._rev,
-        type: "department",
-        companyId,
-        title: dept.title,
-        description: dept.description,
-        code: dept.code,
-        headcount: dept.headcount,
-        parentId,
-        level: dept.level,
-        sortOrder: dept.sortOrder,
-        hasChildren: deptPositions.length > 0,
-        createdAt: dept.createdAt,
-        updatedAt: dept.updatedAt,
-        original: dept,
-      });
-
-      // Add positions for this department
-      for (const pos of deptPositions.sort((a, b) => a.sortOrder - b.sortOrder)) {
-        const posAppointments = appointments.filter((a) => a.positionId === pos._id.split(":").pop());
-        rows.push({
-          _id: pos._id,
-          _rev: pos._rev,
-          type: "position",
-          companyId,
-          title: pos.title,
-          description: pos.description,
-          code: pos.code,
-          salaryMin: pos.salaryMin,
-          salaryMax: pos.salaryMax,
-          salaryCurrency: pos.salaryCurrency,
-          salaryFrequency: pos.salaryFrequency,
-          reportsToPositionId: pos.reportsToPositionId,
-          parentId: dept._id,
-          level: pos.level,
-          sortOrder: pos.sortOrder,
-          hasChildren: posAppointments.length > 0,
-          createdAt: pos.createdAt,
-          updatedAt: pos.updatedAt,
-          original: pos,
-        });
-
-        // Add appointments for this position
-        for (const appt of posAppointments.sort((a, b) => a.sortOrder - b.sortOrder)) {
-          // Load user fullname if not vacant
-          let displayTitle = "Vacant";
-          if (!appt.isVacant && appt.userId) {
-            try {
-              const user = (await usersDB.get(appt.userId)) as User;
-              displayTitle = user.fullname || `User ${appt.userId}`;
-            } catch (error) {
-              displayTitle = `User ${appt.userId}`;
-            }
-          }
-
-          rows.push({
-            _id: appt._id,
-            _rev: appt._rev,
-            type: "appointment",
-            companyId,
-            title: displayTitle,
-            parentId: pos._id,
-            level: appt.level,
-            sortOrder: appt.sortOrder,
-            hasChildren: false,
-            isVacant: appt.isVacant,
-            createdAt: appt.createdAt,
-            updatedAt: appt.updatedAt,
-            original: appt,
-          });
-        }
-      }
-    }
-
-    return rows;
+  /**
+   * Get payroll forecast
+   * TODO: Implement via PostgreSQL function call
+   */
+  static async getPayrollForecast(_companyId: string, _orgChartId: string): Promise<any> {
+    console.warn("[OrgChartService] getPayrollForecast: Not fully implemented - awaiting complete migration");
+    return { total: 0, positions: [] };
   }
 }

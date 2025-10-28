@@ -65,8 +65,8 @@ export function QPhone({ value = "", onChange, onCountryDetected, countryCode, p
   useEffect(() => {
     if (countryCode) {
       const country = countries.find(c => c.code === countryCode);
-      if (country && country.phoneCode) {
-        setPhoneCode(country.phoneCode);
+      if (country && country.phone_code) {
+        setPhoneCode(country.phone_code);
       }
     }
   }, [countryCode]);
@@ -100,7 +100,7 @@ export function QPhone({ value = "", onChange, onCountryDetected, countryCode, p
     onChange?.(fullPhone);
 
     // Try to detect country from phone code
-    const detectedCountry = countries.find(c => c.phoneCode === newCode);
+    const detectedCountry = countries.find(c => c.phone_code === newCode);
     if (detectedCountry) {
       onCountryDetected?.(detectedCountry.code);
     }
@@ -110,8 +110,8 @@ export function QPhone({ value = "", onChange, onCountryDetected, countryCode, p
   const uniquePhoneCodes = Array.from(
     new Set(
       countries
-        .filter(c => c.phoneCode)
-        .map(c => c.phoneCode)
+        .filter(c => c.phone_code)
+        .map(c => c.phone_code)
     )
   ).sort();
 

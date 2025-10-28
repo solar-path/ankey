@@ -7,8 +7,13 @@ import type {
   ApprovalTask,
   ApprovalWorkflow,
   DocumentType,
-} from "@/modules/shared/database/db";
-import { orgchartsDB } from "@/modules/shared/database/db";
+} from "@/modules/shared/types/database.types";
+
+// TODO: Remove PouchDB usage - migrate to PostgreSQL
+// This page needs complete rewrite to use DocumentApprovalService PostgreSQL functions
+const orgchartsDB: any = {
+  get: async () => { throw new Error("PouchDB removed - awaiting PostgreSQL migration"); }
+};
 import {
   Card,
   CardContent,
@@ -95,7 +100,6 @@ export default function ApprovalTaskPage() {
 
       const workflowId = workflow._id.split(":").pop()!;
       await DocumentApprovalService.approve(
-        activeCompany._id,
         workflowId,
         user._id,
         comments
@@ -124,7 +128,6 @@ export default function ApprovalTaskPage() {
 
       const workflowId = workflow._id.split(":").pop()!;
       await DocumentApprovalService.decline(
-        activeCompany._id,
         workflowId,
         user._id,
         comments
@@ -146,7 +149,7 @@ export default function ApprovalTaskPage() {
     try {
       setActionLoading(true);
 
-      await DocumentApprovalService.completeTask(activeCompany._id, task._id);
+      await DocumentApprovalService.completeTask(task._id, "approved");
 
       toast.success("Task acknowledged");
       setLocation("/tasks");
@@ -160,12 +163,18 @@ export default function ApprovalTaskPage() {
 
   const getDocumentTypeName = (type: DocumentType): string => {
     const names: Record<DocumentType, string> = {
+      purchase_order: "Purchase Order",
+      sales_order: "Sales Order",
+      invoice: "Invoice",
+      payment: "Payment",
+      contract: "Contract",
       department_charter: "Department Charter",
       job_description: "Job Description",
       job_offer: "Job Offer",
       employment_contract: "Employment Contract",
       termination_notice: "Termination Notice",
       orgchart: "Organizational Chart",
+      other: "Other Document",
     };
     return names[type] || type;
   };
@@ -250,7 +259,7 @@ export default function ApprovalTaskPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Document Type</p>
-              <p className="font-medium">{getDocumentTypeName(workflow.entityType)}</p>
+              <p className="font-medium">{getDocumentTypeName(workflow.entityType as DocumentType)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Current Level</p>
@@ -263,7 +272,7 @@ export default function ApprovalTaskPage() {
             <div>
               <p className="text-sm text-muted-foreground">Submitted</p>
               <p className="font-medium">
-                {new Date(workflow.submittedAt).toLocaleDateString()}
+                {workflow.submittedAt ? new Date(workflow.submittedAt).toLocaleDateString() : 'N/A'}
               </p>
             </div>
           </div>
@@ -287,7 +296,7 @@ export default function ApprovalTaskPage() {
                           Level {decision.level} - {decision.decision}
                         </p>
                         <p className="text-muted-foreground">
-                          {new Date(decision.timestamp).toLocaleString()}
+                          {decision.timestamp ? new Date(decision.timestamp).toLocaleString() : 'N/A'}
                         </p>
                         {decision.comments && (
                           <p className="mt-1 text-muted-foreground italic">

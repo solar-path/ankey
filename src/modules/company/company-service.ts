@@ -1,297 +1,110 @@
 /**
- * Company Service - Business logic for managing companies
+ * Company Service - Thin Client Layer
  *
- * Handles CRUD operations for companies and user-company relationships
- * Works directly with PouchDB/CouchDB (no backend API needed)
+ * All business logic is in PostgreSQL functions (company.sql)
+ * This service just calls Hono API which executes SQL functions
  */
 
-import {
-  companiesDB,
-  userCompaniesDB,
-  type Company,
-  type UserCompany,
-  type DocumentType
-} from "@/modules/shared/database/db";
 import type { CreateCompanyInput, UpdateCompanyInput } from "./company.valibot";
-import { DOAService } from "@/modules/doa/doa.service";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+/**
+ * Helper function to call Postgres functions via Hono API
+ */
+async function callFunction(functionName: string, params: Record<string, any> = {}) {
+  const response = await fetch(`${API_URL}/api/${functionName}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || `Failed to call ${functionName}`);
+  }
+
+  return response.json();
+}
 
 export class CompanyService {
   /**
    * Create a new company
-   * For workspace companies, automatically creates user_company association
    */
-  static async createCompany(
-    userId: string,
-    data: CreateCompanyInput
-  ): Promise<Company> {
-    const now = Date.now();
-    const companyId = `company_${now}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const company: Company = {
-      _id: companyId,
+  static async createCompany(userId: string, data: CreateCompanyInput) {
+    return callFunction("company.create_company", {
+      user_id: userId,
       type: data.type,
       title: data.title,
       logo: data.logo,
       website: data.website,
-      businessId: data.businessId,
-      taxId: data.taxId,
+      business_id: data.businessId,
+      tax_id: data.taxId,
       residence: data.residence,
       industry: data.industry,
-      contact: data.contact,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    try {
-      // Save company to database
-      const result = await companiesDB.put(company);
-      company._rev = result.rev;
-
-      // For workspace companies, create user_company association
-      if (data.type === "workspace") {
-        const userCompany: UserCompany = {
-          _id: `uc_${userId}_${companyId}`,
-          type: "user_company",
-          userId,
-          companyId,
-          role: "owner",
-          createdAt: now,
-        };
-
-        await userCompaniesDB.put(userCompany);
-
-        // Create default DOA matrices for all document types
-        await this.createDefaultDOAMatrices(companyId, userId);
-      }
-
-      return this.sanitizeCompany(company);
-    } catch (error) {
-      console.error("Failed to create company:", error);
-      throw new Error("Failed to create company");
-    }
+      contact: data.contact ? JSON.stringify(data.contact) : null,
+    });
   }
 
   /**
-   * Get all companies for a user (only workspace type)
+   * Get all companies for a user
    */
-  static async getUserCompanies(userId: string): Promise<Company[]> {
-    try {
-      // Find all user_company associations for this user
-      const userCompaniesResult = await userCompaniesDB.find({
-        selector: {
-          type: "user_company",
-          userId: userId,
-        },
-      });
-
-      if (userCompaniesResult.docs.length === 0) {
-        return [];
-      }
-
-      // Get all company IDs
-      const companyIds = userCompaniesResult.docs.map(
-        (uc: any) => uc.companyId
-      );
-
-      // Fetch all companies
-      const companies: Company[] = [];
-      for (const companyId of companyIds) {
-        try {
-          const company = await companiesDB.get(companyId);
-          companies.push(this.sanitizeCompany(company as Company));
-        } catch (error) {
-          console.warn(`Company ${companyId} not found, skipping`);
-        }
-      }
-
-      return companies;
-    } catch (error) {
-      console.error("Failed to get user companies:", error);
-      throw new Error("Failed to get user companies");
-    }
+  static async getUserCompanies(userId: string) {
+    return callFunction("company.get_user_companies", { user_id: userId });
   }
 
   /**
    * Get company by ID
    */
-  static async getCompanyById(companyId: string): Promise<Company> {
-    try {
-      const company = await companiesDB.get(companyId);
-      return this.sanitizeCompany(company as Company);
-    } catch (error) {
-      console.error("Failed to get company:", error);
-      throw new Error("Company not found");
-    }
+  static async getCompanyById(companyId: string) {
+    return callFunction("company.get_company_by_id", { company_id: companyId });
   }
 
   /**
    * Update company
    */
-  static async updateCompany(
-    companyId: string,
-    data: UpdateCompanyInput
-  ): Promise<Company> {
-    try {
-      const company = (await companiesDB.get(companyId)) as Company;
-
-      const updatedCompany: Company = {
-        ...company,
-        title: data.title ?? company.title,
-        logo: data.logo ?? company.logo,
-        website: data.website ?? company.website,
-        businessId: data.businessId ?? company.businessId,
-        taxId: data.taxId ?? company.taxId,
-        residence: data.residence ?? company.residence,
-        industry: data.industry ?? company.industry,
-        contact: data.contact ?? company.contact,
-        settings: data.settings ?? company.settings,
-        updatedAt: Date.now(),
-      };
-
-      const result = await companiesDB.put(updatedCompany);
-      updatedCompany._rev = result.rev;
-
-      return this.sanitizeCompany(updatedCompany);
-    } catch (error) {
-      console.error("Failed to update company:", error);
-      throw new Error("Failed to update company");
-    }
+  static async updateCompany(companyId: string, data: UpdateCompanyInput) {
+    return callFunction("company.update_company", {
+      company_id: companyId,
+      title: data.title,
+      logo: data.logo,
+      website: data.website,
+      business_id: data.businessId,
+      tax_id: data.taxId,
+      residence: data.residence,
+      industry: data.industry,
+      contact: data.contact ? JSON.stringify(data.contact) : null,
+      settings: data.settings ? JSON.stringify(data.settings) : null,
+    });
   }
 
   /**
-   * Delete company (soft delete - mark as inactive)
-   * Also removes user_company associations
+   * Delete company
    */
-  static async deleteCompany(companyId: string): Promise<void> {
-    try {
-      // Find all user_company associations for this company
-      const userCompaniesResult = await userCompaniesDB.find({
-        selector: {
-          type: "user_company",
-          companyId: companyId,
-        },
-      });
-
-      // Delete all user_company associations
-      for (const userCompany of userCompaniesResult.docs) {
-        await userCompaniesDB.remove(userCompany._id, userCompany._rev!);
-      }
-
-      // Delete the company itself
-      const company = await companiesDB.get(companyId);
-      await companiesDB.remove(company._id, company._rev!);
-    } catch (error) {
-      console.error("Failed to delete company:", error);
-      throw new Error("Failed to delete company");
-    }
+  static async deleteCompany(companyId: string) {
+    return callFunction("company.delete_company", { company_id: companyId });
   }
 
   /**
    * Check if user has access to company
    */
   static async hasAccess(userId: string, companyId: string): Promise<boolean> {
-    try {
-      const result = await userCompaniesDB.find({
-        selector: {
-          type: "user_company",
-          userId: userId,
-          companyId: companyId,
-        },
-        limit: 1,
-      });
-
-      return result.docs.length > 0;
-    } catch (error) {
-      console.error("Failed to check company access:", error);
-      return false;
-    }
+    const result = await callFunction("company.has_access", {
+      user_id: userId,
+      company_id: companyId,
+    });
+    return result.hasAccess;
   }
 
   /**
    * Get user role in company
    */
-  static async getUserRole(
-    userId: string,
-    companyId: string
-  ): Promise<"owner" | "admin" | "member" | null> {
-    try {
-      const result = await userCompaniesDB.find({
-        selector: {
-          type: "user_company",
-          userId: userId,
-          companyId: companyId,
-        },
-        limit: 1,
-      });
-
-      if (result.docs.length === 0) {
-        return null;
-      }
-
-      return (result.docs[0] as UserCompany).role;
-    } catch (error) {
-      console.error("Failed to get user role:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Create default DOA matrices for all document types
-   * Used when a new workspace company is created
-   */
-  private static async createDefaultDOAMatrices(companyId: string, ownerId: string): Promise<void> {
-    const documentTypes: DocumentType[] = [
-      "department_charter",
-      "job_description",
-      "job_offer",
-      "employment_contract",
-      "termination_notice",
-      "orgchart",
-    ];
-
-    const documentTypeNames: Record<DocumentType, string> = {
-      department_charter: "Department Charter",
-      job_description: "Job Description",
-      job_offer: "Job Offer",
-      employment_contract: "Employment Contract",
-      termination_notice: "Termination Notice",
-      orgchart: "Organizational Chart",
-    };
-
-    try {
-      for (const docType of documentTypes) {
-        await DOAService.createMatrix(
-          companyId,
-          {
-            name: `Default ${documentTypeNames[docType]} Approval`,
-            description: `Automatically created approval matrix for ${documentTypeNames[docType]} documents. First user (owner) must approve.`,
-            documentType: docType,
-            status: "active",
-            approvalBlocks: [
-              {
-                level: 1,
-                approvers: [ownerId],
-                requiresAll: true,
-              },
-            ],
-          },
-          ownerId
-        );
-      }
-
-      console.log(`[CompanyService] Created default DOA matrices for company ${companyId}`);
-    } catch (error) {
-      console.error("[CompanyService] Failed to create default DOA matrices:", error);
-      // Don't throw - company creation should succeed even if DOA matrix creation fails
-    }
-  }
-
-  /**
-   * Sanitize company data (remove sensitive fields)
-   */
-  private static sanitizeCompany(company: Company): Company {
-    // Currently no sensitive fields to remove
-    // This method is here for future use (e.g., API keys, secrets)
-    return company;
+  static async getUserRole(userId: string, companyId: string): Promise<string | null> {
+    const result = await callFunction("company.get_user_role", {
+      user_id: userId,
+      company_id: companyId,
+    });
+    return result.role;
   }
 }

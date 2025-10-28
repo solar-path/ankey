@@ -58,8 +58,8 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    // Load user profile data from auth context only on initial mount
-    if (user && !isInitialized) {
+    // Load user profile data from auth context
+    if (user) {
       const genderValue = user.profile?.gender;
 
       // Use reset to set all values at once
@@ -76,11 +76,15 @@ export default function ProfilePage() {
       if (user.profile?.dob) {
         const dobDate = new Date(user.profile.dob);
         setDate(dobDate);
+      } else {
+        setDate(undefined);
       }
 
-      setIsInitialized(true);
+      if (!isInitialized) {
+        setIsInitialized(true);
+      }
     }
-  }, [user, isInitialized, reset]);
+  }, [user, reset, isInitialized]);
 
   const handleAvatarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -141,7 +145,6 @@ export default function ProfilePage() {
         gender: data.gender,
       });
 
-      setIsInitialized(false); // Reset to allow reloading from refreshed user data
       await refreshUser(); // Refresh user data to update profile across the app
       toast.success("Profile updated successfully!");
     } catch (error: any) {

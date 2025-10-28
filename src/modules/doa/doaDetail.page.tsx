@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/lib/ui/card";
 import { Badge } from "@/lib/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { type ApprovalMatrix } from "@/modules/shared/database/db";
+import { type ApprovalMatrix } from "@/modules/shared/types/database.types";
 import { DOAMatrixForm } from "./doaMatrix.form";
 import { DOAService } from "./doa.service";
 
@@ -123,7 +123,7 @@ export default function DOADetailPage() {
                 <Badge
                   variant={matrix.status === "active" ? "default" : "secondary"}
                 >
-                  {matrix.status.toUpperCase()}
+                  {matrix.status?.toUpperCase() || "INACTIVE"}
                 </Badge>
               </div>
             </CardContent>

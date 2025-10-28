@@ -8,7 +8,11 @@ import {
   type ApprovalWorkflow,
 } from "@/modules/htr/orgchart/orgchart-approval.service";
 import type { OrgChart } from "@/modules/htr/orgchart/orgchart.types";
-import { orgchartsDB } from "@/modules/shared/database/db";
+
+// TODO: Remove PouchDB usage - migrate to PostgreSQL
+const orgchartsDB: any = {
+  get: async () => { throw new Error("PouchDB removed - awaiting PostgreSQL migration"); }
+};
 import {
   Card,
   CardContent,
@@ -142,7 +146,7 @@ export default function OrgChartApprovalTaskPage() {
       setActionLoading(true);
 
       const taskId = task._id.split(":").pop()!;
-      await OrgChartApprovalService.completeTask(activeCompany._id, taskId);
+      await OrgChartApprovalService.completeTask(taskId, "approved");
 
       toast.success("Task acknowledged");
       setLocation("/task");
@@ -170,7 +174,7 @@ export default function OrgChartApprovalTaskPage() {
   }
 
   const isApprovalRequest =
-    task.taskType === "approval_pending" && workflow?.approverId === user?._id;
+    task.taskType === "approval_request" && workflow?.approverId === user?._id;
   const isApprovalResponse = task.taskType === "approval_response";
   const canTakeAction =
     isApprovalRequest && !task.completed && workflow?.status === "pending";
@@ -208,7 +212,7 @@ export default function OrgChartApprovalTaskPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Type</p>
                   <Badge variant="outline">
-                    {task.taskType.replace(/_/g, " ").toUpperCase()}
+                    {task.taskType?.replace(/_/g, " ").toUpperCase() || 'N/A'}
                   </Badge>
                 </div>
                 <div>
@@ -218,7 +222,7 @@ export default function OrgChartApprovalTaskPage() {
                       task.priority === "high" ? "destructive" : "secondary"
                     }
                   >
-                    {task.priority.toUpperCase()}
+                    {task.priority?.toUpperCase() || 'N/A'}
                   </Badge>
                 </div>
                 <div>
@@ -318,7 +322,7 @@ export default function OrgChartApprovalTaskPage() {
                     <div>
                       <p className="font-medium">Submitted for Approval</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(workflow.submittedAt).toLocaleString()}
+                        {workflow.submittedAt ? new Date(workflow.submittedAt).toLocaleString() : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -451,9 +455,9 @@ export default function OrgChartApprovalTaskPage() {
               <CardContent>
                 <p className="text-sm text-green-600">
                   This task has been completed on{" "}
-                  {new Date(
-                    task.completedAt || task.updatedAt
-                  ).toLocaleDateString()}
+                  {task.completedAt || task.updatedAt ? new Date(
+                    task.completedAt || task.updatedAt || 0
+                  ).toLocaleDateString() : 'N/A'}
                 </p>
               </CardContent>
             </Card>

@@ -32,9 +32,12 @@ import { Badge } from "@/lib/ui/badge";
 
 import { TaskService } from "./task.service";
 import { taskSchema, type TaskInput, type Assignee, type Approver, type Attachment } from "./task.valibot";
-import { usersDB, userCompaniesDB } from "@/modules/shared/database/db";
-import type { User } from "@/modules/shared/database/db";
-import { CompanyDatabaseFactory } from "@/modules/shared/database/company-db-factory";
+import type { User } from "@/modules/shared/types/database.types";
+
+// TODO: Remove PouchDB usage - migrate to PostgreSQL
+const usersDB: any = { find: async () => ({ docs: [] }) };
+const userCompaniesDB: any = { find: async () => ({ docs: [] }) };
+const CompanyDatabaseFactory: any = null;
 
 export default function TaskFormPage() {
   const { user } = useAuth();
@@ -117,7 +120,7 @@ export default function TaskFormPage() {
 
       // Load positions and departments from orgchart
       const orgchartData = await CompanyDatabaseFactory.getOrgCharts();
-      const latestOrgchart = orgchartData.sort((a, b) => b.version - a.version)[0];
+      const latestOrgchart = orgchartData.sort((a: any, b: any) => b.version - a.version)[0];
 
       if (latestOrgchart) {
         const allPositions: any[] = [];

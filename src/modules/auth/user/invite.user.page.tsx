@@ -106,11 +106,19 @@ export default function InviteUserPage() {
   };
 
   // Helper function to get company type label
-  const getCompanyTypeLabel = (type: "workspace" | "supplier" | "customer") => {
-    const labels = {
+  const getCompanyTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
       workspace: "Workspace",
       supplier: "Supplier",
       customer: "Customer",
+      company: "Company",
+      "service provider": "Service Provider",
+      "product vendor": "Product Vendor",
+      partner: "Partner",
+      contractor: "Contractor",
+      freelancer: "Freelancer",
+      consultant: "Consultant",
+      other: "Other",
     };
     return labels[type] || type;
   };
@@ -262,7 +270,7 @@ export default function InviteUserPage() {
                           <div className="flex-1">
                             <p className="text-sm font-medium">{company.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {getCompanyTypeLabel(company.type)} • {getIndustryTitle(company.industry)}
+                              {getCompanyTypeLabel(company.type)} • {getIndustryTitle(company.industry || "")}
                             </p>
                           </div>
                         </label>

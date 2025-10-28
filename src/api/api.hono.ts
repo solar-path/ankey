@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { sendVerificationEmail, sendPasswordResetEmail, sendInquiryConfirmationEmail, sendUserInvitationEmail } from "./mail.settings";
+import authRoutes from "./routes/auth.routes";
+import referenceRoutes from "./routes/reference.routes";
 
 const app = new Hono();
 
@@ -115,7 +117,13 @@ auth.post("/send-password-reset", async (c) => {
   }
 });
 
-// Mount auth routes
+// Mount PostgreSQL function routes (new approach)
+app.route("/api", authRoutes);
+
+// Mount reference data routes
+app.route("/api/reference", referenceRoutes);
+
+// Mount email-specific auth routes (legacy)
 app.route("/api/auth", auth);
 
 // Inquiry routes

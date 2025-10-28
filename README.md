@@ -1,6 +1,18 @@
-# Ankey - Authentication & PouchDB Project
+# Ankey - Multi-Tenant Business Management Platform
 
-Local-first authentication system with real-time sync to CouchDB.
+PostgreSQL-centered business management platform with authentication, company management, organizational charts, and delegation of authority (DOA) workflows.
+
+## 🎯 Architecture
+
+This project follows a **PostgreSQL-centered architecture** where all business logic resides in PostgreSQL functions. See **[ARCHITECTURE.md](ARCHITECTURE.md)** for complete architectural principles.
+
+### Core Principles
+
+- ✅ **PostgreSQL as Application Server** - All business logic in SQL functions
+- ✅ **Hono as Thin API Gateway** - Transport layer only, no business logic
+- ✅ **Thin Client Services** - React/TypeScript services are just API wrappers
+- ✅ **Multi-Tenancy** - Row Level Security (RLS) for data isolation
+- ✅ **Audit Logging** - SOC/SoX compliance with centralized audit logs
 
 ## 🚀 Quick Start
 
@@ -8,120 +20,152 @@ Local-first authentication system with real-time sync to CouchDB.
 # Install dependencies
 bun install
 
-# Clear Vite cache (if needed)
-rm -rf node_modules/.vite
+# Configure environment
+cp .env.example .env
+# Edit .env and set DATABASE_URL (default: postgresql://localhost:5432/ankey)
 
-# Start development server
+# Start PostgreSQL (if using Docker)
+docker-compose up -d postgres
+
+# Initialize database
+createdb ankey
+cd src/api/db
+psql -d ankey -f 00-init-all.sql
+
+# Seed reference data (countries & industries)
+cd ../..
+bun run scripts/seed-reference-data.ts
+
+# Start API server
+bun run dev:api
+
+# Start frontend (in another terminal)
 bun run dev
 ```
 
-## 📚 Documentation
-
-- **[START_HERE.md](START_HERE.md)** - Quick start guide
-- **[POUCHDB_FIX.md](POUCHDB_FIX.md)** - Fix "Superclass is not a constructor" error 🔧
-- **[SETUP_COMPLETE.md](SETUP_COMPLETE.md)** - Complete setup overview
-- **[AUTH_SETUP.md](AUTH_SETUP.md)** - Authentication system details
-- **[docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md)** - CouchDB installation & configuration ⭐
-- **[docs/couchDb.llm.txt](docs/couchDb.llm.txt)** - Complete PouchDB/CouchDB reference
-
 ## 🛠️ Tech Stack
 
+### Backend
+- **PostgreSQL** - Application server with business logic
+- **Hono** - Lightweight API gateway
+- **pg** - PostgreSQL client
+
+### Frontend
 - **React** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool
-- **PouchDB** - Local database (via npm: `pouchdb@9.0.0`)
-- **CouchDB** - Remote database (sync target)
 - **Tailwind CSS** - Styling
+- **shadcn/ui** - Component library
 - **Wouter** - Routing
 - **Valibot** - Validation
+- **Zustand** - State management
 - **Sonner** - Toast notifications
 
 ## 📦 Key Features
 
-- ✅ Local-first architecture with PouchDB
-- ✅ Real-time sync with CouchDB
-- ✅ Custom authentication system
-- ✅ Mobile-responsive UI with hamburger menu
-- ✅ Route protection
-- ✅ Session management
-- ✅ Offline support
-
-## 🔧 Configuration
-
-### PouchDB Integration
-
-PouchDB установлен через npm (основной пакет, не browser-версия):
-
-```typescript
-// src/lib/db.ts
-import PouchDB from "pouchdb";
-import PouchDBFind from "pouchdb-find";
-
-PouchDB.plugin(PouchDBFind);
-```
-
-> **Важно:** Используется пакет `pouchdb` (не `pouchdb-browser`) для стабильной работы с Vite.
-
-### Vite Configuration
-
-```typescript
-// vite.config.ts
-export default defineConfig({
-  resolve: {
-    mainFields: ['module', 'jsnext:main', 'jsnext'],
-  },
-  define: {
-    global: "globalThis",
-    "process.env": {},
-  },
-  optimizeDeps: {
-    include: ["pouchdb", "pouchdb-find"],
-  },
-  build: {
-    commonjsOptions: {
-      include: [/pouchdb/, /node_modules/],
-      transformMixedEsModules: true,
-    },
-  },
-});
-```
+- ✅ **Authentication** - Signup, signin, 2FA, password reset
+- ✅ **Multi-Tenancy** - Company-based data isolation
+- ✅ **Organization Charts** - Hierarchical org structure with approvals
+- ✅ **DOA (Delegation of Authority)** - Approval matrix management
+- ✅ **Task Management** - Manual and approval tasks
+- ✅ **Inquiry System** - Contact form with tracking
+- ✅ **Audit Logging** - Complete audit trail for SOC/SoX compliance
+- ✅ **Soft Delete** - Data recovery with retention policies
 
 ## 🗄️ Database Setup
 
-See **[docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md)** for detailed CouchDB setup instructions.
+### PostgreSQL Installation
 
-**Quick Setup:**
+**macOS:**
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
 
-1. Install CouchDB: `brew install couchdb`
-2. Start CouchDB: `brew services start couchdb`
-3. Setup CORS: `npx add-cors-to-couchdb`
-4. Access Fauxton: http://127.0.0.1:5984/_utils/
+**Ubuntu/Debian:**
+```bash
+sudo apt install postgresql-16
+sudo systemctl start postgresql
+```
+
+### Database Initialization
+
+```bash
+# Create database
+createdb ankey
+
+# Apply all schemas and functions
+cd src/api/db
+psql -d ankey -f 00-init-all.sql
+```
+
+### Database Structure
+
+```
+src/api/db/
+├── 00-init-all.sql           # Master initialization script
+├── README.md                 # Detailed database documentation
+│
+├── audit.definition.sql      # Audit tables
+├── audit.functions.sql       # Audit functions
+├── audit.triggers.sql        # Automatic triggers
+│
+├── auth.definition.sql       # Users, sessions
+├── auth.functions.sql        # Authentication functions
+│
+├── company.definition.sql    # Companies, user-companies
+├── company.functions.sql     # Company management
+│
+├── inquiry.definition.sql    # Contact inquiries
+├── inquiry.functions.sql     # Inquiry handling
+│
+├── orgchart.definition.sql   # Organizational charts
+├── orgchart.functions.sql    # Orgchart operations
+│
+└── reference.definition.sql  # Countries, Industries tables
+```
+
+**Seed Reference Data:**
+```bash
+bun run scripts/seed-reference-data.ts  # 244 countries, 170 industries from JSON
+```
+
+See **[src/api/db/README.md](src/api/db/README.md)** for detailed database documentation.
 
 ## 🔐 Authentication Flow
 
 1. **Sign Up** → Create account (unverified)
-2. **Verify** → Enter 6-digit code (check console)
+2. **Verify** → Enter 6-digit verification code
 3. **Sign In** → Authenticate and create session
-4. **Access Dashboard** → Protected route at `/dashboard`
+4. **Dashboard** → Access protected routes
 
 ## 📂 Project Structure
 
 ```
 src/
+├── api/
+│   ├── db/                    # PostgreSQL schemas and functions
+│   └── routes/                # Hono API routes
+│
 ├── lib/
-│   ├── db.ts                    # PouchDB setup & sync
-│   ├── auth-service.ts          # Authentication logic
-│   ├── auth-context.tsx         # Auth state management
-│   └── ui/                      # UI components
+│   ├── auth-context.tsx       # Auth state management
+│   ├── company-context.tsx    # Company context
+│   └── ui/                    # UI components (shadcn/ui)
+│
 ├── modules/
-│   ├── auth/                    # Auth pages & schemas
-│   └── company/                 # Dashboard pages
+│   ├── auth/                  # Authentication
+│   ├── company/               # Company management
+│   ├── doa/                   # Delegation of Authority
+│   ├── inquiry/               # Contact inquiries
+│   ├── htr/orgchart/          # Organization charts
+│   └── task/                  # Task management
+│
 └── routes/
-    ├── public.layout.tsx        # Public pages layout
-    └── private.layout.tsx       # Protected pages layout
+    ├── public.layout.tsx      # Public pages layout
+    └── private.layout.tsx     # Protected pages layout
 ```
 
-## 🧪 Testing
+## 🧪 Development
 
 ```bash
 # Type checking
@@ -132,42 +176,132 @@ bun run build
 
 # Preview build
 bun run preview
+
+# Run tests (if configured)
+bun test
+```
+
+## 📖 Documentation
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architectural principles ⭐
+- **[src/api/db/README.md](src/api/db/README.md)** - Database documentation
+- **[docs/approach.txt](docs/approach.txt)** - Architectural approach
+- **[docs/shadcn.llm.txt](docs/shadcn.llm.txt)** - shadcn/ui component guide
+
+## 🎯 Module Structure
+
+Each module follows this structure:
+
+```
+src/modules/auth/
+├── auth-service.ts          # Thin client service (API wrapper)
+├── auth.valibot.ts          # Client-side validation schemas
+├── signin.page.tsx          # UI components
+└── signup.page.tsx
+```
+
+**Business logic is in PostgreSQL:**
+```
+src/api/db/
+├── auth.definition.sql      # Database schema
+└── auth.functions.sql       # Business logic functions
+```
+
+## 🔒 Security
+
+- ✅ **SECURITY DEFINER** on all PostgreSQL functions
+- ✅ **Password hashing** with pgcrypto
+- ✅ **Session validation** with expiry
+- ✅ **Row Level Security (RLS)** for multi-tenancy
+- ✅ **Input sanitization** in PostgreSQL functions
+- ✅ **Audit logging** for all data changes
+
+## 📊 Audit & Compliance
+
+Built-in audit logging system for SOC/SoX compliance:
+
+- **Complete audit trail** - All data changes logged
+- **Soft delete pattern** - Data recovery with snapshots
+- **Session tracking** - Detailed user activity logs
+- **Retention policy** - 7-year default (SOX requirement)
+- **SOC reports** - Generate compliance reports
+
+```sql
+-- Generate SOC2 report
+SELECT audit.generate_soc_report(
+  'SOC2',
+  '2025-01-01'::TIMESTAMP,
+  '2025-12-31'::TIMESTAMP,
+  'admin@example.com'
+);
 ```
 
 ## 🐛 Troubleshooting
 
-### PouchDB Errors
+### PostgreSQL Connection Issues
 
-If you see "Superclass is not a constructor":
+1. Check PostgreSQL is running: `pg_isready`
+2. Verify connection string in `.env`
+3. Check database exists: `psql -l | grep ankey`
 
-```bash
-rm -rf node_modules/.vite
-bun run dev
+### API Server Not Starting
+
+1. Check port 3001 is available
+2. Verify DATABASE_URL in `.env`
+3. Check PostgreSQL functions are installed
+
+### Frontend Issues
+
+1. Clear Vite cache: `rm -rf node_modules/.vite`
+2. Reinstall dependencies: `bun install`
+3. Check API_URL in `.env`: `VITE_API_URL=http://localhost:3001`
+
+## 🚀 Deployment
+
+### Environment Variables
+
+Create `.env.production`:
+
+```env
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/ankey
+
+# API
+API_PORT=3001
+VITE_API_URL=https://api.yourdomain.com
+
+# Email (for verification codes)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=noreply@yourdomain.com
+SMTP_PASS=your_password
+FROM_EMAIL=noreply@yourdomain.com
+FROM_NAME=YourApp
 ```
 
-### CouchDB Connection Issues
+### Build & Deploy
 
-1. Check CouchDB is running: `curl http://127.0.0.1:5984`
-2. Verify CORS: See [docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md#настройка-cors)
-3. Check databases exist: Visit http://127.0.0.1:5984/_utils/
+```bash
+# Build frontend
+bun run build
 
-### Verification Code Not Showing
+# Deploy frontend (static files in dist/)
+# Deploy API server (src/api/)
+# Ensure PostgreSQL is accessible
+```
 
-Check the **browser console** (F12 → Console), not the terminal!
+## 📝 Contributing
 
-## 📖 Learn More
+1. Read **[ARCHITECTURE.md](ARCHITECTURE.md)** thoroughly
+2. Follow the established patterns
+3. Write business logic in PostgreSQL functions
+4. Keep services thin (just API wrappers)
+5. Add audit logging for data changes
 
-- [PouchDB Documentation](https://pouchdb.com/guides/)
-- [CouchDB Documentation](https://docs.couchdb.org/)
-- [Complete Project Guide](docs/couchDb.llm.txt)
+## 📄 License
 
-## 🎯 Next Steps
-
-1. ✅ Setup CouchDB (see [docs/COUCHDB_SETUP.md](docs/COUCHDB_SETUP.md))
-2. ✅ Configure CORS
-3. ✅ Test authentication flow
-4. 🎨 Start building your features!
+[Your License Here]
 
 ---
 
-**Need help?** Check the documentation files or open an issue.
+**Need help?** Check [ARCHITECTURE.md](ARCHITECTURE.md) or [src/api/db/README.md](src/api/db/README.md)

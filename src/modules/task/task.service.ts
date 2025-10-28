@@ -1,7 +1,16 @@
-import { tasksDB } from "@/modules/shared/database/db";
+/**
+ * Task Service
+ *
+ * ⚠️ MIGRATION NEEDED: This module needs PostgreSQL migration
+ * TODO: Migrate to PostgreSQL-centered architecture following ARCHITECTURE.md
+ * - Create src/modules/task/task.sql with PostgreSQL functions
+ * - Update this service to thin client pattern (API calls only)
+ * - Remove direct database access
+ *
+ * TEMPORARY: All methods return empty/placeholder data until migration is complete
+ */
+
 import type { TaskInput, Assignee, Approver, Attachment } from "./task.valibot";
-import * as v from "valibot";
-import { taskSchema } from "./task.valibot";
 
 export interface Task {
   _id: string;
@@ -25,230 +34,104 @@ export interface Task {
 export class TaskService {
   /**
    * Create a new manual task
+   * TODO: Implement via PostgreSQL function call
    */
   static async createTask(
-    creatorId: string,
-    tenantId: string,
-    input: TaskInput
+    _creatorId: string,
+    _tenantId: string,
+    _input: TaskInput
   ): Promise<Task> {
-    // Validate input
-    const validated = v.parse(taskSchema, input);
-
-    // Validate total attachment size (max 5MB)
-    if (validated.attachments) {
-      const totalSize = validated.attachments.reduce((sum, att) => sum + att.size, 0);
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (totalSize > maxSize) {
-        throw new Error("Total attachment size exceeds 5MB limit");
-      }
-    }
-
-    const now = new Date().toISOString();
-    const task: Task = {
-      _id: `task:${tenantId}:manual_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      type: "manual_task",
-      creatorId,
-      tenantId,
-      title: validated.title,
-      description: validated.description,
-      deadline: validated.deadline,
-      assignees: validated.assignees,
-      approvers: validated.approvers,
-      attachments: validated.attachments,
-      completed: false,
-      approvalStatus: validated.approvers && validated.approvers.length > 0 ? "pending" : undefined,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    await tasksDB.put(task);
-    return task;
+    console.warn("[TaskService] createTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Get a task by ID
+   * TODO: Implement via PostgreSQL function call
    */
-  static async getTask(taskId: string): Promise<Task> {
-    try {
-      const task = await tasksDB.get(taskId);
-      return task as Task;
-    } catch (error: any) {
-      if (error.status === 404) {
-        throw new Error("Task not found");
-      }
-      throw error;
-    }
+  static async getTask(_taskId: string): Promise<Task> {
+    console.warn("[TaskService] getTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Update an existing task
+   * TODO: Implement via PostgreSQL function call
    */
   static async updateTask(
-    taskId: string,
-    input: Partial<TaskInput>
+    _taskId: string,
+    _input: Partial<TaskInput>
   ): Promise<Task> {
-    const task = await this.getTask(taskId);
-
-    // Only allow updating manual tasks
-    if (task.type !== "manual_task") {
-      throw new Error("Cannot edit system-generated tasks");
-    }
-
-    // Validate attachments size if provided
-    if (input.attachments) {
-      const totalSize = input.attachments.reduce((sum, att) => sum + att.size, 0);
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (totalSize > maxSize) {
-        throw new Error("Total attachment size exceeds 5MB limit");
-      }
-    }
-
-    // Update fields
-    if (input.title !== undefined) {
-      task.title = input.title;
-    }
-    if (input.description !== undefined) {
-      task.description = input.description;
-    }
-    if (input.deadline !== undefined) {
-      task.deadline = input.deadline;
-    }
-    if (input.assignees !== undefined) {
-      task.assignees = input.assignees;
-    }
-    if (input.approvers !== undefined) {
-      task.approvers = input.approvers;
-      task.approvalStatus = input.approvers.length > 0 ? "pending" : undefined;
-    }
-    if (input.attachments !== undefined) {
-      task.attachments = input.attachments;
-    }
-
-    task.updatedAt = new Date().toISOString();
-
-    await tasksDB.put(task);
-    return task;
+    console.warn("[TaskService] updateTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Delete a task
+   * TODO: Implement via PostgreSQL function call
    */
-  static async deleteTask(taskId: string): Promise<void> {
-    const task = await this.getTask(taskId);
-
-    // Only allow deleting manual tasks
-    if (task.type !== "manual_task") {
-      throw new Error("Cannot delete system-generated tasks");
-    }
-
-    await tasksDB.remove(task);
+  static async deleteTask(_taskId: string): Promise<void> {
+    console.warn("[TaskService] deleteTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Mark task as completed
+   * TODO: Implement via PostgreSQL function call
    */
-  static async completeTask(taskId: string): Promise<Task> {
-    const task = await this.getTask(taskId);
-    task.completed = true;
-    task.updatedAt = new Date().toISOString();
-    await tasksDB.put(task);
-    return task;
+  static async completeTask(_taskId: string): Promise<Task> {
+    console.warn("[TaskService] completeTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Mark task as incomplete
+   * TODO: Implement via PostgreSQL function call
    */
-  static async uncompleteTask(taskId: string): Promise<Task> {
-    const task = await this.getTask(taskId);
-    task.completed = false;
-    task.updatedAt = new Date().toISOString();
-    await tasksDB.put(task);
-    return task;
+  static async uncompleteTask(_taskId: string): Promise<Task> {
+    console.warn("[TaskService] uncompleteTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Approve task (by approver)
+   * TODO: Implement via PostgreSQL function call
    */
-  static async approveTask(taskId: string, approverId: string): Promise<Task> {
-    const task = await this.getTask(taskId);
-
-    if (!task.approvers || task.approvers.length === 0) {
-      throw new Error("This task does not require approval");
-    }
-
-    // Check if user is an approver
-    const isApprover = task.approvers.some(a => a.userId === approverId);
-    if (!isApprover) {
-      throw new Error("You are not authorized to approve this task");
-    }
-
-    task.approvalStatus = "approved";
-    task.updatedAt = new Date().toISOString();
-    await tasksDB.put(task);
-    return task;
+  static async approveTask(_taskId: string, _approverId: string): Promise<Task> {
+    console.warn("[TaskService] approveTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Reject task (by approver)
+   * TODO: Implement via PostgreSQL function call
    */
-  static async rejectTask(taskId: string, approverId: string): Promise<Task> {
-    const task = await this.getTask(taskId);
-
-    if (!task.approvers || task.approvers.length === 0) {
-      throw new Error("This task does not require approval");
-    }
-
-    // Check if user is an approver
-    const isApprover = task.approvers.some(a => a.userId === approverId);
-    if (!isApprover) {
-      throw new Error("You are not authorized to reject this task");
-    }
-
-    task.approvalStatus = "rejected";
-    task.updatedAt = new Date().toISOString();
-    await tasksDB.put(task);
-    return task;
+  static async rejectTask(_taskId: string, _approverId: string): Promise<Task> {
+    console.warn("[TaskService] rejectTask: Not implemented - awaiting PostgreSQL migration");
+    throw new Error("Task module not yet migrated to PostgreSQL");
   }
 
   /**
    * Get all tasks for a user in a specific company
+   * TODO: Implement via PostgreSQL function call
    */
   static async getUserTasks(
-    userId: string,
-    tenantId: string
+    _userId: string,
+    _tenantId: string
   ): Promise<Task[]> {
-    try {
-      const result = await tasksDB.find({
-        selector: {
-          type: "manual_task",
-          tenantId,
-        },
-        sort: [{ createdAt: "desc" }],
-      });
-
-      // Filter tasks where user is creator, assignee, or approver
-      const userTasks = result.docs.filter((task: Task) => {
-        if (task.creatorId === userId) return true;
-        if (task.assignees.some(a => a.type === "user" && a.id === userId)) return true;
-        if (task.approvers && task.approvers.some(a => a.userId === userId)) return true;
-        return false;
-      });
-
-      return userTasks as Task[];
-    } catch (error) {
-      console.error("Failed to get user tasks:", error);
-      return [];
-    }
+    console.warn("[TaskService] getUserTasks: Not implemented - awaiting PostgreSQL migration");
+    return [];
   }
 
   /**
    * Get pending tasks for a user in a specific company
+   * TODO: Implement via PostgreSQL function call
    */
   static async getPendingTasks(
-    userId: string,
-    tenantId: string
+    _userId: string,
+    _tenantId: string
   ): Promise<Task[]> {
-    const allTasks = await this.getUserTasks(userId, tenantId);
-    return allTasks.filter(task => !task.completed);
+    console.warn("[TaskService] getPendingTasks: Not implemented - awaiting PostgreSQL migration");
+    return [];
   }
 }

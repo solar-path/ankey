@@ -8,7 +8,6 @@ import { Badge } from "@/lib/ui/badge";
 import { useCompany } from "@/lib/company-context";
 import { toast } from "sonner";
 import { CompanyMembersService } from "@/modules/company/company-members-service";
-import { usersDB, type User } from "@/modules/shared/database/db";
 
 interface Employee {
   _id: string;
@@ -45,40 +44,19 @@ export default function AddressBookPage() {
         activeCompany._id
       );
 
-      // Fetch full user details including profile information
-      const employeesData: Employee[] = [];
-      for (const member of members) {
-        try {
-          const user = (await usersDB.get(member.userId)) as User;
-
-          // Build complete address string if available
-          let address = "";
-          if (user.profile) {
-            const parts = [
-              user.profile.address,
-              user.profile.city,
-              user.profile.state,
-              user.profile.zipCode,
-              user.profile.country,
-            ].filter(Boolean);
-            address = parts.join(", ");
-          }
-
-          employeesData.push({
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            phone: user.profile?.phone,
-            address: address || undefined,
-            avatar: user.profile?.avatar,
-            position: undefined, // TODO: Get from orgchart appointments
-            department: undefined, // TODO: Get from orgchart departments
-            role: member.role,
-          });
-        } catch (error) {
-          console.warn(`Failed to load user ${member.userId}:`, error);
-        }
-      }
+      // TODO: Migrate to PostgreSQL - CompanyMembersService should return full user details with JOIN
+      // For now, use basic member data
+      const employeesData: Employee[] = members.map((member) => ({
+        _id: member.userId,
+        fullname: member.userId, // TODO: Get from user table via PostgreSQL join
+        email: member.userId, // TODO: Get from user table via PostgreSQL join
+        phone: undefined,
+        address: undefined,
+        avatar: undefined,
+        position: undefined, // TODO: Get from orgchart appointments
+        department: undefined, // TODO: Get from orgchart departments
+        role: member.role,
+      }));
 
       setEmployees(employeesData);
     } catch (error) {

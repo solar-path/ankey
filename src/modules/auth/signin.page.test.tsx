@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import SignInPage from './signin.page';
 import { AuthService } from './auth-service';
 import { toast } from 'sonner';
-import type { User, Session } from '@/modules/shared/database/db';
+import type { User, Session } from '@/modules/shared/types/database.types';
 
 // Mock dependencies
 vi.mock('./auth-service');
@@ -24,6 +24,7 @@ vi.mock('@/lib/auth-context', () => ({
 
 // Helper to create mock user
 const createMockUser = (overrides?: Partial<User>): User => ({
+  id: 'user-1',
   _id: 'user-1',
   type: 'user',
   email: 'test@example.com',
@@ -37,6 +38,7 @@ const createMockUser = (overrides?: Partial<User>): User => ({
 
 // Helper to create mock session
 const createMockSession = (overrides?: Partial<Session>): Session => ({
+  id: 'session-1',
   _id: 'session-1',
   type: 'session',
   userId: 'user-1',

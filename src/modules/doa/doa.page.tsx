@@ -5,7 +5,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/lib/ui/badge";
 import { Plus, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { type ApprovalMatrix } from "@/modules/shared/database/db";
+import { type ApprovalMatrix } from "@/modules/shared/types/database.types";
 import { useCompanyOptional } from "@/lib/company-context";
 import { DOAService } from "./doa.service";
 

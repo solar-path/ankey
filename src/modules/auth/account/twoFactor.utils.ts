@@ -17,7 +17,7 @@ export async function generateQRCode(
   secret: string
 ): Promise<string> {
   const totp = new TOTP({
-    issuer: "YSollo",
+    issuer: "Ankey",
     label: userEmail,
     algorithm: "SHA1",
     digits: 6,
@@ -36,7 +36,7 @@ export async function generateQRCode(
  */
 export function verifyTwoFactorToken(secret: string, token: string): boolean {
   const totp = new TOTP({
-    issuer: "YSollo",
+    issuer: "Ankey",
     algorithm: "SHA1",
     digits: 6,
     period: 30,
