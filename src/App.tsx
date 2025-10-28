@@ -34,9 +34,27 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
 import { TaskProvider } from "./lib/task-context";
+import { useEffect } from "react";
+import { setupSync, cleanupSync } from "./modules/shared/database/db";
 
 function App() {
   const [location] = useLocation();
+
+  // Setup and cleanup sync lifecycle
+  useEffect(() => {
+    console.log("[App] Initializing sync...");
+    setupSync().catch((err) => {
+      console.error("[App] Failed to setup sync:", err);
+    });
+
+    // Cleanup sync before app exit
+    return () => {
+      console.log("[App] Cleaning up sync...");
+      cleanupSync().catch((err) => {
+        console.error("[App] Failed to cleanup sync:", err);
+      });
+    };
+  }, []);
 
   // Define public and private routes
   const publicRoutes = [

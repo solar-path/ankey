@@ -170,6 +170,7 @@ export interface OrgChartRow {
   title: string;
   description?: string;
   code?: string;
+  version?: string; // Version from OrgChart parent (for display)
 
   // Department-specific fields
   headcount?: number;

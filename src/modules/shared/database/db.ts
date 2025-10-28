@@ -32,111 +32,63 @@ export const remoteOrgchartsDB = new PouchDB(`${COUCHDB_URL}/orgcharts`);
 export const remoteChartOfAccountsDB = new PouchDB(`${COUCHDB_URL}/chartofaccounts`);
 export const remoteTasksDB = new PouchDB(`${COUCHDB_URL}/tasks`);
 
-// Setup sync
-export function setupSync() {
-  // Sync users database
-  usersDB
-    .sync(remoteUsersDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Users DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Users DB sync error:", err);
-    });
+// Import sync service
+import { initializeSync, finalizeAllSyncs, syncOnChange } from "./sync.service";
 
-  // Sync sessions database
-  sessionsDB
-    .sync(remoteSessionsDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Sessions DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Sessions DB sync error:", err);
-    });
+// Database pairs for sync management
+export const databasePairs = [
+  { local: usersDB, remote: remoteUsersDB, name: "users" },
+  { local: sessionsDB, remote: remoteSessionsDB, name: "sessions" },
+  { local: inquiriesDB, remote: remoteInquiriesDB, name: "inquiries" },
+  { local: companiesDB, remote: remoteCompaniesDB, name: "companies" },
+  { local: userCompaniesDB, remote: remoteUserCompaniesDB, name: "user_companies" },
+  { local: orgchartsDB, remote: remoteOrgchartsDB, name: "orgcharts" },
+  { local: chartOfAccountsDB, remote: remoteChartOfAccountsDB, name: "chartofaccounts" },
+  { local: tasksDB, remote: remoteTasksDB, name: "tasks" },
+];
 
-  // Sync inquiries database
-  inquiriesDB
-    .sync(remoteInquiriesDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Inquiries DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Inquiries DB sync error:", err);
-    });
+// Setup controlled sync (replaces old bidirectional sync)
+export async function setupSync() {
+  console.log("[DB] Setting up controlled sync for all databases...");
 
-  // Sync companies database
-  companiesDB
-    .sync(remoteCompaniesDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Companies DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Companies DB sync error:", err);
-    });
+  try {
+    // Initialize sync for all databases in parallel
+    await Promise.all(
+      databasePairs.map(({ local, remote, name }) =>
+        initializeSync(local, remote, name).catch((err) => {
+          console.error(`[DB] Failed to initialize sync for ${name}:`, err);
+        })
+      )
+    );
 
-  // Sync user_companies database
-  userCompaniesDB
-    .sync(remoteUserCompaniesDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("User Companies DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("User Companies DB sync error:", err);
-    });
+    console.log("[DB] Controlled sync setup complete");
+  } catch (error) {
+    console.error("[DB] Failed to setup sync:", error);
+    throw error;
+  }
+}
 
-  // Sync orgcharts database (partitioned)
-  orgchartsDB
-    .sync(remoteOrgchartsDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Orgcharts DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Orgcharts DB sync error:", err);
-    });
+// Cleanup sync before app exit
+export async function cleanupSync() {
+  console.log("[DB] Cleaning up sync...");
 
-  // Sync chartofaccounts database (partitioned)
-  chartOfAccountsDB
-    .sync(remoteChartOfAccountsDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Chart of Accounts DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Chart of Accounts DB sync error:", err);
-    });
+  try {
+    await finalizeAllSyncs(databasePairs);
+    console.log("[DB] Sync cleanup complete");
+  } catch (error) {
+    console.error("[DB] Failed to cleanup sync:", error);
+  }
+}
 
-  // Sync tasks database
-  tasksDB
-    .sync(remoteTasksDB, {
-      live: true,
-      retry: true,
-    })
-    .on("change", (info: any) => {
-      console.log("Tasks DB sync change:", info);
-    })
-    .on("error", (err: any) => {
-      console.error("Tasks DB sync error:", err);
-    });
+// Helper: Sync a specific database after changes (for react-hook-form)
+export async function syncDatabaseOnChange(dbName: string): Promise<void> {
+  const dbPair = databasePairs.find((pair) => pair.name === dbName);
+  if (!dbPair) {
+    console.warn(`[DB] Database pair not found for: ${dbName}`);
+    return;
+  }
+
+  await syncOnChange(dbPair.local, dbPair.remote, dbName);
 }
 
 // Initialize databases with indexes

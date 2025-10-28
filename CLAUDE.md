@@ -100,7 +100,13 @@ chartOfAccountsDB / remoteChartOfAccountsDB // Chart of accounts
 
 **Location:** Database setup in [src/modules/shared/database/db.ts](src/modules/shared/database/db.ts)
 
-**Sync:** Real-time bi-directional sync configured with `{ live: true, retry: true }` in `setupSync()`.
+**Sync Strategy (Controlled):** Production-ready controlled synchronization where CouchDB is the single source of truth:
+- **On app load**: Pull from CouchDB (incremental, only changes)
+- **During usage**: One-way live pull (remote → local) for real-time updates from other users
+- **On form submit**: Immediate push to CouchDB via `useSyncOnSubmit` hook
+- **On app exit**: Final push to guarantee all changes are saved
+
+See [docs/SYNC_USAGE.md](docs/SYNC_USAGE.md) and [docs/SYNC_IMPLEMENTATION.md](docs/SYNC_IMPLEMENTATION.md) for details.
 
 **Document Types:** All documents have a `type` field discriminator (`"user"`, `"session"`, `"inquiry"`) for efficient querying.
 
@@ -256,9 +262,13 @@ src/
 │   └── shared/                          # Shared modules
 │       ├── database/                    # PouchDB layer
 │       │   ├── db.ts                   # Global DBs (users, sessions, etc.)
+│       │   ├── sync.service.ts         # Controlled sync service
 │       │   ├── company-db-factory.ts   # Partitioned DB access
 │       │   ├── reference-data.ts       # Countries, Industries
 │       │   └── index.ts
+│       │
+│       ├── hooks/                       # Shared React hooks
+│       │   └── useSyncOnSubmit.ts      # Form sync integration hook
 │       │
 │       └── stores/                      # Zustand stores
 │           ├── auth.store.ts           # Auth UI state
@@ -275,6 +285,7 @@ src/
 │   └── ui/                             # Shadcn/Radix components
 │       ├── button.tsx
 │       ├── input.tsx
+│       ├── sync-indicator.tsx          # Sync status indicator
 │       ├── QTableHierarchical.ui.tsx  # Custom hierarchical table
 │       └── ... (~40 components)
 │
@@ -375,6 +386,41 @@ static sanitizeUser(user: User) {
   return safe;
 }
 ```
+
+### Form Sync Integration
+
+**Always use the `useSyncOnSubmit` hook** for form submissions to ensure data is immediately synced to CouchDB:
+
+```typescript
+import { useSyncOnSubmit } from "@/modules/shared/hooks/useSyncOnSubmit";
+
+export function MyForm() {
+  const form = useForm<FormData>({
+    resolver: valibotResolver(schema),
+  });
+
+  // Wrap form with sync hook (specify database name)
+  const { handleSubmitWithSync } = useSyncOnSubmit('users', form);
+
+  const onSubmit = handleSubmitWithSync(async (data) => {
+    // Your form submission logic
+    await MyService.create(data);
+    // Sync happens automatically after successful submission
+  });
+
+  return <form onSubmit={form.handleSubmit(onSubmit)}>{/* ... */}</form>;
+}
+```
+
+**Available database names:** `users`, `sessions`, `inquiries`, `companies`, `user_companies`, `orgcharts`, `chartofaccounts`, `tasks`
+
+**For manual sync** (outside of forms):
+```typescript
+import { syncDatabaseOnChange } from '@/modules/shared/database/db';
+await syncDatabaseOnChange('users');
+```
+
+See [docs/SYNC_USAGE.md](docs/SYNC_USAGE.md) for comprehensive examples and best practices.
 
 ## Critical Configuration
 

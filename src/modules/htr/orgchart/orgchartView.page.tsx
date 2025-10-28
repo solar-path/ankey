@@ -802,8 +802,18 @@ export default function OrgChartViewPage() {
       <div className="border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{orgChart?.title || "Organizational Chart"}</h1>
-            <p className="text-sm text-muted-foreground">{orgChart?.description}</p>
+            <h1 className="text-2xl font-bold">Organizational Chart</h1>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-lg font-semibold text-foreground">{orgChart?.title}</p>
+              {orgChart?.version && (
+                <Badge variant="outline" className="text-xs">
+                  v{orgChart.version}
+                </Badge>
+              )}
+            </div>
+            {orgChart?.description && (
+              <p className="text-sm text-muted-foreground mt-1">{orgChart.description}</p>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

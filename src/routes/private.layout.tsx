@@ -18,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/lib/ui/sidebar";
+import { SyncIndicator } from "@/lib/ui/sync-indicator";
 
 function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -132,6 +133,9 @@ function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
               ))}
             </BreadcrumbList>
           </Breadcrumb>
+          <div className="ml-auto">
+            <SyncIndicator />
+          </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 bg-stone-50">
           {children}
