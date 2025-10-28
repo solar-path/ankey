@@ -847,8 +847,27 @@ export class OrgChartService {
 
     const rows: OrgChartRow[] = [];
 
-    // Note: OrgChart itself is not added to rows - it's shown in the page header
-    // Only departments, positions, and appointments are shown in the hierarchical table
+    // Add OrgChart itself to rows (needed for status tracking in UI)
+    const orgChart = result.docs.find((d: any) => d.type === "orgchart") as OrgChart | undefined;
+    if (orgChart) {
+      rows.push({
+        _id: orgChart._id,
+        _rev: orgChart._rev,
+        type: "orgchart",
+        companyId,
+        title: orgChart.title,
+        description: orgChart.description,
+        version: orgChart.version,
+        status: orgChart.status,
+        parentId: undefined,
+        level: 0,
+        sortOrder: 0,
+        hasChildren: true,
+        createdAt: orgChart.createdAt,
+        updatedAt: orgChart.updatedAt,
+        original: orgChart,
+      });
+    }
 
     // Add departments
     for (const dept of departments.sort((a, b) => a.sortOrder - b.sortOrder)) {

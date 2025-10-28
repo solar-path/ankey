@@ -486,7 +486,8 @@ export function CompanyForm({
                                 {countriesData.map((country) => (
                                   <CommandItem
                                     key={country.code}
-                                    value={country.name}
+                                    value={`${country.code} ${country.name}`}
+                                    keywords={[country.code, country.name]}
                                     onSelect={() => {
                                       field.onChange(country.code);
                                       form.setValue(
@@ -730,7 +731,8 @@ export function CompanyForm({
                                     {countriesData.map((country) => (
                                       <CommandItem
                                         key={`contact-${country.code}`}
-                                        value={country.name}
+                                        value={`${country.code} ${country.name}`}
+                                        keywords={[country.code, country.name]}
                                         onSelect={() => {
                                           field.onChange(country.code);
                                           form.setValue(
