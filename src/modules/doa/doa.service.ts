@@ -55,7 +55,7 @@ export class DOAService {
   /**
    * Create a new approval matrix
    */
-  static async createMatrix(companyId: string, data: Omit<ApprovalMatrix, "_id" | "_rev" | "type" | "companyId" | "createdAt" | "updatedAt">, userId: string): Promise<ApprovalMatrix> {
+  static async createMatrix(companyId: string, data: Omit<ApprovalMatrix, "_id" | "_rev" | "type" | "companyId" | "createdAt" | "updatedAt" | "createdBy">, userId: string): Promise<ApprovalMatrix> {
     try {
       const matrixId = `matrix_${Date.now()}_${crypto.randomUUID()}`;
       const matrix: ApprovalMatrix = {

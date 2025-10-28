@@ -114,50 +114,61 @@ export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
 
   const currentFilePath = getFilePathFromRoute(location);
 
-  const navMain = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-    },
-    {
-      title: "Tasks",
-      url: "/task",
-      icon: ListTodo,
-      badge: taskCount,
-    },
-    {
-      title: "Personnel management",
-      url: `/orgchart`,
-      icon: Network,
-    },
-    {
-      title: "Address Book",
-      url: "/address-book",
-      icon: BookUser,
-    },
-    {
-      title: "DOA Matrix",
-      url: `/doa`,
-      icon: Shield,
-    },
-    {
-      title: "Documents",
-      url: "/documents",
-      icon: FileText,
-    },
-    {
-      title: "Users",
-      url: "/users",
-      icon: Users,
-    },
-    {
-      title: "Settings",
-      url: "/company/settings",
-      icon: Settings,
-    },
-  ];
+  // Only show Dashboard if there are no companies
+  // Show all navigation links if there is at least one company
+  const navMain = companies.length === 0
+    ? [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: LayoutDashboard,
+          isActive: true,
+        },
+      ]
+    : [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: LayoutDashboard,
+          isActive: true,
+        },
+        {
+          title: "Tasks",
+          url: "/task",
+          icon: ListTodo,
+          badge: taskCount,
+        },
+        {
+          title: "Personnel management",
+          url: `/orgchart`,
+          icon: Network,
+        },
+        {
+          title: "Address Book",
+          url: "/address-book",
+          icon: BookUser,
+        },
+        {
+          title: "DOA Matrix",
+          url: `/doa`,
+          icon: Shield,
+        },
+        {
+          title: "Documents",
+          url: "/documents",
+          icon: FileText,
+        },
+        {
+          title: "Users",
+          url: "/users",
+          icon: Users,
+        },
+        {
+          title: "Settings",
+          url: "/company/settings",
+          icon: Settings,
+        },
+      ];
 
   return (
     <Sidebar collapsible="icon" {...props} className="bg-stone-50">

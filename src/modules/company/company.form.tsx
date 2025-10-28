@@ -109,10 +109,13 @@ export function CompanyForm({
   useEffect(() => {
     const loadReferenceData = async () => {
       try {
+        console.log("[CompanyForm] Loading reference data...");
         const [countriesList, industriesList] = await Promise.all([
           countries.getAll(),
           industries.getAll(),
         ]);
+        console.log("[CompanyForm] Loaded countries:", countriesList.length);
+        console.log("[CompanyForm] Loaded industries:", industriesList.length);
         setCountriesData(countriesList);
         setIndustriesData(industriesList);
       } catch (error) {

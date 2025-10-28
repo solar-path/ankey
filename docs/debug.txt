@@ -1,0 +1,20 @@
+vite v7.1.12 building for production...
+transforming...
+✓ 3653 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/work/apps/ankey/src/modules/htr/orgchart/orgchart-approval.service.ts is dynamically imported by /Users/work/apps/ankey/src/modules/htr/orgchart/orgchartList.page.tsx, /Users/work/apps/ankey/src/modules/htr/orgchart/orgchartView.page.tsx, /Users/work/apps/ankey/src/modules/task/tasks.page.tsx but also statically imported by /Users/work/apps/ankey/src/modules/task/orgchartApprovalTask.page.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                              0.67 kB │ gzip:   0.36 kB
+dist/assets/index-JUGGViTx.css              84.52 kB │ gzip:  14.57 kB
+dist/assets/purify.es-B6FQ9oRL.js           22.57 kB │ gzip:   8.71 kB
+dist/assets/index.es-BTCThwJr.js           159.36 kB │ gzip:  53.24 kB
+dist/assets/html2canvas.esm-B0tyYwQk.js    202.36 kB │ gzip:  47.70 kB
+dist/assets/index-Ccjlgs1H.js            2,150.83 kB │ gzip: 652.75 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.99s
