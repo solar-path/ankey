@@ -1,56 +1,38 @@
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "wouter";
-import { client } from "@/lib/api-client";
+import { useLocation } from "wouter";
 import { QTable, SortableHeader, RowActionsDropdown } from "@/lib/ui/QTable.ui";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/lib/ui/badge";
 import { Plus, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { type ApprovalMatrix } from "@/api/db/schema";
+import { type ApprovalMatrix } from "@/modules/shared/database/db";
 import { useCompanyOptional } from "@/lib/company-context";
+import { DOAService } from "./doa.service";
 
 export default function DOAPage() {
-  const { companyId } = useParams<{ companyId: string }>();
   const [, setLocation] = useLocation();
   const [matrices, setMatrices] = useState<ApprovalMatrix[]>([]);
   const [loading, setLoading] = useState(true);
   const companyContext = useCompanyOptional();
   const activeCompany = companyContext?.activeCompany || null;
 
-  // Use activeCompany.id instead of URL companyId to react to company switches
-  const effectiveCompanyId = activeCompany?.id || companyId;
-
   useEffect(() => {
-    if (effectiveCompanyId) {
+    if (activeCompany) {
       loadMatrices();
     }
-  }, [effectiveCompanyId]); // Reload when activeCompany changes
+  }, [activeCompany?._id]);
 
   const loadMatrices = async () => {
-    if (!effectiveCompanyId) return;
+    if (!activeCompany) return;
 
     try {
       setLoading(true);
-      const { data, error } = await client(
-        `/api/doa/companies/${effectiveCompanyId}/matrices` as any,
-        {
-          params: { companyId: effectiveCompanyId },
-        } as any
-      );
-
-      if (error) {
-        console.error("Failed to load approval matrices:", error);
-        toast.error("Failed to load approval matrices");
-        setMatrices([]); // Clear matrices on error
-        return;
-      }
-
-      const responseData = data as any;
-      setMatrices(responseData.matrices || []);
+      const matrices = await DOAService.getMatrices(activeCompany._id);
+      setMatrices(matrices);
     } catch (error) {
       console.error("Failed to load approval matrices:", error);
       toast.error("Failed to load approval matrices");
-      setMatrices([]); // Clear matrices on error
+      setMatrices([]);
     } finally {
       setLoading(false);
     }
@@ -60,22 +42,10 @@ export default function DOAPage() {
     if (!confirm("Are you sure you want to delete this approval matrix?"))
       return;
 
+    if (!activeCompany) return;
+
     try {
-      const { error } = await client(
-        `/api/doa/matrices/${matrixId}` as any,
-        {
-          method: "DELETE",
-          params: { matrixId },
-        } as any
-      );
-
-      if (error) {
-        const errorMessage =
-          (error.value as any)?.error || "Failed to delete approval matrix";
-        toast.error(errorMessage);
-        return;
-      }
-
+      await DOAService.deleteMatrix(activeCompany._id, matrixId);
       toast.success("Approval matrix deleted successfully");
       loadMatrices();
     } catch (error) {
@@ -195,31 +165,34 @@ export default function DOAPage() {
         searchKey="name"
         searchPlaceholder="Search matrices..."
         enableRowSelection={false}
-        onRowClick={(matrix) =>
-          setLocation(`/doa/${effectiveCompanyId}/matrix/${matrix.id}`)
-        }
-        rowActions={(matrix) => (
-          <RowActionsDropdown
-            actions={[
-              {
-                label: "View/Edit",
-                icon: <Eye className="size-4" />,
-                onClick: () =>
-                  setLocation(`/doa/${effectiveCompanyId}/matrix/${matrix.id}`),
-              },
-              {
-                label: "Delete",
-                icon: <Trash2 className="size-4" />,
-                onClick: () => handleDelete(matrix.id!),
-                variant: "destructive",
-              },
-            ]}
-          />
-        )}
+        onRowClick={(matrix) => {
+          const id = matrix._id.split(":").pop() || matrix._id;
+          setLocation(`/doa/matrix/${id}`);
+        }}
+        rowActions={(matrix) => {
+          const id = matrix._id.split(":").pop() || matrix._id;
+          return (
+            <RowActionsDropdown
+              actions={[
+                {
+                  label: "View/Edit",
+                  icon: <Eye className="size-4" />,
+                  onClick: () => setLocation(`/doa/matrix/${id}`),
+                },
+                {
+                  label: "Delete",
+                  icon: <Trash2 className="size-4" />,
+                  onClick: () => handleDelete(id),
+                  variant: "destructive",
+                },
+              ]}
+            />
+          );
+        }}
         mainButton={{
           label: "New Matrix",
           icon: <Plus className="size-4" />,
-          onClick: () => setLocation(`/doa/${effectiveCompanyId}/matrix/new`),
+          onClick: () => setLocation(`/doa/matrix/new`),
         }}
         emptyMessage="No approval matrices found. Create one to define approval workflows."
       />

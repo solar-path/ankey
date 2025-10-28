@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import SignInPage from './signin.page';
 import { AuthService } from './auth-service';
 import { toast } from 'sonner';
+import type { User, Session } from '@/modules/shared/database/db';
 
 // Mock dependencies
 vi.mock('./auth-service');
@@ -21,8 +22,31 @@ vi.mock('@/lib/auth-context', () => ({
   }),
 }));
 
+// Helper to create mock user
+const createMockUser = (overrides?: Partial<User>): User => ({
+  _id: 'user-1',
+  type: 'user',
+  email: 'test@example.com',
+  password: 'hashed-password',
+  fullname: 'Test User',
+  verified: true,
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+  ...overrides,
+});
+
+// Helper to create mock session
+const createMockSession = (overrides?: Partial<Session>): Session => ({
+  _id: 'session-1',
+  type: 'session',
+  userId: 'user-1',
+  token: 'test-token',
+  expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days from now
+  createdAt: Date.now(),
+  ...overrides,
+});
+
 describe('SignInPage', () => {
-  const mockSetLocation = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -94,16 +118,8 @@ describe('SignInPage', () => {
   describe('Sign In Flow', () => {
     it('should successfully sign in with valid credentials', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
-      const mockSession = {
-        id: 'session-1',
-        userId: 'user-1',
-        token: 'test-token',
-      };
+      const mockUser = createMockUser();
+      const mockSession = createMockSession();
 
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
@@ -176,17 +192,12 @@ describe('SignInPage', () => {
   describe('Two-Factor Authentication', () => {
     it('should show 2FA form when 2FA is required', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
-        session: null,
         requires2FA: true,
-      });
+      } as any);
 
       render(<SignInPage />);
 
@@ -207,29 +218,23 @@ describe('SignInPage', () => {
 
     it('should verify 2FA code successfully', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
-      const mockSession = {
-        id: 'session-1',
-        userId: 'user-1',
-        token: 'test-token',
-      };
+      const mockUser = createMockUser();
+      const mockSession = createMockSession();
 
       // First call returns 2FA required
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
-        session: null,
         requires2FA: true,
-      });
+      } as any);
 
       // Mock 2FA verification
       vi.mocked(AuthService.verify2FA).mockResolvedValue({
         user: mockUser,
-        session: mockSession,
-      });
+        session: {
+          token: mockSession.token,
+          expiresAt: mockSession.expiresAt,
+        },
+      } as any);
 
       render(<SignInPage />);
 
@@ -264,17 +269,12 @@ describe('SignInPage', () => {
 
     it('should show error for invalid 2FA code', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
-        session: null,
         requires2FA: true,
-      });
+      } as any);
 
       vi.mocked(AuthService.verify2FA).mockRejectedValue(new Error('Invalid 2FA code'));
 
@@ -310,17 +310,12 @@ describe('SignInPage', () => {
 
     it('should allow going back from 2FA form to sign in', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
-        session: null,
         requires2FA: true,
-      });
+      } as any);
 
       render(<SignInPage />);
 
@@ -351,17 +346,12 @@ describe('SignInPage', () => {
 
     it('should disable verify button until 6 digits are entered', async () => {
       const user = userEvent.setup();
-      const mockUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        verified: true,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(AuthService.signIn).mockResolvedValue({
         user: mockUser,
-        session: null,
         requires2FA: true,
-      });
+      } as any);
 
       render(<SignInPage />);
 

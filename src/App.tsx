@@ -22,6 +22,14 @@ import UserManagementPage from "./modules/auth/user/user.page";
 import InviteUserPage from "./modules/auth/user/invite.user.page";
 import AcceptInvitePage from "./modules/auth/user/acceptInvite.page";
 import AddressBookPage from "./modules/company/employee-address-book/addressBook.page";
+import TasksPage from "./modules/task/tasks.page";
+import TaskDetailPage from "./modules/task/taskDetail.page";
+import TaskFormPage from "./modules/task/taskForm.page";
+import OrgChartApprovalTaskPage from "./modules/task/orgchartApprovalTask.page";
+import ApprovalTaskPage from "./modules/task/approvalTask.page";
+import DOAPage from "./modules/doa/doa.page";
+import DOADetailPage from "./modules/doa/doaDetail.page";
+import DOAMatrixFormPage from "./modules/doa/doaMatrixForm.page";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
@@ -96,6 +104,16 @@ function App() {
                 <Route path="/address-book" component={AddressBookPage} />
                 <Route path="/orgchart/:id" component={OrgChartViewPage} />
                 <Route path="/orgchart" component={OrgChartListPage} />
+                <Route path="/doa/matrix/new" component={DOAMatrixFormPage} />
+                <Route path="/doa/matrix/:id" component={DOAMatrixFormPage} />
+                <Route path="/doa/:id" component={DOADetailPage} />
+                <Route path="/doa" component={DOAPage} />
+                <Route path="/task/approval/:taskId" component={ApprovalTaskPage} />
+                <Route path="/task/orgchart/:taskId" component={OrgChartApprovalTaskPage} />
+                <Route path="/task/new" component={TaskFormPage} />
+                <Route path="/task/edit/:id" component={TaskFormPage} />
+                <Route path="/task/:taskId" component={TaskDetailPage} />
+                <Route path="/task" component={TasksPage} />
                 <Route path="/users/invite" component={InviteUserPage} />
                 <Route path="/users" component={UserManagementPage} />
                 <Route path="/account/:rest*" component={AccountPage} />

@@ -85,8 +85,7 @@ export class OrgChartApprovalService {
             companyId,
             type: "user_company"
           },
-          limit: 1,
-          sort: [{ createdAt: "asc" }]
+          limit: 1
         });
 
         return fallbackResult.docs[0]?.userId || null;
@@ -407,11 +406,11 @@ export class OrgChartApprovalService {
           type: "approval_workflow",
           entityId: orgChartId,
         },
-        limit: 1,
-        sort: [{ createdAt: "desc" }],
       });
 
-      return result.docs[0] as ApprovalWorkflow || null;
+      // Sort manually and return first
+      const sorted = (result.docs as ApprovalWorkflow[]).sort((a, b) => b.createdAt - a.createdAt);
+      return sorted[0] || null;
     } catch (error) {
       console.error("[OrgChartApprovalService] Failed to get workflow:", error);
       return null;

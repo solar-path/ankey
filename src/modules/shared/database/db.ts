@@ -20,6 +20,7 @@ export const companiesDB = new PouchDB("companies");
 export const userCompaniesDB = new PouchDB("user_companies");
 export const orgchartsDB = new PouchDB("orgcharts");
 export const chartOfAccountsDB = new PouchDB("chartofaccounts");
+export const tasksDB = new PouchDB("tasks");
 
 // Remote databases for sync
 export const remoteUsersDB = new PouchDB(`${COUCHDB_URL}/users`);
@@ -29,6 +30,7 @@ export const remoteCompaniesDB = new PouchDB(`${COUCHDB_URL}/companies`);
 export const remoteUserCompaniesDB = new PouchDB(`${COUCHDB_URL}/user_companies`);
 export const remoteOrgchartsDB = new PouchDB(`${COUCHDB_URL}/orgcharts`);
 export const remoteChartOfAccountsDB = new PouchDB(`${COUCHDB_URL}/chartofaccounts`);
+export const remoteTasksDB = new PouchDB(`${COUCHDB_URL}/tasks`);
 
 // Setup sync
 export function setupSync() {
@@ -122,6 +124,19 @@ export function setupSync() {
     .on("error", (err: any) => {
       console.error("Chart of Accounts DB sync error:", err);
     });
+
+  // Sync tasks database
+  tasksDB
+    .sync(remoteTasksDB, {
+      live: true,
+      retry: true,
+    })
+    .on("change", (info: any) => {
+      console.log("Tasks DB sync change:", info);
+    })
+    .on("error", (err: any) => {
+      console.error("Tasks DB sync error:", err);
+    });
 }
 
 // Initialize databases with indexes
@@ -178,6 +193,31 @@ export async function initializeDatabases() {
 
     await userCompaniesDB.createIndex({
       index: { fields: ["userId", "companyId"] },
+    });
+
+    // Create indexes for tasks
+    await tasksDB.createIndex({
+      index: { fields: ["type"] },
+    });
+
+    await tasksDB.createIndex({
+      index: { fields: ["userId"] },
+    });
+
+    await tasksDB.createIndex({
+      index: { fields: ["tenantId"] },
+    });
+
+    await tasksDB.createIndex({
+      index: { fields: ["userId", "tenantId"] },
+    });
+
+    await tasksDB.createIndex({
+      index: { fields: ["completed"] },
+    });
+
+    await tasksDB.createIndex({
+      index: { fields: ["createdAt"] },
     });
 
     console.log("Databases initialized successfully");
@@ -328,6 +368,110 @@ export interface ChartOfAccounts {
   accountType: "asset" | "liability" | "equity" | "revenue" | "expense";
   parentAccount?: string;
   isActive: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Document types that require approval
+export type DocumentType =
+  | "department_charter"
+  | "job_description"
+  | "job_offer"
+  | "employment_contract"
+  | "termination_notice"
+  | "orgchart";
+
+export interface ApprovalBlock {
+  level: number;
+  approvers: string[]; // User IDs
+  requiresAll: boolean; // If true, all approvers must approve; if false, use minApprovals
+  minApprovals?: number; // Minimum approvals needed (used when requiresAll is false)
+}
+
+export interface ApprovalMatrix {
+  _id: string; // Format: company:{companyId}:matrix_{id}
+  _rev?: string;
+  type: "approval_matrix";
+  companyId: string;
+  name: string;
+  description?: string;
+  documentType: DocumentType;
+  status: "active" | "inactive" | "draft";
+  approvalBlocks: ApprovalBlock[];
+  minAmount?: number;
+  maxAmount?: number;
+  currency?: string;
+  createdAt: number;
+  updatedAt: number;
+  createdBy: string;
+}
+
+// Individual approval decision within a workflow
+export interface ApprovalDecision {
+  userId: string;
+  level: number;
+  decision: "approved" | "declined";
+  comments?: string;
+  timestamp: number;
+}
+
+// Approval workflow - tracks approval process for any document
+export interface ApprovalWorkflow {
+  _id: string; // Format: company:{companyId}:workflow_{entityType}_{entityId}_{timestamp}
+  _rev?: string;
+  type: "approval_workflow";
+  companyId: string;
+
+  // Entity being approved
+  entityType: DocumentType;
+  entityId: string; // Document ID without partition prefix
+
+  // Workflow status
+  status: "pending" | "approved" | "declined";
+  currentLevel: number; // Current approval level (1, 2, 3...)
+
+  // Matrix used for this workflow
+  matrixId: string; // ApprovalMatrix _id
+
+  // Participants
+  initiatorId: string; // User who submitted for approval
+
+  // Approval decisions
+  decisions: ApprovalDecision[];
+
+  // Timestamps
+  submittedAt: number;
+  completedAt?: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Approval task - shown to users who need to take action
+export interface ApprovalTask {
+  _id: string; // Format: company:{companyId}:task_{userId}_{workflowId}
+  _rev?: string;
+  type: "task";
+  companyId: string;
+
+  // Task details
+  taskType: "approval_request" | "approval_response"; // request = needs your approval, response = status update
+  userId: string; // Task assignee
+
+  // Related workflow
+  workflowId: string;
+  entityType: DocumentType;
+  entityId: string;
+
+  // Task status
+  completed: boolean;
+  completedAt?: number;
+
+  // Task content
+  title: string;
+  description: string;
+  priority: "low" | "medium" | "high";
+
+  // Timestamps
   createdAt: number;
   updatedAt: number;
 }

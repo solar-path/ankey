@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Cleanup after each test
@@ -51,7 +51,7 @@ const localStorageMock = {
 global.localStorage = localStorageMock as any;
 
 // Mock PouchDB (loaded via CDN in index.html)
-global.PouchDB = vi.fn().mockImplementation(() => ({
+(global as any).PouchDB = vi.fn().mockImplementation(() => ({
   get: vi.fn(),
   put: vi.fn(),
   post: vi.fn(),
@@ -66,4 +66,4 @@ global.PouchDB = vi.fn().mockImplementation(() => ({
     to: vi.fn(),
     from: vi.fn(),
   },
-})) as any;
+}));

@@ -1,26 +1,25 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
-import { client } from "@/lib/api-client";
 import { useBreadcrumb } from "@/lib/breadcrumb-context";
+import { useCompanyOptional } from "@/lib/company-context";
 import { Button } from "@/lib/ui/button";
 import { Card, CardContent } from "@/lib/ui/card";
 import { Badge } from "@/lib/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { type ApprovalMatrix } from "@/api/db/schema";
+import { type ApprovalMatrix } from "@/modules/shared/database/db";
 import { DOAMatrixForm } from "./doaMatrix.form";
+import { DOAService } from "./doa.service";
 
 export default function DOADetailPage() {
-  const { companyId, matrixId } = useParams<{
-    companyId: string;
-    matrixId: string;
-  }>();
+  const { matrixId } = useParams<{ matrixId: string }>();
   const [, setLocation] = useLocation();
   const { setExtraCrumbs } = useBreadcrumb();
+  const companyContext = useCompanyOptional();
+  const activeCompany = companyContext?.activeCompany || null;
   const [matrix, setMatrix] = useState<ApprovalMatrix | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Automatically redirect to parent page when company changes
   const isNewMatrix = matrixId === "new";
 
   useEffect(() => {
@@ -46,24 +45,12 @@ export default function DOADetailPage() {
   }, [matrix?.name, isNewMatrix, setExtraCrumbs]);
 
   const loadMatrix = async () => {
-    if (!matrixId || isNewMatrix) return;
+    if (!matrixId || isNewMatrix || !activeCompany) return;
 
     try {
       setLoading(true);
-      const { data, error } = await (client as any)(
-        `/api/doa/matrices/${matrixId}`,
-        {
-          method: "GET",
-        }
-      );
-
-      if (error) {
-        console.error("Failed to load approval matrix:", error);
-        toast.error("Failed to load approval matrix");
-        return;
-      }
-
-      setMatrix((data as any).matrix);
+      const matrix = await DOAService.getMatrix(activeCompany._id, matrixId);
+      setMatrix(matrix);
     } catch (error) {
       console.error("Failed to load approval matrix:", error);
       toast.error("Failed to load approval matrix");
@@ -78,11 +65,11 @@ export default function DOADetailPage() {
         ? "Matrix created successfully"
         : "Matrix updated successfully"
     );
-    setLocation(`/doa/${companyId}`);
+    setLocation(`/doa`);
   };
 
   const handleCancel = () => {
-    setLocation(`/doa/${companyId}`);
+    setLocation(`/doa`);
   };
 
   if (loading) {
@@ -162,7 +149,7 @@ export default function DOADetailPage() {
       <Card>
         <CardContent className="pt-6">
           <DOAMatrixForm
-            companyId={companyId!}
+            companyId={activeCompany?._id || ""}
             matrix={matrix || undefined}
             onSuccess={handleSuccess}
             onCancel={handleCancel}

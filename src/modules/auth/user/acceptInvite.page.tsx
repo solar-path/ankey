@@ -39,7 +39,7 @@ type AcceptInvitationExistingUserInput = v.InferOutput<typeof acceptInvitationEx
 
 export default function AcceptInvitePage() {
   const [location, navigate] = useLocation();
-  const { user: currentUser, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState("");

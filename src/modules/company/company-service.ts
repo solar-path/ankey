@@ -9,9 +9,11 @@ import {
   companiesDB,
   userCompaniesDB,
   type Company,
-  type UserCompany
+  type UserCompany,
+  type DocumentType
 } from "@/modules/shared/database/db";
 import type { CreateCompanyInput, UpdateCompanyInput } from "./company.valibot";
+import { DOAService } from "@/modules/doa/doa.service";
 
 export class CompanyService {
   /**
@@ -57,6 +59,9 @@ export class CompanyService {
         };
 
         await userCompaniesDB.put(userCompany);
+
+        // Create default DOA matrices for all document types
+        await this.createDefaultDOAMatrices(companyId, userId);
       }
 
       return this.sanitizeCompany(company);
@@ -227,6 +232,57 @@ export class CompanyService {
     } catch (error) {
       console.error("Failed to get user role:", error);
       return null;
+    }
+  }
+
+  /**
+   * Create default DOA matrices for all document types
+   * Used when a new workspace company is created
+   */
+  private static async createDefaultDOAMatrices(companyId: string, ownerId: string): Promise<void> {
+    const documentTypes: DocumentType[] = [
+      "department_charter",
+      "job_description",
+      "job_offer",
+      "employment_contract",
+      "termination_notice",
+      "orgchart",
+    ];
+
+    const documentTypeNames: Record<DocumentType, string> = {
+      department_charter: "Department Charter",
+      job_description: "Job Description",
+      job_offer: "Job Offer",
+      employment_contract: "Employment Contract",
+      termination_notice: "Termination Notice",
+      orgchart: "Organizational Chart",
+    };
+
+    try {
+      for (const docType of documentTypes) {
+        await DOAService.createMatrix(
+          companyId,
+          {
+            name: `Default ${documentTypeNames[docType]} Approval`,
+            description: `Automatically created approval matrix for ${documentTypeNames[docType]} documents. First user (owner) must approve.`,
+            documentType: docType,
+            status: "active",
+            approvalBlocks: [
+              {
+                level: 1,
+                approvers: [ownerId],
+                requiresAll: true,
+              },
+            ],
+          },
+          ownerId
+        );
+      }
+
+      console.log(`[CompanyService] Created default DOA matrices for company ${companyId}`);
+    } catch (error) {
+      console.error("[CompanyService] Failed to create default DOA matrices:", error);
+      // Don't throw - company creation should succeed even if DOA matrix creation fails
     }
   }
 
