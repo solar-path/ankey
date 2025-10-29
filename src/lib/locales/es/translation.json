@@ -1,0 +1,202 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "home": "Inicio",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "learn": "Aprender",
+    "pricing": "Precios",
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "signOut": "Cerrar Sesión",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "download": "Descargar",
+    "upload": "Subir",
+    "submit": "Enviar",
+    "reset": "Restablecer",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "yes": "Sí",
+    "no": "No",
+    "language": "Idioma",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "account": "Cuenta",
+    "dashboard": "Panel de Control",
+    "logout": "Cerrar Sesión"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "company": "Empresa",
+    "tasks": "Tareas",
+    "employees": "Empleados",
+    "orgChart": "Organigrama",
+    "doa": "Delegación de Autoridad",
+    "inquiry": "Consultas",
+    "reports": "Informes",
+    "administration": "Administración"
+  },
+  "auth": {
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "forgotPassword": "¿Olvidó su contraseña?",
+    "rememberMe": "Recordarme",
+    "alreadyHaveAccount": "¿Ya tiene una cuenta?",
+    "dontHaveAccount": "¿No tiene una cuenta?",
+    "signInTitle": "Iniciar sesión en su cuenta",
+    "signUpTitle": "Crear una nueva cuenta",
+    "signInSuccess": "Sesión iniciada correctamente",
+    "signOutSuccess": "Sesión cerrada correctamente",
+    "signUpSuccess": "Cuenta creada correctamente",
+    "invalidCredentials": "Correo electrónico o contraseña inválidos",
+    "emailRequired": "El correo electrónico es obligatorio",
+    "passwordRequired": "La contraseña es obligatoria",
+    "passwordMismatch": "Las contraseñas no coinciden"
+  },
+  "company": {
+    "company": "Empresa",
+    "companyName": "Nombre de la Empresa",
+    "companySettings": "Configuración de la Empresa",
+    "companyDashboard": "Panel de la Empresa",
+    "companyMembers": "Miembros de la Empresa",
+    "createCompany": "Crear Empresa",
+    "selectCompany": "Seleccionar Empresa",
+    "noCompany": "Ninguna empresa seleccionada",
+    "switchCompany": "Cambiar de Empresa"
+  },
+  "task": {
+    "tasks": "Tareas",
+    "taskDetails": "Detalles de la Tarea",
+    "createTask": "Crear Tarea",
+    "editTask": "Editar Tarea",
+    "deleteTask": "Eliminar Tarea",
+    "taskTitle": "Título de la Tarea",
+    "taskDescription": "Descripción de la Tarea",
+    "taskStatus": "Estado de la Tarea",
+    "taskPriority": "Prioridad de la Tarea",
+    "taskDueDate": "Fecha de Vencimiento",
+    "assignedTo": "Asignado a",
+    "createdBy": "Creado por",
+    "status": {
+      "pending": "Pendiente",
+      "inProgress": "En Proceso",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "urgent": "Urgente"
+    }
+  },
+  "form": {
+    "requiredField": "Este campo es obligatorio",
+    "invalidEmail": "Dirección de correo electrónico inválida",
+    "invalidFormat": "Formato inválido",
+    "minLength": "La longitud mínima es de {{count}} caracteres",
+    "maxLength": "La longitud máxima es de {{count}} caracteres",
+    "selectOption": "Seleccione una opción",
+    "noOptions": "No hay opciones disponibles",
+    "searchPlaceholder": "Buscar..."
+  },
+  "messages": {
+    "saveSuccess": "Cambios guardados correctamente",
+    "saveError": "Error al guardar los cambios",
+    "deleteSuccess": "Eliminado correctamente",
+    "deleteError": "Error al eliminar",
+    "createSuccess": "Creado correctamente",
+    "createError": "Error al crear",
+    "updateSuccess": "Actualizado correctamente",
+    "updateError": "Error al actualizar",
+    "loadError": "Error al cargar los datos",
+    "networkError": "Se produjo un error de red",
+    "unexpectedError": "Se produjo un error inesperado"
+  },
+  "home": {
+    "hero": {
+      "title": "Bienvenido a YSollo",
+      "subtitle": "La plataforma multiinquilino definitiva con esquema por inquilino y aislamiento por subdominio. Segura, escalable y fácil de usar.",
+      "getStarted": "Comenzar",
+      "learnMore": "Más Información"
+    },
+    "features": {
+      "title": "Características",
+      "multiTenancy": {
+        "title": "Multi-inquilino",
+        "description": "Aislamiento completo de datos con arquitectura de esquema por inquilino para máxima seguridad."
+      },
+      "subdomain": {
+        "title": "Soporte de Subdominio",
+        "description": "Cada inquilino obtiene su propio subdominio con soporte de DNS comodín."
+      },
+      "customizable": {
+        "title": "Personalizable",
+        "description": "Configure idioma, zona horaria, moneda y más para cada inquilino."
+      }
+    }
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "subtitle": "Elija el plan que mejor funcione para su negocio",
+    "starter": {
+      "name": "Inicial",
+      "description": "Perfecto para equipos pequeños",
+      "price": "$29",
+      "period": "/mes",
+      "features": {
+        "users": "Hasta 5 usuarios",
+        "storage": "10GB de almacenamiento",
+        "support": "Soporte por correo"
+      },
+      "cta": "Comenzar"
+    },
+    "professional": {
+      "name": "Profesional",
+      "badge": "Popular",
+      "description": "Mejor para empresas en crecimiento",
+      "price": "$79",
+      "period": "/mes",
+      "features": {
+        "users": "Hasta 20 usuarios",
+        "storage": "100GB de almacenamiento",
+        "prioritySupport": "Soporte prioritario",
+        "analytics": "Análisis avanzados"
+      },
+      "cta": "Comenzar"
+    },
+    "enterprise": {
+      "name": "Empresarial",
+      "description": "Para grandes organizaciones",
+      "custom": "Personalizado",
+      "features": {
+        "users": "Usuarios ilimitados",
+        "storage": "Almacenamiento ilimitado",
+        "phoneSupport": "Soporte telefónico 24/7",
+        "integrations": "Integraciones personalizadas"
+      },
+      "cta": "Contactar Ventas"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} YSollo. Todos los derechos reservados.",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "cookies": "Política de Cookies"
+  }
+}

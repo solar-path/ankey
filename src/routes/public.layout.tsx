@@ -1,5 +1,15 @@
 import { Link } from "wouter";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Globe } from "lucide-react";
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/lib/i18n";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/lib/ui/dropdown-menu";
+import { Button } from "@/lib/ui/button";
 
 export default function PublicLayout({
   children,
@@ -7,6 +17,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng: SupportedLanguage) => {
+    i18n.changeLanguage(lng);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -19,37 +34,57 @@ export default function PublicLayout({
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex gap-4">
+            <div className="hidden md:flex gap-4 items-center">
               <Link
                 href="/offers"
                 className="px-4 py-2 text-sm font-medium hover:underline"
               >
-                Pricing
+                {t('common.pricing')}
               </Link>
               <Link
                 href="/learn"
                 className="px-4 py-2 text-sm font-medium hover:underline"
               >
-                Documentation
+                {t('common.learn')}
               </Link>
               <Link
                 href="/contact"
                 className="px-4 py-2 text-sm font-medium hover:underline"
               >
-                Contact sales
+                {t('common.contact')}
               </Link>
               <Link
                 href="/auth/signin"
                 className="px-4 py-2 text-sm font-medium hover:underline"
               >
-                Sign In
+                {t('common.signIn')}
               </Link>
               <Link
                 href="/auth/signup"
                 className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
               >
-                Sign Up
+                {t('common.signUp')}
               </Link>
+
+              {/* Language Switcher */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" title={t('common.language')}>
+                    <Globe className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+                    <DropdownMenuItem
+                      key={code}
+                      onClick={() => changeLanguage(code as SupportedLanguage)}
+                      className={i18n.language === code ? 'bg-accent' : ''}
+                    >
+                      {name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Mobile Hamburger Button */}
@@ -91,36 +126,57 @@ export default function PublicLayout({
                 className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Pricing
+                {t('common.pricing')}
               </Link>
               <Link
                 href="/learn"
                 className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Documentation
+                {t('common.learn')}
               </Link>
               <Link
                 href="/contact"
                 className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Contact sales
+                {t('common.contact')}
               </Link>
               <Link
                 href="/auth/signin"
                 className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Sign In
+                {t('common.signIn')}
               </Link>
               <Link
                 href="/auth/signup"
                 className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Sign Up
+                {t('common.signUp')}
               </Link>
+
+              {/* Mobile Language Switcher */}
+              <div className="border-t pt-2 mt-2">
+                <div className="px-4 py-2 text-xs font-medium text-muted-foreground">
+                  {t('common.language')}
+                </div>
+                {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+                  <button
+                    key={code}
+                    onClick={() => {
+                      changeLanguage(code as SupportedLanguage);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-accent rounded-md ${
+                      i18n.language === code ? 'bg-accent' : ''
+                    }`}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -133,11 +189,11 @@ export default function PublicLayout({
       <footer className="mt-auto border-t">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <div>© {new Date().getFullYear()} YSollo. All rights reserved.</div>
+            <div>{t('footer.copyright', { year: new Date().getFullYear() })}</div>
             <ul className="flex flex-wrap justify-center gap-4 md:gap-6">
               <li>
                 <Link href="/learn?doc=terms" className="hover:text-foreground">
-                  Terms of Service
+                  {t('footer.terms')}
                 </Link>
               </li>
               <li>
@@ -145,7 +201,7 @@ export default function PublicLayout({
                   href="/learn?doc=privacy"
                   className="hover:text-foreground"
                 >
-                  Privacy Policy
+                  {t('footer.privacy')}
                 </Link>
               </li>
               <li>
@@ -153,7 +209,7 @@ export default function PublicLayout({
                   href="/learn?doc=cookies"
                   className="hover:text-foreground"
                 >
-                  Cookie Policy
+                  {t('footer.cookies')}
                 </Link>
               </li>
             </ul>

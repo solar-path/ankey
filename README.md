@@ -226,6 +226,12 @@ Built-in audit logging system for SOC/SoX compliance:
 - **Retention policy** - 7-year default (SOX requirement)
 - **SOC reports** - Generate compliance reports
 
+## 📚 Documentation
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architectural principles and guidelines
+- **[src/api/db/README.md](src/api/db/README.md)** - Database schema and functions documentation
+- **[docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md)** - ⚠️ CRITICAL: API parameter order requirements
+
 ```sql
 -- Generate SOC2 report
 SELECT audit.generate_soc_report(

@@ -71,9 +71,17 @@
 \echo ''
 
 -- ============================================
--- 7. APPLY AUDIT TRIGGERS
+-- 7. USERS MODULE
 -- ============================================
-\echo '7. Applying audit triggers to existing tables...'
+\echo '7. Installing Users Module...'
+\i users.functions.sql
+\echo '   ✓ Users module installed'
+\echo ''
+
+-- ============================================
+-- 8. APPLY AUDIT TRIGGERS
+-- ============================================
+\echo '8. Applying audit triggers to existing tables...'
 
 -- Companies
 DROP TRIGGER IF EXISTS audit_companies_trigger ON companies;
@@ -115,9 +123,9 @@ CREATE TRIGGER audit_orgchart_approvals_trigger
 \echo ''
 
 -- ============================================
--- 8. VERIFY INSTALLATION
+-- 9. VERIFY INSTALLATION
 -- ============================================
-\echo '8. Verifying installation...'
+\echo '9. Verifying installation...'
 \echo ''
 
 -- Count schemas

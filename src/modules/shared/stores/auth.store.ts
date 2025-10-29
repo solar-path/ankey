@@ -56,7 +56,18 @@ export const useAuthStore = create<AuthState>()(
       },
 
       refreshAuth: async () => {
-        const token = localStorage.getItem("sessionToken");
+        let token = localStorage.getItem("sessionToken");
+
+        // If no token in localStorage, try to get it from persisted Zustand state
+        if (!token) {
+          const { session } = get();
+          if (session?.token) {
+            token = session.token;
+            // Restore to localStorage for CompanyProvider compatibility
+            localStorage.setItem("sessionToken", token);
+          }
+        }
+
         if (!token) {
           set({ isLoading: false, isAuthenticated: false });
           return;
@@ -64,6 +75,11 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const result = await AuthService.verifySession(token);
+
+          // Ensure localStorage is in sync
+          localStorage.setItem("sessionToken", result.session.token);
+          localStorage.setItem("userId", result.user._id);
+
           set({
             user: result.user,
             session: result.session,
@@ -73,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("Session verification failed:", error);
           localStorage.removeItem("sessionToken");
+          localStorage.removeItem("userId");
           set({
             user: null,
             session: null,

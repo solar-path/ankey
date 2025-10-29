@@ -1,14 +1,18 @@
 import { Button } from "@/lib/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/lib/ui/card";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
+import { Check } from "lucide-react";
 
 export default function OffersPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('pricing.title')}</h1>
         <p className="text-lg text-muted-foreground">
-          Choose the plan that works best for your business
+          {t('pricing.subtitle')}
         </p>
       </div>
 
@@ -16,38 +20,32 @@ export default function OffersPage() {
         {/* Starter Plan */}
         <Card>
           <CardHeader>
-            <CardTitle>Starter</CardTitle>
-            <CardDescription>Perfect for small teams</CardDescription>
+            <CardTitle>{t('pricing.starter.name')}</CardTitle>
+            <CardDescription>{t('pricing.starter.description')}</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">$29</span>
-              <span className="text-muted-foreground">/month</span>
+              <span className="text-4xl font-bold">{t('pricing.starter.price')}</span>
+              <span className="text-muted-foreground">{t('pricing.starter.period')}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
             <ul className="space-y-2">
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Up to 5 users
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.starter.features.users')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                10GB storage
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.starter.features.storage')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Email support
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.starter.features.support')}
               </li>
             </ul>
           </CardContent>
           <CardFooter>
             <Link href="/auth/signup" className="w-full">
-              <Button variant="outline" className="w-full">Get Started</Button>
+              <Button variant="outline" className="w-full">{t('pricing.starter.cta')}</Button>
             </Link>
           </CardFooter>
         </Card>
@@ -56,46 +54,38 @@ export default function OffersPage() {
         <Card className="border-primary">
           <CardHeader>
             <div className="inline-block px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground rounded-full mb-2">
-              Popular
+              {t('pricing.professional.badge')}
             </div>
-            <CardTitle>Professional</CardTitle>
-            <CardDescription>Best for growing businesses</CardDescription>
+            <CardTitle>{t('pricing.professional.name')}</CardTitle>
+            <CardDescription>{t('pricing.professional.description')}</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">$79</span>
-              <span className="text-muted-foreground">/month</span>
+              <span className="text-4xl font-bold">{t('pricing.professional.price')}</span>
+              <span className="text-muted-foreground">{t('pricing.professional.period')}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
             <ul className="space-y-2">
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Up to 20 users
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.professional.features.users')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                100GB storage
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.professional.features.storage')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Priority support
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.professional.features.prioritySupport')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Advanced analytics
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.professional.features.analytics')}
               </li>
             </ul>
           </CardContent>
           <CardFooter>
             <Link href="/auth/signup" className="w-full">
-              <Button className="w-full">Get Started</Button>
+              <Button className="w-full">{t('pricing.professional.cta')}</Button>
             </Link>
           </CardFooter>
         </Card>
@@ -103,43 +93,35 @@ export default function OffersPage() {
         {/* Enterprise Plan */}
         <Card>
           <CardHeader>
-            <CardTitle>Enterprise</CardTitle>
-            <CardDescription>For large organizations</CardDescription>
+            <CardTitle>{t('pricing.enterprise.name')}</CardTitle>
+            <CardDescription>{t('pricing.enterprise.description')}</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">Custom</span>
+              <span className="text-4xl font-bold">{t('pricing.enterprise.custom')}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
             <ul className="space-y-2">
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited users
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.enterprise.features.users')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited storage
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.enterprise.features.storage')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                24/7 phone support
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.enterprise.features.phoneSupport')}
               </li>
               <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Custom integrations
+                <Check className="w-5 h-5 mr-2 text-green-500" />
+                {t('pricing.enterprise.features.integrations')}
               </li>
             </ul>
           </CardContent>
           <CardFooter>
             <Link href="/contact" className="w-full">
-              <Button variant="outline" className="w-full">Contact Sales</Button>
+              <Button variant="outline" className="w-full">{t('pricing.enterprise.cta')}</Button>
             </Link>
           </CardFooter>
         </Card>

@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   ChevronsUpDown,
+  Languages,
   LogOut,
 } from "lucide-react"
 
@@ -26,6 +27,8 @@ import {
 } from "@/lib/ui/sidebar"
 import { Link } from "wouter"
 import { useAuth } from "@/lib/auth-context"
+import { useTranslation } from "react-i18next"
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/lib/i18n"
 
 export function NavUser({
   user,
@@ -38,6 +41,11 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const { logout } = useAuth()
+  const { t, i18n } = useTranslation()
+
+  const changeLanguage = (lng: SupportedLanguage) => {
+    i18n.changeLanguage(lng)
+  }
 
   return (
     <SidebarMenu>
@@ -89,7 +97,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href='/account/profile'>
                   <BadgeCheck />
-                  Account
+                  {t('common.account')}
                 </Link>
               </DropdownMenuItem>
               {/* <DropdownMenuItem>
@@ -102,9 +110,25 @@ export function NavUser({
               </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              {t('common.language')}
+            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+                <DropdownMenuItem
+                  key={code}
+                  onClick={() => changeLanguage(code as SupportedLanguage)}
+                  className={i18n.language === code ? 'bg-accent' : ''}
+                >
+                  <Languages className="opacity-60" />
+                  {name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => logout()}>
               <LogOut />
-              Log out
+              {t('common.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

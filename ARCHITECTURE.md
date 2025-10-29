@@ -101,16 +101,36 @@ import { Pool } from "pg";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const app = new Hono();
 
+/**
+ * КРИТИЧНО: Маппинг параметров для правильного порядка
+ * PostgreSQL требует параметры в строгом порядке!
+ * Object.values() НЕ гарантирует порядок в JavaScript.
+ */
+const FUNCTION_PARAMS: Record<string, string[]> = {
+  "auth.signup": ["email", "password", "fullname"],
+  "company.create_company": ["user_id", "type", "title", "logo", "website",
+    "business_id", "tax_id", "residence", "industry", "contact"],
+  // ... другие функции
+};
+
 // Универсальный роутер
 app.post("/:fn", async (c) => {
   const functionName = c.req.param("fn");
   const body = await c.req.json();
-  const params = Object.values(body);
-
-  // Формирование плейсхолдеров $1, $2, ...
-  const placeholders = params.map((_, i) => `$${i + 1}`).join(", ");
 
   try {
+    // Получаем правильный порядок параметров
+    const paramOrder = FUNCTION_PARAMS[functionName];
+    if (!paramOrder) {
+      throw new Error(`Function ${functionName} not found in mapping`);
+    }
+
+    // Извлекаем параметры в правильном порядке
+    const params = paramOrder.map((paramName) => body[paramName]);
+
+    // Формирование плейсхолдеров $1, $2, ...
+    const placeholders = params.map((_, i) => `$${i + 1}`).join(", ");
+
     // Вызов PostgreSQL функции
     const query = `SELECT ${functionName}(${placeholders}) AS result`;
     const result = await pool.query(query, params);
@@ -124,6 +144,8 @@ app.post("/:fn", async (c) => {
 
 export default app;
 ```
+
+**См. также:** [docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md) - Подробная документация о порядке параметров.
 
 ---
 
@@ -611,6 +633,7 @@ PERFORM audit.track_session_end(_session_token, 'manual');
 - [ ] **Валидация данных** в PostgreSQL функции
 - [ ] **RLS политики** для multi-tenancy (если нужно)
 - [ ] **Hono route** добавлен или используется универсальный роутер
+- [ ] **⚠️ FUNCTION_PARAMS маппинг** добавлен для новой функции ([см. docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md))
 - [ ] **Client service** создан как thin wrapper
 - [ ] **TypeScript интерфейсы** определены
 - [ ] **Valibot схемы** для клиентской валидации
@@ -618,10 +641,39 @@ PERFORM audit.track_session_end(_session_token, 'manual');
 - [ ] **Индексы** добавлены для производительности
 - [ ] **Тесты** написаны для SQL функций
 - [ ] **Документация** обновлена
+- [ ] **i18n поддержка**: все строки переведены на 5 языков (en, zh, es, ar, hi)
 
 ---
 
 ## 🚫 Антипаттерны (Что НЕ делать)
+
+### ❌ 0. Object.values() для параметров PostgreSQL функций
+```typescript
+// ПЛОХО - Object.values() НЕ гарантирует порядок!
+app.post("/:fn", async (c) => {
+  const body = await c.req.json();
+  const params = Object.values(body); // ❌ Случайный порядок!
+  const query = `SELECT ${fn}($1, $2, $3) AS result`;
+  await pool.query(query, params);
+});
+```
+
+```typescript
+// ХОРОШО - Явный маппинг параметров
+const FUNCTION_PARAMS = {
+  "company.create_company": ["user_id", "type", "title", ...],
+};
+
+app.post("/:fn", async (c) => {
+  const body = await c.req.json();
+  const paramOrder = FUNCTION_PARAMS[fn];
+  const params = paramOrder.map(name => body[name]); // ✅ Правильный порядок!
+  const query = `SELECT ${fn}($1, $2, $3) AS result`;
+  await pool.query(query, params);
+});
+```
+
+**См.:** [docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md)
 
 ### ❌ 1. Бизнес-логика в TypeScript
 ```typescript
@@ -681,6 +733,82 @@ const useUIStore = create((set) => ({
   isModalOpen: false,
 }));
 ```
+
+---
+
+## 14. Интернационализация (i18n)
+
+### Принцип
+**Все пользовательские интерфейсы должны поддерживать интернационализацию** с момента создания компонента.
+
+### Правила
+
+#### ✅ ОБЯЗАТЕЛЬНО:
+1. **Использовать i18next**: все текстовые строки через `useTranslation()` hook
+2. **Поддержка 5 языков**: English (en), Chinese (zh), Spanish (es), Arabic (ar), Hindi (hi)
+3. **Никаких хардкод строк**: весь пользовательский текст должен быть переведен
+4. **Организация ключей**: по модулям (`auth.*`, `company.*`, `task.*`, `common.*`)
+5. **Добавление переводов**: при создании новой фичи добавить ключи во все 5 языковых файлов
+
+#### ❌ ЗАПРЕЩЕНО:
+1. Хардкод пользовательского текста в JSX
+2. Создание компонентов без i18n поддержки
+3. Использование одного языка (только английского)
+4. Пропуск переводов для каких-либо языков
+
+### Структура
+
+```typescript
+// ✅ ХОРОШО - Правильное использование i18n
+import { useTranslation } from 'react-i18next';
+
+export function MyComponent() {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <h1>{t('module.title')}</h1>
+      <p>{t('module.description')}</p>
+      <Button>{t('common.save')}</Button>
+    </div>
+  );
+}
+```
+
+```typescript
+// ❌ ПЛОХО - Хардкод строк
+export function MyComponent() {
+  return (
+    <div>
+      <h1>Welcome to Ankey</h1>
+      <p>This is a description</p>
+      <Button>Save</Button>
+    </div>
+  );
+}
+```
+
+### Файлы переводов
+
+Все переводы находятся в `src/lib/locales/{lang}/translation.json`:
+
+```
+src/lib/locales/
+├── en/translation.json   # English
+├── zh/translation.json   # 中文
+├── es/translation.json   # Español
+├── ar/translation.json   # العربية
+└── hi/translation.json   # हिन्दी
+```
+
+### Добавление новых переводов
+
+При создании новой фичи:
+
+1. Добавь ключи в `en/translation.json`
+2. Переведи на остальные 4 языка
+3. Используй `t('your.key')` в компонентах
+4. Проверь работу переключения языков
 
 ---
 

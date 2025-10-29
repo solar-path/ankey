@@ -19,6 +19,21 @@ const pool = new Pool({
 });
 
 /**
+ * Parameter order mapping for reference functions
+ * CRITICAL: PostgreSQL functions require parameters in exact order
+ */
+const FUNCTION_PARAMS: Record<string, string[]> = {
+  get_all_countries: [],
+  get_country_by_code: ["code"],
+  search_countries: ["query", "limit"],
+  get_countries_options: [],
+  get_all_industries: [],
+  get_industry_by_code: ["code"],
+  search_industries: ["query", "limit"],
+  get_industries_options: [],
+};
+
+/**
  * Universal Router Pattern
  * POST /api/reference/:fn
  * Calls PostgreSQL function: reference.{fn}
@@ -26,9 +41,20 @@ const pool = new Pool({
 app.post("/:fn", async (c: Context) => {
   const functionName = c.req.param("fn");
   const body = await c.req.json().catch(() => ({}));
-  const params = Object.values(body);
 
   try {
+    // Get expected parameter order for this function
+    const paramOrder = FUNCTION_PARAMS[functionName];
+
+    if (!paramOrder) {
+      throw new Error(
+        `Function ${functionName} not found in parameter mapping. Please add it to FUNCTION_PARAMS.`
+      );
+    }
+
+    // Extract parameters in correct order
+    const params = paramOrder.map((paramName) => body[paramName]);
+
     // Generate placeholders: $1, $2, $3, ...
     const placeholders = params.map((_, i) => `$${i + 1}`).join(", ");
 
