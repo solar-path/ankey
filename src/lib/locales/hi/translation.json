@@ -1,202 +1,47 @@
 {
-  "common": {
-    "welcome": "स्वागत है",
-    "home": "होम",
-    "about": "हमारे बारे में",
-    "contact": "संपर्क करें",
-    "learn": "सीखें",
-    "pricing": "मूल्य निर्धारण",
-    "signIn": "साइन इन करें",
-    "signUp": "साइन अप करें",
-    "signOut": "साइन आउट करें",
-    "save": "सहेजें",
-    "cancel": "रद्द करें",
-    "edit": "संपादित करें",
-    "delete": "हटाएं",
-    "create": "बनाएं",
-    "update": "अपडेट करें",
-    "search": "खोजें",
-    "filter": "फ़िल्टर करें",
-    "export": "निर्यात करें",
-    "import": "आयात करें",
-    "download": "डाउनलोड करें",
-    "upload": "अपलोड करें",
-    "submit": "जमा करें",
-    "reset": "रीसेट करें",
-    "close": "बंद करें",
-    "confirm": "पुष्टि करें",
-    "loading": "लोड हो रहा है...",
-    "error": "त्रुटि",
-    "success": "सफलता",
-    "warning": "चेतावनी",
-    "info": "जानकारी",
-    "yes": "हां",
-    "no": "नहीं",
-    "language": "भाषा",
-    "settings": "सेटिंग्स",
-    "profile": "प्रोफाइल",
-    "account": "खाता",
-    "dashboard": "डैशबोर्ड",
-    "logout": "लॉगआउट"
-  },
-  "navigation": {
-    "home": "होम",
-    "company": "कंपनी",
-    "tasks": "कार्य",
-    "employees": "कर्मचारी",
-    "orgChart": "संगठन चार्ट",
-    "doa": "प्राधिकरण का प्रतिनिधिमंडल",
-    "inquiry": "पूछताछ",
-    "reports": "रिपोर्ट",
-    "administration": "प्रशासन"
-  },
-  "auth": {
-    "email": "ईमेल",
-    "password": "पासवर्ड",
-    "confirmPassword": "पासवर्ड की पुष्टि करें",
-    "forgotPassword": "पासवर्ड भूल गए?",
-    "rememberMe": "मुझे याद रखें",
-    "alreadyHaveAccount": "पहले से खाता है?",
-    "dontHaveAccount": "खाता नहीं है?",
-    "signInTitle": "अपने खाते में साइन इन करें",
-    "signUpTitle": "नया खाता बनाएं",
-    "signInSuccess": "सफलतापूर्वक साइन इन किया गया",
-    "signOutSuccess": "सफलतापूर्वक साइन आउट किया गया",
-    "signUpSuccess": "खाता सफलतापूर्वक बनाया गया",
-    "invalidCredentials": "अमान्य ईमेल या पासवर्ड",
-    "emailRequired": "ईमेल आवश्यक है",
-    "passwordRequired": "पासवर्ड आवश्यक है",
-    "passwordMismatch": "पासवर्ड मेल नहीं खाते"
-  },
-  "company": {
-    "company": "कंपनी",
-    "companyName": "कंपनी का नाम",
-    "companySettings": "कंपनी सेटिंग्स",
-    "companyDashboard": "कंपनी डैशबोर्ड",
-    "companyMembers": "कंपनी के सदस्य",
-    "createCompany": "कंपनी बनाएं",
-    "selectCompany": "कंपनी चुनें",
-    "noCompany": "कोई कंपनी चयनित नहीं",
-    "switchCompany": "कंपनी बदलें"
-  },
-  "task": {
-    "tasks": "कार्य",
-    "taskDetails": "कार्य विवरण",
-    "createTask": "कार्य बनाएं",
-    "editTask": "कार्य संपादित करें",
-    "deleteTask": "कार्य हटाएं",
-    "taskTitle": "कार्य शीर्षक",
-    "taskDescription": "कार्य विवरण",
-    "taskStatus": "कार्य स्थिति",
-    "taskPriority": "कार्य प्राथमिकता",
-    "taskDueDate": "नियत तारीख",
-    "assignedTo": "को सौंपा गया",
-    "createdBy": "द्वारा बनाया गया",
-    "status": {
-      "pending": "लंबित",
-      "inProgress": "प्रगति में",
-      "completed": "पूर्ण",
-      "cancelled": "रद्द"
+  "audit": {
+    "trail": {
+      "title": "ऑडिट ट्रेल",
+      "loading": "ऑडिट ट्रेल लोड हो रहा है...",
+      "error": "ऑडिट ट्रेल लोड करने में त्रुटि",
+      "noData": "इस आइटम के लिए कोई ऑडिट रिकॉर्ड नहीं मिला",
+      "timestamp": "टाइमस्टैम्प",
+      "action": "कार्रवाई",
+      "user": "उपयोगकर्ता",
+      "ipAddress": "आईपी पता",
+      "changes": "परिवर्तन",
+      "systemUser": "सिस्टम",
+      "viewChanges": "परिवर्तन देखें",
+      "viewData": "डेटा देखें",
+      "viewDeletedData": "हटाया गया डेटा देखें",
+      "oldValues": "पुराने मान",
+      "newValues": "नए मान"
     },
-    "priority": {
-      "low": "कम",
-      "medium": "मध्यम",
-      "high": "उच्च",
-      "urgent": "तत्काल"
+    "sessions": {
+      "title": "सक्रिय सत्र",
+      "loading": "सत्र लोड हो रहे हैं...",
+      "error": "सत्र लोड करने में त्रुटि",
+      "noActive": "कोई सक्रिय सत्र नहीं",
+      "user": "उपयोगकर्ता",
+      "loginTime": "लॉगिन समय",
+      "lastActivity": "अंतिम गतिविधि",
+      "ipAddress": "आईपी पता",
+      "actions": "कार्रवाई",
+      "status": "स्थिति",
+      "refresh": "ताज़ा करें",
+      "refreshing": "ताज़ा हो रहा है...",
+      "suspicious": "संदिग्ध",
+      "normal": "सामान्य"
+    },
+    "reports": {
+      "title": "अनुपालन रिपोर्ट",
+      "generate": "रिपोर्ट जेनरेट करें",
+      "reportType": "रिपोर्ट प्रकार",
+      "periodStart": "अवधि प्रारंभ",
+      "periodEnd": "अवधि समाप्ति",
+      "download": "डाउनलोड",
+      "soc2": "SOC 2",
+      "sox": "सर्बेन्स-ऑक्सले"
     }
-  },
-  "form": {
-    "requiredField": "यह फ़ील्ड आवश्यक है",
-    "invalidEmail": "अमान्य ईमेल पता",
-    "invalidFormat": "अमान्य प्रारूप",
-    "minLength": "न्यूनतम लंबाई {{count}} वर्ण है",
-    "maxLength": "अधिकतम लंबाई {{count}} वर्ण है",
-    "selectOption": "एक विकल्प चुनें",
-    "noOptions": "कोई विकल्प उपलब्ध नहीं",
-    "searchPlaceholder": "खोजें..."
-  },
-  "messages": {
-    "saveSuccess": "परिवर्तन सफलतापूर्वक सहेजे गए",
-    "saveError": "परिवर्तन सहेजने में विफल",
-    "deleteSuccess": "सफलतापूर्वक हटाया गया",
-    "deleteError": "हटाने में विफल",
-    "createSuccess": "सफलतापूर्वक बनाया गया",
-    "createError": "बनाने में विफल",
-    "updateSuccess": "सफलतापूर्वक अपडेट किया गया",
-    "updateError": "अपडेट करने में विफल",
-    "loadError": "डेटा लोड करने में विफल",
-    "networkError": "नेटवर्क त्रुटि हुई",
-    "unexpectedError": "एक अप्रत्याशित त्रुटि हुई"
-  },
-  "home": {
-    "hero": {
-      "title": "YSollo में आपका स्वागत है",
-      "subtitle": "प्रति-किरायेदार स्कीमा और सबडोमेन अलगाव के साथ अंतिम मल्टी-टेनेंट प्लेटफॉर्म। सुरक्षित, स्केलेबल और उपयोग में आसान।",
-      "getStarted": "शुरू करें",
-      "learnMore": "और जानें"
-    },
-    "features": {
-      "title": "विशेषताएं",
-      "multiTenancy": {
-        "title": "मल्टी-टेनेंट",
-        "description": "प्रति-किरायेदार स्कीमा आर्किटेक्चर के साथ अधिकतम सुरक्षा के लिए पूर्ण डेटा अलगाव।"
-      },
-      "subdomain": {
-        "title": "सबडोमेन समर्थन",
-        "description": "प्रत्येक किरायेदार को वाइल्डकार्ड DNS समर्थन के साथ अपना सबडोमेन मिलता है।"
-      },
-      "customizable": {
-        "title": "अनुकूलन योग्य",
-        "description": "प्रत्येक किरायेदार के लिए भाषा, समय क्षेत्र, मुद्रा और बहुत कुछ कॉन्फ़िगर करें।"
-      }
-    }
-  },
-  "pricing": {
-    "title": "सरल और पारदर्शी मूल्य निर्धारण",
-    "subtitle": "वह योजना चुनें जो आपके व्यवसाय के लिए सबसे अच्छी हो",
-    "starter": {
-      "name": "स्टार्टर",
-      "description": "छोटी टीमों के लिए बिल्कुल सही",
-      "price": "$29",
-      "period": "/महीना",
-      "features": {
-        "users": "5 उपयोगकर्ताओं तक",
-        "storage": "10GB संग्रहण",
-        "support": "ईमेल सहायता"
-      },
-      "cta": "शुरू करें"
-    },
-    "professional": {
-      "name": "पेशेवर",
-      "badge": "लोकप्रिय",
-      "description": "बढ़ते व्यवसायों के लिए सबसे अच्छा",
-      "price": "$79",
-      "period": "/महीना",
-      "features": {
-        "users": "20 उपयोगकर्ताओं तक",
-        "storage": "100GB संग्रहण",
-        "prioritySupport": "प्राथमिकता समर्थन",
-        "analytics": "उन्नत विश्लेषण"
-      },
-      "cta": "शुरू करें"
-    },
-    "enterprise": {
-      "name": "उद्यम",
-      "description": "बड़े संगठनों के लिए",
-      "custom": "कस्टम",
-      "features": {
-        "users": "असीमित उपयोगकर्ता",
-        "storage": "असीमित संग्रहण",
-        "phoneSupport": "24/7 फोन समर्थन",
-        "integrations": "कस्टम एकीकरण"
-      },
-      "cta": "बिक्रय से संपर्क करें"
-    }
-  },
-  "footer": {
-    "copyright": "© {{year}} YSollo. सर्वाधिकार सुरक्षित।",
-    "terms": "सेवा की शर्तें",
-    "privacy": "गोपनीयता नीति",
-    "cookies": "कुकी नीति"
   }
 }

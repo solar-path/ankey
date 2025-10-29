@@ -30,6 +30,7 @@ import ApprovalTaskPage from "./modules/task/approvalTask.page";
 import DOAPage from "./modules/doa/doa.page";
 import DOADetailPage from "./modules/doa/doaDetail.page";
 import DOAMatrixFormPage from "./modules/doa/doaMatrixForm.page";
+import { AuditLogsPage } from "./modules/audit/pages/AuditLogsPage";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
 import { CompanyProvider } from "./lib/company-context";
@@ -116,6 +117,7 @@ function App() {
                 <Route path="/task" component={TasksPage} />
                 <Route path="/users/invite" component={InviteUserPage} />
                 <Route path="/users" component={UserManagementPage} />
+                <Route path="/audit" component={AuditLogsPage} />
                 <Route path="/account/:rest*" component={AccountPage} />
                 <Route component={NotFoundPage} />
               </Switch>

@@ -3,6 +3,8 @@ import { cors } from "hono/cors";
 import { sendVerificationEmail, sendPasswordResetEmail, sendInquiryConfirmationEmail, sendUserInvitationEmail } from "./mail.settings";
 import authRoutes from "./routes/auth.routes";
 import referenceRoutes from "./routes/reference.routes";
+import auditRoutes from "./routes/audit.routes";
+import { auditContextMiddleware } from "./middleware/audit-context.middleware";
 
 const app = new Hono();
 
@@ -11,6 +13,9 @@ app.use("/*", cors({
   origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   credentials: true,
 }));
+
+// Audit Context Middleware - Set user context for all requests
+app.use("/*", auditContextMiddleware);
 
 // Health check
 app.get("/health", (c) => {
@@ -122,6 +127,9 @@ app.route("/api", authRoutes);
 
 // Mount reference data routes
 app.route("/api/reference", referenceRoutes);
+
+// Mount audit routes
+app.route("/api/audit", auditRoutes);
 
 // Mount email-specific auth routes (legacy)
 app.route("/api/auth", auth);

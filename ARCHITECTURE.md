@@ -457,20 +457,33 @@ src/api/db/
 ### Принцип
 **Централизованное логирование всех действий** для SOC reports и SoX compliance.
 
+### ⚠️ ВАЖНО: Схема и Таблицы
+**Таблицы audit логов находятся в schema `public`**, а не в отдельной schema `audit`:
+- `audit_log` (public schema)
+- `audit_sessions` (public schema)
+- `audit_soft_deletes` (public schema)
+- `audit_reports` (public schema)
+
+**Schema `audit` используется только для функций** (следуя общему архитектурному принципу).
+
 ### Правила
 
 #### ✅ ОБЯЗАТЕЛЬНО:
-1. **Все CRUD операции логируются** в `audit.log`
+1. **Все CRUD операции логируются** в `audit_log` (таблица в public schema)
 2. **Soft Delete Pattern**: используй `audit.soft_delete()` вместо физического удаления
-3. **Session Tracking**: все сессии в `audit.sessions`
+3. **Session Tracking**: все сессии в `audit_sessions` (таблица в public schema)
 4. **Audit Trail**: возможность получить историю изменений любой записи
 5. **Retention Policy**: логи хранятся минимум 7 лет (SOX требование)
+6. **IP и User-Agent tracking**: для всех login/logout операций
+7. **Автоматические триггеры**: для критичных таблиц (companies, users, orgcharts, etc.)
+8. **Frontend UI**: страница `/audit` для просмотра логов и сессий
 
 #### ❌ ЗАПРЕЩЕНО:
 1. Физическое удаление без soft delete
 2. Изменения без логирования
 3. Обход audit системы
 4. Удаление audit логов
+5. Таблицы audit логов в отдельной schema (используй public schema)
 
 ### Структура Audit Логов
 
@@ -560,6 +573,37 @@ PERFORM audit.update_session_activity(_session_token);
 
 -- Завершение сессии (в auth.signout)
 PERFORM audit.track_session_end(_session_token, 'manual');
+```
+
+### Реализованные Компоненты
+
+#### Database (PostgreSQL):
+- **14 функций** в schema `audit` для логирования и отчетов
+- **4 таблицы** в schema `public`: `audit_log`, `audit_sessions`, `audit_soft_deletes`, `audit_reports`
+- **6 автоматических триггеров** на критичных таблицах
+- **18 индексов** для производительности queries
+
+#### API (Hono):
+- **8 REST endpoints** в `/api/audit/*` для доступа к логам
+- **Middleware** `audit-context.middleware.ts` для автоматической установки user context
+- **Интеграция с auth.signin/signout** для tracking IP и User-Agent
+
+#### Frontend (React):
+- **Страница `/audit`** для просмотра логов и активных сессий
+- **Компоненты**: `AuditTrail`, `ActiveSessions`
+- **Service**: `AuditService` (thin client wrapper)
+- **Навигация**: ссылка "Audit Logs" в sidebar
+
+#### Доступные API Endpoints:
+```typescript
+GET  /api/audit/trail/:table/:recordId    // История изменений записи
+GET  /api/audit/user/:userId/activity     // Активность пользователя
+POST /api/audit/report/generate           // Генерация SOC/SoX отчета
+GET  /api/audit/sessions/active           // Активные сессии
+GET  /api/audit/sessions/suspicious       // Подозрительные сессии
+GET  /api/audit/logs/recent               // Последние логи (с фильтрами)
+GET  /api/audit/soft-deletes              // Удаленные записи
+POST /api/audit/restore/:table/:recordId  // Восстановление записи
 ```
 
 ---
@@ -806,9 +850,24 @@ src/lib/locales/
 При создании новой фичи:
 
 1. Добавь ключи в `en/translation.json`
-2. Переведи на остальные 4 языка
+2. Переведи на остальные 4 языка (zh, es, ar, hi)
 3. Используй `t('your.key')` в компонентах
 4. Проверь работу переключения языков
+
+### Примеры реализованных модулей с i18n
+
+**Audit Logging Module** (`src/lib/locales/{lang}/translation.json`):
+```json
+{
+  "audit": {
+    "trail": { ... },      // Audit trail компонент
+    "sessions": { ... },   // Active sessions компонент
+    "reports": { ... }     // Compliance reports
+  }
+}
+```
+
+Все 5 языковых файлов содержат полные переводы для audit модуля.
 
 ---
 

@@ -38,7 +38,7 @@ BEGIN
   END IF;
 
   -- Insert audit log
-  INSERT INTO audit.log (
+  INSERT INTO audit_log (
     user_id, user_email, user_role,
     action, table_name, record_id, company_id,
     old_values, new_values,
@@ -79,7 +79,7 @@ BEGIN
   END IF;
 
   -- Insert soft delete record
-  INSERT INTO audit.soft_deletes (
+  INSERT INTO audit_soft_deletes (
     table_name, record_id, deleted_by, data_snapshot, company_id, permanent_delete_at
   ) VALUES (
     _table_name, _record_id, _deleted_by, _data_snapshot, _company_id, v_permanent_delete_at
@@ -131,7 +131,7 @@ DECLARE
 BEGIN
   -- Get deleted record
   SELECT data_snapshot, company_id INTO v_data_snapshot, v_company_id
-  FROM audit.soft_deletes
+  FROM audit_soft_deletes
   WHERE table_name = _table_name
     AND record_id = _record_id
     AND restored = FALSE;
@@ -141,7 +141,7 @@ BEGIN
   END IF;
 
   -- Mark as restored
-  UPDATE audit.soft_deletes
+  UPDATE audit_soft_deletes
   SET restored = TRUE,
       restored_by = _restored_by,
       restored_at = NOW()
@@ -185,7 +185,7 @@ DECLARE
   v_session_id UUID;
 BEGIN
   -- Insert session
-  INSERT INTO audit.sessions (
+  INSERT INTO audit_sessions (
     user_id, user_email, session_token,
     login_ip, login_user_agent, login_method,
     last_activity_at
@@ -234,7 +234,7 @@ DECLARE
 BEGIN
   -- Get session
   SELECT * INTO v_session
-  FROM audit.sessions
+  FROM audit_sessions
   WHERE session_token = _session_token
     AND status = 'active';
 
@@ -243,7 +243,7 @@ BEGIN
   END IF;
 
   -- Update session
-  UPDATE audit.sessions
+  UPDATE audit_sessions
   SET logout_at = NOW(),
       logout_reason = _logout_reason,
       status = 'expired'
@@ -285,7 +285,7 @@ CREATE OR REPLACE FUNCTION audit.update_session_activity(
 RETURNS VOID
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  UPDATE audit.sessions
+  UPDATE audit_sessions
   SET last_activity_at = NOW(),
       actions_count = actions_count + 1
   WHERE session_token = _session_token
@@ -320,7 +320,7 @@ BEGIN
       'notes', notes
     ) ORDER BY created_at DESC
   ) INTO v_logs
-  FROM audit.log
+  FROM audit_log
   WHERE table_name = _table_name
     AND record_id = _record_id;
 
@@ -357,7 +357,7 @@ BEGIN
         'record_id', record_id,
         'created_at', EXTRACT(EPOCH FROM created_at)::BIGINT * 1000
       ) as recent_action
-    FROM audit.log
+    FROM audit_log
     WHERE user_id = _user_id
       AND created_at BETWEEN _from_date AND _to_date
     GROUP BY action, table_name, record_id, created_at
@@ -403,7 +403,7 @@ BEGIN
       SELECT jsonb_object_agg(action, count)
       FROM (
         SELECT action, COUNT(*) as count
-        FROM audit.log
+        FROM audit_log
         WHERE created_at BETWEEN _period_start AND _period_end
         GROUP BY action
       ) action_counts
@@ -418,7 +418,7 @@ BEGIN
             'action_count', COUNT(*)
           ) as user_data,
           COUNT(*) as action_count
-        FROM audit.log
+        FROM audit_log
         WHERE created_at BETWEEN _period_start AND _period_end
         GROUP BY user_id, user_email
         ORDER BY COUNT(*) DESC
@@ -427,21 +427,21 @@ BEGIN
     ),
     'deleted_records', (
       SELECT COUNT(*)
-      FROM audit.soft_deletes
+      FROM audit_soft_deletes
       WHERE deleted_at BETWEEN _period_start AND _period_end
     ),
     'restored_records', (
       SELECT COUNT(*)
-      FROM audit.soft_deletes
+      FROM audit_soft_deletes
       WHERE restored = TRUE
         AND restored_at BETWEEN _period_start AND _period_end
     )
   ) INTO v_report_data
-  FROM audit.log
+  FROM audit_log
   WHERE created_at BETWEEN _period_start AND _period_end;
 
   -- Save report
-  INSERT INTO audit.reports (
+  INSERT INTO audit_reports (
     report_type, report_period_start, report_period_end,
     generated_by, data
   ) VALUES (

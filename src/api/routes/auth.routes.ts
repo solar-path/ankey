@@ -24,7 +24,7 @@ const pool = new Pool({
 const FUNCTION_PARAMS: Record<string, string[]> = {
   // Auth functions
   "auth.signup": ["email", "password", "fullname"],
-  "auth.signin": ["email", "password"],
+  "auth.signin": ["email", "password", "ip_address", "user_agent"],
   "auth.signout": ["token"],
   "auth.verify_account": ["code"],
   "auth.verify_session": ["token"],
@@ -158,6 +158,8 @@ const FUNCTION_PARAMS: Record<string, string[]> = {
   "users.get_by_id": ["user_id"],
   "users.get_by_company": ["company_id"],
   "users.get_stats": ["company_id"],
+  "users.toggle_block": ["user_id", "block"],
+  "users.delete": ["user_id"],
 };
 
 /**
@@ -176,6 +178,22 @@ app.post("/:fn", async (c: Context) => {
       throw new Error(
         `Function ${functionName} not found in parameter mapping. Please add it to FUNCTION_PARAMS.`
       );
+    }
+
+    // Auto-inject IP and User-Agent for auth.signin
+    if (functionName === "auth.signin") {
+      // Extract IP address (check various headers)
+      const ip = c.req.header("x-forwarded-for")?.split(",")[0].trim()
+        || c.req.header("x-real-ip")
+        || c.req.header("cf-connecting-ip")
+        || null;
+
+      // Extract User-Agent
+      const userAgent = c.req.header("user-agent") || null;
+
+      // Auto-fill if not provided in body
+      if (!body.ip_address) body.ip_address = ip;
+      if (!body.user_agent) body.user_agent = userAgent;
     }
 
     // Extract parameters in correct order

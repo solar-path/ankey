@@ -1,202 +1,47 @@
 {
-  "common": {
-    "welcome": "欢迎",
-    "home": "首页",
-    "about": "关于",
-    "contact": "联系我们",
-    "learn": "学习",
-    "pricing": "价格",
-    "signIn": "登录",
-    "signUp": "注册",
-    "signOut": "退出",
-    "save": "保存",
-    "cancel": "取消",
-    "edit": "编辑",
-    "delete": "删除",
-    "create": "创建",
-    "update": "更新",
-    "search": "搜索",
-    "filter": "筛选",
-    "export": "导出",
-    "import": "导入",
-    "download": "下载",
-    "upload": "上传",
-    "submit": "提交",
-    "reset": "重置",
-    "close": "关闭",
-    "confirm": "确认",
-    "loading": "加载中...",
-    "error": "错误",
-    "success": "成功",
-    "warning": "警告",
-    "info": "信息",
-    "yes": "是",
-    "no": "否",
-    "language": "语言",
-    "settings": "设置",
-    "profile": "个人资料",
-    "account": "账户",
-    "dashboard": "仪表板",
-    "logout": "登出"
-  },
-  "navigation": {
-    "home": "首页",
-    "company": "公司",
-    "tasks": "任务",
-    "employees": "员工",
-    "orgChart": "组织架构图",
-    "doa": "授权委托",
-    "inquiry": "咨询",
-    "reports": "报告",
-    "administration": "管理"
-  },
-  "auth": {
-    "email": "电子邮件",
-    "password": "密码",
-    "confirmPassword": "确认密码",
-    "forgotPassword": "忘记密码？",
-    "rememberMe": "记住我",
-    "alreadyHaveAccount": "已有账户？",
-    "dontHaveAccount": "没有账户？",
-    "signInTitle": "登录您的账户",
-    "signUpTitle": "创建新账户",
-    "signInSuccess": "登录成功",
-    "signOutSuccess": "退出成功",
-    "signUpSuccess": "账户创建成功",
-    "invalidCredentials": "电子邮件或密码无效",
-    "emailRequired": "电子邮件是必填项",
-    "passwordRequired": "密码是必填项",
-    "passwordMismatch": "密码不匹配"
-  },
-  "company": {
-    "company": "公司",
-    "companyName": "公司名称",
-    "companySettings": "公司设置",
-    "companyDashboard": "公司仪表板",
-    "companyMembers": "公司成员",
-    "createCompany": "创建公司",
-    "selectCompany": "选择公司",
-    "noCompany": "未选择公司",
-    "switchCompany": "切换公司"
-  },
-  "task": {
-    "tasks": "任务",
-    "taskDetails": "任务详情",
-    "createTask": "创建任务",
-    "editTask": "编辑任务",
-    "deleteTask": "删除任务",
-    "taskTitle": "任务标题",
-    "taskDescription": "任务描述",
-    "taskStatus": "任务状态",
-    "taskPriority": "任务优先级",
-    "taskDueDate": "截止日期",
-    "assignedTo": "分配给",
-    "createdBy": "创建者",
-    "status": {
-      "pending": "待处理",
-      "inProgress": "进行中",
-      "completed": "已完成",
-      "cancelled": "已取消"
+  "audit": {
+    "trail": {
+      "title": "审计跟踪",
+      "loading": "正在加载审计跟踪...",
+      "error": "加载审计跟踪时出错",
+      "noData": "未找到此项的审计记录",
+      "timestamp": "时间戳",
+      "action": "操作",
+      "user": "用户",
+      "ipAddress": "IP地址",
+      "changes": "变更",
+      "systemUser": "系统",
+      "viewChanges": "查看变更",
+      "viewData": "查看数据",
+      "viewDeletedData": "查看已删除数据",
+      "oldValues": "旧值",
+      "newValues": "新值"
     },
-    "priority": {
-      "low": "低",
-      "medium": "中",
-      "high": "高",
-      "urgent": "紧急"
+    "sessions": {
+      "title": "活动会话",
+      "loading": "正在加载会话...",
+      "error": "加载会话时出错",
+      "noActive": "无活动会话",
+      "user": "用户",
+      "loginTime": "登录时间",
+      "lastActivity": "最后活动",
+      "ipAddress": "IP地址",
+      "actions": "操作",
+      "status": "状态",
+      "refresh": "刷新",
+      "refreshing": "刷新中...",
+      "suspicious": "可疑",
+      "normal": "正常"
+    },
+    "reports": {
+      "title": "合规报告",
+      "generate": "生成报告",
+      "reportType": "报告类型",
+      "periodStart": "期间开始",
+      "periodEnd": "期间结束",
+      "download": "下载",
+      "soc2": "SOC 2",
+      "sox": "萨班斯-奥克斯利法案"
     }
-  },
-  "form": {
-    "requiredField": "此字段为必填项",
-    "invalidEmail": "无效的电子邮件地址",
-    "invalidFormat": "格式无效",
-    "minLength": "最小长度为 {{count}} 个字符",
-    "maxLength": "最大长度为 {{count}} 个字符",
-    "selectOption": "选择一个选项",
-    "noOptions": "没有可用选项",
-    "searchPlaceholder": "搜索..."
-  },
-  "messages": {
-    "saveSuccess": "保存成功",
-    "saveError": "保存失败",
-    "deleteSuccess": "删除成功",
-    "deleteError": "删除失败",
-    "createSuccess": "创建成功",
-    "createError": "创建失败",
-    "updateSuccess": "更新成功",
-    "updateError": "更新失败",
-    "loadError": "加载数据失败",
-    "networkError": "发生网络错误",
-    "unexpectedError": "发生意外错误"
-  },
-  "home": {
-    "hero": {
-      "title": "欢迎来到 YSollo",
-      "subtitle": "终极多租户平台，采用租户独立架构和子域隔离。安全、可扩展且易于使用。",
-      "getStarted": "开始使用",
-      "learnMore": "了解更多"
-    },
-    "features": {
-      "title": "功能特性",
-      "multiTenancy": {
-        "title": "多租户",
-        "description": "采用租户独立架构，实现完整的数据隔离，确保最高安全性。"
-      },
-      "subdomain": {
-        "title": "子域支持",
-        "description": "每个租户都有自己的子域，支持通配符 DNS。"
-      },
-      "customizable": {
-        "title": "可定制",
-        "description": "为每个租户配置语言、时区、货币等。"
-      }
-    }
-  },
-  "pricing": {
-    "title": "简单透明的定价",
-    "subtitle": "选择最适合您业务的计划",
-    "starter": {
-      "name": "入门版",
-      "description": "适合小型团队",
-      "price": "$29",
-      "period": "/月",
-      "features": {
-        "users": "最多5位用户",
-        "storage": "10GB存储",
-        "support": "邮件支持"
-      },
-      "cta": "开始使用"
-    },
-    "professional": {
-      "name": "专业版",
-      "badge": "热门",
-      "description": "最适合成长型企业",
-      "price": "$79",
-      "period": "/月",
-      "features": {
-        "users": "最多20位用户",
-        "storage": "100GB存储",
-        "prioritySupport": "优先支持",
-        "analytics": "高级分析"
-      },
-      "cta": "开始使用"
-    },
-    "enterprise": {
-      "name": "企业版",
-      "description": "适合大型组织",
-      "custom": "定制",
-      "features": {
-        "users": "无限用户",
-        "storage": "无限存储",
-        "phoneSupport": "24/7电话支持",
-        "integrations": "定制集成"
-      },
-      "cta": "联系销售"
-    }
-  },
-  "footer": {
-    "copyright": "© {{year}} YSollo. 版权所有。",
-    "terms": "服务条款",
-    "privacy": "隐私政策",
-    "cookies": "Cookie政策"
   }
 }

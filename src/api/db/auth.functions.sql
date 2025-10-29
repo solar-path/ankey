@@ -89,7 +89,12 @@ $$;
 -- ============================================
 -- 3. SIGN IN
 -- ============================================
-CREATE OR REPLACE FUNCTION auth.signin(_email TEXT, _password TEXT)
+CREATE OR REPLACE FUNCTION auth.signin(
+  _email TEXT,
+  _password TEXT,
+  _ip_address TEXT DEFAULT NULL,
+  _user_agent TEXT DEFAULT NULL
+)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
@@ -98,6 +103,8 @@ DECLARE
   v_session_id TEXT;
   v_token TEXT;
   v_expires_at BIGINT;
+  v_audit_session_id UUID;
+  v_ip INET;
 BEGIN
   -- Hash provided password
   v_hashed_password := encode(digest(_password, 'sha256'), 'hex');
@@ -107,7 +114,30 @@ BEGIN
   FROM users
   WHERE email = _email AND type = 'user' AND password = v_hashed_password;
 
+  -- Log failed login attempt
   IF v_user._id IS NULL THEN
+    -- Convert IP to INET type
+    BEGIN
+      v_ip := _ip_address::INET;
+    EXCEPTION WHEN OTHERS THEN
+      v_ip := NULL;
+    END;
+
+    -- Log failed login
+    PERFORM audit.log_action(
+      NULL,  -- No user_id for failed login
+      'LOGIN_FAILED',
+      'users',
+      _email,  -- Use email as record_id
+      NULL,
+      NULL,
+      jsonb_build_object('email', _email, 'reason', 'invalid_credentials'),
+      v_ip,
+      _user_agent,
+      NULL,
+      'Failed login attempt for: ' || _email
+    );
+
     RAISE EXCEPTION 'Invalid email or password';
   END IF;
 
@@ -134,6 +164,26 @@ BEGIN
 
   INSERT INTO sessions (_id, type, user_id, token, expires_at, created_at)
   VALUES (v_session_id, 'session', v_user._id, v_token, v_expires_at, EXTRACT(EPOCH FROM NOW())::BIGINT);
+
+  -- Convert IP to INET type
+  BEGIN
+    v_ip := _ip_address::INET;
+  EXCEPTION WHEN OTHERS THEN
+    v_ip := NULL;
+  END;
+
+  -- Track session start with audit logging
+  SELECT audit.track_session_start(
+    v_user._id,
+    v_user.email,
+    v_token,
+    v_ip,
+    _user_agent,
+    'password'
+  ) INTO v_audit_session_id;
+
+  -- Set user context for subsequent operations in this transaction
+  PERFORM audit.set_user_context(v_user._id);
 
   RETURN jsonb_build_object(
     'requires2FA', FALSE,
@@ -206,9 +256,21 @@ $$;
 CREATE OR REPLACE FUNCTION auth.signout(_token TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_result JSONB;
 BEGIN
+  -- Track session end with audit logging
+  BEGIN
+    v_result := audit.track_session_end(_token, 'manual');
+  EXCEPTION WHEN OTHERS THEN
+    -- If audit tracking fails, still allow logout
+    v_result := jsonb_build_object('success', TRUE);
+  END;
+
+  -- Delete from sessions table
   DELETE FROM sessions WHERE token = _token AND type = 'session';
-  RETURN jsonb_build_object('message', 'Signed out successfully');
+
+  RETURN jsonb_build_object('message', 'Signed out successfully', 'audit', v_result);
 END;
 $$;
 

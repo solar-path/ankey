@@ -6,6 +6,9 @@
 -- - SoX Compliance (Sarbanes-Oxley)
 -- - User Activity Tracking
 -- - Data Change History
+--
+-- NOTE: Tables are in public schema, functions are in audit schema
+-- This follows the ARCHITECTURE.md pattern where only functions use separate schemas
 
 CREATE SCHEMA IF NOT EXISTS audit;
 
@@ -13,7 +16,7 @@ CREATE SCHEMA IF NOT EXISTS audit;
 -- AUDIT LOG TABLE
 -- ============================================
 -- Централизованная таблица для всех изменений данных
-CREATE TABLE IF NOT EXISTS audit.log (
+CREATE TABLE IF NOT EXISTS audit_log (
   -- Primary key
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -59,7 +62,7 @@ CREATE TABLE IF NOT EXISTS audit.log (
 -- SOFT DELETE TRACKING
 -- ============================================
 -- Отдельная таблица для отслеживания мягко удаленных записей
-CREATE TABLE IF NOT EXISTS audit.soft_deletes (
+CREATE TABLE IF NOT EXISTS audit_soft_deletes (
   -- Primary key
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -92,7 +95,7 @@ CREATE TABLE IF NOT EXISTS audit.soft_deletes (
 -- USER SESSION TRACKING
 -- ============================================
 -- Детальное отслеживание сессий для SOC reports
-CREATE TABLE IF NOT EXISTS audit.sessions (
+CREATE TABLE IF NOT EXISTS audit_sessions (
   -- Primary key
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -129,7 +132,7 @@ CREATE TABLE IF NOT EXISTS audit.sessions (
 -- COMPLIANCE REPORTS METADATA
 -- ============================================
 -- Метаданные для генерации отчетов SOC/SoX
-CREATE TABLE IF NOT EXISTS audit.reports (
+CREATE TABLE IF NOT EXISTS audit_reports (
   -- Primary key
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -154,36 +157,36 @@ CREATE TABLE IF NOT EXISTS audit.reports (
 -- ============================================
 
 -- Audit log indexes
-CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit.log(user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit.log(action);
-CREATE INDEX IF NOT EXISTS idx_audit_log_table_record ON audit.log(table_name, record_id);
-CREATE INDEX IF NOT EXISTS idx_audit_log_company_id ON audit.log(company_id) WHERE company_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit.log(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_log_request_id ON audit.log(request_id) WHERE request_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
+CREATE INDEX IF NOT EXISTS idx_audit_log_table_record ON audit_log(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_company_id ON audit_log(company_id) WHERE company_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_request_id ON audit_log(request_id) WHERE request_id IS NOT NULL;
 
 -- Soft deletes indexes
-CREATE INDEX IF NOT EXISTS idx_soft_deletes_table_record ON audit.soft_deletes(table_name, record_id);
-CREATE INDEX IF NOT EXISTS idx_soft_deletes_deleted_at ON audit.soft_deletes(deleted_at DESC);
-CREATE INDEX IF NOT EXISTS idx_soft_deletes_restored ON audit.soft_deletes(restored) WHERE restored = FALSE;
-CREATE INDEX IF NOT EXISTS idx_soft_deletes_permanent_delete ON audit.soft_deletes(permanent_delete_at) WHERE permanent_delete_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_soft_deletes_table_record ON audit_soft_deletes(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_soft_deletes_deleted_at ON audit_soft_deletes(deleted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_soft_deletes_restored ON audit_soft_deletes(restored) WHERE restored = FALSE;
+CREATE INDEX IF NOT EXISTS idx_soft_deletes_permanent_delete ON audit_soft_deletes(permanent_delete_at) WHERE permanent_delete_at IS NOT NULL;
 
 -- Session tracking indexes
-CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON audit.sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_session_token ON audit.sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_sessions_login_at ON audit.sessions(login_at DESC);
-CREATE INDEX IF NOT EXISTS idx_sessions_status ON audit.sessions(status);
-CREATE INDEX IF NOT EXISTS idx_sessions_suspicious ON audit.sessions(is_suspicious) WHERE is_suspicious = TRUE;
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON audit_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_session_token ON audit_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_sessions_login_at ON audit_sessions(login_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_status ON audit_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_sessions_suspicious ON audit_sessions(is_suspicious) WHERE is_suspicious = TRUE;
 
 -- Reports indexes
-CREATE INDEX IF NOT EXISTS idx_reports_type ON audit.reports(report_type);
-CREATE INDEX IF NOT EXISTS idx_reports_period ON audit.reports(report_period_start, report_period_end);
-CREATE INDEX IF NOT EXISTS idx_reports_status ON audit.reports(status);
+CREATE INDEX IF NOT EXISTS idx_reports_type ON audit_reports(report_type);
+CREATE INDEX IF NOT EXISTS idx_reports_period ON audit_reports(report_period_start, report_period_end);
+CREATE INDEX IF NOT EXISTS idx_reports_status ON audit_reports(status);
 
 -- ============================================
 -- PARTITIONING (для больших объемов данных)
 -- ============================================
 -- TODO: После накопления данных можно включить партиционирование по месяцам
--- CREATE TABLE audit.log_2025_01 PARTITION OF audit.log
+-- CREATE TABLE audit_log_2025_01 PARTITION OF audit_log
 --   FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
 
 -- ============================================
@@ -197,7 +200,7 @@ DECLARE
   deleted_count INTEGER;
 BEGIN
   -- Delete logs older than retention period (default 7 years for SOX)
-  DELETE FROM audit.log
+  DELETE FROM audit_log
   WHERE created_at < NOW() - INTERVAL '1 day' * _retention_days;
 
   GET DIAGNOSTICS deleted_count = ROW_COUNT;
@@ -214,7 +217,7 @@ DECLARE
   deleted_count INTEGER;
 BEGIN
   -- Permanently delete records marked for deletion
-  DELETE FROM audit.soft_deletes
+  DELETE FROM audit_soft_deletes
   WHERE restored = FALSE
     AND permanent_delete_at IS NOT NULL
     AND permanent_delete_at < NOW();
@@ -229,18 +232,18 @@ $$;
 -- COMMENTS
 -- ============================================
 COMMENT ON SCHEMA audit IS 'Audit logging system for SOC reports, SoX compliance, and activity tracking';
-COMMENT ON TABLE audit.log IS 'Central audit log for all data changes and user actions';
-COMMENT ON TABLE audit.soft_deletes IS 'Soft delete tracking with data snapshots';
-COMMENT ON TABLE audit.sessions IS 'Detailed session tracking for security analysis';
-COMMENT ON TABLE audit.reports IS 'Compliance reports metadata (SOC1, SOC2, SOX, GDPR)';
+COMMENT ON TABLE audit_log IS 'Central audit log for all data changes and user actions';
+COMMENT ON TABLE audit_soft_deletes IS 'Soft delete tracking with data snapshots';
+COMMENT ON TABLE audit_sessions IS 'Detailed session tracking for security analysis';
+COMMENT ON TABLE audit_reports IS 'Compliance reports metadata (SOC1, SOC2, SOX, GDPR)';
 
-COMMENT ON COLUMN audit.log.action IS 'Type of action: CREATE, UPDATE, DELETE, LOGIN, etc.';
-COMMENT ON COLUMN audit.log.old_values IS 'Previous state before change (for UPDATE/DELETE)';
-COMMENT ON COLUMN audit.log.new_values IS 'New state after change (for CREATE/UPDATE)';
-COMMENT ON COLUMN audit.log.request_id IS 'UUID for tracing requests across microservices';
+COMMENT ON COLUMN audit_log.action IS 'Type of action: CREATE, UPDATE, DELETE, LOGIN, etc.';
+COMMENT ON COLUMN audit_log.old_values IS 'Previous state before change (for UPDATE/DELETE)';
+COMMENT ON COLUMN audit_log.new_values IS 'New state after change (for CREATE/UPDATE)';
+COMMENT ON COLUMN audit_log.request_id IS 'UUID for tracing requests across microservices';
 
-COMMENT ON COLUMN audit.soft_deletes.data_snapshot IS 'Full snapshot of record at deletion time';
-COMMENT ON COLUMN audit.soft_deletes.permanent_delete_at IS 'When to permanently delete (NULL = keep indefinitely)';
+COMMENT ON COLUMN audit_soft_deletes.data_snapshot IS 'Full snapshot of record at deletion time';
+COMMENT ON COLUMN audit_soft_deletes.permanent_delete_at IS 'When to permanently delete (NULL = keep indefinitely)';
 
 COMMENT ON FUNCTION audit.cleanup_old_logs IS 'Remove audit logs older than retention period (default 7 years)';
 COMMENT ON FUNCTION audit.cleanup_soft_deletes IS 'Permanently delete soft-deleted records past their retention date';

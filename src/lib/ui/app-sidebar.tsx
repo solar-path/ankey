@@ -8,6 +8,7 @@ import {
   FileText,
   Users,
   BookUser,
+  ScrollText,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -162,6 +163,11 @@ export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
           title: "Users",
           url: "/users",
           icon: Users,
+        },
+        {
+          title: "Audit Logs",
+          url: "/audit",
+          icon: ScrollText,
         },
         {
           title: "Settings",

@@ -1,20 +1,3 @@
-vite v7.1.12 building for production...
-transforming...
-✓ 3601 modules transformed.
-rendering chunks...
-[plugin vite:reporter] 
-(!) /Users/work/apps/ankey/src/modules/htr/orgchart/orgchart-approval.service.ts is dynamically imported by /Users/work/apps/ankey/src/modules/htr/orgchart/orgchartList.page.tsx, /Users/work/apps/ankey/src/modules/htr/orgchart/orgchartView.page.tsx, /Users/work/apps/ankey/src/modules/task/tasks.page.tsx but also statically imported by /Users/work/apps/ankey/src/modules/task/orgchartApprovalTask.page.tsx, dynamic import will not move module into another chunk.
-
-computing gzip size...
-dist/index.html                              0.45 kB │ gzip:   0.29 kB
-dist/assets/index-BSRtRoLf.css              84.56 kB │ gzip:  14.58 kB
-dist/assets/purify.es-B6FQ9oRL.js           22.57 kB │ gzip:   8.71 kB
-dist/assets/index.es-C-CmPdzB.js           159.36 kB │ gzip:  53.24 kB
-dist/assets/html2canvas.esm-B0tyYwQk.js    202.36 kB │ gzip:  47.70 kB
-dist/assets/index-BOXc8FzM.js            2,063.75 kB │ gzip: 624.72 kB
-
-(!) Some chunks are larger than 500 kB after minification. Consider:
-- Using dynamic import() to code-split the application
-- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
-- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 3.64s
+src/api/middleware/audit-context.middleware.ts(1,10): error TS1485: 'Context' resolves to a type-only declaration and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/middleware/audit-context.middleware.ts(1,19): error TS1484: 'Next' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/routes/audit.routes.ts(1,16): error TS1485: 'Context' resolves to a type-only declaration and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
