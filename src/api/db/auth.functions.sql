@@ -473,7 +473,86 @@ END;
 $$;
 
 -- ============================================
--- 9. CHANGE PASSWORD
+-- 9. UPDATE LANGUAGE PREFERENCE
+-- ============================================
+CREATE OR REPLACE FUNCTION auth.update_language(
+  _user_id TEXT,
+  _preferred_language TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_user RECORD;
+  v_old_user RECORD;
+  v_profile JSONB;
+  v_old_values JSONB;
+  v_new_values JSONB;
+BEGIN
+  -- Validate language code
+  IF _preferred_language NOT IN ('en', 'es', 'ar', 'zh', 'hi') THEN
+    RAISE EXCEPTION 'Invalid language code. Supported: en, es, ar, zh, hi';
+  END IF;
+
+  -- Get current user (for old values)
+  SELECT * INTO v_old_user FROM users WHERE _id = _user_id;
+
+  IF v_old_user._id IS NULL THEN
+    RAISE EXCEPTION 'User not found';
+  END IF;
+
+  -- Update profile with preferred language
+  v_profile := COALESCE(v_old_user.profile, '{}'::JSONB);
+  v_profile := jsonb_set(v_profile, '{preferredLanguage}', to_jsonb(_preferred_language));
+
+  -- Update user
+  UPDATE users
+  SET profile = v_profile,
+      updated_at = NOW()
+  WHERE _id = _user_id;
+
+  -- Get updated user
+  SELECT * INTO v_user FROM users WHERE _id = _user_id;
+
+  -- Prepare audit log values
+  v_old_values := jsonb_build_object(
+    'preferredLanguage', COALESCE(v_old_user.profile->>'preferredLanguage', 'en')
+  );
+
+  v_new_values := jsonb_build_object(
+    'preferredLanguage', _preferred_language
+  );
+
+  -- Log language update action
+  PERFORM audit.log_action(
+    _user_id,                    -- user who made the change
+    'UPDATE',                    -- action type
+    'users',                     -- table name
+    _user_id,                    -- record id (self-update)
+    NULL,                        -- company_id (users are global)
+    v_old_values,                -- old values
+    v_new_values,                -- new values
+    NULL,                        -- ip_address
+    NULL,                        -- user_agent
+    NULL,                        -- request_id
+    'User language preference updated'  -- notes
+  );
+
+  RETURN jsonb_build_object(
+    '_id', v_user._id,
+    'email', v_user.email,
+    'fullname', v_user.fullname,
+    'verified', v_user.verified,
+    'profile', v_user.profile,
+    'preferredLanguage', v_user.profile->>'preferredLanguage',
+    'createdAt', EXTRACT(EPOCH FROM v_user.created_at)::BIGINT * 1000,
+    'updatedAt', EXTRACT(EPOCH FROM v_user.updated_at)::BIGINT * 1000,
+    'twoFactorEnabled', v_user.two_factor_enabled
+  );
+END;
+$$;
+
+-- ============================================
+-- 10. CHANGE PASSWORD
 -- ============================================
 CREATE OR REPLACE FUNCTION auth.change_password(
   _user_id TEXT,

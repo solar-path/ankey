@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ChevronsUpDown, Plus, Search } from "lucide-react"
 import { Link } from "wouter"
+import { useTranslation } from "react-i18next"
 
 import {
   SidebarMenu,
@@ -28,6 +29,7 @@ export function TeamSwitcher({
   companies: Company[]
   onCompanyChange?: (companyId: string) => void
 }) {
+  const { t } = useTranslation()
   const companyContext = useCompanyOptional()
   const activeCompany = companyContext?.activeCompany || null
   const isMobile = useIsMobile()
@@ -74,8 +76,8 @@ export function TeamSwitcher({
                 <Plus className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Create Company</span>
-                <span className="truncate text-xs text-muted-foreground">Get started</span>
+                <span className="truncate font-medium">{t('company.createCompany')}</span>
+                <span className="truncate text-xs text-muted-foreground">{t('company.getStarted')}</span>
               </div>
             </SidebarMenuButton>
           </Link>
@@ -116,7 +118,7 @@ export function TeamSwitcher({
               sideOffset={4}
             >
               <DropdownMenuLabel className="text-muted-foreground text-xs">
-                Current Company
+                {t('company.currentCompany')}
               </DropdownMenuLabel>
               <DropdownMenuItem
                 disabled
@@ -138,7 +140,7 @@ export function TeamSwitcher({
                   <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                     <Plus className="size-4" />
                   </div>
-                  <div className="font-medium text-muted-foreground">Add company</div>
+                  <div className="font-medium text-muted-foreground">{t('company.addCompany')}</div>
                 </DropdownMenuItem>
               </Link>
             </DropdownMenuContent>
@@ -195,7 +197,7 @@ export function TeamSwitcher({
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search companies..."
+                  placeholder={t('company.searchCompanies')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="h-9 pl-8"
@@ -206,7 +208,7 @@ export function TeamSwitcher({
             <DropdownMenuSeparator />
 
             <DropdownMenuLabel className="text-muted-foreground text-xs">
-              {searchTerm.trim() ? `Found ${filteredCompanies.length}` : `Companies (${companies.length})`}
+              {searchTerm.trim() ? t('company.found', { count: filteredCompanies.length }) : t('company.companiesCount', { count: companies.length })}
             </DropdownMenuLabel>
 
             {displayedCompanies.length > 0 ? (
@@ -234,13 +236,13 @@ export function TeamSwitcher({
                 ))}
                 {hasMoreCompanies && (
                   <DropdownMenuItem disabled className="text-center text-xs text-muted-foreground py-1">
-                    +{companies.length - MAX_DISPLAY_COMPANIES} more companies (use search)
+                    {t('company.moreCompanies', { count: companies.length - MAX_DISPLAY_COMPANIES })}
                   </DropdownMenuItem>
                 )}
               </>
             ) : (
               <DropdownMenuItem disabled className="text-center text-muted-foreground">
-                No companies found
+                {t('company.noCompaniesFound')}
               </DropdownMenuItem>
             )}
 
@@ -250,7 +252,7 @@ export function TeamSwitcher({
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <Plus className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">Add company</div>
+                <div className="font-medium text-muted-foreground">{t('company.addCompany')}</div>
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

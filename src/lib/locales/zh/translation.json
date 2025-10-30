@@ -7,7 +7,44 @@
     "learn": "了解",
     "contact": "联系",
     "signIn": "登录",
-    "signUp": "注册"
+    "signUp": "注册",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "create": "创建",
+    "update": "更新",
+    "search": "搜索",
+    "loading": "加载中...",
+    "saving": "保存中...",
+    "actions": "操作",
+    "status": "状态",
+    "name": "名称",
+    "email": "电子邮件",
+    "phone": "电话",
+    "address": "地址",
+    "description": "描述",
+    "title": "标题",
+    "created": "创建时间",
+    "updated": "更新时间",
+    "version": "版本",
+    "apply": "应用",
+    "add": "添加",
+    "remove": "移除",
+    "close": "关闭",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "download": "下载",
+    "upload": "上传",
+    "filter": "过滤",
+    "sort": "排序",
+    "refresh": "刷新",
+    "export": "导出"
   },
   "audit": {
     "trail": {
@@ -52,6 +89,37 @@
       "download": "下载",
       "soc2": "SOC 2",
       "sox": "萨班斯-奥克斯利法案"
+    },
+    "logs": {
+      "title": "审计日志",
+      "subtitle": "监控用户活动、会话和系统变更",
+      "showActiveSessions": "显示活动会话",
+      "hideActiveSessions": "隐藏活动会话",
+      "filters": "过滤器",
+      "filterByAction": "按操作过滤",
+      "filterByTable": "按表过滤",
+      "allActions": "所有操作",
+      "tablePlaceholder": "公司、用户等",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "clearFilters": "清除过滤器",
+      "searchPlaceholder": "按用户、表或操作搜索...",
+      "noLogsFound": "未找到审计日志",
+      "exportCSV": "导出CSV",
+      "timestamp": "时间戳",
+      "table": "表",
+      "recordId": "记录ID",
+      "notes": "备注",
+      "actions": {
+        "CREATE": "创建",
+        "UPDATE": "更新",
+        "DELETE": "删除",
+        "LOGIN": "登录",
+        "LOGOUT": "登出",
+        "LOGIN_FAILED": "登录失败",
+        "APPROVE": "批准",
+        "REJECT": "拒绝"
+      }
     }
   },
   "home": {
@@ -118,6 +186,777 @@
       },
       "cta": "联系销售"
     }
+  },
+  "company": {
+    "createCompany": "创建公司",
+    "getStarted": "开始",
+    "currentCompany": "当前公司",
+    "addCompany": "添加公司",
+    "searchCompanies": "搜索公司...",
+    "found": "找到 {{count}} 个",
+    "companiesCount": "公司 ({{count}})",
+    "moreCompanies": "+{{count}} 个公司 (使用搜索)",
+    "noCompaniesFound": "未找到公司",
+    "dashboard": {
+      "title": "公司仪表板",
+      "loading": "正在加载仪表板...",
+      "overview": "{{company}} 概览",
+      "yourCompany": "您的公司",
+      "payrollForecast": "工资单预测",
+      "payrollDescription": "基于已批准组织架构的18个月预测",
+      "noOrgChart": "未找到已批准的组织架构图。",
+      "createOrgChart": "创建并批准组织架构图以查看工资单预测。",
+      "loadError": "加载工资单预测失败"
+    },
+    "members": {
+      "title": "团队成员",
+      "subtitle": "管理您的团队成员及其角色",
+      "noCompany": "请先选择一家公司",
+      "loading": "正在加载成员...",
+      "membersCount": "成员 ({{count}})",
+      "peopleInfo": "可以访问 {{company}} 的人员",
+      "noMembers": "未找到成员",
+      "you": "您",
+      "joined": "加入于 {{date}}",
+      "roles": {
+        "admin": "管理员",
+        "member": "成员"
+      },
+      "loadError": "加载团队成员失败",
+      "removeConfirm": "确定要将 {{name}} 从 {{company}} 中移除吗？他们将失去对所有公司数据的访问权限。",
+      "roleUpdated": "角色更新成功",
+      "roleUpdateError": "更新角色失败",
+      "memberRemoved": "成员移除成功",
+      "memberRemoveError": "移除成员失败"
+    },
+    "settings": {
+      "title": "公司设置",
+      "subtitle": "配置 {{company}} 的区域、财务和安全设置",
+      "noCompany": "未选择活动公司",
+      "noCompanySelected": "未选择公司",
+      "regional": {
+        "title": "区域设置",
+        "subtitle": "配置位置、时区、语言和格式偏好",
+        "applyDefaults": "应用 {{country}} 的默认设置",
+        "country": "国家",
+        "countryHelp": "主要运营国家（从公司注册地设置）",
+        "timezone": "时区",
+        "timezoneCount": "{{country}} 有 {{count}} 个时区可用",
+        "language": "语言",
+        "dateFormat": "日期格式",
+        "numberFormat": "数字格式"
+      },
+      "financial": {
+        "title": "财务设置",
+        "subtitle": "配置财政年度和货币设置以进行财务操作",
+        "fiscalYear": "财政年度",
+        "fiscalYearHelp": "定义您公司的财政年度周期",
+        "presets": {
+          "calendar": "公历年",
+          "ukTax": "英国税务年度",
+          "usFederal": "美国联邦",
+          "australia": "澳大利亚",
+          "india": "印度"
+        },
+        "startDate": "开始日期 (MM-DD)",
+        "endDate": "结束日期 (MM-DD)",
+        "workingCurrency": "工作货币",
+        "workingCurrencyHelp": "日常操作的主要货币",
+        "reportingCurrency": "报告货币",
+        "reportingCurrencyHelp": "财务报告和报表的货币",
+        "additionalCurrencies": "其他货币",
+        "additionalCurrenciesHelp": "运营中使用的其他货币（用于多货币支持）",
+        "selectCurrency": "选择要添加的货币",
+        "currencyAlreadyAdded": "货币已添加",
+        "fiscalYearApplied": "已应用 {{preset}} 财政年度"
+      },
+      "tax": {
+        "title": "税务设置",
+        "subtitle": "配置默认税率和标签",
+        "defaultRate": "默认税率 (%)",
+        "defaultRateHelp": "默认增值税/商品及服务税/税率百分比（例如，20 表示 20%）",
+        "taxIdLabel": "税号标签",
+        "taxIdLabelHelp": "如何标记税务识别号（增值税、商品及服务税、税号等）"
+      },
+      "security": {
+        "title": "安全设置",
+        "subtitle": "配置身份验证和安全策略",
+        "require2FA": "要求双因素认证",
+        "require2FAHelp": "强制所有团队成员启用双因素认证",
+        "deadline2FA": "双因素认证执行截止日期",
+        "deadline2FAHelp": "所有用户必须启用双因素认证的日期（可选）",
+        "passwordChangePeriod": "密码更改周期（天）",
+        "passwordChangePeriodHelp": "要求每 X 天更改一次密码（0 表示禁用）"
+      },
+      "saveButton": "保存设置",
+      "saved": "设置更新成功",
+      "saveError": "更新设置失败",
+      "noResidenceData": "没有可用的注册国家数据",
+      "defaultsApplied": "已应用 {{country}} 的默认设置"
+    },
+    "addressBook": {
+      "title": "员工名录",
+      "subtitle": "查看和搜索 {{company}} 的员工联系信息",
+      "noCompany": "未选择公司",
+      "noCompanyPrompt": "请选择一家公司以查看员工名录",
+      "loading": "正在加载员工...",
+      "searchPlaceholder": "搜索员工...",
+      "noEmployees": "名录中未找到员工。",
+      "loadError": "加载员工名录失败",
+      "columns": {
+        "employee": "员工",
+        "email": "电子邮件",
+        "phone": "电话",
+        "department": "部门",
+        "position": "职位",
+        "address": "地址",
+        "role": "角色"
+      },
+      "roles": {
+        "owner": "所有者",
+        "admin": "管理员",
+        "member": "成员"
+      }
+    }
+  },
+  "orgchart": {
+    "view": {
+      "title": "组织架构图",
+      "loading": "正在加载组织架构图...",
+      "loadError": "加载组织架构图失败",
+      "version": "v{{version}}",
+      "addDepartment": "添加部门",
+      "save": "保存",
+      "exportPDF": "PDF",
+      "exportExcel": "Excel",
+      "payrollForecast": "工资单预测",
+      "payrollSubtitle": "基于当前组织架构的18个月工资单预测",
+      "submitApproval": "提交审批",
+      "approve": "批准",
+      "status": {
+        "draft": "草稿",
+        "pending_approval": "待审批",
+        "approved": "已批准",
+        "revoked": "已撤销"
+      },
+      "searchPlaceholder": "搜索组织架构图...",
+      "showLabel": "显示：",
+      "viewOptions": {
+        "departments": "部门",
+        "positions": "职位",
+        "appointments": "任命"
+      },
+      "selectPrompt": "从树中选择一个项目以查看详细信息",
+      "actions": {
+        "createSubDept": "创建子部门",
+        "createPosition": "创建职位",
+        "createAppointment": "创建任命",
+        "duplicate": "复制 {{type}}",
+        "delete": "删除 {{type}}"
+      },
+      "vacant": "空缺",
+      "reportsTo": "向 {{position}} 汇报",
+      "deleteConfirm": "删除 {{name}}？这将级联删除所有子项。",
+      "messages": {
+        "subDeptCreated": "子部门已创建",
+        "deptCreated": "部门已创建",
+        "positionCreated": "职位已创建，带自动生成的代码",
+        "positionCreateError": "创建职位失败",
+        "deptCreateError": "创建部门失败",
+        "deleted": "删除成功",
+        "deleteError": "删除失败",
+        "deptDuplicated": "部门已复制",
+        "positionDuplicated": "职位已复制",
+        "appointmentDuplicated": "任命已复制",
+        "duplicateError": "复制失败",
+        "submitted": "已提交审批",
+        "submitError": "提交失败",
+        "approvalNote": "审批工作流程现在通过任务页面管理。请检查您的任务。",
+        "saved": "组织架构图已保存",
+        "saveError": "保存失败",
+        "pdfGenerated": "PDF生成成功",
+        "pdfError": "生成PDF失败",
+        "excelGenerated": "Excel文件生成成功",
+        "excelError": "生成Excel文件失败",
+        "forecastError": "加载工资单预测失败",
+        "invalidDrop": "无法将 {{sourceType}} 放到 {{targetType}} 上",
+        "moveDeptNotSupported": "尚不支持移动部门",
+        "movePositionNote": "在部门之间移动职位需要重新创建",
+        "moveAppointmentNote": "在职位之间移动任命需要重新创建",
+        "moveError": "移动项目失败",
+        "autoCreateNote": "任命会自动随职位创建",
+        "updated": "更新成功",
+        "updateError": "更新失败"
+      },
+      "newItems": {
+        "subDept": "新子部门",
+        "dept": "新部门",
+        "position": "新职位"
+      }
+    },
+    "list": {
+      "title": "组织架构图",
+      "subtitle": "管理您的组织结构和层级",
+      "loading": "正在加载组织架构图...",
+      "createButton": "创建组织架构图",
+      "columns": {
+        "version": "版本",
+        "title": "标题",
+        "description": "描述",
+        "status": "状态",
+        "enforced": "已执行",
+        "revoked": "已撤销",
+        "created": "创建时间"
+      },
+      "defaultTitle": "组织架构图 {{year}}",
+      "defaultDescription": "新组织结构",
+      "messages": {
+        "created": "组织架构图已创建",
+        "createError": "创建组织架构图失败",
+        "duplicated": "组织架构图复制成功",
+        "duplicateError": "复制组织架构图失败",
+        "onlyDraftApproval": "只能提交草稿进行审批",
+        "sentForApproval": "组织架构图已提交审批",
+        "approvalError": "提交审批失败",
+        "renamed": "组织架构图重命名成功",
+        "renameError": "重命名组织架构图失败"
+      },
+      "renameDialog": {
+        "title": "重命名组织架构图",
+        "subtitle": "更新您的组织架构图的标题和描述。",
+        "titleLabel": "标题",
+        "descriptionLabel": "描述",
+        "titlePlaceholder": "输入标题...",
+        "descriptionPlaceholder": "输入描述...",
+        "cancel": "取消",
+        "save": "保存更改"
+      },
+      "actions": {
+        "view": "查看",
+        "rename": "重命名",
+        "duplicate": "复制",
+        "sendApproval": "提交审批"
+      },
+      "noCharts": "还没有组织架构图。创建您的第一个开始吧。"
+    }
+  },
+  "doa": {
+    "matrix": {
+      "loading": "加载中...",
+      "redirecting": "正在重定向...",
+      "createTitle": "创建审批矩阵",
+      "editTitle": "编辑审批矩阵",
+      "subtitle": "定义审批工作流程规则和审批人",
+      "modifySubtitle": "修改审批矩阵：{{name}}",
+      "newMatrix": "新矩阵",
+      "columns": {
+        "documentType": "文档类型",
+        "status": "状态",
+        "created": "创建时间"
+      },
+      "messages": {
+        "created": "矩阵创建成功",
+        "updated": "矩阵更新成功",
+        "loadError": "加载审批矩阵失败"
+      }
+    },
+    "list": {
+      "title": "授权矩阵",
+      "subtitle": "定义组织流程的审批工作流程和规则",
+      "loading": "正在加载审批矩阵...",
+      "loadError": "加载审批矩阵失败",
+      "searchPlaceholder": "搜索矩阵...",
+      "newMatrix": "新矩阵",
+      "columns": {
+        "name": "名称",
+        "documentType": "文档类型",
+        "status": "状态",
+        "approvalBlocks": "审批块",
+        "totalApprovers": "总审批人数",
+        "description": "描述"
+      },
+      "blocksCount": "{{count}} 个块",
+      "approversCount": "{{count}}",
+      "actions": {
+        "viewEdit": "查看/编辑",
+        "delete": "删除"
+      },
+      "deleteConfirm": "确定要删除此审批矩阵吗？",
+      "messages": {
+        "deleted": "审批矩阵删除成功",
+        "deleteError": "删除审批矩阵失败"
+      },
+      "noMatrices": "未找到审批矩阵。创建一个以定义审批工作流程。",
+      "note": "注意：在提交组织架构图进行审批之前，必须定义审批矩阵。如果没有类型为 'orgchart' 的活动审批矩阵，提交将失败。",
+      "status": {
+        "active": "活动",
+        "inactive": "非活动"
+      }
+    }
+  },
+  "task": {
+    "approval": {
+      "title": "审批工作流程",
+      "loading": "正在加载任务详情...",
+      "notFound": "未找到任务",
+      "backToTasks": "返回任务",
+      "documentType": "文档类型",
+      "currentLevel": "当前级别",
+      "status": "状态",
+      "submitted": "已提交",
+      "level": "级别 {{number}}",
+      "na": "不适用",
+      "history": {
+        "title": "审批历史",
+        "levelDecision": "级别 {{number}} - {{decision}}"
+      },
+      "documentDetails": {
+        "title": "文档详情",
+        "titleLabel": "标题",
+        "version": "版本",
+        "versionNumber": "v{{version}}"
+      },
+      "yourDecision": {
+        "title": "您的决定",
+        "subtitle": "审查文档并提供您的审批决定",
+        "commentsLabel": "评论（批准时可选，拒绝时必填）",
+        "commentsPlaceholder": "在此添加您的评论...",
+        "approveButton": "批准",
+        "declineButton": "拒绝",
+        "acknowledgeButton": "确认",
+        "acknowledgeHelp": "将此通知标记为已读"
+      },
+      "messages": {
+        "approved": "文档批准成功",
+        "approveError": "批准文档失败",
+        "commentsRequired": "拒绝时请提供评论",
+        "declined": "文档已拒绝",
+        "declineError": "拒绝文档失败",
+        "acknowledged": "任务已确认",
+        "acknowledgeError": "确认任务失败"
+      },
+      "documentTypes": {
+        "purchaseOrder": "采购订单",
+        "salesOrder": "销售订单",
+        "invoice": "发票",
+        "payment": "付款",
+        "contract": "合同",
+        "departmentCharter": "部门章程",
+        "jobDescription": "职位描述",
+        "jobOffer": "工作邀请",
+        "employmentContract": "雇佣合同",
+        "terminationNotice": "解雇通知",
+        "orgchart": "组织架构图",
+        "other": "其他文档"
+      }
+    },
+    "orgchartApproval": {
+      "loading": "正在加载任务详情...",
+      "notFound": "未找到任务或组织架构图",
+      "taskInfo": {
+        "title": "任务信息",
+        "type": "类型",
+        "priority": "优先级",
+        "created": "创建时间",
+        "completed": "完成时间"
+      },
+      "orgchartDetails": {
+        "title": "组织架构图详情",
+        "subtitle": "审查组织结构",
+        "titleLabel": "标题",
+        "version": "版本",
+        "status": "状态",
+        "description": "描述",
+        "viewFullChart": "查看完整组织架构图"
+      },
+      "timeline": {
+        "title": "审批时间线",
+        "subtitle": "跟踪审批流程",
+        "submittedFor": "已提交审批",
+        "approved": "已批准",
+        "declined": "已拒绝",
+        "comments": "评论："
+      },
+      "actions": {
+        "title": "操作",
+        "subtitle": "审查并做出您的决定",
+        "commentsLabel": "评论（批准时可选，拒绝时必填）",
+        "commentsPlaceholder": "添加您的评论...",
+        "approveButton": "批准",
+        "declineButton": "拒绝"
+      },
+      "messages": {
+        "approved": "批准成功",
+        "approveError": "批准失败",
+        "commentsRequired": "拒绝时请提供评论",
+        "declined": "拒绝成功",
+        "declineError": "拒绝失败",
+        "acknowledged": "任务已确认",
+        "acknowledgeError": "确认失败",
+        "chartApproved": "您的组织架构图已获批准",
+        "chartDeclined": "您的组织架构图已被拒绝"
+      },
+      "acknowledgeButton": "确认",
+      "taskCompleted": {
+        "title": "任务已完成",
+        "subtitle": "此任务已于 {{date}} 完成"
+      },
+      "statusLabels": {
+        "completed": "已完成",
+        "pending": "待处理"
+      }
+    },
+    "form": {
+      "breadcrumb": "任务",
+      "newTask": "新任务",
+      "editTask": "编辑任务",
+      "createTitle": "创建任务",
+      "editTitle": "编辑任务",
+      "titleLabel": "标题",
+      "descriptionLabel": "描述",
+      "deadlineLabel": "截止日期",
+      "titlePlaceholder": "输入任务标题",
+      "descriptionPlaceholder": "输入任务描述",
+      "assignees": {
+        "label": "受让人（负责人）",
+        "help": "选择负责此任务的用户、职位或部门",
+        "addUser": "添加用户",
+        "addPosition": "添加职位",
+        "addDepartment": "添加部门"
+      },
+      "approvers": {
+        "label": "审批人（可选）",
+        "help": "选择必须批准任务完成的用户（按顺序）",
+        "addApprover": "添加审批人"
+      },
+      "attachments": {
+        "label": "附件（可选）",
+        "help": "上传文件（总共最多5MB）",
+        "total": "总计：{{size}} / 5 MB"
+      },
+      "updateButton": "更新任务",
+      "createButton": "创建任务",
+      "cancelButton": "取消",
+      "savingButton": "保存中...",
+      "noCompany": {
+        "title": "未选择公司",
+        "subtitle": "请选择一家公司以创建任务。",
+        "button": "前往仪表板"
+      },
+      "messages": {
+        "updated": "任务更新成功",
+        "created": "任务创建成功",
+        "saveError": "保存任务失败",
+        "fileTooLarge": "文件 {{name}} 超过5MB限制",
+        "totalTooLarge": "附件总大小超过5MB限制",
+        "noPermission": "您没有权限编辑此任务",
+        "systemTaskReadonly": "无法编辑系统生成的任务",
+        "loadError": "加载任务失败",
+        "selectCompany": "请先选择一家公司"
+      }
+    },
+    "detail": {
+      "title": "任务详情",
+      "notImplemented": "未实现",
+      "description": "此页面用于通用授权委托（DOA）任务详情。",
+      "orgchartNote": "对于组织架构图审批任务，请使用 /task/orgchart/:taskId 上的专用页面",
+      "required": "需要实现：",
+      "requirements": [
+        "创建 @/lib/api-client 模块",
+        "创建带数据库类型的 @/api/db/schema",
+        "实现 /api/tasks API 端点",
+        "实现 DOA 工作流系统"
+      ],
+      "backButton": "返回任务"
+    },
+    "list": {
+      "title": "我的任务",
+      "subtitle": "{{pending}} 个待处理，{{completed}} 个已完成",
+      "loading": "正在加载任务...",
+      "createTask": "创建任务",
+      "hideCompleted": "隐藏已完成",
+      "showCompleted": "显示已完成",
+      "searchPlaceholder": "搜索任务...",
+      "noTasks": "全部完成！您没有待处理的任务。",
+      "columns": {
+        "assignees": "受让人",
+        "approvers": "审批人",
+        "deadline": "截止日期",
+        "status": "状态",
+        "created": "创建时间"
+      },
+      "approversCount": "{{count}} 个审批人",
+      "approvalStatus": {
+        "approved": "✓ 已批准",
+        "rejected": "✗ 已拒绝"
+      },
+      "statusLabels": {
+        "completed": "已完成",
+        "pending": "待处理"
+      },
+      "actions": {
+        "edit": "编辑",
+        "markIncomplete": "标记为未完成",
+        "markComplete": "标记为已完成",
+        "delete": "删除",
+        "viewDetails": "查看详情"
+      },
+      "deleteDialog": {
+        "title": "删除任务",
+        "description": "确定要删除 '{{title}}' 吗？此操作无法撤消。",
+        "cancel": "取消",
+        "delete": "删除"
+      },
+      "messages": {
+        "deleted": "任务删除成功",
+        "deleteError": "删除任务失败",
+        "markedIncomplete": "任务已标记为未完成",
+        "markedComplete": "任务已完成",
+        "updateError": "更新任务失败",
+        "loadError": "加载任务失败"
+      },
+      "untitled": "无标题任务"
+    }
+  },
+  "auth": {
+    "user": {
+      "invite": {
+        "backButton": "返回用户",
+        "title": "邀请用户",
+        "subtitle": "向新用户发送邀请邮件",
+        "userDetails": {
+          "title": "用户详情",
+          "subtitle": "输入您要邀请的用户的电子邮件地址",
+          "emailLabel": "电子邮件地址",
+          "emailHelp": "用户将收到一封包含6位数验证码的邀请邮件"
+        },
+        "companyAccess": {
+          "title": "公司访问权限（可选）",
+          "subtitle": "选择此用户应有权访问的公司",
+          "noCompanies": "没有可用的公司",
+          "createCompany": "创建公司",
+          "selected": "已选择 {{count}} 个（共 {{total}} 个）公司"
+        },
+        "sendButton": "发送邀请",
+        "sendingButton": "正在发送邀请...",
+        "cancelButton": "取消",
+        "whatNext": {
+          "title": "接下来会发生什么？",
+          "steps": [
+            "用户将收到一封包含6位数验证码和邀请链接的电子邮件",
+            "新用户在接受邀请时需要创建密码",
+            "现有用户只需使用6位数验证码确认",
+            "邀请码在24小时后过期",
+            "他们将有权访问您选择的公司"
+          ]
+        },
+        "messages": {
+          "success": "{{message}}",
+          "error": "邀请用户失败"
+        },
+        "companyTypes": {
+          "workspace": "工作空间",
+          "supplier": "供应商",
+          "customer": "客户",
+          "company": "公司",
+          "serviceProvider": "服务提供商",
+          "productVendor": "产品供应商",
+          "partner": "合作伙伴",
+          "contractor": "承包商",
+          "freelancer": "自由职业者",
+          "consultant": "顾问",
+          "other": "其他"
+        }
+      },
+      "list": {
+        "noCompany": {
+          "title": "未选择公司",
+          "subtitle": "请选择一家公司以管理用户"
+        },
+        "loading": "正在加载用户...",
+        "title": "用户管理",
+        "subtitle": "管理 {{company}} 的用户",
+        "stats": {
+          "totalUsers": "总用户数",
+          "verified": "已验证",
+          "unverified": "未验证",
+          "recent": "最近（30天）"
+        },
+        "columns": {
+          "name": "名称",
+          "email": "电子邮件",
+          "status": "状态",
+          "twoFA": "双因素认证",
+          "created": "创建时间"
+        },
+        "statusLabels": {
+          "verified": "已验证",
+          "unverified": "未验证"
+        },
+        "twoFALabels": {
+          "enabled": "已启用",
+          "disabled": "已禁用"
+        },
+        "inviteButton": "邀请用户",
+        "searchPlaceholder": "按姓名、电子邮件搜索用户...",
+        "noUsers": "未找到用户",
+        "actions": {
+          "viewDetails": "查看详情",
+          "manageCompanies": "管理公司",
+          "resendInvitation": "重新发送邀请",
+          "blockUser": "阻止用户",
+          "unblockUser": "解除阻止用户",
+          "deleteUser": "删除用户"
+        },
+        "deleteConfirm": "确定要删除用户 {{email}} 吗？",
+        "actionConfirm": "确定要{{action}}用户 {{email}} 吗？",
+        "messages": {
+          "deleted": "用户删除成功",
+          "deleteError": "删除用户失败",
+          "actionSuccess": "用户{{action}}成功",
+          "actionError": "{{action}}用户失败",
+          "resendingInvite": "正在重新发送邀请给 {{email}}...",
+          "exported": "已导出 {{count}} 个用户",
+          "bulkDeleted": "成功删除 {{count}} 个用户",
+          "bulkDeleteError": "删除用户失败"
+        }
+      }
+    },
+    "account": {
+      "title": "账户设置",
+      "tabs": {
+        "profile": "个人资料",
+        "security": "安全",
+        "contact": "联系方式",
+        "language": "语言"
+      },
+      "selectSection": "从菜单中选择一个部分",
+      "language": {
+        "title": "语言设置",
+        "description": "选择您的首选界面语言",
+        "preferredLanguage": "首选语言",
+        "subtitle": "选择您想在整个应用程序中使用的语言",
+        "selectLanguage": "选择语言",
+        "currentLanguage": "当前语言",
+        "saved": "语言偏好设置保存成功！",
+        "saveError": "保存语言偏好设置失败"
+      },
+      "profile": {
+        "title": "个人资料",
+        "subtitle": "管理您的个人资料信息",
+        "uploadAvatar": "上传头像",
+        "uploading": "上传中...",
+        "avatarHelp": "JPG、PNG 或 GIF（最大5MB）",
+        "emailLabel": "电子邮件",
+        "emailHelp": "电子邮件无法更改",
+        "fullNameLabel": "全名",
+        "dateOfBirthLabel": "出生日期",
+        "dateOfBirthPlaceholder": "选择日期",
+        "genderLabel": "性别",
+        "genderPlaceholder": "选择性别",
+        "genderOptions": {
+          "male": "男",
+          "female": "女",
+          "other": "其他",
+          "preferNotToSay": "不愿透露"
+        },
+        "saveButton": "保存更改",
+        "savingButton": "保存中...",
+        "messages": {
+          "invalidFile": "请上传图片文件",
+          "fileTooLarge": "文件大小必须小于5MB",
+          "avatarUploaded": "头像上传成功！",
+          "avatarError": "上传头像失败",
+          "userNotFound": "未找到用户",
+          "updated": "个人资料更新成功！",
+          "updateError": "更新个人资料失败"
+        }
+      },
+      "security": {
+        "loading": "加载中...",
+        "changePassword": {
+          "title": "更改密码",
+          "subtitle": "更新您的账户密码",
+          "currentPasswordLabel": "当前密码",
+          "currentPasswordRequired": "当前密码为必填项",
+          "newPasswordLabel": "新密码",
+          "newPasswordMinLength": "密码长度至少为8个字符",
+          "confirmPasswordLabel": "确认新密码",
+          "confirmPasswordRequired": "请确认您的密码",
+          "passwordsDontMatch": "密码不匹配",
+          "changeButton": "更改密码",
+          "changingButton": "更改中...",
+          "success": "密码更改成功！",
+          "error": "更改密码失败"
+        },
+        "twoFA": {
+          "title": "双因素认证",
+          "subtitle": "为您的账户添加额外的安全层",
+          "enabled": "双因素认证已启用",
+          "disabled": "双因素认证已禁用",
+          "required": "您的组织要求双因素认证。",
+          "deadline": "截止日期：{{date}}",
+          "cannotDisable": "您的组织要求双因素认证，无法禁用。",
+          "setupInstructions": "使用 Google Authenticator 或任何兼容的 TOTP 应用扫描二维码并启用双因素认证。",
+          "enableButton": "启用双因素认证",
+          "scanQR": "使用您的身份验证器应用扫描此二维码：",
+          "manualEntry": "或手动输入此密钥：",
+          "continueButton": "继续验证",
+          "enterCode": "输入您的身份验证器应用中的6位数代码：",
+          "verifyButton": "验证并启用",
+          "cancelButton": "取消",
+          "disableTitle": "禁用双因素认证",
+          "disableInstructions": "输入您的身份验证器应用中的代码以禁用双因素认证：",
+          "disableButton": "禁用双因素认证"
+        },
+        "messages": {
+          "qrGenerated": "二维码生成成功！",
+          "setupError": "设置双因素认证失败",
+          "userNotFound": "未找到用户",
+          "invalidCode": "请输入6位数代码",
+          "enabled": "双因素认证启用成功！",
+          "invalidCodeError": "代码无效。请重试。",
+          "disabled": "双因素认证已禁用",
+          "disableError": "禁用双因素认证失败",
+          "loadError": "加载双因素认证状态失败"
+        }
+      },
+      "contact": {
+        "title": "联系信息",
+        "subtitle": "管理您的联系详情",
+        "phoneLabel": "电话",
+        "addressLabel": "地址",
+        "addressPlaceholder": "主街123号",
+        "cityLabel": "城市",
+        "cityPlaceholder": "纽约",
+        "stateLabel": "州",
+        "statePlaceholder": "NY",
+        "zipCodeLabel": "邮政编码",
+        "zipCodePlaceholder": "10001",
+        "countryLabel": "国家",
+        "countryPlaceholder": "选择国家...",
+        "countrySearch": "搜索国家...",
+        "noCountry": "未找到国家。",
+        "saveButton": "保存更改",
+        "savingButton": "保存中...",
+        "messages": {
+          "userNotFound": "未找到用户",
+          "updated": "联系信息更新成功！",
+          "updateError": "更新联系信息失败"
+        }
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "仪表板",
+    "tasks": "任务",
+    "personnelManagement": "人员管理",
+    "addressBook": "通讯录",
+    "doaMatrix": "DOA矩阵",
+    "documents": "文档",
+    "users": "用户",
+    "auditLogs": "审计日志",
+    "settings": "设置"
   },
   "footer": {
     "copyright": "© {{year}} YSollo. 保留所有权利。",

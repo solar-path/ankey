@@ -11,6 +11,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 
 import { NavMain } from "@/lib/ui/nav-main";
 import { NavUser } from "@/lib/ui/nav-user";
@@ -40,6 +41,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
+  const { t } = useTranslation();
   const { state } = useSidebar();
   const { user: authUser } = useAuth();
   const { taskCount } = useTask();
@@ -120,7 +122,7 @@ export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
   const navMain = companies.length === 0
     ? [
         {
-          title: "Dashboard",
+          title: t('sidebar.dashboard'),
           url: "/dashboard",
           icon: LayoutDashboard,
           isActive: true,
@@ -128,49 +130,49 @@ export function AppSidebar({ user, organization, ...props }: AppSidebarProps) {
       ]
     : [
         {
-          title: "Dashboard",
+          title: t('sidebar.dashboard'),
           url: "/dashboard",
           icon: LayoutDashboard,
           isActive: true,
         },
         {
-          title: "Tasks",
+          title: t('sidebar.tasks'),
           url: "/task",
           icon: ListTodo,
           badge: taskCount,
         },
         {
-          title: "Personnel management",
+          title: t('sidebar.personnelManagement'),
           url: `/orgchart`,
           icon: Network,
         },
         {
-          title: "Address Book",
+          title: t('sidebar.addressBook'),
           url: "/address-book",
           icon: BookUser,
         },
         {
-          title: "DOA Matrix",
+          title: t('sidebar.doaMatrix'),
           url: `/doa`,
           icon: Shield,
         },
         {
-          title: "Documents",
+          title: t('sidebar.documents'),
           url: "/documents",
           icon: FileText,
         },
         {
-          title: "Users",
+          title: t('sidebar.users'),
           url: "/users",
           icon: Users,
         },
         {
-          title: "Audit Logs",
+          title: t('sidebar.auditLogs'),
           url: "/audit",
           icon: ScrollText,
         },
         {
-          title: "Settings",
+          title: t('sidebar.settings'),
           url: "/company/settings",
           icon: Settings,
         },

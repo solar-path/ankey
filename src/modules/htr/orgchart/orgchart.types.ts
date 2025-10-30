@@ -16,6 +16,12 @@ export type OrgChartStatus = "draft" | "pending_approval" | "approved" | "revoke
 export type SalaryFrequency = "monthly" | "weekly" | "daily" | "hourly" | "per_job" | "annual";
 
 // ============================================================================
+// Appointment End Reason
+// ============================================================================
+
+export type AppointmentEndReason = "resigned" | "terminated" | "transferred" | "promoted" | "reorganization";
+
+// ============================================================================
 // Base Document Interface (for CouchDB)
 // ============================================================================
 
@@ -155,6 +161,42 @@ export interface Appointment extends BaseOrgDocument {
   // Hierarchy
   level: number;
   sortOrder: number;
+}
+
+// ============================================================================
+// Appointment History (Historical record of position appointments)
+// ============================================================================
+
+export interface AppointmentHistory {
+  id: string;
+  companyId: string;
+  orgChartId: string;
+  positionId: string;
+
+  // Appointment details
+  userId?: string;
+  fullname: string;
+  email: string;
+
+  // Reporting relationship
+  reportsToPositionId?: string;
+
+  // Job offer details
+  jobOfferData?: {
+    salary?: number;
+    startDate?: number;
+    benefits?: string[];
+    conditions?: string[];
+  };
+
+  // Lifecycle
+  appointedAt: number;
+  endedAt?: number;
+  endReason?: AppointmentEndReason;
+
+  // Metadata
+  createdAt: number;
+  updatedAt: number;
 }
 
 // ============================================================================

@@ -36,7 +36,9 @@
 6. **reference** - Справочные данные
    - [reference.definition.sql](./reference.definition.sql) - Countries, Industries tables
    - [reference.functions.sql](./reference.functions.sql) - PostgreSQL функции (API)
-   - Популяция: `bun run scripts/seed-reference-data.ts` (244 страны, 170 отраслей)
+   - [reference.seed.sql](./reference.seed.sql) - SQL скрипт с данными (244 страны, 170 отраслей)
+   - Популяция: `bun run db:seed:reference` - быстрая загрузка через SQL
+   - 📚 [Документация по reference data](./README-REFERENCE-DATA.md)
 
 **Примеры использования:**
 ```sql

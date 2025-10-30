@@ -1,76 +1,12 @@
-## FIXED: Companies Not Loading After Login (2025-10-30)
-
-### Problem
-User itgroup.luck@gmail.com logged in successfully but company list was not loaded.
-Browser console showed: "[CompanyProvider] No session token, skipping company load"
-
-### Root Cause
-The CompanyProvider only loaded companies once on mount. It didn't react to authentication state changes.
-When a user logged in, the sessionToken was set, but CompanyProvider's initial useEffect had already run.
-
-### Solution
-Modified /Users/work/apps/ankey/src/lib/company-context.tsx:
-1. Added import: useAuthStore from auth.store
-2. Added isAuthenticated state from useAuthStore
-3. Updated useEffect to watch isAuthenticated state
-4. Now companies automatically reload when user logs in
-5. Companies automatically clear when user logs out
-
-### Changes Made
-- File: src/lib/company-context.tsx
-  - Line 4: Added useAuthStore import
-  - Line 28: Added isAuthenticated selector
-  - Line 160-170: Updated useEffect to depend on isAuthenticated
-
-### Result
-✓ TypeScript compilation successful (no errors)
-✓ Companies will now load automatically after successful login
-✓ Dashboard will show company list immediately after authentication
-
----
-
-## FEATURE: Added Position and Department to Employee Address Book (2025-10-30)
-
-### Enhancement
-Added position (job title) and department information to the employee address book page.
-Now shows the position each user was appointed to in the organizational chart.
-
-### Changes Made
-
-1. **Database Function** - src/api/db/company.functions.sql (Lines 289-326)
-   - Updated `company.get_company_members()` function
-   - Added LEFT JOIN with `orgcharts` table
-   - Returns position title and parent department name
-   - Joins on: appointee_user_id, company_id, type='position', is_vacant=FALSE
-
-2. **TypeScript Interface** - src/modules/company/company-members-service.ts (Lines 10-19)
-   - Added `position?: string` to CompanyMember interface
-   - Added `department?: string` to CompanyMember interface
-
-3. **UI Component** - src/modules/company/employee-address-book/addressBook.page.tsx
-   - Updated employee data mapping to use position from service (Lines 57-58)
-   - Updated employee data mapping to use department from service (Lines 57-58)
-   - Removed TODO comments
-   - Removed position from under employee name (Lines 107-109)
-   - Added Position as separate column after Department (Lines 153-165)
-
-### Table Column Order
-1. Employee (with avatar and name)
-2. Email
-3. Phone
-4. Department
-5. Position ← NEW COLUMN
-6. Address
-7. Role
-
-### Database Changes Applied
-✓ PostgreSQL function `company.get_company_members` updated successfully
-✓ Database now returns position and department in member queries
-
-### Result
-✓ TypeScript compilation successful (no errors)
-✓ Employee address book now displays user positions from orgchart
-✓ Employee address book now displays departments
-✓ Position shown in dedicated sortable column after Department
-✓ Department shown in dedicated sortable column
-✓ Clean table layout with proper data organization
+src/api/db/deploy-to-supabase.ts(69,35): error TS18048: 'connectionString' is possibly 'undefined'.
+src/api/db/setup-supabase-permissions.ts(36,35): error TS18048: 'connectionString' is possibly 'undefined'.
+src/lib/auth-context.tsx(56,21): error TS2339: Property 'preferredLanguage' does not exist on type 'Omit<User, "password" | "verificationCode" | "resetToken">'.
+src/lib/auth-context.tsx(56,63): error TS2339: Property 'preferredLanguage' does not exist on type '{ avatar?: string | undefined; phone?: string | undefined; address?: string | undefined; city?: string | undefined; state?: string | undefined; zipCode?: string | undefined; country?: string | undefined; }'.
+src/lib/auth-context.tsx(57,39): error TS2339: Property 'preferredLanguage' does not exist on type 'Omit<User, "password" | "verificationCode" | "resetToken">'.
+src/lib/auth-context.tsx(57,80): error TS2339: Property 'preferredLanguage' does not exist on type '{ avatar?: string | undefined; phone?: string | undefined; address?: string | undefined; city?: string | undefined; state?: string | undefined; zipCode?: string | undefined; country?: string | undefined; }'.
+src/modules/company/companyDashboard.page.tsx(31,11): error TS18048: 'approvedOrgChart._id' is possibly 'undefined'.
+src/modules/htr/orgchart/components/PositionCard.tsx(179,68): error TS18048: 'p._id' is possibly 'undefined'.
+src/modules/htr/orgchart/components/PositionCard.tsx(255,43): error TS18048: 'pos._id' is possibly 'undefined'.
+src/modules/htr/orgchart/orgchart-service.ts(12,3): error TS6196: 'AppointmentHistory' is declared but never used.
+src/modules/htr/orgchart/orgchartView.page.tsx(309,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

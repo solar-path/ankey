@@ -46,6 +46,7 @@ const FUNCTION_PARAMS: Record<string, string[]> = {
     "zip_code",
     "country",
   ],
+  "auth.update_language": ["user_id", "preferred_language"],
   "auth.change_password": ["user_id", "current_password", "new_password"],
   "auth.forgot_password": ["email"],
   "auth.invite_user": ["email", "company_ids"],

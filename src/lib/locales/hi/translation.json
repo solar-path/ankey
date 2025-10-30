@@ -119,6 +119,165 @@
       "cta": "सेल्स से संपर्क करें"
     }
   },
+  "company": {
+    "createCompany": "कंपनी बनाएं",
+    "getStarted": "शुरू करें",
+    "currentCompany": "वर्तमान कंपनी",
+    "addCompany": "कंपनी जोड़ें",
+    "searchCompanies": "कंपनियाँ खोजें...",
+    "found": "{{count}} मिली",
+    "companiesCount": "कंपनियाँ ({{count}})",
+    "moreCompanies": "+{{count}} और कंपनियाँ (खोज का उपयोग करें)",
+    "noCompaniesFound": "कोई कंपनियाँ नहीं मिलीं",
+    "dashboard": {
+      "title": "कंपनी डैशबोर्ड",
+      "loading": "डैशबोर्ड लोड हो रहा है...",
+      "overview": "{{company}} का अवलोकन",
+      "yourCompany": "आपकी कंपनी",
+      "payrollForecast": "पेरोल पूर्वानुमान",
+      "payrollDescription": "स्वीकृत संगठनात्मक संरचना के आधार पर 18 महीने का अनुमान",
+      "noOrgChart": "कोई स्वीकृत संगठनात्मक चार्ट नहीं मिला।",
+      "createOrgChart": "पेरोल पूर्वानुमान देखने के लिए एक संगठनात्मक चार्ट बनाएं और स्वीकृत करें।",
+      "loadError": "पेरोल पूर्वानुमान लोड करने में विफल"
+    }
+  },
+  "auth": {
+    "account": {
+      "title": "खाता सेटिंग्स",
+      "tabs": {
+        "profile": "प्रोफ़ाइल",
+        "security": "सुरक्षा",
+        "contact": "संपर्क",
+        "language": "भाषा"
+      },
+      "selectSection": "मेनू से एक अनुभाग चुनें",
+      "language": {
+        "title": "भाषा सेटिंग्स",
+        "description": "इंटरफ़ेस के लिए अपनी पसंदीदा भाषा चुनें",
+        "preferredLanguage": "पसंदीदा भाषा",
+        "subtitle": "वह भाषा चुनें जिसे आप पूरे एप्लिकेशन में उपयोग करना चाहते हैं",
+        "selectLanguage": "भाषा चुनें",
+        "currentLanguage": "वर्तमान भाषा",
+        "saved": "भाषा प्राथमिकता सफलतापूर्वक सहेजी गई!",
+        "saveError": "भाषा प्राथमिकता सहेजने में विफल"
+      },
+      "profile": {
+        "title": "प्रोफ़ाइल",
+        "subtitle": "अपनी प्रोफ़ाइल जानकारी प्रबंधित करें",
+        "uploadAvatar": "अवतार अपलोड करें",
+        "uploading": "अपलोड हो रहा है...",
+        "avatarHelp": "JPG, PNG या GIF (अधिकतम 5MB)",
+        "emailLabel": "ईमेल",
+        "emailHelp": "ईमेल बदला नहीं जा सकता",
+        "fullNameLabel": "पूरा नाम",
+        "dateOfBirthLabel": "जन्म तिथि",
+        "dateOfBirthPlaceholder": "तिथि चुनें",
+        "genderLabel": "लिंग",
+        "genderPlaceholder": "लिंग चुनें",
+        "genderOptions": {
+          "male": "पुरुष",
+          "female": "महिला",
+          "other": "अन्य",
+          "preferNotToSay": "कहना पसंद नहीं"
+        },
+        "saveButton": "परिवर्तन सहेजें",
+        "savingButton": "सहेजा जा रहा है...",
+        "messages": {
+          "invalidFile": "कृपया एक छवि फ़ाइल अपलोड करें",
+          "fileTooLarge": "फ़ाइल का आकार 5MB से कम होना चाहिए",
+          "avatarUploaded": "अवतार सफलतापूर्वक अपलोड किया गया!",
+          "avatarError": "अवतार अपलोड करने में विफल",
+          "userNotFound": "उपयोगकर्ता नहीं मिला",
+          "updated": "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!",
+          "updateError": "प्रोफ़ाइल अपडेट करने में विफल"
+        }
+      },
+      "security": {
+        "loading": "लोड हो रहा है...",
+        "changePassword": {
+          "title": "पासवर्ड बदलें",
+          "subtitle": "अपने खाते का पासवर्ड अपडेट करें",
+          "currentPasswordLabel": "वर्तमान पासवर्ड",
+          "currentPasswordRequired": "वर्तमान पासवर्ड आवश्यक है",
+          "newPasswordLabel": "नया पासवर्ड",
+          "newPasswordMinLength": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए",
+          "confirmPasswordLabel": "नए पासवर्ड की पुष्टि करें",
+          "confirmPasswordRequired": "कृपया अपने पासवर्ड की पुष्टि करें",
+          "passwordsDontMatch": "पासवर्ड मेल नहीं खाते",
+          "changeButton": "पासवर्ड बदलें",
+          "changingButton": "बदला जा रहा है...",
+          "success": "पासवर्ड सफलतापूर्वक बदल दिया गया!",
+          "error": "पासवर्ड बदलने में विफल"
+        },
+        "twoFA": {
+          "title": "दो-कारक प्रमाणीकरण",
+          "subtitle": "अपने खाते में सुरक्षा की एक अतिरिक्त परत जोड़ें",
+          "enabled": "2FA सक्षम है",
+          "disabled": "2FA अक्षम है",
+          "required": "आपके संगठन को दो-कारक प्रमाणीकरण की आवश्यकता है।",
+          "deadline": "समय सीमा: {{date}}",
+          "cannotDisable": "2FA आपके संगठन द्वारा आवश्यक है और इसे अक्षम नहीं किया जा सकता।",
+          "setupInstructions": "QR कोड स्कैन करने और दो-कारक प्रमाणीकरण सक्षम करने के लिए Google Authenticator या किसी भी संगत TOTP ऐप का उपयोग करें।",
+          "enableButton": "2FA सक्षम करें",
+          "scanQR": "अपने प्रमाणीकरण ऐप से इस QR कोड को स्कैन करें:",
+          "manualEntry": "या इस गुप्त कुंजी को मैन्युअल रूप से दर्ज करें:",
+          "continueButton": "सत्यापन जारी रखें",
+          "enterCode": "अपने प्रमाणीकरण ऐप से 6 अंकों का कोड दर्ज करें:",
+          "verifyButton": "सत्यापित करें और सक्षम करें",
+          "cancelButton": "रद्द करें",
+          "disableTitle": "दो-कारक प्रमाणीकरण अक्षम करें",
+          "disableInstructions": "2FA अक्षम करने के लिए अपने प्रमाणीकरण ऐप से एक कोड दर्ज करें:",
+          "disableButton": "2FA अक्षम करें"
+        },
+        "messages": {
+          "qrGenerated": "QR कोड सफलतापूर्वक उत्पन्न हुआ!",
+          "setupError": "2FA सेटअप करने में विफल",
+          "userNotFound": "उपयोगकर्ता नहीं मिला",
+          "invalidCode": "कृपया 6 अंकों का कोड दर्ज करें",
+          "enabled": "2FA सफलतापूर्वक सक्षम किया गया!",
+          "invalidCodeError": "अमान्य कोड। कृपया पुनः प्रयास करें।",
+          "disabled": "2FA सफलतापूर्वक अक्षम किया गया",
+          "disableError": "2FA अक्षम करने में विफल",
+          "loadError": "2FA स्थिति लोड करने में विफल"
+        }
+      },
+      "contact": {
+        "title": "संपर्क जानकारी",
+        "subtitle": "अपने संपर्क विवरण प्रबंधित करें",
+        "phoneLabel": "फ़ोन",
+        "addressLabel": "पता",
+        "addressPlaceholder": "123 मुख्य मार्ग",
+        "cityLabel": "शहर",
+        "cityPlaceholder": "नई दिल्ली",
+        "stateLabel": "राज्य",
+        "statePlaceholder": "DL",
+        "zipCodeLabel": "पिन कोड",
+        "zipCodePlaceholder": "110001",
+        "countryLabel": "देश",
+        "countryPlaceholder": "देश चुनें...",
+        "countrySearch": "देश खोजें...",
+        "noCountry": "कोई देश नहीं मिला।",
+        "saveButton": "परिवर्तन सहेजें",
+        "savingButton": "सहेजा जा रहा है...",
+        "messages": {
+          "userNotFound": "उपयोगकर्ता नहीं मिला",
+          "updated": "संपर्क जानकारी सफलतापूर्वक अपडेट की गई!",
+          "updateError": "संपर्क जानकारी अपडेट करने में विफल"
+        }
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "डैशबोर्ड",
+    "tasks": "कार्य",
+    "personnelManagement": "कार्मिक प्रबंधन",
+    "addressBook": "पता पुस्तिका",
+    "doaMatrix": "DOA मैट्रिक्स",
+    "documents": "दस्तावेज़",
+    "users": "उपयोगकर्ता",
+    "auditLogs": "ऑडिट लॉग",
+    "settings": "सेटिंग्स"
+  },
   "footer": {
     "copyright": "© {{year}} YSollo. सर्वाधिकार सुरक्षित।",
     "terms": "सेवा की शर्तें",

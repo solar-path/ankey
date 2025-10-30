@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/lib/ui/button";
 import {
   Card,
@@ -16,6 +17,7 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthService } from "@/modules/auth/auth-service";
 
 export default function SecurityPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [twoFactorStatus, setTwoFactorStatus] = useState<{
     enabled: boolean;
@@ -44,7 +46,7 @@ export default function SecurityPage() {
       setTwoFactorStatus(status);
     } catch (error) {
       console.error("Failed to load 2FA status:", error);
-      toast.error("Failed to load 2FA status");
+      toast.error(t('auth.account.security.messages.loadError'));
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function SecurityPage() {
   const handleSetup2FA = async () => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.security.messages.userNotFound'));
         return;
       }
 
@@ -61,27 +63,27 @@ export default function SecurityPage() {
       setSecret(newSecret);
       setQrCode(newQrCode);
       setSetupStep("qr");
-      toast.success("QR code generated successfully!");
+      toast.success(t('auth.account.security.messages.qrGenerated'));
     } catch (error: any) {
       console.error("2FA setup error:", error);
-      toast.error(error.message || "Failed to setup 2FA");
+      toast.error(error.message || t('auth.account.security.messages.setupError'));
     }
   };
 
   const handleVerify2FA = async () => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.security.messages.userNotFound'));
         return;
       }
 
       if (otpToken.length !== 6) {
-        toast.error("Please enter a 6-digit code");
+        toast.error(t('auth.account.security.messages.invalidCode'));
         return;
       }
 
       await AuthService.enable2FA(user._id, otpToken);
-      toast.success("2FA enabled successfully!");
+      toast.success(t('auth.account.security.messages.enabled'));
       setSetupStep("idle");
       setOtpToken("");
       setQrCode("");
@@ -89,34 +91,34 @@ export default function SecurityPage() {
       await loadTwoFactorStatus();
     } catch (error: any) {
       console.error("2FA verification error:", error);
-      toast.error(error.message || "Invalid code. Please try again.");
+      toast.error(error.message || t('auth.account.security.messages.invalidCodeError'));
     }
   };
 
   const handleDisable2FA = async () => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.security.messages.userNotFound'));
         return;
       }
 
       if (disableToken.length !== 6) {
-        toast.error("Please enter a 6-digit code");
+        toast.error(t('auth.account.security.messages.invalidCode'));
         return;
       }
 
       await AuthService.disable2FA(user._id, disableToken);
-      toast.success("2FA disabled successfully");
+      toast.success(t('auth.account.security.messages.disabled'));
       setDisableToken("");
       await loadTwoFactorStatus();
     } catch (error: any) {
       console.error("2FA disable error:", error);
-      toast.error(error.message || "Failed to disable 2FA");
+      toast.error(error.message || t('auth.account.security.messages.disableError'));
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>{t('auth.account.security.loading')}</div>;
   }
 
   return (
@@ -126,9 +128,9 @@ export default function SecurityPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            <CardTitle>Change Password</CardTitle>
+            <CardTitle>{t('auth.account.security.changePassword.title')}</CardTitle>
           </div>
-          <CardDescription>Update your account password</CardDescription>
+          <CardDescription>{t('auth.account.security.changePassword.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <ChangePasswordForm />
@@ -138,9 +140,9 @@ export default function SecurityPage() {
       {/* 2FA Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
+          <CardTitle>{t('auth.account.security.twoFA.title')}</CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account
+            {t('auth.account.security.twoFA.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -150,14 +152,14 @@ export default function SecurityPage() {
               <>
                 <ShieldCheck className="h-5 w-5 text-green-500" />
                 <span className="text-sm font-medium text-green-500">
-                  2FA is enabled
+                  {t('auth.account.security.twoFA.enabled')}
                 </span>
               </>
             ) : (
               <>
                 <Shield className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  2FA is disabled
+                  {t('auth.account.security.twoFA.disabled')}
                 </span>
               </>
             )}
@@ -168,12 +170,13 @@ export default function SecurityPage() {
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Your organization requires two-factor authentication.
+                {t('auth.account.security.twoFA.required')}
                 {twoFactorStatus?.deadline && (
                   <>
                     {" "}
-                    Deadline:{" "}
-                    {new Date(twoFactorStatus.deadline).toLocaleDateString()}
+                    {t('auth.account.security.twoFA.deadline', {
+                      date: new Date(twoFactorStatus.deadline).toLocaleDateString()
+                    })}
                   </>
                 )}
               </AlertDescription>
@@ -183,7 +186,7 @@ export default function SecurityPage() {
           {twoFactorStatus?.required && twoFactorStatus?.enabled && (
             <Alert>
               <AlertDescription>
-                2FA is required by your organization and cannot be disabled.
+                {t('auth.account.security.twoFA.cannotDisable')}
               </AlertDescription>
             </Alert>
           )}
@@ -192,10 +195,9 @@ export default function SecurityPage() {
           {!twoFactorStatus?.enabled && setupStep === "idle" && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Use Google Authenticator or any compatible TOTP app to scan the
-                QR code and enable two-factor authentication.
+                {t('auth.account.security.twoFA.setupInstructions')}
               </p>
-              <Button onClick={handleSetup2FA}>Enable 2FA</Button>
+              <Button onClick={handleSetup2FA}>{t('auth.account.security.twoFA.enableButton')}</Button>
             </div>
           )}
 
@@ -203,7 +205,7 @@ export default function SecurityPage() {
             <div className="space-y-4">
               <div className="flex flex-col items-center gap-4">
                 <p className="text-sm font-medium">
-                  Scan this QR code with your authenticator app:
+                  {t('auth.account.security.twoFA.scanQR')}
                 </p>
                 {qrCode && (
                   <img
@@ -213,12 +215,12 @@ export default function SecurityPage() {
                   />
                 )}
                 <div className="text-xs text-muted-foreground text-center">
-                  <p>Or enter this secret key manually:</p>
+                  <p>{t('auth.account.security.twoFA.manualEntry')}</p>
                   <code className="bg-muted px-2 py-1 rounded">{secret}</code>
                 </div>
               </div>
               <Button onClick={() => setSetupStep("verify")} className="w-full">
-                Continue to Verification
+                {t('auth.account.security.twoFA.continueButton')}
               </Button>
             </div>
           )}
@@ -227,7 +229,7 @@ export default function SecurityPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm font-medium">
-                  Enter the 6-digit code from your authenticator app:
+                  {t('auth.account.security.twoFA.enterCode')}
                 </p>
                 <InputOTP maxLength={6} value={otpToken} onChange={setOtpToken}>
                   <InputOTPGroup>
@@ -245,10 +247,10 @@ export default function SecurityPage() {
                   onClick={handleVerify2FA}
                   disabled={otpToken.length !== 6}
                 >
-                  Verify and Enable
+                  {t('auth.account.security.twoFA.verifyButton')}
                 </Button>
                 <Button variant="outline" onClick={() => setSetupStep("idle")}>
-                  Cancel
+                  {t('auth.account.security.twoFA.cancelButton')}
                 </Button>
               </div>
             </div>
@@ -258,10 +260,10 @@ export default function SecurityPage() {
           {twoFactorStatus?.enabled && !twoFactorStatus?.required && (
             <div className="space-y-4 border-t pt-4">
               <p className="text-sm font-medium text-destructive">
-                Disable Two-Factor Authentication
+                {t('auth.account.security.twoFA.disableTitle')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Enter a code from your authenticator app to disable 2FA:
+                {t('auth.account.security.twoFA.disableInstructions')}
               </p>
               <InputOTP
                 maxLength={6}
@@ -282,7 +284,7 @@ export default function SecurityPage() {
                 onClick={handleDisable2FA}
                 disabled={disableToken.length !== 6}
               >
-                Disable 2FA
+                {t('auth.account.security.twoFA.disableButton')}
               </Button>
             </div>
           )}

@@ -6,6 +6,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import * as v from "valibot";
 import { format } from "date-fns";
 import { Upload } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
 import { Label } from "@/lib/ui/label";
@@ -33,6 +34,7 @@ import { AuthService } from "@/modules/auth/auth-service";
 type ProfileFormData = v.InferOutput<typeof updateProfileSchema>;
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const [date, setDate] = useState<Date | undefined>();
   const [avatarUrl, setAvatarUrl] = useState<string>("");
@@ -94,13 +96,13 @@ export default function ProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t('auth.account.profile.messages.invalidFile'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+      toast.error(t('auth.account.profile.messages.fileTooLarge'));
       return;
     }
 
@@ -119,14 +121,14 @@ export default function ProfilePage() {
         const data = await response.json();
         setAvatarUrl(data.avatarUrl);
         await refreshUser(); // Refresh user data to update avatar in sidebar
-        toast.success("Avatar uploaded successfully!");
+        toast.success(t('auth.account.profile.messages.avatarUploaded'));
       } else {
         const error = await response.json();
-        toast.error(error.error || "Failed to upload avatar");
+        toast.error(error.error || t('auth.account.profile.messages.avatarError'));
       }
     } catch (error) {
       console.error("Avatar upload error:", error);
-      toast.error("Failed to upload avatar");
+      toast.error(t('auth.account.profile.messages.avatarError'));
     } finally {
       setUploading(false);
     }
@@ -135,7 +137,7 @@ export default function ProfilePage() {
   const onSubmit = async (data: ProfileFormData) => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.profile.messages.userNotFound'));
         return;
       }
 
@@ -146,10 +148,10 @@ export default function ProfilePage() {
       });
 
       await refreshUser(); // Refresh user data to update profile across the app
-      toast.success("Profile updated successfully!");
+      toast.success(t('auth.account.profile.messages.updated'));
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error.message || t('auth.account.profile.messages.updateError'));
     }
   };
 
@@ -165,8 +167,8 @@ export default function ProfilePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
-        <CardDescription>Manage your profile information</CardDescription>
+        <CardTitle>{t('auth.account.profile.title')}</CardTitle>
+        <CardDescription>{t('auth.account.profile.subtitle')}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
@@ -197,24 +199,24 @@ export default function ProfilePage() {
                 disabled={uploading}
               >
                 <Upload className="mr-2 h-4 w-4" />
-                {uploading ? "Uploading..." : "Upload Avatar"}
+                {uploading ? t('auth.account.profile.uploading') : t('auth.account.profile.uploadAvatar')}
               </Button>
               <p className="text-xs text-muted-foreground">
-                JPG, PNG or GIF (max 5MB)
+                {t('auth.account.profile.avatarHelp')}
               </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.account.profile.emailLabel')}</Label>
             <Input id="email" type="email" value={user?.email || ""} disabled />
             <p className="text-sm text-muted-foreground">
-              Email cannot be changed
+              {t('auth.account.profile.emailHelp')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fullname">Full Name</Label>
+            <Label htmlFor="fullname">{t('auth.account.profile.fullNameLabel')}</Label>
             <Input id="fullname" type="text" {...register("fullname")} />
             {errors.fullname && (
               <p className="text-sm text-destructive">
@@ -224,7 +226,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dob">Date of Birth</Label>
+            <Label htmlFor="dob">{t('auth.account.profile.dateOfBirthLabel')}</Label>
             <QDatePicker
               id="dob"
               value={date}
@@ -234,12 +236,12 @@ export default function ProfilePage() {
                   setValue("dob", format(newDate, "yyyy-MM-dd"));
                 }
               }}
-              placeholder="Select date"
+              placeholder={t('auth.account.profile.dateOfBirthPlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
+            <Label htmlFor="gender">{t('auth.account.profile.genderLabel')}</Label>
             <Controller
               name="gender"
               control={control}
@@ -250,14 +252,14 @@ export default function ProfilePage() {
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue placeholder={t('auth.account.profile.genderPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="male">{t('auth.account.profile.genderOptions.male')}</SelectItem>
+                    <SelectItem value="female">{t('auth.account.profile.genderOptions.female')}</SelectItem>
+                    <SelectItem value="other">{t('auth.account.profile.genderOptions.other')}</SelectItem>
                     <SelectItem value="prefer-not-to-say">
-                      Prefer not to say
+                      {t('auth.account.profile.genderOptions.preferNotToSay')}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -266,7 +268,7 @@ export default function ProfilePage() {
           </div>
 
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting ? t('auth.account.profile.savingButton') : t('auth.account.profile.saveButton')}
           </Button>
         </CardContent>
       </form>

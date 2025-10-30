@@ -7,7 +7,44 @@
     "learn": "تعلم",
     "contact": "اتصل بنا",
     "signIn": "تسجيل الدخول",
-    "signUp": "التسجيل"
+    "signUp": "التسجيل",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "search": "بحث",
+    "loading": "جاري التحميل...",
+    "saving": "جاري الحفظ...",
+    "actions": "الإجراءات",
+    "status": "الحالة",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "description": "الوصف",
+    "title": "العنوان",
+    "created": "تم الإنشاء",
+    "updated": "تم التحديث",
+    "version": "الإصدار",
+    "apply": "تطبيق",
+    "add": "إضافة",
+    "remove": "إزالة",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "download": "تحميل",
+    "upload": "رفع",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "refresh": "تحديث",
+    "export": "تصدير"
   },
   "audit": {
     "trail": {
@@ -52,6 +89,37 @@
       "download": "تحميل",
       "soc2": "SOC 2",
       "sox": "ساربينز أوكسلي"
+    },
+    "logs": {
+      "title": "سجلات التدقيق",
+      "subtitle": "مراقبة نشاط المستخدم والجلسات وتغييرات النظام",
+      "showActiveSessions": "عرض الجلسات النشطة",
+      "hideActiveSessions": "إخفاء الجلسات النشطة",
+      "filters": "الفلاتر",
+      "filterByAction": "تصفية حسب الإجراء",
+      "filterByTable": "تصفية حسب الجدول",
+      "allActions": "جميع الإجراءات",
+      "tablePlaceholder": "الشركات، المستخدمون، إلخ.",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "clearFilters": "مسح الفلاتر",
+      "searchPlaceholder": "البحث حسب المستخدم أو الجدول أو الإجراء...",
+      "noLogsFound": "لم يتم العثور على سجلات تدقيق",
+      "exportCSV": "تصدير CSV",
+      "timestamp": "الطابع الزمني",
+      "table": "الجدول",
+      "recordId": "معرف السجل",
+      "notes": "ملاحظات",
+      "actions": {
+        "CREATE": "إنشاء",
+        "UPDATE": "تحديث",
+        "DELETE": "حذف",
+        "LOGIN": "تسجيل دخول",
+        "LOGOUT": "تسجيل خروج",
+        "LOGIN_FAILED": "فشل تسجيل الدخول",
+        "APPROVE": "موافقة",
+        "REJECT": "رفض"
+      }
     }
   },
   "home": {
@@ -118,6 +186,777 @@
       },
       "cta": "اتصل بالمبيعات"
     }
+  },
+  "company": {
+    "createCompany": "إنشاء شركة",
+    "getStarted": "البدء",
+    "currentCompany": "الشركة الحالية",
+    "addCompany": "إضافة شركة",
+    "searchCompanies": "البحث عن الشركات...",
+    "found": "تم العثور على {{count}}",
+    "companiesCount": "الشركات ({{count}})",
+    "moreCompanies": "+{{count}} شركة أخرى (استخدم البحث)",
+    "noCompaniesFound": "لم يتم العثور على شركات",
+    "dashboard": {
+      "title": "لوحة معلومات الشركة",
+      "loading": "جاري تحميل لوحة المعلومات...",
+      "overview": "نظرة عامة على {{company}}",
+      "yourCompany": "شركتك",
+      "payrollForecast": "توقعات كشوف المرتبات",
+      "payrollDescription": "توقعات لمدة 18 شهرًا بناءً على الهيكل التنظيمي المعتمد",
+      "noOrgChart": "لم يتم العثور على هيكل تنظيمي معتمد.",
+      "createOrgChart": "قم بإنشاء واعتماد هيكل تنظيمي لرؤية توقعات كشوف المرتبات.",
+      "loadError": "فشل تحميل توقعات كشوف المرتبات"
+    },
+    "members": {
+      "title": "أعضاء الفريق",
+      "subtitle": "إدارة أعضاء الفريق وأدوارهم",
+      "noCompany": "الرجاء اختيار شركة أولاً",
+      "loading": "جاري تحميل الأعضاء...",
+      "membersCount": "الأعضاء ({{count}})",
+      "peopleInfo": "الأشخاص الذين لديهم حق الوصول إلى {{company}}",
+      "noMembers": "لم يتم العثور على أعضاء",
+      "you": "أنت",
+      "joined": "انضم في {{date}}",
+      "roles": {
+        "admin": "مدير",
+        "member": "عضو"
+      },
+      "loadError": "فشل تحميل أعضاء الفريق",
+      "removeConfirm": "هل أنت متأكد من إزالة {{name}} من {{company}}؟ سيفقد الوصول إلى جميع بيانات الشركة.",
+      "roleUpdated": "تم تحديث الدور بنجاح",
+      "roleUpdateError": "فشل تحديث الدور",
+      "memberRemoved": "تمت إزالة العضو بنجاح",
+      "memberRemoveError": "فشلت إزالة العضو"
+    },
+    "settings": {
+      "title": "إعدادات الشركة",
+      "subtitle": "تكوين الإعدادات الإقليمية والمالية والأمنية لـ {{company}}",
+      "noCompany": "لم يتم تحديد شركة نشطة",
+      "noCompanySelected": "لم يتم تحديد شركة",
+      "regional": {
+        "title": "الإعدادات الإقليمية",
+        "subtitle": "تكوين الموقع والمنطقة الزمنية واللغة وتفضيلات التنسيق",
+        "applyDefaults": "تطبيق الإعدادات الافتراضية من {{country}}",
+        "country": "البلد",
+        "countryHelp": "البلد الرئيسي للعمليات (محدد من مقر الشركة)",
+        "timezone": "المنطقة الزمنية",
+        "timezoneCount": "{{count}} منطقة زمنية متاحة لـ {{country}}",
+        "language": "اللغة",
+        "dateFormat": "تنسيق التاريخ",
+        "numberFormat": "تنسيق الأرقام"
+      },
+      "financial": {
+        "title": "الإعدادات المالية",
+        "subtitle": "تكوين السنة المالية وإعدادات العملة للعمليات المالية",
+        "fiscalYear": "السنة المالية",
+        "fiscalYearHelp": "حدد فترة السنة المالية لشركتك",
+        "presets": {
+          "calendar": "السنة الميلادية",
+          "ukTax": "السنة الضريبية البريطانية",
+          "usFederal": "الفيدرالية الأمريكية",
+          "australia": "أستراليا",
+          "india": "الهند"
+        },
+        "startDate": "تاريخ البداية (MM-DD)",
+        "endDate": "تاريخ النهاية (MM-DD)",
+        "workingCurrency": "عملة العمل",
+        "workingCurrencyHelp": "العملة الأساسية للعمليات اليومية",
+        "reportingCurrency": "عملة التقارير",
+        "reportingCurrencyHelp": "العملة للتقارير والبيانات المالية",
+        "additionalCurrencies": "عملات إضافية",
+        "additionalCurrenciesHelp": "العملات الأخرى المستخدمة في العمليات (للدعم متعدد العملات)",
+        "selectCurrency": "حدد العملة للإضافة",
+        "currencyAlreadyAdded": "العملة مضافة بالفعل",
+        "fiscalYearApplied": "تم تطبيق السنة المالية {{preset}}"
+      },
+      "tax": {
+        "title": "إعدادات الضرائب",
+        "subtitle": "تكوين معدلات الضرائب الافتراضية والتسميات",
+        "defaultRate": "معدل الضريبة الافتراضي (%)",
+        "defaultRateHelp": "النسبة المئوية لمعدل ضريبة القيمة المضافة/الضريبة الافتراضية (مثلاً، 20 لـ 20%)",
+        "taxIdLabel": "تسمية معرف الضريبة",
+        "taxIdLabelHelp": "كيفية تسمية معرف الضريبة (ضريبة القيمة المضافة، معرف الضريبة، إلخ.)"
+      },
+      "security": {
+        "title": "إعدادات الأمان",
+        "subtitle": "تكوين سياسات المصادقة والأمان",
+        "require2FA": "طلب المصادقة الثنائية",
+        "require2FAHelp": "إجبار جميع أعضاء الفريق على تفعيل المصادقة الثنائية",
+        "deadline2FA": "الموعد النهائي لتطبيق المصادقة الثنائية",
+        "deadline2FAHelp": "التاريخ الذي يجب على جميع المستخدمين تفعيل المصادقة الثنائية فيه (اختياري)",
+        "passwordChangePeriod": "فترة تغيير كلمة المرور (أيام)",
+        "passwordChangePeriodHelp": "طلب تغيير كلمة المرور كل X أيام (0 للتعطيل)"
+      },
+      "saveButton": "حفظ الإعدادات",
+      "saved": "تم تحديث الإعدادات بنجاح",
+      "saveError": "فشل تحديث الإعدادات",
+      "noResidenceData": "لا توجد بيانات بلد الإقامة متاحة",
+      "defaultsApplied": "تم تطبيق الإعدادات الافتراضية من {{country}}"
+    },
+    "addressBook": {
+      "title": "دليل الموظفين",
+      "subtitle": "عرض والبحث عن معلومات الاتصال بالموظفين لـ {{company}}",
+      "noCompany": "لم يتم تحديد شركة",
+      "noCompanyPrompt": "الرجاء اختيار شركة لعرض دليل الموظفين",
+      "loading": "جاري تحميل الموظفين...",
+      "searchPlaceholder": "البحث عن موظفين...",
+      "noEmployees": "لم يتم العثور على موظفين في الدليل.",
+      "loadError": "فشل تحميل دليل الموظفين",
+      "columns": {
+        "employee": "الموظف",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "department": "القسم",
+        "position": "المنصب",
+        "address": "العنوان",
+        "role": "الدور"
+      },
+      "roles": {
+        "owner": "المالك",
+        "admin": "مدير",
+        "member": "عضو"
+      }
+    }
+  },
+  "orgchart": {
+    "view": {
+      "title": "الهيكل التنظيمي",
+      "loading": "جاري تحميل الهيكل التنظيمي...",
+      "loadError": "فشل تحميل الهيكل التنظيمي",
+      "version": "ع{{version}}",
+      "addDepartment": "إضافة قسم",
+      "save": "حفظ",
+      "exportPDF": "PDF",
+      "exportExcel": "Excel",
+      "payrollForecast": "توقعات كشوف المرتبات",
+      "payrollSubtitle": "توقعات كشوف المرتبات لمدة 18 شهرًا بناءً على الهيكل التنظيمي الحالي",
+      "submitApproval": "إرسال للموافقة",
+      "approve": "موافقة",
+      "status": {
+        "draft": "مسودة",
+        "pending_approval": "في انتظار الموافقة",
+        "approved": "معتمد",
+        "revoked": "ملغى"
+      },
+      "searchPlaceholder": "البحث في الهيكل التنظيمي...",
+      "showLabel": "عرض:",
+      "viewOptions": {
+        "departments": "الأقسام",
+        "positions": "المناصب",
+        "appointments": "التعيينات"
+      },
+      "selectPrompt": "حدد عنصرًا من الشجرة لعرض التفاصيل",
+      "actions": {
+        "createSubDept": "إنشاء قسم فرعي",
+        "createPosition": "إنشاء منصب",
+        "createAppointment": "إنشاء تعيين",
+        "duplicate": "تكرار {{type}}",
+        "delete": "حذف {{type}}"
+      },
+      "vacant": "شاغر",
+      "reportsTo": "يقدم تقاريره إلى: {{position}}",
+      "deleteConfirm": "حذف {{name}}؟ سيؤدي هذا إلى حذف جميع العناصر الفرعية.",
+      "messages": {
+        "subDeptCreated": "تم إنشاء القسم الفرعي",
+        "deptCreated": "تم إنشاء القسم",
+        "positionCreated": "تم إنشاء المنصب مع رمز تلقائي",
+        "positionCreateError": "فشل إنشاء المنصب",
+        "deptCreateError": "فشل إنشاء القسم",
+        "deleted": "تم الحذف بنجاح",
+        "deleteError": "فشل الحذف",
+        "deptDuplicated": "تم تكرار القسم",
+        "positionDuplicated": "تم تكرار المنصب",
+        "appointmentDuplicated": "تم تكرار التعيين",
+        "duplicateError": "فشل التكرار",
+        "submitted": "تم الإرسال للموافقة",
+        "submitError": "فشل الإرسال",
+        "approvalNote": "تتم إدارة سير عمل الموافقة الآن من خلال صفحة المهام. يرجى التحقق من مهامك.",
+        "saved": "تم حفظ الهيكل التنظيمي",
+        "saveError": "فشل الحفظ",
+        "pdfGenerated": "تم إنشاء PDF بنجاح",
+        "pdfError": "فشل إنشاء PDF",
+        "excelGenerated": "تم إنشاء ملف Excel بنجاح",
+        "excelError": "فشل إنشاء ملف Excel",
+        "forecastError": "فشل تحميل توقعات كشوف المرتبات",
+        "invalidDrop": "لا يمكن إسقاط {{sourceType}} على {{targetType}}",
+        "moveDeptNotSupported": "نقل الأقسام غير مدعوم بعد",
+        "movePositionNote": "نقل المناصب بين الأقسام يتطلب إعادة الإنشاء",
+        "moveAppointmentNote": "نقل التعيينات بين المناصب يتطلب إعادة الإنشاء",
+        "moveError": "فشل نقل العنصر",
+        "autoCreateNote": "يتم إنشاء التعيينات تلقائيًا مع المناصب",
+        "updated": "تم التحديث بنجاح",
+        "updateError": "فشل التحديث"
+      },
+      "newItems": {
+        "subDept": "قسم فرعي جديد",
+        "dept": "قسم جديد",
+        "position": "منصب جديد"
+      }
+    },
+    "list": {
+      "title": "الهياكل التنظيمية",
+      "subtitle": "إدارة هياكلك ومستوياتك التنظيمية",
+      "loading": "جاري تحميل الهياكل التنظيمية...",
+      "createButton": "إنشاء هيكل تنظيمي",
+      "columns": {
+        "version": "الإصدار",
+        "title": "العنوان",
+        "description": "الوصف",
+        "status": "الحالة",
+        "enforced": "مفروض",
+        "revoked": "ملغى",
+        "created": "تم الإنشاء"
+      },
+      "defaultTitle": "الهيكل التنظيمي {{year}}",
+      "defaultDescription": "هيكل تنظيمي جديد",
+      "messages": {
+        "created": "تم إنشاء الهيكل التنظيمي",
+        "createError": "فشل إنشاء الهيكل التنظيمي",
+        "duplicated": "تم تكرار الهيكل التنظيمي بنجاح",
+        "duplicateError": "فشل تكرار الهيكل التنظيمي",
+        "onlyDraftApproval": "يمكن إرسال المسودات فقط للموافقة",
+        "sentForApproval": "تم إرسال الهيكل التنظيمي للموافقة",
+        "approvalError": "فشل الإرسال للموافقة",
+        "renamed": "تمت إعادة تسمية الهيكل التنظيمي بنجاح",
+        "renameError": "فشلت إعادة التسمية"
+      },
+      "renameDialog": {
+        "title": "إعادة تسمية الهيكل التنظيمي",
+        "subtitle": "تحديث عنوان ووصف الهيكل التنظيمي الخاص بك.",
+        "titleLabel": "العنوان",
+        "descriptionLabel": "الوصف",
+        "titlePlaceholder": "أدخل العنوان...",
+        "descriptionPlaceholder": "أدخل الوصف...",
+        "cancel": "إلغاء",
+        "save": "حفظ التغييرات"
+      },
+      "actions": {
+        "view": "عرض",
+        "rename": "إعادة تسمية",
+        "duplicate": "تكرار",
+        "sendApproval": "إرسال للموافقة"
+      },
+      "noCharts": "لا توجد هياكل تنظيمية بعد. قم بإنشاء هيكلك الأول للبدء."
+    }
+  },
+  "doa": {
+    "matrix": {
+      "loading": "جاري التحميل...",
+      "redirecting": "جاري إعادة التوجيه...",
+      "createTitle": "إنشاء مصفوفة موافقة",
+      "editTitle": "تعديل مصفوفة الموافقة",
+      "subtitle": "تحديد قواعد سير العمل والموافقين",
+      "modifySubtitle": "تعديل مصفوفة الموافقة: {{name}}",
+      "newMatrix": "مصفوفة جديدة",
+      "columns": {
+        "documentType": "نوع المستند",
+        "status": "الحالة",
+        "created": "تم الإنشاء"
+      },
+      "messages": {
+        "created": "تم إنشاء المصفوفة بنجاح",
+        "updated": "تم تحديث المصفوفة بنجاح",
+        "loadError": "فشل تحميل مصفوفة الموافقة"
+      }
+    },
+    "list": {
+      "title": "مصفوفة التفويض",
+      "subtitle": "تحديد سير عمل الموافقة والقواعد للعمليات التنظيمية",
+      "loading": "جاري تحميل مصفوفات الموافقة...",
+      "loadError": "فشل تحميل مصفوفات الموافقة",
+      "searchPlaceholder": "البحث في المصفوفات...",
+      "newMatrix": "مصفوفة جديدة",
+      "columns": {
+        "name": "الاسم",
+        "documentType": "نوع المستند",
+        "status": "الحالة",
+        "approvalBlocks": "كتل الموافقة",
+        "totalApprovers": "إجمالي الموافقين",
+        "description": "الوصف"
+      },
+      "blocksCount": "{{count}} كتلة",
+      "approversCount": "{{count}}",
+      "actions": {
+        "viewEdit": "عرض/تعديل",
+        "delete": "حذف"
+      },
+      "deleteConfirm": "هل أنت متأكد من حذف مصفوفة الموافقة هذه؟",
+      "messages": {
+        "deleted": "تم حذف مصفوفة الموافقة بنجاح",
+        "deleteError": "فشل حذف مصفوفة الموافقة"
+      },
+      "noMatrices": "لم يتم العثور على مصفوفات موافقة. قم بإنشاء واحدة لتحديد سير عمل الموافقة.",
+      "note": "ملاحظة: يجب تحديد مصفوفات الموافقة قبل إرسال الهياكل التنظيمية للموافقة. بدون مصفوفة موافقة نشطة من نوع 'orgchart'، ستفشل الإرسالات.",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      }
+    }
+  },
+  "task": {
+    "approval": {
+      "title": "سير عمل الموافقة",
+      "loading": "جاري تحميل تفاصيل المهمة...",
+      "notFound": "المهمة غير موجودة",
+      "backToTasks": "العودة إلى المهام",
+      "documentType": "نوع المستند",
+      "currentLevel": "المستوى الحالي",
+      "status": "الحالة",
+      "submitted": "تم الإرسال",
+      "level": "المستوى {{number}}",
+      "na": "غير متاح",
+      "history": {
+        "title": "سجل الموافقة",
+        "levelDecision": "المستوى {{number}} - {{decision}}"
+      },
+      "documentDetails": {
+        "title": "تفاصيل المستند",
+        "titleLabel": "العنوان",
+        "version": "الإصدار",
+        "versionNumber": "ع{{version}}"
+      },
+      "yourDecision": {
+        "title": "قرارك",
+        "subtitle": "راجع المستند وقدم قرار الموافقة",
+        "commentsLabel": "التعليقات (اختيارية للموافقة، مطلوبة للرفض)",
+        "commentsPlaceholder": "أضف تعليقاتك هنا...",
+        "approveButton": "موافقة",
+        "declineButton": "رفض",
+        "acknowledgeButton": "الإقرار",
+        "acknowledgeHelp": "وضع علامة على هذا الإشعار كمقروء"
+      },
+      "messages": {
+        "approved": "تمت الموافقة على المستند بنجاح",
+        "approveError": "فشلت الموافقة على المستند",
+        "commentsRequired": "يرجى تقديم تعليقات عند الرفض",
+        "declined": "تم رفض المستند",
+        "declineError": "فشل رفض المستند",
+        "acknowledged": "تم الإقرار بالمهمة",
+        "acknowledgeError": "فشل الإقرار بالمهمة"
+      },
+      "documentTypes": {
+        "purchaseOrder": "أمر شراء",
+        "salesOrder": "أمر بيع",
+        "invoice": "فاتورة",
+        "payment": "دفع",
+        "contract": "عقد",
+        "departmentCharter": "ميثاق القسم",
+        "jobDescription": "وصف وظيفي",
+        "jobOffer": "عرض عمل",
+        "employmentContract": "عقد عمل",
+        "terminationNotice": "إشعار إنهاء",
+        "orgchart": "هيكل تنظيمي",
+        "other": "مستند آخر"
+      }
+    },
+    "orgchartApproval": {
+      "loading": "جاري تحميل تفاصيل المهمة...",
+      "notFound": "المهمة أو الهيكل التنظيمي غير موجود",
+      "taskInfo": {
+        "title": "معلومات المهمة",
+        "type": "النوع",
+        "priority": "الأولوية",
+        "created": "تم الإنشاء",
+        "completed": "تم الإكمال"
+      },
+      "orgchartDetails": {
+        "title": "تفاصيل الهيكل التنظيمي",
+        "subtitle": "مراجعة الهيكل التنظيمي",
+        "titleLabel": "العنوان",
+        "version": "الإصدار",
+        "status": "الحالة",
+        "description": "الوصف",
+        "viewFullChart": "عرض الهيكل التنظيمي الكامل"
+      },
+      "timeline": {
+        "title": "جدول الموافقة",
+        "subtitle": "تتبع عملية الموافقة",
+        "submittedFor": "تم الإرسال للموافقة",
+        "approved": "تمت الموافقة",
+        "declined": "تم الرفض",
+        "comments": "التعليقات:"
+      },
+      "actions": {
+        "title": "الإجراءات",
+        "subtitle": "راجع واتخذ قرارك",
+        "commentsLabel": "التعليقات (اختيارية للموافقة، مطلوبة للرفض)",
+        "commentsPlaceholder": "أضف تعليقاتك...",
+        "approveButton": "موافقة",
+        "declineButton": "رفض"
+      },
+      "messages": {
+        "approved": "تمت الموافقة بنجاح",
+        "approveError": "فشلت الموافقة",
+        "commentsRequired": "يرجى تقديم تعليقات عند الرفض",
+        "declined": "تم الرفض بنجاح",
+        "declineError": "فشل الرفض",
+        "acknowledged": "تم الإقرار بالمهمة",
+        "acknowledgeError": "فشل الإقرار",
+        "chartApproved": "تمت الموافقة على هيكلك التنظيمي",
+        "chartDeclined": "تم رفض هيكلك التنظيمي"
+      },
+      "acknowledgeButton": "الإقرار",
+      "taskCompleted": {
+        "title": "تم إكمال المهمة",
+        "subtitle": "تم إكمال هذه المهمة في {{date}}"
+      },
+      "statusLabels": {
+        "completed": "مكتمل",
+        "pending": "قيد الانتظار"
+      }
+    },
+    "form": {
+      "breadcrumb": "المهام",
+      "newTask": "مهمة جديدة",
+      "editTask": "تعديل المهمة",
+      "createTitle": "إنشاء مهمة",
+      "editTitle": "تعديل المهمة",
+      "titleLabel": "العنوان",
+      "descriptionLabel": "الوصف",
+      "deadlineLabel": "الموعد النهائي",
+      "titlePlaceholder": "أدخل عنوان المهمة",
+      "descriptionPlaceholder": "أدخل وصف المهمة",
+      "assignees": {
+        "label": "المكلفون (المسؤولون)",
+        "help": "حدد المستخدمين أو المناصب أو الأقسام المسؤولة عن هذه المهمة",
+        "addUser": "إضافة مستخدم",
+        "addPosition": "إضافة منصب",
+        "addDepartment": "إضافة قسم"
+      },
+      "approvers": {
+        "label": "الموافقون (اختياري)",
+        "help": "حدد المستخدمين الذين يجب عليهم الموافقة على إكمال المهمة (بالترتيب)",
+        "addApprover": "إضافة موافق"
+      },
+      "attachments": {
+        "label": "المرفقات (اختياري)",
+        "help": "تحميل الملفات (بحد أقصى 5 ميجابايت إجمالي)",
+        "total": "الإجمالي: {{size}} / 5 ميجابايت"
+      },
+      "updateButton": "تحديث المهمة",
+      "createButton": "إنشاء مهمة",
+      "cancelButton": "إلغاء",
+      "savingButton": "جاري الحفظ...",
+      "noCompany": {
+        "title": "لم يتم تحديد شركة",
+        "subtitle": "الرجاء اختيار شركة لإنشاء المهام.",
+        "button": "الانتقال إلى لوحة المعلومات"
+      },
+      "messages": {
+        "updated": "تم تحديث المهمة بنجاح",
+        "created": "تم إنشاء المهمة بنجاح",
+        "saveError": "فشل حفظ المهمة",
+        "fileTooLarge": "الملف {{name}} يتجاوز حد 5 ميجابايت",
+        "totalTooLarge": "إجمالي حجم المرفقات يتجاوز 5 ميجابايت",
+        "noPermission": "ليس لديك إذن لتعديل هذه المهمة",
+        "systemTaskReadonly": "لا يمكن تعديل المهام التي أنشأها النظام",
+        "loadError": "فشل تحميل المهمة",
+        "selectCompany": "الرجاء اختيار شركة أولاً"
+      }
+    },
+    "detail": {
+      "title": "تفاصيل المهمة",
+      "notImplemented": "غير منفذ",
+      "description": "هذه الصفحة مخصصة لتفاصيل مهمة تفويض السلطة العامة.",
+      "orgchartNote": "لمهام الموافقة على الهيكل التنظيمي، يرجى استخدام الصفحة المخصصة في /task/orgchart/:taskId",
+      "required": "مطلوب التنفيذ:",
+      "requirements": [
+        "إنشاء وحدة @/lib/api-client",
+        "إنشاء @/api/db/schema مع أنواع قاعدة البيانات",
+        "تنفيذ نقاط نهاية API لـ /api/tasks",
+        "تنفيذ نظام سير عمل تفويض السلطة"
+      ],
+      "backButton": "العودة إلى المهام"
+    },
+    "list": {
+      "title": "مهامي",
+      "subtitle": "{{pending}} قيد الانتظار، {{completed}} مكتمل",
+      "loading": "جاري تحميل المهام...",
+      "createTask": "إنشاء مهمة",
+      "hideCompleted": "إخفاء المكتملة",
+      "showCompleted": "عرض المكتملة",
+      "searchPlaceholder": "البحث في المهام...",
+      "noTasks": "كل شيء على ما يرام! ليس لديك مهام معلقة.",
+      "columns": {
+        "assignees": "المكلفون",
+        "approvers": "الموافقون",
+        "deadline": "الموعد النهائي",
+        "status": "الحالة",
+        "created": "تم الإنشاء"
+      },
+      "approversCount": "{{count}} موافق",
+      "approvalStatus": {
+        "approved": "✓ تمت الموافقة",
+        "rejected": "✗ مرفوض"
+      },
+      "statusLabels": {
+        "completed": "مكتمل",
+        "pending": "قيد الانتظار"
+      },
+      "actions": {
+        "edit": "تعديل",
+        "markIncomplete": "وضع علامة غير مكتمل",
+        "markComplete": "وضع علامة مكتمل",
+        "delete": "حذف",
+        "viewDetails": "عرض التفاصيل"
+      },
+      "deleteDialog": {
+        "title": "حذف المهمة",
+        "description": "هل أنت متأكد من حذف '{{title}}'؟ لا يمكن التراجع عن هذا الإجراء.",
+        "cancel": "إلغاء",
+        "delete": "حذف"
+      },
+      "messages": {
+        "deleted": "تم حذف المهمة بنجاح",
+        "deleteError": "فشل حذف المهمة",
+        "markedIncomplete": "تم وضع علامة على المهمة كغير مكتملة",
+        "markedComplete": "تم إكمال المهمة",
+        "updateError": "فشل تحديث المهمة",
+        "loadError": "فشل تحميل المهام"
+      },
+      "untitled": "مهمة بدون عنوان"
+    }
+  },
+  "auth": {
+    "user": {
+      "invite": {
+        "backButton": "العودة إلى المستخدمين",
+        "title": "دعوة مستخدم",
+        "subtitle": "إرسال بريد إلكتروني دعوة إلى مستخدم جديد",
+        "userDetails": {
+          "title": "تفاصيل المستخدم",
+          "subtitle": "أدخل عنوان البريد الإلكتروني للمستخدم الذي تريد دعوته",
+          "emailLabel": "عنوان البريد الإلكتروني",
+          "emailHelp": "سيتلقى المستخدم بريدًا إلكترونيًا للدعوة يحتوي على رمز تحقق مكون من 6 أرقام"
+        },
+        "companyAccess": {
+          "title": "الوصول إلى الشركة (اختياري)",
+          "subtitle": "حدد الشركات التي يجب أن يكون لدى هذا المستخدم حق الوصول إليها",
+          "noCompanies": "لا توجد شركات متاحة",
+          "createCompany": "إنشاء شركة",
+          "selected": "تم تحديد {{count}} من {{total}} شركة"
+        },
+        "sendButton": "إرسال الدعوة",
+        "sendingButton": "جاري إرسال الدعوة...",
+        "cancelButton": "إلغاء",
+        "whatNext": {
+          "title": "ماذا يحدث بعد ذلك؟",
+          "steps": [
+            "سيتلقى المستخدم بريدًا إلكترونيًا يحتوي على رمز تحقق مكون من 6 أرقام ورابط الدعوة",
+            "سيحتاج المستخدمون الجدد إلى إنشاء كلمة مرور عند قبول الدعوة",
+            "سيقوم المستخدمون الحاليون بالتأكيد فقط باستخدام الرمز المكون من 6 أرقام",
+            "تنتهي صلاحية رمز الدعوة خلال 24 ساعة",
+            "سيكون لديهم حق الوصول إلى الشركات التي حددتها"
+          ]
+        },
+        "messages": {
+          "success": "{{message}}",
+          "error": "فشل دعوة المستخدم"
+        },
+        "companyTypes": {
+          "workspace": "مساحة عمل",
+          "supplier": "مورد",
+          "customer": "عميل",
+          "company": "شركة",
+          "serviceProvider": "مزود خدمة",
+          "productVendor": "بائع منتجات",
+          "partner": "شريك",
+          "contractor": "مقاول",
+          "freelancer": "مستقل",
+          "consultant": "استشاري",
+          "other": "آخر"
+        }
+      },
+      "list": {
+        "noCompany": {
+          "title": "لم يتم تحديد شركة",
+          "subtitle": "الرجاء اختيار شركة لإدارة المستخدمين"
+        },
+        "loading": "جاري تحميل المستخدمين...",
+        "title": "إدارة المستخدمين",
+        "subtitle": "إدارة المستخدمين لـ {{company}}",
+        "stats": {
+          "totalUsers": "إجمالي المستخدمين",
+          "verified": "تم التحقق",
+          "unverified": "لم يتم التحقق",
+          "recent": "الأخيرة (30 يوم)"
+        },
+        "columns": {
+          "name": "الاسم",
+          "email": "البريد الإلكتروني",
+          "status": "الحالة",
+          "twoFA": "المصادقة الثنائية",
+          "created": "تم الإنشاء"
+        },
+        "statusLabels": {
+          "verified": "تم التحقق",
+          "unverified": "لم يتم التحقق"
+        },
+        "twoFALabels": {
+          "enabled": "مفعل",
+          "disabled": "معطل"
+        },
+        "inviteButton": "دعوة مستخدم",
+        "searchPlaceholder": "البحث عن المستخدمين بالاسم أو البريد الإلكتروني...",
+        "noUsers": "لم يتم العثور على مستخدمين",
+        "actions": {
+          "viewDetails": "عرض التفاصيل",
+          "manageCompanies": "إدارة الشركات",
+          "resendInvitation": "إعادة إرسال الدعوة",
+          "blockUser": "حظر المستخدم",
+          "unblockUser": "إلغاء حظر المستخدم",
+          "deleteUser": "حذف المستخدم"
+        },
+        "deleteConfirm": "هل أنت متأكد من حذف المستخدم {{email}}؟",
+        "actionConfirm": "هل أنت متأكد من {{action}} المستخدم {{email}}؟",
+        "messages": {
+          "deleted": "تم حذف المستخدم بنجاح",
+          "deleteError": "فشل حذف المستخدم",
+          "actionSuccess": "تم {{action}} المستخدم بنجاح",
+          "actionError": "فشل {{action}} المستخدم",
+          "resendingInvite": "جاري إعادة إرسال الدعوة إلى {{email}}...",
+          "exported": "تم تصدير {{count}} مستخدم",
+          "bulkDeleted": "تم حذف {{count}} مستخدم بنجاح",
+          "bulkDeleteError": "فشل حذف المستخدمين"
+        }
+      }
+    },
+    "account": {
+      "title": "إعدادات الحساب",
+      "tabs": {
+        "profile": "الملف الشخصي",
+        "security": "الأمان",
+        "contact": "الاتصال",
+        "language": "اللغة"
+      },
+      "selectSection": "حدد قسمًا من القائمة",
+      "language": {
+        "title": "إعدادات اللغة",
+        "description": "اختر لغتك المفضلة للواجهة",
+        "preferredLanguage": "اللغة المفضلة",
+        "subtitle": "حدد اللغة التي تريد استخدامها في التطبيق",
+        "selectLanguage": "اختر اللغة",
+        "currentLanguage": "اللغة الحالية",
+        "saved": "تم حفظ تفضيلات اللغة بنجاح!",
+        "saveError": "فشل حفظ تفضيلات اللغة"
+      },
+      "profile": {
+        "title": "الملف الشخصي",
+        "subtitle": "إدارة معلومات ملفك الشخصي",
+        "uploadAvatar": "تحميل الصورة الشخصية",
+        "uploading": "جاري الرفع...",
+        "avatarHelp": "JPG أو PNG أو GIF (بحد أقصى 5 ميجابايت)",
+        "emailLabel": "البريد الإلكتروني",
+        "emailHelp": "لا يمكن تغيير البريد الإلكتروني",
+        "fullNameLabel": "الاسم الكامل",
+        "dateOfBirthLabel": "تاريخ الميلاد",
+        "dateOfBirthPlaceholder": "حدد التاريخ",
+        "genderLabel": "الجنس",
+        "genderPlaceholder": "حدد الجنس",
+        "genderOptions": {
+          "male": "ذكر",
+          "female": "أنثى",
+          "other": "آخر",
+          "preferNotToSay": "أفضل عدم الإفصاح"
+        },
+        "saveButton": "حفظ التغييرات",
+        "savingButton": "جاري الحفظ...",
+        "messages": {
+          "invalidFile": "الرجاء تحميل ملف صورة",
+          "fileTooLarge": "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
+          "avatarUploaded": "تم تحميل الصورة الشخصية بنجاح!",
+          "avatarError": "فشل تحميل الصورة الشخصية",
+          "userNotFound": "المستخدم غير موجود",
+          "updated": "تم تحديث الملف الشخصي بنجاح!",
+          "updateError": "فشل تحديث الملف الشخصي"
+        }
+      },
+      "security": {
+        "loading": "جاري التحميل...",
+        "changePassword": {
+          "title": "تغيير كلمة المرور",
+          "subtitle": "تحديث كلمة مرور حسابك",
+          "currentPasswordLabel": "كلمة المرور الحالية",
+          "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+          "newPasswordLabel": "كلمة المرور الجديدة",
+          "newPasswordMinLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+          "confirmPasswordLabel": "تأكيد كلمة المرور الجديدة",
+          "confirmPasswordRequired": "الرجاء تأكيد كلمة المرور",
+          "passwordsDontMatch": "كلمات المرور غير متطابقة",
+          "changeButton": "تغيير كلمة المرور",
+          "changingButton": "جاري التغيير...",
+          "success": "تم تغيير كلمة المرور بنجاح!",
+          "error": "فشل تغيير كلمة المرور"
+        },
+        "twoFA": {
+          "title": "المصادقة الثنائية",
+          "subtitle": "إضافة طبقة إضافية من الأمان لحسابك",
+          "enabled": "المصادقة الثنائية مفعلة",
+          "disabled": "المصادقة الثنائية معطلة",
+          "required": "تتطلب مؤسستك المصادقة الثنائية.",
+          "deadline": "الموعد النهائي: {{date}}",
+          "cannotDisable": "المصادقة الثنائية مطلوبة من قبل مؤسستك ولا يمكن تعطيلها.",
+          "setupInstructions": "استخدم Google Authenticator أو أي تطبيق TOTP متوافق لمسح رمز QR وتفعيل المصادقة الثنائية.",
+          "enableButton": "تفعيل المصادقة الثنائية",
+          "scanQR": "امسح رمز QR هذا باستخدام تطبيق المصادقة الخاص بك:",
+          "manualEntry": "أو أدخل هذا المفتاح السري يدويًا:",
+          "continueButton": "المتابعة إلى التحقق",
+          "enterCode": "أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة الخاص بك:",
+          "verifyButton": "التحقق والتفعيل",
+          "cancelButton": "إلغاء",
+          "disableTitle": "تعطيل المصادقة الثنائية",
+          "disableInstructions": "أدخل رمزًا من تطبيق المصادقة الخاص بك لتعطيل المصادقة الثنائية:",
+          "disableButton": "تعطيل المصادقة الثنائية"
+        },
+        "messages": {
+          "qrGenerated": "تم إنشاء رمز QR بنجاح!",
+          "setupError": "فشل إعداد المصادقة الثنائية",
+          "userNotFound": "المستخدم غير موجود",
+          "invalidCode": "الرجاء إدخال رمز مكون من 6 أرقام",
+          "enabled": "تم تفعيل المصادقة الثنائية بنجاح!",
+          "invalidCodeError": "رمز غير صحيح. الرجاء المحاولة مرة أخرى.",
+          "disabled": "تم تعطيل المصادقة الثنائية بنجاح",
+          "disableError": "فشل تعطيل المصادقة الثنائية",
+          "loadError": "فشل تحميل حالة المصادقة الثنائية"
+        }
+      },
+      "contact": {
+        "title": "معلومات الاتصال",
+        "subtitle": "إدارة تفاصيل الاتصال الخاصة بك",
+        "phoneLabel": "الهاتف",
+        "addressLabel": "العنوان",
+        "addressPlaceholder": "123 الشارع الرئيسي",
+        "cityLabel": "المدينة",
+        "cityPlaceholder": "نيويورك",
+        "stateLabel": "الولاية",
+        "statePlaceholder": "NY",
+        "zipCodeLabel": "الرمز البريدي",
+        "zipCodePlaceholder": "10001",
+        "countryLabel": "البلد",
+        "countryPlaceholder": "حدد البلد...",
+        "countrySearch": "البحث عن بلد...",
+        "noCountry": "لم يتم العثور على بلد.",
+        "saveButton": "حفظ التغييرات",
+        "savingButton": "جاري الحفظ...",
+        "messages": {
+          "userNotFound": "المستخدم غير موجود",
+          "updated": "تم تحديث معلومات الاتصال بنجاح!",
+          "updateError": "فشل تحديث معلومات الاتصال"
+        }
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "لوحة المعلومات",
+    "tasks": "المهام",
+    "personnelManagement": "إدارة الموظفين",
+    "addressBook": "دليل العناوين",
+    "doaMatrix": "مصفوفة DOA",
+    "documents": "المستندات",
+    "users": "المستخدمون",
+    "auditLogs": "سجلات التدقيق",
+    "settings": "الإعدادات"
   },
   "footer": {
     "copyright": "© {{year}} YSollo. جميع الحقوق محفوظة.",

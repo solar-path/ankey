@@ -7,13 +7,50 @@
     "learn": "Aprender",
     "contact": "Contacto",
     "signIn": "Iniciar sesión",
-    "signUp": "Registrarse"
+    "signUp": "Registrarse",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "actions": "Acciones",
+    "status": "Estado",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "description": "Descripción",
+    "title": "Título",
+    "created": "Creado",
+    "updated": "Actualizado",
+    "version": "Versión",
+    "apply": "Aplicar",
+    "add": "Añadir",
+    "remove": "Eliminar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "download": "Descargar",
+    "upload": "Subir",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "refresh": "Actualizar",
+    "export": "Exportar"
   },
   "audit": {
     "trail": {
-      "title": "Historial de Auditoría",
-      "loading": "Cargando historial de auditoría...",
-      "error": "Error al cargar el historial de auditoría",
+      "title": "Registro de auditoría",
+      "loading": "Cargando registro de auditoría...",
+      "error": "Error al cargar el registro de auditoría",
       "noData": "No se encontraron registros de auditoría para este elemento",
       "timestamp": "Marca de tiempo",
       "action": "Acción",
@@ -28,12 +65,12 @@
       "newValues": "Valores nuevos"
     },
     "sessions": {
-      "title": "Sesiones Activas",
+      "title": "Sesiones activas",
       "loading": "Cargando sesiones...",
-      "error": "Error al cargar las sesiones",
+      "error": "Error al cargar sesiones",
       "noActive": "No hay sesiones activas",
       "user": "Usuario",
-      "loginTime": "Hora de inicio",
+      "loginTime": "Hora de inicio de sesión",
       "lastActivity": "Última actividad",
       "ipAddress": "Dirección IP",
       "actions": "Acciones",
@@ -44,42 +81,73 @@
       "normal": "Normal"
     },
     "reports": {
-      "title": "Informes de Cumplimiento",
-      "generate": "Generar Informe",
-      "reportType": "Tipo de Informe",
-      "periodStart": "Inicio del Período",
-      "periodEnd": "Fin del Período",
+      "title": "Informes de cumplimiento",
+      "generate": "Generar informe",
+      "reportType": "Tipo de informe",
+      "periodStart": "Inicio del período",
+      "periodEnd": "Fin del período",
       "download": "Descargar",
       "soc2": "SOC 2",
       "sox": "Sarbanes-Oxley"
+    },
+    "logs": {
+      "title": "Registros de auditoría",
+      "subtitle": "Monitorear la actividad del usuario, sesiones y cambios del sistema",
+      "showActiveSessions": "Mostrar sesiones activas",
+      "hideActiveSessions": "Ocultar sesiones activas",
+      "filters": "Filtros",
+      "filterByAction": "Filtrar por acción",
+      "filterByTable": "Filtrar por tabla",
+      "allActions": "Todas las acciones",
+      "tablePlaceholder": "empresas, usuarios, etc.",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "clearFilters": "Limpiar filtros",
+      "searchPlaceholder": "Buscar por usuario, tabla, acción...",
+      "noLogsFound": "No se encontraron registros de auditoría",
+      "exportCSV": "Exportar CSV",
+      "timestamp": "Marca de tiempo",
+      "table": "Tabla",
+      "recordId": "ID de registro",
+      "notes": "Notas",
+      "actions": {
+        "CREATE": "CREAR",
+        "UPDATE": "ACTUALIZAR",
+        "DELETE": "ELIMINAR",
+        "LOGIN": "INICIAR SESIÓN",
+        "LOGOUT": "CERRAR SESIÓN",
+        "LOGIN_FAILED": "INICIO DE SESIÓN FALLIDO",
+        "APPROVE": "APROBAR",
+        "REJECT": "RECHAZAR"
+      }
     }
   },
   "home": {
     "hero": {
       "title": "Bienvenido a YSollo",
-      "subtitle": "Una plataforma SaaS moderna de múltiples inquilinos con soporte de subdominios y funciones personalizables",
+      "subtitle": "Una plataforma SaaS moderna multiinquilino con soporte de subdominio y características personalizables",
       "getStarted": "Comenzar",
       "learnMore": "Saber más"
     },
     "features": {
-      "title": "Características principales",
+      "title": "Características clave",
       "multiTenancy": {
-        "title": "Soporte Multi-Inquilino",
-        "description": "Administre sin problemas múltiples organizaciones con completo aislamiento y seguridad de datos"
+        "title": "Soporte multiinquilino",
+        "description": "Gestiona múltiples organizaciones sin problemas con aislamiento completo de datos y seguridad"
       },
       "subdomain": {
-        "title": "Subdominios Personalizados",
+        "title": "Subdominios personalizados",
         "description": "Cada organización obtiene su propio subdominio de marca para una experiencia profesional"
       },
       "customizable": {
-        "title": "Totalmente Personalizable",
-        "description": "Adapte la plataforma a sus necesidades con opciones de configuración flexibles"
+        "title": "Totalmente personalizable",
+        "description": "Adapta la plataforma a tus necesidades con opciones de configuración flexibles"
       }
     }
   },
   "pricing": {
-    "title": "Precios Simples y Transparentes",
-    "subtitle": "Elija el plan adecuado para su negocio",
+    "title": "Precios simples y transparentes",
+    "subtitle": "Elige el plan adecuado para tu negocio",
     "starter": {
       "name": "Inicial",
       "description": "Perfecto para equipos pequeños que comienzan",
@@ -93,7 +161,7 @@
       "cta": "Comenzar"
     },
     "professional": {
-      "badge": "Más Popular",
+      "badge": "Más popular",
       "name": "Profesional",
       "description": "Para empresas en crecimiento",
       "price": "$29",
@@ -102,13 +170,13 @@
         "users": "Hasta 20 usuarios",
         "storage": "100 GB de almacenamiento",
         "prioritySupport": "Soporte prioritario",
-        "analytics": "Análisis avanzados"
+        "analytics": "Análisis avanzado"
       },
       "cta": "Comenzar"
     },
     "enterprise": {
       "name": "Empresa",
-      "description": "Para grandes organizaciones",
+      "description": "Para organizaciones grandes",
       "custom": "Personalizado",
       "features": {
         "users": "Usuarios ilimitados",
@@ -116,13 +184,784 @@
         "phoneSupport": "Soporte telefónico",
         "integrations": "Integraciones personalizadas"
       },
-      "cta": "Contactar Ventas"
+      "cta": "Contactar ventas"
     }
+  },
+  "company": {
+    "createCompany": "Crear Empresa",
+    "getStarted": "Comenzar",
+    "currentCompany": "Empresa Actual",
+    "addCompany": "Agregar empresa",
+    "searchCompanies": "Buscar empresas...",
+    "found": "Encontradas {{count}}",
+    "companiesCount": "Empresas ({{count}})",
+    "moreCompanies": "+{{count}} empresas más (usar búsqueda)",
+    "noCompaniesFound": "No se encontraron empresas",
+    "dashboard": {
+      "title": "Panel de la empresa",
+      "loading": "Cargando panel...",
+      "overview": "Resumen de {{company}}",
+      "yourCompany": "tu empresa",
+      "payrollForecast": "Previsión de nómina",
+      "payrollDescription": "Proyección de 18 meses basada en la estructura organizativa aprobada",
+      "noOrgChart": "No se encontró organigrama aprobado.",
+      "createOrgChart": "Crea y aprueba un organigrama para ver las previsiones de nómina.",
+      "loadError": "Error al cargar la previsión de nómina"
+    },
+    "members": {
+      "title": "Miembros del equipo",
+      "subtitle": "Gestiona a los miembros de tu equipo y sus roles",
+      "noCompany": "Por favor, selecciona una empresa primero",
+      "loading": "Cargando miembros...",
+      "membersCount": "Miembros ({{count}})",
+      "peopleInfo": "Personas que tienen acceso a {{company}}",
+      "noMembers": "No se encontraron miembros",
+      "you": "Tú",
+      "joined": "Se unió el {{date}}",
+      "roles": {
+        "admin": "Administrador",
+        "member": "Miembro"
+      },
+      "loadError": "Error al cargar miembros del equipo",
+      "removeConfirm": "¿Estás seguro de que quieres eliminar a {{name}} de {{company}}? Perderán acceso a todos los datos de la empresa.",
+      "roleUpdated": "Rol actualizado correctamente",
+      "roleUpdateError": "Error al actualizar el rol",
+      "memberRemoved": "Miembro eliminado correctamente",
+      "memberRemoveError": "Error al eliminar miembro"
+    },
+    "settings": {
+      "title": "Configuración de la empresa",
+      "subtitle": "Configura los ajustes regionales, financieros y de seguridad de {{company}}",
+      "noCompany": "No hay empresa activa seleccionada",
+      "noCompanySelected": "No se ha seleccionado empresa",
+      "regional": {
+        "title": "Configuración regional",
+        "subtitle": "Configura ubicación, zona horaria, idioma y preferencias de formato",
+        "applyDefaults": "Aplicar valores predeterminados de {{country}}",
+        "country": "País",
+        "countryHelp": "País principal de operaciones (establecido desde la residencia de la empresa)",
+        "timezone": "Zona horaria",
+        "timezoneCount": "{{count}} zonas disponibles para {{country}}",
+        "language": "Idioma",
+        "dateFormat": "Formato de fecha",
+        "numberFormat": "Formato de número"
+      },
+      "financial": {
+        "title": "Configuración financiera",
+        "subtitle": "Configura el año fiscal y los ajustes de moneda para operaciones financieras",
+        "fiscalYear": "Año fiscal",
+        "fiscalYearHelp": "Define el período del año fiscal de tu empresa",
+        "presets": {
+          "calendar": "Año calendario",
+          "ukTax": "Año fiscal del Reino Unido",
+          "usFederal": "Federal de EE. UU.",
+          "australia": "Australia",
+          "india": "India"
+        },
+        "startDate": "Fecha de inicio (MM-DD)",
+        "endDate": "Fecha de fin (MM-DD)",
+        "workingCurrency": "Moneda de trabajo",
+        "workingCurrencyHelp": "Moneda principal para operaciones diarias",
+        "reportingCurrency": "Moneda de informes",
+        "reportingCurrencyHelp": "Moneda para informes y estados financieros",
+        "additionalCurrencies": "Monedas adicionales",
+        "additionalCurrenciesHelp": "Otras monedas utilizadas en operaciones (para soporte multimoneda)",
+        "selectCurrency": "Seleccionar moneda para añadir",
+        "currencyAlreadyAdded": "Moneda ya añadida",
+        "fiscalYearApplied": "Año fiscal {{preset}} aplicado"
+      },
+      "tax": {
+        "title": "Configuración fiscal",
+        "subtitle": "Configura tasas impositivas y etiquetas predeterminadas",
+        "defaultRate": "Tasa impositiva predeterminada (%)",
+        "defaultRateHelp": "Porcentaje de tasa de IVA/GST/Impuesto predeterminado (ej., 20 para 20%)",
+        "taxIdLabel": "Etiqueta de ID fiscal",
+        "taxIdLabelHelp": "Cómo etiquetar la identificación fiscal (IVA, GST, ID fiscal, etc.)"
+      },
+      "security": {
+        "title": "Configuración de seguridad",
+        "subtitle": "Configura políticas de autenticación y seguridad",
+        "require2FA": "Requerir autenticación de dos factores",
+        "require2FAHelp": "Obligar a todos los miembros del equipo a habilitar 2FA",
+        "deadline2FA": "Fecha límite para aplicar 2FA",
+        "deadline2FAHelp": "Fecha en la que todos los usuarios deben habilitar 2FA (opcional)",
+        "passwordChangePeriod": "Período de cambio de contraseña (días)",
+        "passwordChangePeriodHelp": "Requerir cambio de contraseña cada X días (0 para deshabilitar)"
+      },
+      "saveButton": "Guardar configuración",
+      "saved": "Configuración actualizada correctamente",
+      "saveError": "Error al actualizar la configuración",
+      "noResidenceData": "No hay datos de país de residencia disponibles",
+      "defaultsApplied": "Valores predeterminados aplicados desde {{country}}"
+    },
+    "addressBook": {
+      "title": "Directorio de empleados",
+      "subtitle": "Ver y buscar información de contacto de empleados de {{company}}",
+      "noCompany": "No se ha seleccionado empresa",
+      "noCompanyPrompt": "Por favor, selecciona una empresa para ver el directorio de empleados",
+      "loading": "Cargando empleados...",
+      "searchPlaceholder": "Buscar empleados...",
+      "noEmployees": "No se encontraron empleados en el directorio.",
+      "loadError": "Error al cargar el directorio de empleados",
+      "columns": {
+        "employee": "Empleado",
+        "email": "Correo electrónico",
+        "phone": "Teléfono",
+        "department": "Departamento",
+        "position": "Posición",
+        "address": "Dirección",
+        "role": "Rol"
+      },
+      "roles": {
+        "owner": "Propietario",
+        "admin": "Administrador",
+        "member": "Miembro"
+      }
+    }
+  },
+  "orgchart": {
+    "view": {
+      "title": "Organigrama",
+      "loading": "Cargando organigrama...",
+      "loadError": "Error al cargar el organigrama",
+      "version": "v{{version}}",
+      "addDepartment": "Añadir departamento",
+      "save": "Guardar",
+      "exportPDF": "PDF",
+      "exportExcel": "Excel",
+      "payrollForecast": "Previsión de nómina",
+      "payrollSubtitle": "Proyección de nómina de 18 meses basada en la estructura organizativa actual",
+      "submitApproval": "Enviar para aprobación",
+      "approve": "Aprobar",
+      "status": {
+        "draft": "borrador",
+        "pending_approval": "pendiente de aprobación",
+        "approved": "aprobado",
+        "revoked": "revocado"
+      },
+      "searchPlaceholder": "Buscar en organigrama...",
+      "showLabel": "Mostrar:",
+      "viewOptions": {
+        "departments": "Departamentos",
+        "positions": "Posiciones",
+        "appointments": "Nombramientos"
+      },
+      "selectPrompt": "Selecciona un elemento del árbol para ver detalles",
+      "actions": {
+        "createSubDept": "Crear subdepartamento",
+        "createPosition": "Crear posición",
+        "createAppointment": "Crear nombramiento",
+        "duplicate": "Duplicar {{type}}",
+        "delete": "Eliminar {{type}}"
+      },
+      "vacant": "Vacante",
+      "reportsTo": "Reporta a: {{position}}",
+      "deleteConfirm": "¿Eliminar {{name}}? Esto eliminará en cascada todos los hijos.",
+      "messages": {
+        "subDeptCreated": "Subdepartamento creado",
+        "deptCreated": "Departamento creado",
+        "positionCreated": "Posición creada con código generado automáticamente",
+        "positionCreateError": "Error al crear posición",
+        "deptCreateError": "Error al crear departamento",
+        "deleted": "Eliminado correctamente",
+        "deleteError": "Error al eliminar",
+        "deptDuplicated": "Departamento duplicado",
+        "positionDuplicated": "Posición duplicada",
+        "appointmentDuplicated": "Nombramiento duplicado",
+        "duplicateError": "Error al duplicar",
+        "submitted": "Enviado para aprobación",
+        "submitError": "Error al enviar",
+        "approvalNote": "El flujo de trabajo de aprobación ahora se gestiona a través de la página de Tareas. Por favor, verifica tus tareas.",
+        "saved": "Organigrama guardado",
+        "saveError": "Error al guardar",
+        "pdfGenerated": "PDF generado correctamente",
+        "pdfError": "Error al generar PDF",
+        "excelGenerated": "Archivo Excel generado correctamente",
+        "excelError": "Error al generar archivo Excel",
+        "forecastError": "Error al cargar la previsión de nómina",
+        "invalidDrop": "No se puede soltar {{sourceType}} en {{targetType}}",
+        "moveDeptNotSupported": "Mover departamentos aún no está soportado",
+        "movePositionNote": "Mover posiciones entre departamentos requiere recreación",
+        "moveAppointmentNote": "Mover nombramientos entre posiciones requiere recreación",
+        "moveError": "Error al mover elemento",
+        "autoCreateNote": "Los nombramientos se crean automáticamente con las posiciones",
+        "updated": "Actualizado correctamente",
+        "updateError": "Error al actualizar"
+      },
+      "newItems": {
+        "subDept": "Nuevo subdepartamento",
+        "dept": "Nuevo departamento",
+        "position": "Nueva posición"
+      }
+    },
+    "list": {
+      "title": "Organigramas",
+      "subtitle": "Gestiona tus estructuras y jerarquías organizativas",
+      "loading": "Cargando organigramas...",
+      "createButton": "Crear organigrama",
+      "columns": {
+        "version": "Versión",
+        "title": "Título",
+        "description": "Descripción",
+        "status": "Estado",
+        "enforced": "Aplicado",
+        "revoked": "Revocado",
+        "created": "Creado"
+      },
+      "defaultTitle": "Organigrama {{year}}",
+      "defaultDescription": "Nueva estructura organizativa",
+      "messages": {
+        "created": "Organigrama creado",
+        "createError": "Error al crear organigrama",
+        "duplicated": "Organigrama duplicado correctamente",
+        "duplicateError": "Error al duplicar organigrama",
+        "onlyDraftApproval": "Solo se pueden enviar borradores para aprobación",
+        "sentForApproval": "Organigrama enviado para aprobación",
+        "approvalError": "Error al enviar para aprobación",
+        "renamed": "Organigrama renombrado correctamente",
+        "renameError": "Error al renombrar organigrama"
+      },
+      "renameDialog": {
+        "title": "Renombrar organigrama",
+        "subtitle": "Actualiza el título y la descripción de tu organigrama.",
+        "titleLabel": "Título",
+        "descriptionLabel": "Descripción",
+        "titlePlaceholder": "Ingresar título...",
+        "descriptionPlaceholder": "Ingresar descripción...",
+        "cancel": "Cancelar",
+        "save": "Guardar cambios"
+      },
+      "actions": {
+        "view": "Ver",
+        "rename": "Renombrar",
+        "duplicate": "Duplicar",
+        "sendApproval": "Enviar para aprobación"
+      },
+      "noCharts": "Aún no hay organigramas. Crea el primero para comenzar."
+    }
+  },
+  "doa": {
+    "matrix": {
+      "loading": "Cargando...",
+      "redirecting": "Redirigiendo...",
+      "createTitle": "Crear matriz de aprobación",
+      "editTitle": "Editar matriz de aprobación",
+      "subtitle": "Define reglas de flujo de trabajo de aprobación y aprobadores",
+      "modifySubtitle": "Modificar matriz de aprobación: {{name}}",
+      "newMatrix": "Nueva matriz",
+      "columns": {
+        "documentType": "Tipo de documento",
+        "status": "Estado",
+        "created": "Creado"
+      },
+      "messages": {
+        "created": "Matriz creada correctamente",
+        "updated": "Matriz actualizada correctamente",
+        "loadError": "Error al cargar matriz de aprobación"
+      }
+    },
+    "list": {
+      "title": "Matriz de autorización",
+      "subtitle": "Define flujos de trabajo de aprobación y reglas para procesos organizativos",
+      "loading": "Cargando matrices de aprobación...",
+      "loadError": "Error al cargar matrices de aprobación",
+      "searchPlaceholder": "Buscar matrices...",
+      "newMatrix": "Nueva matriz",
+      "columns": {
+        "name": "Nombre",
+        "documentType": "Tipo de documento",
+        "status": "Estado",
+        "approvalBlocks": "Bloques de aprobación",
+        "totalApprovers": "Total de aprobadores",
+        "description": "Descripción"
+      },
+      "blocksCount": "{{count}} bloque(s)",
+      "approversCount": "{{count}}",
+      "actions": {
+        "viewEdit": "Ver/Editar",
+        "delete": "Eliminar"
+      },
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar esta matriz de aprobación?",
+      "messages": {
+        "deleted": "Matriz de aprobación eliminada correctamente",
+        "deleteError": "Error al eliminar matriz de aprobación"
+      },
+      "noMatrices": "No se encontraron matrices de aprobación. Crea una para definir flujos de trabajo de aprobación.",
+      "note": "Nota: Las matrices de aprobación deben definirse antes de enviar organigramas para aprobación. Sin una matriz de aprobación activa de tipo 'orgchart', los envíos fallarán.",
+      "status": {
+        "active": "ACTIVO",
+        "inactive": "INACTIVO"
+      }
+    }
+  },
+  "task": {
+    "approval": {
+      "title": "Flujo de trabajo de aprobación",
+      "loading": "Cargando detalles de la tarea...",
+      "notFound": "Tarea no encontrada",
+      "backToTasks": "Volver a tareas",
+      "documentType": "Tipo de documento",
+      "currentLevel": "Nivel actual",
+      "status": "Estado",
+      "submitted": "Enviado",
+      "level": "Nivel {{number}}",
+      "na": "N/A",
+      "history": {
+        "title": "Historial de aprobación",
+        "levelDecision": "Nivel {{number}} - {{decision}}"
+      },
+      "documentDetails": {
+        "title": "Detalles del documento",
+        "titleLabel": "Título",
+        "version": "Versión",
+        "versionNumber": "v{{version}}"
+      },
+      "yourDecision": {
+        "title": "Tu decisión",
+        "subtitle": "Revisa el documento y proporciona tu decisión de aprobación",
+        "commentsLabel": "Comentarios (opcional para aprobación, requerido para rechazar)",
+        "commentsPlaceholder": "Añade tus comentarios aquí...",
+        "approveButton": "Aprobar",
+        "declineButton": "Rechazar",
+        "acknowledgeButton": "Reconocer",
+        "acknowledgeHelp": "Marcar esta notificación como leída"
+      },
+      "messages": {
+        "approved": "Documento aprobado correctamente",
+        "approveError": "Error al aprobar documento",
+        "commentsRequired": "Por favor, proporciona comentarios al rechazar",
+        "declined": "Documento rechazado",
+        "declineError": "Error al rechazar documento",
+        "acknowledged": "Tarea reconocida",
+        "acknowledgeError": "Error al reconocer tarea"
+      },
+      "documentTypes": {
+        "purchaseOrder": "Orden de compra",
+        "salesOrder": "Orden de venta",
+        "invoice": "Factura",
+        "payment": "Pago",
+        "contract": "Contrato",
+        "departmentCharter": "Carta del departamento",
+        "jobDescription": "Descripción del puesto",
+        "jobOffer": "Oferta de trabajo",
+        "employmentContract": "Contrato de empleo",
+        "terminationNotice": "Aviso de terminación",
+        "orgchart": "Organigrama",
+        "other": "Otro documento"
+      }
+    },
+    "orgchartApproval": {
+      "loading": "Cargando detalles de la tarea...",
+      "notFound": "Tarea u organigrama no encontrado",
+      "taskInfo": {
+        "title": "Información de la tarea",
+        "type": "Tipo",
+        "priority": "Prioridad",
+        "created": "Creado",
+        "completed": "Completado"
+      },
+      "orgchartDetails": {
+        "title": "Detalles del organigrama",
+        "subtitle": "Revisar la estructura organizativa",
+        "titleLabel": "Título",
+        "version": "Versión",
+        "status": "Estado",
+        "description": "Descripción",
+        "viewFullChart": "Ver organigrama completo"
+      },
+      "timeline": {
+        "title": "Línea de tiempo de aprobación",
+        "subtitle": "Seguir el proceso de aprobación",
+        "submittedFor": "Enviado para aprobación",
+        "approved": "Aprobado",
+        "declined": "Rechazado",
+        "comments": "Comentarios:"
+      },
+      "actions": {
+        "title": "Acciones",
+        "subtitle": "Revisa y toma tu decisión",
+        "commentsLabel": "Comentarios (Opcional para aprobación, requerido para rechazar)",
+        "commentsPlaceholder": "Añade tus comentarios...",
+        "approveButton": "Aprobar",
+        "declineButton": "Rechazar"
+      },
+      "messages": {
+        "approved": "Aprobado correctamente",
+        "approveError": "Error al aprobar",
+        "commentsRequired": "Por favor, proporciona comentarios al rechazar",
+        "declined": "Rechazado correctamente",
+        "declineError": "Error al rechazar",
+        "acknowledged": "Tarea reconocida",
+        "acknowledgeError": "Error al reconocer",
+        "chartApproved": "Tu organigrama ha sido aprobado",
+        "chartDeclined": "Tu organigrama ha sido rechazado"
+      },
+      "acknowledgeButton": "Reconocer",
+      "taskCompleted": {
+        "title": "Tarea completada",
+        "subtitle": "Esta tarea se completó el {{date}}"
+      },
+      "statusLabels": {
+        "completed": "Completado",
+        "pending": "Pendiente"
+      }
+    },
+    "form": {
+      "breadcrumb": "Tareas",
+      "newTask": "Nueva tarea",
+      "editTask": "Editar tarea",
+      "createTitle": "Crear tarea",
+      "editTitle": "Editar tarea",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción",
+      "deadlineLabel": "Fecha límite",
+      "titlePlaceholder": "Ingresar título de la tarea",
+      "descriptionPlaceholder": "Ingresar descripción de la tarea",
+      "assignees": {
+        "label": "Asignados (Responsables)",
+        "help": "Selecciona usuarios, posiciones o departamentos responsables de esta tarea",
+        "addUser": "Añadir usuario",
+        "addPosition": "Añadir posición",
+        "addDepartment": "Añadir departamento"
+      },
+      "approvers": {
+        "label": "Aprobadores (Opcional)",
+        "help": "Selecciona usuarios que deben aprobar la finalización de la tarea (en orden)",
+        "addApprover": "Añadir aprobador"
+      },
+      "attachments": {
+        "label": "Archivos adjuntos (Opcional)",
+        "help": "Subir archivos (máximo 5MB en total)",
+        "total": "Total: {{size}} / 5 MB"
+      },
+      "updateButton": "Actualizar tarea",
+      "createButton": "Crear tarea",
+      "cancelButton": "Cancelar",
+      "savingButton": "Guardando...",
+      "noCompany": {
+        "title": "No se ha seleccionado empresa",
+        "subtitle": "Por favor, selecciona una empresa para crear tareas.",
+        "button": "Ir al panel"
+      },
+      "messages": {
+        "updated": "Tarea actualizada correctamente",
+        "created": "Tarea creada correctamente",
+        "saveError": "Error al guardar tarea",
+        "fileTooLarge": "El archivo {{name}} excede el límite de 5MB",
+        "totalTooLarge": "El tamaño total de los archivos adjuntos excede el límite de 5MB",
+        "noPermission": "No tienes permiso para editar esta tarea",
+        "systemTaskReadonly": "No se pueden editar tareas generadas por el sistema",
+        "loadError": "Error al cargar tarea",
+        "selectCompany": "Por favor, selecciona una empresa primero"
+      }
+    },
+    "detail": {
+      "title": "Detalles de la tarea",
+      "notImplemented": "No implementado",
+      "description": "Esta página es para detalles de tareas genéricas de DOA (Delegación de autoridad).",
+      "orgchartNote": "Para tareas de aprobación de organigramas, por favor usa la página dedicada en /task/orgchart/:taskId",
+      "required": "Requerido implementar:",
+      "requirements": [
+        "Crear módulo @/lib/api-client",
+        "Crear @/api/db/schema con tipos de base de datos",
+        "Implementar endpoints API /api/tasks",
+        "Implementar sistema de flujo de trabajo DOA"
+      ],
+      "backButton": "Volver a tareas"
+    },
+    "list": {
+      "title": "Mis tareas",
+      "subtitle": "{{pending}} pendientes, {{completed}} completadas",
+      "loading": "Cargando tareas...",
+      "createTask": "Crear tarea",
+      "hideCompleted": "Ocultar completadas",
+      "showCompleted": "Mostrar completadas",
+      "searchPlaceholder": "Buscar tareas...",
+      "noTasks": "¡Todo al día! No tienes tareas pendientes.",
+      "columns": {
+        "assignees": "Asignados",
+        "approvers": "Aprobadores",
+        "deadline": "Fecha límite",
+        "status": "Estado",
+        "created": "Creado"
+      },
+      "approversCount": "{{count}} aprobador(es)",
+      "approvalStatus": {
+        "approved": "✓ Aprobado",
+        "rejected": "✗ Rechazado"
+      },
+      "statusLabels": {
+        "completed": "Completado",
+        "pending": "Pendiente"
+      },
+      "actions": {
+        "edit": "Editar",
+        "markIncomplete": "Marcar como incompleta",
+        "markComplete": "Marcar como completa",
+        "delete": "Eliminar",
+        "viewDetails": "Ver detalles"
+      },
+      "deleteDialog": {
+        "title": "Eliminar tarea",
+        "description": "¿Estás seguro de que quieres eliminar '{{title}}'? Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "delete": "Eliminar"
+      },
+      "messages": {
+        "deleted": "Tarea eliminada correctamente",
+        "deleteError": "Error al eliminar tarea",
+        "markedIncomplete": "Tarea marcada como incompleta",
+        "markedComplete": "Tarea completada",
+        "updateError": "Error al actualizar tarea",
+        "loadError": "Error al cargar tareas"
+      },
+      "untitled": "Tarea sin título"
+    }
+  },
+  "auth": {
+    "user": {
+      "invite": {
+        "backButton": "Volver a usuarios",
+        "title": "Invitar usuario",
+        "subtitle": "Enviar un correo de invitación a un nuevo usuario",
+        "userDetails": {
+          "title": "Detalles del usuario",
+          "subtitle": "Ingresa la dirección de correo electrónico del usuario que quieres invitar",
+          "emailLabel": "Dirección de correo electrónico",
+          "emailHelp": "El usuario recibirá un correo de invitación con un código de verificación de 6 dígitos"
+        },
+        "companyAccess": {
+          "title": "Acceso a empresa (Opcional)",
+          "subtitle": "Selecciona a qué empresas debe tener acceso este usuario",
+          "noCompanies": "No hay empresas disponibles",
+          "createCompany": "Crear empresa",
+          "selected": "Seleccionadas {{count}} de {{total}} empresas"
+        },
+        "sendButton": "Enviar invitación",
+        "sendingButton": "Enviando invitación...",
+        "cancelButton": "Cancelar",
+        "whatNext": {
+          "title": "¿Qué pasa después?",
+          "steps": [
+            "El usuario recibirá un correo con un código de verificación de 6 dígitos y enlace de invitación",
+            "Los nuevos usuarios necesitarán crear una contraseña al aceptar la invitación",
+            "Los usuarios existentes confirmarán solo con el código de 6 dígitos",
+            "El código de invitación expira en 24 horas",
+            "Tendrán acceso a las empresas que seleccionaste"
+          ]
+        },
+        "messages": {
+          "success": "{{message}}",
+          "error": "Error al invitar usuario"
+        },
+        "companyTypes": {
+          "workspace": "Espacio de trabajo",
+          "supplier": "Proveedor",
+          "customer": "Cliente",
+          "company": "Empresa",
+          "serviceProvider": "Proveedor de servicios",
+          "productVendor": "Vendedor de productos",
+          "partner": "Socio",
+          "contractor": "Contratista",
+          "freelancer": "Trabajador independiente",
+          "consultant": "Consultor",
+          "other": "Otro"
+        }
+      },
+      "list": {
+        "noCompany": {
+          "title": "No se ha seleccionado empresa",
+          "subtitle": "Por favor, selecciona una empresa para gestionar usuarios"
+        },
+        "loading": "Cargando usuarios...",
+        "title": "Gestión de usuarios",
+        "subtitle": "Gestionar usuarios de {{company}}",
+        "stats": {
+          "totalUsers": "Total de usuarios",
+          "verified": "Verificados",
+          "unverified": "No verificados",
+          "recent": "Recientes (30d)"
+        },
+        "columns": {
+          "name": "Nombre",
+          "email": "Correo electrónico",
+          "status": "Estado",
+          "twoFA": "2FA",
+          "created": "Creado"
+        },
+        "statusLabels": {
+          "verified": "Verificado",
+          "unverified": "No verificado"
+        },
+        "twoFALabels": {
+          "enabled": "Habilitado",
+          "disabled": "Deshabilitado"
+        },
+        "inviteButton": "Invitar usuario",
+        "searchPlaceholder": "Buscar usuarios por nombre, correo...",
+        "noUsers": "No se encontraron usuarios",
+        "actions": {
+          "viewDetails": "Ver detalles",
+          "manageCompanies": "Gestionar empresas",
+          "resendInvitation": "Reenviar invitación",
+          "blockUser": "Bloquear usuario",
+          "unblockUser": "Desbloquear usuario",
+          "deleteUser": "Eliminar usuario"
+        },
+        "deleteConfirm": "¿Estás seguro de que quieres eliminar al usuario {{email}}?",
+        "actionConfirm": "¿Estás seguro de que quieres {{action}} al usuario {{email}}?",
+        "messages": {
+          "deleted": "Usuario eliminado correctamente",
+          "deleteError": "Error al eliminar usuario",
+          "actionSuccess": "Usuario {{action}} correctamente",
+          "actionError": "Error al {{action}} usuario",
+          "resendingInvite": "Reenviando invitación a {{email}}...",
+          "exported": "Exportados {{count}} usuarios",
+          "bulkDeleted": "{{count}} usuarios eliminados correctamente",
+          "bulkDeleteError": "Error al eliminar usuarios"
+        }
+      }
+    },
+    "account": {
+      "title": "Configuración de la cuenta",
+      "tabs": {
+        "profile": "Perfil",
+        "security": "Seguridad",
+        "contact": "Contacto",
+        "language": "Idioma"
+      },
+      "selectSection": "Selecciona una sección del menú",
+      "language": {
+        "title": "Configuración de idioma",
+        "description": "Elige tu idioma preferido para la interfaz",
+        "preferredLanguage": "Idioma preferido",
+        "subtitle": "Selecciona el idioma que deseas usar en toda la aplicación",
+        "selectLanguage": "Elegir idioma",
+        "currentLanguage": "Idioma actual",
+        "saved": "¡Preferencia de idioma guardada correctamente!",
+        "saveError": "Error al guardar preferencia de idioma"
+      },
+      "profile": {
+        "title": "Perfil",
+        "subtitle": "Gestiona la información de tu perfil",
+        "uploadAvatar": "Subir avatar",
+        "uploading": "Subiendo...",
+        "avatarHelp": "JPG, PNG o GIF (máx. 5MB)",
+        "emailLabel": "Correo electrónico",
+        "emailHelp": "El correo electrónico no se puede cambiar",
+        "fullNameLabel": "Nombre completo",
+        "dateOfBirthLabel": "Fecha de nacimiento",
+        "dateOfBirthPlaceholder": "Seleccionar fecha",
+        "genderLabel": "Género",
+        "genderPlaceholder": "Seleccionar género",
+        "genderOptions": {
+          "male": "Masculino",
+          "female": "Femenino",
+          "other": "Otro",
+          "preferNotToSay": "Prefiero no decirlo"
+        },
+        "saveButton": "Guardar cambios",
+        "savingButton": "Guardando...",
+        "messages": {
+          "invalidFile": "Por favor, sube un archivo de imagen",
+          "fileTooLarge": "El tamaño del archivo debe ser menor a 5MB",
+          "avatarUploaded": "¡Avatar subido correctamente!",
+          "avatarError": "Error al subir avatar",
+          "userNotFound": "Usuario no encontrado",
+          "updated": "¡Perfil actualizado correctamente!",
+          "updateError": "Error al actualizar perfil"
+        }
+      },
+      "security": {
+        "loading": "Cargando...",
+        "changePassword": {
+          "title": "Cambiar contraseña",
+          "subtitle": "Actualiza la contraseña de tu cuenta",
+          "currentPasswordLabel": "Contraseña actual",
+          "currentPasswordRequired": "La contraseña actual es requerida",
+          "newPasswordLabel": "Nueva contraseña",
+          "newPasswordMinLength": "La contraseña debe tener al menos 8 caracteres",
+          "confirmPasswordLabel": "Confirmar nueva contraseña",
+          "confirmPasswordRequired": "Por favor confirma tu contraseña",
+          "passwordsDontMatch": "Las contraseñas no coinciden",
+          "changeButton": "Cambiar contraseña",
+          "changingButton": "Cambiando...",
+          "success": "¡Contraseña cambiada exitosamente!",
+          "error": "Error al cambiar la contraseña"
+        },
+        "twoFA": {
+          "title": "Autenticación de dos factores",
+          "subtitle": "Añade una capa extra de seguridad a tu cuenta",
+          "enabled": "2FA está habilitado",
+          "disabled": "2FA está deshabilitado",
+          "required": "Tu organización requiere autenticación de dos factores.",
+          "deadline": "Fecha límite: {{date}}",
+          "cannotDisable": "2FA es requerido por tu organización y no se puede deshabilitar.",
+          "setupInstructions": "Usa Google Authenticator o cualquier aplicación TOTP compatible para escanear el código QR y habilitar la autenticación de dos factores.",
+          "enableButton": "Habilitar 2FA",
+          "scanQR": "Escanea este código QR con tu aplicación de autenticación:",
+          "manualEntry": "O ingresa esta clave secreta manualmente:",
+          "continueButton": "Continuar a verificación",
+          "enterCode": "Ingresa el código de 6 dígitos de tu aplicación de autenticación:",
+          "verifyButton": "Verificar y habilitar",
+          "cancelButton": "Cancelar",
+          "disableTitle": "Deshabilitar autenticación de dos factores",
+          "disableInstructions": "Ingresa un código de tu aplicación de autenticación para deshabilitar 2FA:",
+          "disableButton": "Deshabilitar 2FA"
+        },
+        "messages": {
+          "qrGenerated": "¡Código QR generado correctamente!",
+          "setupError": "Error al configurar 2FA",
+          "userNotFound": "Usuario no encontrado",
+          "invalidCode": "Por favor, ingresa un código de 6 dígitos",
+          "enabled": "¡2FA habilitado correctamente!",
+          "invalidCodeError": "Código inválido. Por favor, inténtalo de nuevo.",
+          "disabled": "2FA deshabilitado correctamente",
+          "disableError": "Error al deshabilitar 2FA",
+          "loadError": "Error al cargar el estado de 2FA"
+        }
+      },
+      "contact": {
+        "title": "Información de contacto",
+        "subtitle": "Gestiona tus datos de contacto",
+        "phoneLabel": "Teléfono",
+        "addressLabel": "Dirección",
+        "addressPlaceholder": "Calle Principal 123",
+        "cityLabel": "Ciudad",
+        "cityPlaceholder": "Nueva York",
+        "stateLabel": "Estado",
+        "statePlaceholder": "NY",
+        "zipCodeLabel": "Código postal",
+        "zipCodePlaceholder": "10001",
+        "countryLabel": "País",
+        "countryPlaceholder": "Seleccionar país...",
+        "countrySearch": "Buscar país...",
+        "noCountry": "No se encontró país.",
+        "saveButton": "Guardar cambios",
+        "savingButton": "Guardando...",
+        "messages": {
+          "userNotFound": "Usuario no encontrado",
+          "updated": "¡Información de contacto actualizada correctamente!",
+          "updateError": "Error al actualizar información de contacto"
+        }
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "tasks": "Tareas",
+    "personnelManagement": "Gestión de personal",
+    "addressBook": "Directorio",
+    "doaMatrix": "Matriz DOA",
+    "documents": "Documentos",
+    "users": "Usuarios",
+    "auditLogs": "Registros de auditoría",
+    "settings": "Configuración"
   },
   "footer": {
     "copyright": "© {{year}} YSollo. Todos los derechos reservados.",
-    "terms": "Términos de Servicio",
-    "privacy": "Política de Privacidad",
-    "cookies": "Política de Cookies"
+    "terms": "Términos de servicio",
+    "privacy": "Política de privacidad",
+    "cookies": "Política de cookies"
   }
 }

@@ -29,6 +29,7 @@ export interface User {
     state?: string;
     zipCode?: string;
     country?: string;
+    preferredLanguage?: string;
   };
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useTranslation } from "react-i18next";
 import * as v from "valibot";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
@@ -56,6 +57,7 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ onSuccess }: ContactFormProps) {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const [phone, setPhone] = useState<string>("");
   const [open, setOpen] = useState(false);
@@ -93,7 +95,7 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
   const onSubmit = async (data: ContactFormData) => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.contact.messages.userNotFound'));
         return;
       }
 
@@ -106,19 +108,19 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
       // Refresh user data to show updated information
       await refreshUser();
 
-      toast.success("Contact information updated successfully!");
+      toast.success(t('auth.account.contact.messages.updated'));
       onSuccess?.();
     } catch (error: any) {
       console.error("Contact update error:", error);
-      toast.error(error.message || "Failed to update contact information");
+      toast.error(error.message || t('auth.account.contact.messages.updateError'));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Contact Information</CardTitle>
-        <CardDescription>Manage your contact details</CardDescription>
+        <CardTitle>{t('auth.account.contact.title')}</CardTitle>
+        <CardDescription>{t('auth.account.contact.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -128,7 +130,7 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>{t('auth.account.contact.phoneLabel')}</FormLabel>
                   <FormControl>
                     <QPhone
                       value={phone}
@@ -156,9 +158,9 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>{t('auth.account.contact.addressLabel')}</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="123 Main St" />
+                    <Textarea {...field} placeholder={t('auth.account.contact.addressPlaceholder')} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,9 +173,9 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel>{t('auth.account.contact.cityLabel')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="New York" />
+                      <Input {...field} placeholder={t('auth.account.contact.cityPlaceholder')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,9 +187,9 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State</FormLabel>
+                    <FormLabel>{t('auth.account.contact.stateLabel')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="NY" />
+                      <Input {...field} placeholder={t('auth.account.contact.statePlaceholder')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,9 +203,9 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
+                    <FormLabel>{t('auth.account.contact.zipCodeLabel')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="10001" />
+                      <Input {...field} placeholder={t('auth.account.contact.zipCodePlaceholder')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -215,7 +217,7 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
+                    <FormLabel>{t('auth.account.contact.countryLabel')}</FormLabel>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -228,16 +230,16 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
                             {field.value
                               ? countries.find((c) => c.code === field.value)
                                   ?.name
-                              : "Select country..."}
+                              : t('auth.account.contact.countryPlaceholder')}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Search country..." />
+                          <CommandInput placeholder={t('auth.account.contact.countrySearch')} />
                           <CommandList>
-                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandEmpty>{t('auth.account.contact.noCountry')}</CommandEmpty>
                             <CommandGroup>
                               {countries.map((c) => (
                                 <CommandItem
@@ -271,7 +273,7 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
             </div>
 
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+              {form.formState.isSubmitting ? t('auth.account.contact.savingButton') : t('auth.account.contact.saveButton')}
             </Button>
           </form>
         </Form>

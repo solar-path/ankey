@@ -43,6 +43,10 @@ i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },
+    debug: false, // Set to true for debugging
+    react: {
+      useSuspense: false, // Disable suspense to avoid loading issues
+    },
   });
 
 export default i18n;

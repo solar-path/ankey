@@ -1,4 +1,6 @@
 import { Route, Switch, useLocation } from "wouter";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./lib/i18n";
 import PublicLayout from "./routes/public.layout";
 import HomePage from "./routes/home.page";
 import LearnPage from "./routes/learn.page";
@@ -66,68 +68,70 @@ function App() {
   });
 
   return (
-    <AuthProvider>
-      <CompanyProvider>
-        <TaskProvider>
-          {isPublicRoute ? (
-            <PublicLayout>
-              <Switch>
-                <Route path="/" component={HomePage} />
-                <Route path="/learn" component={LearnPage} />
-                <Route path="/offers" component={OffersPage} />
-                <Route path="/contact" component={ContactPage} />
-                <Route path="/track-inquiry" component={TrackInquiryPage} />
-                <Route path="/auth/signin" component={SignInPage} />
-                <Route path="/auth/signup" component={SignUpPage} />
-                <Route
-                  path="/auth/forgot-password"
-                  component={ForgotPasswordPage}
-                />
-                <Route
-                  path="/auth/verify-account"
-                  component={VerifyAccountPage}
-                />
-                <Route
-                  path="/auth/accept-invitation"
-                  component={AcceptInvitePage}
-                />
-                <Route component={NotFoundPage} />
-              </Switch>
-            </PublicLayout>
-          ) : (
-            <PrivateLayout>
-              <Switch>
-                <Route path="/dashboard" component={CompanyDashboardPage} />
-                <Route path="/company/new" component={CompanyPage} />
-                <Route path="/company/settings" component={CompanySettingsPage} />
-                <Route path="/company/:id" component={CompanyPage} />
-                <Route path="/company/:id/members" component={CompanyMembersPage} />
-                <Route path="/address-book" component={AddressBookPage} />
-                <Route path="/orgchart/:id" component={OrgChartViewPage} />
-                <Route path="/orgchart" component={OrgChartListPage} />
-                <Route path="/doa/matrix/new" component={DOAMatrixFormPage} />
-                <Route path="/doa/matrix/:id" component={DOAMatrixFormPage} />
-                <Route path="/doa/:id" component={DOADetailPage} />
-                <Route path="/doa" component={DOAPage} />
-                <Route path="/task/approval/:taskId" component={ApprovalTaskPage} />
-                <Route path="/task/orgchart/:taskId" component={OrgChartApprovalTaskPage} />
-                <Route path="/task/new" component={TaskFormPage} />
-                <Route path="/task/edit/:id" component={TaskFormPage} />
-                <Route path="/task/:taskId" component={TaskDetailPage} />
-                <Route path="/task" component={TasksPage} />
-                <Route path="/users/invite" component={InviteUserPage} />
-                <Route path="/users" component={UserManagementPage} />
-                <Route path="/audit" component={AuditLogsPage} />
-                <Route path="/account/:rest*" component={AccountPage} />
-                <Route component={NotFoundPage} />
-              </Switch>
-            </PrivateLayout>
-          )}
+    <I18nextProvider i18n={i18n}>
+      <AuthProvider>
+        <CompanyProvider>
+          <TaskProvider>
+            {isPublicRoute ? (
+              <PublicLayout>
+                <Switch>
+                  <Route path="/" component={HomePage} />
+                  <Route path="/learn" component={LearnPage} />
+                  <Route path="/offers" component={OffersPage} />
+                  <Route path="/contact" component={ContactPage} />
+                  <Route path="/track-inquiry" component={TrackInquiryPage} />
+                  <Route path="/auth/signin" component={SignInPage} />
+                  <Route path="/auth/signup" component={SignUpPage} />
+                  <Route
+                    path="/auth/forgot-password"
+                    component={ForgotPasswordPage}
+                  />
+                  <Route
+                    path="/auth/verify-account"
+                    component={VerifyAccountPage}
+                  />
+                  <Route
+                    path="/auth/accept-invitation"
+                    component={AcceptInvitePage}
+                  />
+                  <Route component={NotFoundPage} />
+                </Switch>
+              </PublicLayout>
+            ) : (
+              <PrivateLayout>
+                <Switch>
+                  <Route path="/dashboard" component={CompanyDashboardPage} />
+                  <Route path="/company/new" component={CompanyPage} />
+                  <Route path="/company/settings" component={CompanySettingsPage} />
+                  <Route path="/company/:id" component={CompanyPage} />
+                  <Route path="/company/:id/members" component={CompanyMembersPage} />
+                  <Route path="/address-book" component={AddressBookPage} />
+                  <Route path="/orgchart/:id" component={OrgChartViewPage} />
+                  <Route path="/orgchart" component={OrgChartListPage} />
+                  <Route path="/doa/matrix/new" component={DOAMatrixFormPage} />
+                  <Route path="/doa/matrix/:id" component={DOAMatrixFormPage} />
+                  <Route path="/doa/:id" component={DOADetailPage} />
+                  <Route path="/doa" component={DOAPage} />
+                  <Route path="/task/approval/:taskId" component={ApprovalTaskPage} />
+                  <Route path="/task/orgchart/:taskId" component={OrgChartApprovalTaskPage} />
+                  <Route path="/task/new" component={TaskFormPage} />
+                  <Route path="/task/edit/:id" component={TaskFormPage} />
+                  <Route path="/task/:taskId" component={TaskDetailPage} />
+                  <Route path="/task" component={TasksPage} />
+                  <Route path="/users/invite" component={InviteUserPage} />
+                  <Route path="/users" component={UserManagementPage} />
+                  <Route path="/audit" component={AuditLogsPage} />
+                  <Route path="/account/:rest*" component={AccountPage} />
+                  <Route component={NotFoundPage} />
+                </Switch>
+              </PrivateLayout>
+            )}
 
-          <Toaster position="top-right" />
-        </TaskProvider>
-      </CompanyProvider>
-    </AuthProvider>
+            <Toaster position="top-right" />
+          </TaskProvider>
+        </CompanyProvider>
+      </AuthProvider>
+    </I18nextProvider>
   );
 }
 

@@ -14,6 +14,13 @@
     "preview": "vite preview",
     "import:data": "bun run scripts/import-data.ts",
     "seed:reference": "bun run scripts/seed-reference-data.ts",
+    "db:drop": "bun run src/api/db/drop.ts",
+    "db:migrate": "bun run src/api/db/migrate.ts",
+    "db:seed": "bun run src/api/db/seed.ts",
+    "db:seed:reference": "psql -U postgres -d ankey -f src/api/db/reference.seed.sql",
+    "db:reset": "bun run db:drop && bun run db:migrate && bun run db:seed && bun run db:seed:reference",
+    "db:deploy:supabase": "bun run src/api/db/deploy-to-supabase.ts",
+    "db:supabase:permissions": "bun run src/api/db/setup-supabase-permissions.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"

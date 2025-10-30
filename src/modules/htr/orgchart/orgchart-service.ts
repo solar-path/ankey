@@ -9,6 +9,7 @@ import type {
   OrgChart,
   Department,
   Position,
+  AppointmentHistory,
 } from "./orgchart.types";
 
 // TODO: OrgChartNode type should be exported from orgchart.types.ts
@@ -73,18 +74,27 @@ export class OrgChartService {
       description?: string;
       code?: string;
       headcount?: number;
-      charter?: string;
+      charter?: {
+        mission?: string;
+        objectives?: string[];
+        responsibilities?: string[];
+        kpis?: string[];
+      };
       parentDepartmentId?: string;
     }
   ): Promise<{ department: Department; headPosition: Position }> {
     return callFunction("orgchart.create_department", {
       company_id: companyId,
+      user_id: userId,
       parent_id: data.parentDepartmentId || data.orgChartId, // Use orgChartId if no parent
       title: data.title,
       description: data.description,
       code: data.code,
       headcount: data.headcount,
-      charter: data.charter,
+      charter_mission: data.charter?.mission,
+      charter_objectives: data.charter?.objectives,
+      charter_responsibilities: data.charter?.responsibilities,
+      charter_kpis: data.charter?.kpis,
     });
   }
 
@@ -103,21 +113,30 @@ export class OrgChartService {
       salaryMax?: number;
       salaryCurrency?: string;
       salaryFrequency?: string;
-      jobDescription?: string;
+      jobDescription?: {
+        summary?: string;
+        responsibilities?: string[];
+        requirements?: string[];
+        qualifications?: string[];
+        benefits?: string[];
+      };
     }
   ): Promise<Position> {
     return callFunction("orgchart.create_position", {
       company_id: companyId,
       user_id: userId,
-      orgchart_id: data.orgChartId,
-      department_id: data.departmentId,
+      parent_id: data.departmentId,
       title: data.title,
       description: data.description,
       salary_min: data.salaryMin,
       salary_max: data.salaryMax,
-      salary_currency: data.salaryCurrency,
-      salary_frequency: data.salaryFrequency,
-      job_description: data.jobDescription,
+      salary_currency: data.salaryCurrency || 'USD',
+      salary_frequency: data.salaryFrequency || 'annual',
+      job_summary: data.jobDescription?.summary,
+      job_responsibilities: data.jobDescription?.responsibilities,
+      job_requirements: data.jobDescription?.requirements,
+      job_qualifications: data.jobDescription?.qualifications,
+      job_benefits: data.jobDescription?.benefits,
     });
   }
 
@@ -126,34 +145,50 @@ export class OrgChartService {
    */
   static async createAppointment(
     companyId: string,
-    userId: string,
+    actingUserId: string,
     data: {
-      orgChartId: string;
-      departmentId: string;
       positionId: string;
-      userId?: string;
-      isVacant: boolean;
-      jobOffer?: any;
+      userId: string;
+      fullname: string;
+      email: string;
+      reportsToPositionId?: string;
+      jobOffer?: {
+        salary?: number;
+        startDate?: number;
+        benefits?: string[];
+        conditions?: string[];
+      };
     }
   ): Promise<any> {
     return callFunction("orgchart.create_appointment", {
       company_id: companyId,
-      user_id: userId,
-      orgchart_id: data.orgChartId,
-      department_id: data.departmentId,
+      acting_user_id: actingUserId,
       position_id: data.positionId,
-      appointee_user_id: data.userId,
-      is_vacant: data.isVacant,
-      job_offer: data.jobOffer,
+      user_id: data.userId,
+      appointee_fullname: data.fullname,
+      appointee_email: data.email,
+      reports_to_position_id: data.reportsToPositionId,
+      job_offer_salary: data.jobOffer?.salary,
+      job_offer_start_date: data.jobOffer?.startDate ? new Date(data.jobOffer.startDate).toISOString() : null,
+      job_offer_benefits: data.jobOffer?.benefits,
+      job_offer_conditions: data.jobOffer?.conditions,
     });
   }
 
   /**
    * Remove appointment from position
    */
-  static async removeAppointment(positionId: string): Promise<void> {
+  static async removeAppointment(
+    companyId: string,
+    actingUserId: string,
+    positionId: string,
+    endReason: 'resigned' | 'terminated' | 'transferred' | 'promoted' | 'reorganization' = 'resigned'
+  ): Promise<void> {
     await callFunction("orgchart.remove_appointment", {
+      company_id: companyId,
+      acting_user_id: actingUserId,
       position_id: positionId,
+      end_reason: endReason,
     });
   }
 
@@ -385,5 +420,101 @@ export class OrgChartService {
   static async getPayrollForecast(_companyId: string, _orgChartId: string): Promise<any> {
     console.warn("[OrgChartService] getPayrollForecast: Not fully implemented - awaiting complete migration");
     return { total: 0, positions: [] };
+  }
+
+  // ============================================================================
+  // NEW METHODS - Appointment History & Hierarchical Reporting
+  // ============================================================================
+
+  /**
+   * Get appointment history for a position
+   */
+  static async getAppointmentHistory(positionId: string): Promise<any[]> {
+    const result = await callFunction("orgchart.get_appointment_history", {
+      position_id: positionId,
+    });
+    return result as any[];
+  }
+
+  /**
+   * Get direct reports for a position (hierarchical reporting)
+   */
+  static async getDirectReports(positionId: string): Promise<any[]> {
+    const result = await callFunction("orgchart.get_direct_reports", {
+      position_id: positionId,
+    });
+    return result as any[];
+  }
+
+  /**
+   * Get reporting chain from position to top (position -> manager -> director -> ...)
+   */
+  static async getReportingChain(positionId: string): Promise<any[]> {
+    const result = await callFunction("orgchart.get_reporting_chain", {
+      position_id: positionId,
+    });
+    return result as any[];
+  }
+
+  /**
+   * Transfer appointment from one position to another
+   */
+  static async transferAppointment(
+    companyId: string,
+    actingUserId: string,
+    data: {
+      fromPositionId: string;
+      toPositionId: string;
+      transferReason?: string;
+      newReportsToPositionId?: string;
+      newJobOffer?: {
+        salary?: number;
+        startDate?: number;
+        benefits?: string[];
+        conditions?: string[];
+      };
+    }
+  ): Promise<any> {
+    return callFunction("orgchart.transfer_appointment", {
+      company_id: companyId,
+      acting_user_id: actingUserId,
+      from_position_id: data.fromPositionId,
+      to_position_id: data.toPositionId,
+      transfer_reason: data.transferReason || 'transferred',
+      new_reports_to_position_id: data.newReportsToPositionId,
+      new_job_offer_data: data.newJobOffer ? {
+        salary: data.newJobOffer.salary,
+        start_date: data.newJobOffer.startDate,
+        benefits: data.newJobOffer.benefits,
+        conditions: data.newJobOffer.conditions,
+      } : null,
+    });
+  }
+
+  /**
+   * Update job offer for current appointment
+   */
+  static async updateJobOffer(
+    companyId: string,
+    actingUserId: string,
+    positionId: string,
+    jobOffer: {
+      salary?: number;
+      startDate?: number;
+      benefits?: string[];
+      conditions?: string[];
+    }
+  ): Promise<any> {
+    return callFunction("orgchart.update_job_offer", {
+      company_id: companyId,
+      acting_user_id: actingUserId,
+      position_id: positionId,
+      job_offer_data: {
+        salary: jobOffer.salary,
+        start_date: jobOffer.startDate,
+        benefits: jobOffer.benefits,
+        conditions: jobOffer.conditions,
+      },
+    });
   }
 }

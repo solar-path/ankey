@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  Check,
   ChevronsUpDown,
   Languages,
   LogOut,
@@ -43,8 +44,11 @@ export function NavUser({
   const { logout } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const changeLanguage = (lng: SupportedLanguage) => {
-    i18n.changeLanguage(lng)
+  const changeLanguage = async (lng: SupportedLanguage) => {
+    console.log('[NavUser] Changing language from', i18n.language, 'to', lng)
+    await i18n.changeLanguage(lng)
+    console.log('[NavUser] Language changed to', i18n.language)
+    console.log('[NavUser] localStorage i18nextLng:', localStorage.getItem('i18nextLng'))
   }
 
   return (
@@ -120,7 +124,11 @@ export function NavUser({
                   onClick={() => changeLanguage(code as SupportedLanguage)}
                   className={i18n.language === code ? 'bg-accent' : ''}
                 >
-                  <Languages className="opacity-60" />
+                  {i18n.language === code ? (
+                    <Check className="opacity-60" />
+                  ) : (
+                    <Languages className="opacity-60" />
+                  )}
                   {name}
                 </DropdownMenuItem>
               ))}

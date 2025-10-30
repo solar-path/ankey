@@ -3,7 +3,9 @@
  * Use useAuthStore directly in new code
  */
 import React, { createContext, useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/modules/shared/stores";
+import { AuthService } from "@/modules/auth/auth-service";
 
 export interface User {
   _id: string;
@@ -12,10 +14,12 @@ export interface User {
   fullname: string;
   verified: boolean;
   avatar?: string;
+  preferredLanguage?: string;
   profile?: {
     avatar?: string;
     dob?: string;
     gender?: string;
+    preferredLanguage?: string;
   };
 }
 
@@ -33,17 +37,44 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUserLanguage: (language: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const store = useAuthStore();
+  const { i18n } = useTranslation();
 
-  // Initialize on mount
+  // Initialize on mount and apply user's preferred language
   useEffect(() => {
     store.initialize();
   }, []);
+
+  // Apply user's preferred language when user loads
+  useEffect(() => {
+    if (store.user?.preferredLanguage || store.user?.profile?.preferredLanguage) {
+      const userLanguage = store.user.preferredLanguage || store.user.profile?.preferredLanguage;
+      if (userLanguage && i18n.language !== userLanguage) {
+        console.log('[AuthProvider] Applying user preferred language:', userLanguage);
+        i18n.changeLanguage(userLanguage);
+      }
+    }
+  }, [store.user, i18n]);
+
+  const updateUserLanguage = async (language: string) => {
+    if (!store.user) {
+      throw new Error('No user logged in');
+    }
+
+    // Call AuthService to update language in backend
+    const updatedUser = await AuthService.updateLanguage(store.user._id, language);
+
+    // Refresh user data from backend to get the updated language
+    await store.refreshAuth();
+
+    return updatedUser;
+  };
 
   const value: AuthContextType = {
     user: store.user as User | null,
@@ -54,10 +85,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Add id as alias for _id
       const userWithId = { ...user, id: user._id };
       store.login(userWithId, session);
+
+      // Apply user's preferred language immediately on login
+      if (user.preferredLanguage || user.profile?.preferredLanguage) {
+        const userLanguage = user.preferredLanguage || user.profile?.preferredLanguage;
+        console.log('[AuthProvider] Applying language on login:', userLanguage);
+        i18n.changeLanguage(userLanguage);
+      }
     },
     logout: store.logout,
     refreshAuth: store.refreshAuth,
     refreshUser: store.refreshAuth, // Alias for refreshAuth
+    updateUserLanguage,
   };
 
   return (

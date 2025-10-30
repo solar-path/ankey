@@ -176,6 +176,16 @@ export class AuthService {
   }
 
   /**
+   * Update Language Preference
+   */
+  static async updateLanguage(userId: string, language: string) {
+    return callFunction("auth.update_language", {
+      user_id: userId,
+      preferred_language: language,
+    });
+  }
+
+  /**
    * Change Password
    */
   static async changePassword(

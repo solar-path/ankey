@@ -11,6 +11,7 @@ CREATE SCHEMA IF NOT EXISTS orgchart;
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
   _company_id UUID,
+  _user_id UUID,
   _title TEXT,
   _description TEXT DEFAULT NULL,
   _code TEXT DEFAULT NULL,
@@ -24,6 +25,7 @@ DECLARE
   v_orgchart RECORD;
   v_next_version NUMERIC;
   v_version_text TEXT;
+  v_metadata JSONB;
 BEGIN
   -- Validate status
   IF _status NOT IN ('draft', 'pending_approval', 'approved', 'revoked') THEN
@@ -32,7 +34,7 @@ BEGIN
 
   -- Auto-calculate next version if not provided
   IF _version IS NULL THEN
-    SELECT COALESCE(MAX(version::NUMERIC), 0) + 0.1
+    SELECT COALESCE(MAX((metadata->>'version')::NUMERIC), 0) + 0.1
     INTO v_next_version
     FROM orgcharts
     WHERE company_id = _company_id AND type = 'orgchart';
@@ -42,26 +44,44 @@ BEGIN
     v_version_text := _version;
   END IF;
 
+  -- Build metadata JSONB
+  v_metadata := jsonb_build_object(
+    'description', _description,
+    'code', _code,
+    'version', v_version_text
+  );
+
   -- Generate ID
   v_orgchart_id := gen_random_uuid();
 
   -- Insert orgchart
   INSERT INTO orgcharts (
-    id, company_id, type, title, description, code, version,
+    id, company_id, type, title, metadata,
     status, level, sort_order, created_at, updated_at
   ) VALUES (
-    v_orgchart_id, _company_id, 'orgchart', _title, _description,
-    _code, v_version_text, _status, 0, 0, NOW(), NOW()
+    v_orgchart_id, _company_id, 'orgchart', _title, v_metadata,
+    _status, 0, 0, NOW(), NOW()
   ) RETURNING * INTO v_orgchart;
+
+  -- Audit logging
+  PERFORM audit.log_action(
+    _user_id,
+    'CREATE',
+    'orgcharts',
+    v_orgchart_id::TEXT,
+    _company_id,
+    NULL,
+    row_to_json(v_orgchart)::JSONB,
+    NULL, NULL, NULL,
+    'Orgchart created: ' || _title
+  );
 
   RETURN jsonb_build_object(
     'id', v_orgchart.id,
     'companyId', v_orgchart.company_id,
     'type', v_orgchart.type,
     'title', v_orgchart.title,
-    'description', v_orgchart.description,
-    'code', v_orgchart.code,
-    'version', v_orgchart.version,
+    'metadata', v_orgchart.metadata,
     'status', v_orgchart.status,
     'level', v_orgchart.level,
     'sortOrder', v_orgchart.sort_order,
@@ -76,12 +96,16 @@ $$;
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_department(
   _company_id UUID,
+  _user_id UUID,
   _parent_id UUID,
   _title TEXT,
   _description TEXT DEFAULT NULL,
   _code TEXT DEFAULT NULL,
   _headcount INTEGER DEFAULT 0,
-  _charter TEXT DEFAULT NULL
+  _charter_mission TEXT DEFAULT NULL,
+  _charter_objectives TEXT[] DEFAULT NULL,
+  _charter_responsibilities TEXT[] DEFAULT NULL,
+  _charter_kpis TEXT[] DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -91,6 +115,8 @@ DECLARE
   v_parent_level INT;
   v_department RECORD;
   v_head_position RECORD;
+  v_metadata JSONB;
+  v_charter_data JSONB;
 BEGIN
   -- Get parent level
   SELECT level INTO v_parent_level FROM orgcharts WHERE id = _parent_id;
@@ -99,18 +125,32 @@ BEGIN
     RAISE EXCEPTION 'Parent not found';
   END IF;
 
+  -- Build metadata JSONB
+  v_metadata := jsonb_build_object(
+    'description', _description,
+    'code', _code
+  );
+
+  -- Build charter_data JSONB
+  v_charter_data := jsonb_build_object(
+    'mission', _charter_mission,
+    'objectives', COALESCE(to_jsonb(_charter_objectives), '[]'::jsonb),
+    'responsibilities', COALESCE(to_jsonb(_charter_responsibilities), '[]'::jsonb),
+    'kpis', COALESCE(to_jsonb(_charter_kpis), '[]'::jsonb)
+  );
+
   -- Generate IDs
   v_department_id := gen_random_uuid();
   v_head_position_id := gen_random_uuid();
 
   -- Insert department
   INSERT INTO orgcharts (
-    id, company_id, type, title, description, code, parent_id,
-    headcount, headcount_filled, headcount_unfilled, charter,
+    id, company_id, type, title, metadata, parent_id,
+    headcount, headcount_filled, headcount_unfilled, charter_data,
     level, sort_order, head_position_id, created_at, updated_at
   ) VALUES (
-    v_department_id, _company_id, 'department', _title, _description,
-    _code, _parent_id, _headcount, 0, _headcount, _charter,
+    v_department_id, _company_id, 'department', _title, v_metadata, _parent_id,
+    _headcount, 0, _headcount, v_charter_data,
     v_parent_level + 1, 0, v_head_position_id, NOW(), NOW()
   ) RETURNING * INTO v_department;
 
@@ -124,20 +164,32 @@ BEGIN
     v_parent_level + 2, 0, NOW(), NOW()
   ) RETURNING * INTO v_head_position;
 
+  -- Audit logging
+  PERFORM audit.log_action(
+    _user_id,
+    'CREATE',
+    'orgcharts',
+    v_department_id::TEXT,
+    _company_id,
+    NULL,
+    row_to_json(v_department)::JSONB,
+    NULL, NULL, NULL,
+    'Department created: ' || _title
+  );
+
   RETURN jsonb_build_object(
     'department', jsonb_build_object(
       'id', v_department.id,
       'companyId', v_department.company_id,
       'type', v_department.type,
       'title', v_department.title,
-      'description', v_department.description,
-      'code', v_department.code,
+      'metadata', v_department.metadata,
       'parentId', v_department.parent_id,
       'headPositionId', v_department.head_position_id,
       'headcount', v_department.headcount,
       'headcountFilled', v_department.headcount_filled,
       'headcountUnfilled', v_department.headcount_unfilled,
-      'charter', v_department.charter,
+      'charterData', v_department.charter_data,
       'level', v_department.level,
       'sortOrder', v_department.sort_order,
       'createdAt', EXTRACT(EPOCH FROM v_department.created_at)::BIGINT * 1000,
@@ -157,12 +209,19 @@ $$;
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_position(
   _company_id UUID,
+  _user_id UUID,
   _parent_id UUID,
   _title TEXT,
   _description TEXT DEFAULT NULL,
   _salary_min INTEGER DEFAULT NULL,
   _salary_max INTEGER DEFAULT NULL,
-  _job_description TEXT DEFAULT NULL
+  _salary_currency TEXT DEFAULT 'USD',
+  _salary_frequency TEXT DEFAULT 'annual',
+  _job_summary TEXT DEFAULT NULL,
+  _job_responsibilities TEXT[] DEFAULT NULL,
+  _job_requirements TEXT[] DEFAULT NULL,
+  _job_qualifications TEXT[] DEFAULT NULL,
+  _job_benefits TEXT[] DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -170,6 +229,9 @@ DECLARE
   v_position_id UUID;
   v_parent_level INT;
   v_position RECORD;
+  v_metadata JSONB;
+  v_compensation_data JSONB;
+  v_job_description_data JSONB;
 BEGIN
   SELECT level INTO v_parent_level FROM orgcharts WHERE id = _parent_id;
 
@@ -177,28 +239,62 @@ BEGIN
     RAISE EXCEPTION 'Parent department not found';
   END IF;
 
+  -- Build metadata JSONB
+  v_metadata := jsonb_build_object(
+    'description', _description
+  );
+
+  -- Build compensation_data JSONB
+  v_compensation_data := jsonb_build_object(
+    'salary_min', _salary_min,
+    'salary_max', _salary_max,
+    'currency', _salary_currency,
+    'frequency', _salary_frequency
+  );
+
+  -- Build job_description_data JSONB
+  v_job_description_data := jsonb_build_object(
+    'summary', _job_summary,
+    'responsibilities', COALESCE(to_jsonb(_job_responsibilities), '[]'::jsonb),
+    'requirements', COALESCE(to_jsonb(_job_requirements), '[]'::jsonb),
+    'qualifications', COALESCE(to_jsonb(_job_qualifications), '[]'::jsonb),
+    'benefits', COALESCE(to_jsonb(_job_benefits), '[]'::jsonb)
+  );
+
   v_position_id := gen_random_uuid();
 
   INSERT INTO orgcharts (
-    id, company_id, type, title, description, parent_id,
-    salary_min, salary_max, job_description, is_vacant,
+    id, company_id, type, title, metadata, parent_id,
+    compensation_data, job_description_data, is_vacant,
     level, sort_order, created_at, updated_at
   ) VALUES (
-    v_position_id, _company_id, 'position', _title, _description, _parent_id,
-    _salary_min, _salary_max, _job_description, TRUE,
+    v_position_id, _company_id, 'position', _title, v_metadata, _parent_id,
+    v_compensation_data, v_job_description_data, TRUE,
     v_parent_level + 1, 0, NOW(), NOW()
   ) RETURNING * INTO v_position;
+
+  -- Audit logging
+  PERFORM audit.log_action(
+    _user_id,
+    'CREATE',
+    'orgcharts',
+    v_position_id::TEXT,
+    _company_id,
+    NULL,
+    row_to_json(v_position)::JSONB,
+    NULL, NULL, NULL,
+    'Position created: ' || _title
+  );
 
   RETURN jsonb_build_object(
     'id', v_position.id,
     'companyId', v_position.company_id,
     'type', v_position.type,
     'title', v_position.title,
-    'description', v_position.description,
+    'metadata', v_position.metadata,
     'parentId', v_position.parent_id,
-    'salaryMin', v_position.salary_min,
-    'salaryMax', v_position.salary_max,
-    'jobDescription', v_position.job_description,
+    'compensationData', v_position.compensation_data,
+    'jobDescriptionData', v_position.job_description_data,
     'isVacant', v_position.is_vacant,
     'level', v_position.level,
     'sortOrder', v_position.sort_order,
@@ -213,15 +309,25 @@ $$;
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_appointment(
   _company_id UUID,
+  _acting_user_id UUID,
   _position_id UUID,
   _user_id UUID,
   _appointee_fullname TEXT,
-  _appointee_email TEXT
+  _appointee_email TEXT,
+  _reports_to_position_id UUID DEFAULT NULL,
+  _job_offer_salary INTEGER DEFAULT NULL,
+  _job_offer_start_date TIMESTAMP DEFAULT NULL,
+  _job_offer_benefits TEXT[] DEFAULT NULL,
+  _job_offer_conditions TEXT[] DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_position RECORD;
+  v_orgchart_id UUID;
+  v_appointment_data JSONB;
+  v_job_offer JSONB;
+  v_history_id UUID;
 BEGIN
   -- Check if position exists and is vacant
   SELECT * INTO v_position FROM orgcharts WHERE id = _position_id AND type = 'position';
@@ -234,7 +340,31 @@ BEGIN
     RAISE EXCEPTION 'Position is already filled';
   END IF;
 
-  -- Update position with appointment
+  -- Get orgchart_id (root parent)
+  SELECT id INTO v_orgchart_id
+  FROM orgcharts
+  WHERE company_id = _company_id AND type = 'orgchart' AND parent_id IS NULL
+  LIMIT 1;
+
+  -- Build job_offer JSONB
+  v_job_offer := jsonb_build_object(
+    'salary', _job_offer_salary,
+    'start_date', EXTRACT(EPOCH FROM _job_offer_start_date)::BIGINT * 1000,
+    'benefits', COALESCE(to_jsonb(_job_offer_benefits), '[]'::jsonb),
+    'conditions', COALESCE(to_jsonb(_job_offer_conditions), '[]'::jsonb)
+  );
+
+  -- Build appointment_data JSONB
+  v_appointment_data := jsonb_build_object(
+    'user_id', _user_id::TEXT,
+    'fullname', _appointee_fullname,
+    'email', _appointee_email,
+    'appointed_at', EXTRACT(EPOCH FROM NOW())::BIGINT * 1000,
+    'reports_to_position_id', _reports_to_position_id::TEXT,
+    'job_offer', v_job_offer
+  );
+
+  -- Update position with appointment (JSONB + legacy columns)
   UPDATE orgcharts
   SET
     appointee_user_id = _user_id,
@@ -242,25 +372,48 @@ BEGIN
     appointee_email = _appointee_email,
     is_vacant = FALSE,
     appointed_at = NOW(),
+    appointment_data = v_appointment_data,
     updated_at = NOW()
   WHERE id = _position_id
   RETURNING * INTO v_position;
+
+  -- Create appointment history record
+  INSERT INTO orgchart_appointment_history (
+    company_id, orgchart_id, position_id, user_id,
+    fullname, email, reports_to_position_id, job_offer_data,
+    appointed_at, created_at, updated_at
+  ) VALUES (
+    _company_id, v_orgchart_id, _position_id, _user_id,
+    _appointee_fullname, _appointee_email, _reports_to_position_id, v_job_offer,
+    NOW(), NOW(), NOW()
+  ) RETURNING id INTO v_history_id;
 
   -- Update parent department headcount
   UPDATE orgcharts
   SET
     headcount_filled = headcount_filled + 1,
-    headcount_unfilled = headcount_unfilled - 1,
+    headcount_unfilled = GREATEST(headcount_unfilled - 1, 0),
     updated_at = NOW()
-  WHERE id = v_position.parent_id AND type = 'department';
+  WHERE id = v_position.parent_id AND type IN ('department', 'division', 'unit');
+
+  -- Audit logging
+  PERFORM audit.log_action(
+    _acting_user_id,
+    'CREATE',
+    'orgchart_appointment_history',
+    v_history_id::TEXT,
+    _company_id,
+    NULL,
+    v_appointment_data,
+    NULL, NULL, NULL,
+    'Appointment created for position: ' || v_position.title || ', user: ' || _appointee_fullname
+  );
 
   RETURN jsonb_build_object(
     'id', v_position.id,
-    'appointeeUserId', v_position.appointee_user_id,
-    'appointeeFullname', v_position.appointee_fullname,
-    'appointeeEmail', v_position.appointee_email,
+    'appointmentData', v_position.appointment_data,
     'isVacant', v_position.is_vacant,
-    'appointedAt', EXTRACT(EPOCH FROM v_position.appointed_at)::BIGINT * 1000
+    'historyId', v_history_id
   );
 END;
 $$;
@@ -268,11 +421,17 @@ $$;
 -- ============================================
 -- 5. REMOVE APPOINTMENT
 -- ============================================
-CREATE OR REPLACE FUNCTION orgchart.remove_appointment(_position_id UUID)
+CREATE OR REPLACE FUNCTION orgchart.remove_appointment(
+  _company_id UUID,
+  _acting_user_id UUID,
+  _position_id UUID,
+  _end_reason TEXT DEFAULT 'resigned'
+)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_position RECORD;
+  v_old_appointment_data JSONB;
 BEGIN
   SELECT * INTO v_position FROM orgcharts WHERE id = _position_id AND type = 'position';
 
@@ -280,7 +439,24 @@ BEGIN
     RAISE EXCEPTION 'Position not found';
   END IF;
 
-  -- Update position
+  IF v_position.is_vacant = TRUE THEN
+    RAISE EXCEPTION 'Position is already vacant';
+  END IF;
+
+  -- Save old appointment data for audit
+  v_old_appointment_data := v_position.appointment_data;
+
+  -- Update appointment history to mark as ended
+  UPDATE orgchart_appointment_history
+  SET
+    ended_at = NOW(),
+    end_reason = _end_reason,
+    updated_at = NOW()
+  WHERE position_id = _position_id
+    AND user_id = v_position.appointee_user_id
+    AND ended_at IS NULL;
+
+  -- Clear position appointment (JSONB + legacy columns)
   UPDATE orgcharts
   SET
     appointee_user_id = NULL,
@@ -288,18 +464,36 @@ BEGIN
     appointee_email = NULL,
     is_vacant = TRUE,
     appointed_at = NULL,
+    appointment_data = NULL,
     updated_at = NOW()
   WHERE id = _position_id;
 
   -- Update parent department headcount
   UPDATE orgcharts
   SET
-    headcount_filled = headcount_filled - 1,
+    headcount_filled = GREATEST(headcount_filled - 1, 0),
     headcount_unfilled = headcount_unfilled + 1,
     updated_at = NOW()
-  WHERE id = v_position.parent_id AND type = 'department';
+  WHERE id = v_position.parent_id AND type IN ('department', 'division', 'unit');
 
-  RETURN jsonb_build_object('success', TRUE, 'message', 'Appointment removed');
+  -- Audit logging
+  PERFORM audit.log_action(
+    _acting_user_id,
+    'DELETE',
+    'orgcharts',
+    _position_id::TEXT,
+    _company_id,
+    v_old_appointment_data,
+    NULL,
+    NULL, NULL, NULL,
+    'Appointment removed from position: ' || v_position.title || ', reason: ' || _end_reason
+  );
+
+  RETURN jsonb_build_object(
+    'success', TRUE,
+    'message', 'Appointment removed',
+    'endReason', _end_reason
+  );
 END;
 $$;
 
@@ -474,12 +668,22 @@ $$;
 -- ============================================
 -- 9. GET ALL ORGCHARTS FOR COMPANY
 -- ============================================
-CREATE OR REPLACE FUNCTION orgchart.get_all_orgcharts(_company_id UUID)
+CREATE OR REPLACE FUNCTION orgchart.get_all_orgcharts(_company_id TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
   v_orgcharts JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
   SELECT jsonb_agg(
     jsonb_build_object(
       'id', id,
@@ -493,7 +697,7 @@ BEGIN
     ORDER BY created_at DESC
   ) INTO v_orgcharts
   FROM orgcharts
-  WHERE company_id = _company_id AND type = 'orgchart';
+  WHERE company_id = v_company_uuid AND type = 'orgchart';
 
   RETURN COALESCE(v_orgcharts, '[]'::JSONB);
 END;
@@ -605,6 +809,297 @@ $$;
 -- ============================================
 -- COMMENTS
 -- ============================================
+-- ============================================
+-- 12. GET APPOINTMENT HISTORY FOR POSITION
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.get_appointment_history(_position_id UUID)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_history JSONB;
+BEGIN
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'id', id,
+      'userId', user_id,
+      'fullname', fullname,
+      'email', email,
+      'reportsToPositionId', reports_to_position_id,
+      'jobOfferData', job_offer_data,
+      'appointedAt', EXTRACT(EPOCH FROM appointed_at)::BIGINT * 1000,
+      'endedAt', EXTRACT(EPOCH FROM ended_at)::BIGINT * 1000,
+      'endReason', end_reason,
+      'createdAt', EXTRACT(EPOCH FROM created_at)::BIGINT * 1000
+    )
+    ORDER BY appointed_at DESC
+  ) INTO v_history
+  FROM orgchart_appointment_history
+  WHERE position_id = _position_id;
+
+  RETURN COALESCE(v_history, '[]'::JSONB);
+END;
+$$;
+
+-- ============================================
+-- 13. GET DIRECT REPORTS (Hierarchical Reporting)
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.get_direct_reports(_position_id UUID)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_reports JSONB;
+BEGIN
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'id', o.id,
+      'title', o.title,
+      'isVacant', o.is_vacant,
+      'appointmentData', o.appointment_data,
+      'createdAt', EXTRACT(EPOCH FROM o.created_at)::BIGINT * 1000
+    )
+    ORDER BY o.title
+  ) INTO v_reports
+  FROM orgcharts o
+  WHERE o.type = 'position'
+    AND o.is_vacant = FALSE
+    AND (o.appointment_data->>'reports_to_position_id')::UUID = _position_id;
+
+  RETURN COALESCE(v_reports, '[]'::JSONB);
+END;
+$$;
+
+-- ============================================
+-- 14. GET REPORTING CHAIN (Position -> Manager -> Director -> ...)
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.get_reporting_chain(_position_id UUID)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_chain JSONB;
+BEGIN
+  WITH RECURSIVE reporting_chain AS (
+    -- Base case: start with the given position
+    SELECT
+      o.id,
+      o.title,
+      o.type,
+      o.appointment_data,
+      (o.appointment_data->>'reports_to_position_id')::UUID AS reports_to_id,
+      1 AS depth
+    FROM orgcharts o
+    WHERE o.id = _position_id
+
+    UNION ALL
+
+    -- Recursive case: get the manager
+    SELECT
+      o.id,
+      o.title,
+      o.type,
+      o.appointment_data,
+      (o.appointment_data->>'reports_to_position_id')::UUID AS reports_to_id,
+      rc.depth + 1
+    FROM orgcharts o
+    INNER JOIN reporting_chain rc ON o.id = rc.reports_to_id
+    WHERE rc.depth < 20  -- Prevent infinite loops
+  )
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'id', id,
+      'title', title,
+      'type', type,
+      'appointmentData', appointment_data,
+      'reportsToId', reports_to_id,
+      'depth', depth
+    )
+    ORDER BY depth
+  ) INTO v_chain
+  FROM reporting_chain;
+
+  RETURN COALESCE(v_chain, '[]'::JSONB);
+END;
+$$;
+
+-- ============================================
+-- 15. TRANSFER APPOINTMENT (Move user to different position)
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.transfer_appointment(
+  _company_id UUID,
+  _acting_user_id UUID,
+  _from_position_id UUID,
+  _to_position_id UUID,
+  _transfer_reason TEXT DEFAULT 'transferred',
+  _new_reports_to_position_id UUID DEFAULT NULL,
+  _new_job_offer_data JSONB DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_from_position RECORD;
+  v_to_position RECORD;
+  v_user_id UUID;
+  v_fullname TEXT;
+  v_email TEXT;
+  v_appointment_data JSONB;
+BEGIN
+  -- Get source position
+  SELECT * INTO v_from_position
+  FROM orgcharts
+  WHERE id = _from_position_id AND type = 'position';
+
+  IF v_from_position.id IS NULL THEN
+    RAISE EXCEPTION 'Source position not found';
+  END IF;
+
+  IF v_from_position.is_vacant = TRUE THEN
+    RAISE EXCEPTION 'Source position is vacant';
+  END IF;
+
+  -- Get destination position
+  SELECT * INTO v_to_position
+  FROM orgcharts
+  WHERE id = _to_position_id AND type = 'position';
+
+  IF v_to_position.id IS NULL THEN
+    RAISE EXCEPTION 'Destination position not found';
+  END IF;
+
+  IF v_to_position.is_vacant = FALSE THEN
+    RAISE EXCEPTION 'Destination position is already filled';
+  END IF;
+
+  -- Extract user info from source position
+  v_user_id := v_from_position.appointee_user_id;
+  v_fullname := v_from_position.appointee_fullname;
+  v_email := v_from_position.appointee_email;
+
+  -- Remove from old position
+  PERFORM orgchart.remove_appointment(
+    _company_id,
+    _acting_user_id,
+    _from_position_id,
+    _transfer_reason
+  );
+
+  -- Create appointment at new position
+  PERFORM orgchart.create_appointment(
+    _company_id,
+    _acting_user_id,
+    _to_position_id,
+    v_user_id,
+    v_fullname,
+    v_email,
+    COALESCE(_new_reports_to_position_id, (v_from_position.appointment_data->>'reports_to_position_id')::UUID),
+    (COALESCE(_new_job_offer_data, v_from_position.appointment_data->'job_offer')->>'salary')::INTEGER,
+    to_timestamp((COALESCE(_new_job_offer_data, v_from_position.appointment_data->'job_offer')->>'start_date')::BIGINT / 1000),
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_new_job_offer_data, v_from_position.appointment_data->'job_offer')->'benefits'))::TEXT[],
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_new_job_offer_data, v_from_position.appointment_data->'job_offer')->'conditions'))::TEXT[]
+  );
+
+  -- Audit logging
+  PERFORM audit.log_action(
+    _acting_user_id,
+    'UPDATE',
+    'orgcharts',
+    _to_position_id::TEXT,
+    _company_id,
+    NULL,
+    jsonb_build_object(
+      'action', 'transfer',
+      'fromPositionId', _from_position_id,
+      'toPositionId', _to_position_id,
+      'userId', v_user_id,
+      'reason', _transfer_reason
+    ),
+    NULL, NULL, NULL,
+    'Appointment transferred from ' || v_from_position.title || ' to ' || v_to_position.title
+  );
+
+  RETURN jsonb_build_object(
+    'success', TRUE,
+    'message', 'Appointment transferred',
+    'fromPositionId', _from_position_id,
+    'toPositionId', _to_position_id,
+    'userId', v_user_id
+  );
+END;
+$$;
+
+-- ============================================
+-- 16. UPDATE JOB OFFER FOR CURRENT APPOINTMENT
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.update_job_offer(
+  _company_id UUID,
+  _acting_user_id UUID,
+  _position_id UUID,
+  _job_offer_data JSONB
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_position RECORD;
+  v_old_appointment_data JSONB;
+  v_new_appointment_data JSONB;
+BEGIN
+  -- Get position
+  SELECT * INTO v_position
+  FROM orgcharts
+  WHERE id = _position_id AND type = 'position';
+
+  IF v_position.id IS NULL THEN
+    RAISE EXCEPTION 'Position not found';
+  END IF;
+
+  IF v_position.is_vacant = TRUE THEN
+    RAISE EXCEPTION 'Position is vacant';
+  END IF;
+
+  -- Save old data for audit
+  v_old_appointment_data := v_position.appointment_data;
+
+  -- Update job_offer in appointment_data
+  v_new_appointment_data := v_position.appointment_data || jsonb_build_object('job_offer', _job_offer_data);
+
+  -- Update position
+  UPDATE orgcharts
+  SET
+    appointment_data = v_new_appointment_data,
+    updated_at = NOW()
+  WHERE id = _position_id;
+
+  -- Update appointment history
+  UPDATE orgchart_appointment_history
+  SET
+    job_offer_data = _job_offer_data,
+    updated_at = NOW()
+  WHERE position_id = _position_id
+    AND user_id = v_position.appointee_user_id
+    AND ended_at IS NULL;
+
+  -- Audit logging
+  PERFORM audit.log_action(
+    _acting_user_id,
+    'UPDATE',
+    'orgcharts',
+    _position_id::TEXT,
+    _company_id,
+    v_old_appointment_data,
+    v_new_appointment_data,
+    NULL, NULL, NULL,
+    'Job offer updated for position: ' || v_position.title
+  );
+
+  RETURN jsonb_build_object(
+    'success', TRUE,
+    'message', 'Job offer updated',
+    'appointmentData', v_new_appointment_data
+  );
+END;
+$$;
+
+-- ============================================
+-- COMMENTS
+-- ============================================
 COMMENT ON FUNCTION orgchart.create_orgchart IS 'Create root organizational chart';
 COMMENT ON FUNCTION orgchart.create_department IS 'Create department (auto-creates head position)';
 COMMENT ON FUNCTION orgchart.create_position IS 'Create position within department';
@@ -616,3 +1111,8 @@ COMMENT ON FUNCTION orgchart.delete_node IS 'Delete node (with optional cascade)
 COMMENT ON FUNCTION orgchart.get_all_orgcharts IS 'Get all orgcharts for company';
 COMMENT ON FUNCTION orgchart.update_status IS 'Update orgchart status (approval workflow)';
 COMMENT ON FUNCTION orgchart.duplicate_orgchart IS 'Duplicate orgchart with auto-incremented version';
+COMMENT ON FUNCTION orgchart.get_appointment_history IS 'Get appointment history for a position';
+COMMENT ON FUNCTION orgchart.get_direct_reports IS 'Get direct reports for a position (hierarchical reporting)';
+COMMENT ON FUNCTION orgchart.get_reporting_chain IS 'Get full reporting chain from position to top';
+COMMENT ON FUNCTION orgchart.transfer_appointment IS 'Transfer appointment from one position to another';
+COMMENT ON FUNCTION orgchart.update_job_offer IS 'Update job offer for current appointment';

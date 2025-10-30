@@ -7,7 +7,44 @@
     "learn": "Learn",
     "contact": "Contact",
     "signIn": "Sign In",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "actions": "Actions",
+    "status": "Status",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "description": "Description",
+    "title": "Title",
+    "created": "Created",
+    "updated": "Updated",
+    "version": "Version",
+    "apply": "Apply",
+    "add": "Add",
+    "remove": "Remove",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "download": "Download",
+    "upload": "Upload",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "export": "Export"
   },
   "audit": {
     "trail": {
@@ -52,6 +89,37 @@
       "download": "Download",
       "soc2": "SOC 2",
       "sox": "Sarbanes-Oxley"
+    },
+    "logs": {
+      "title": "Audit Logs",
+      "subtitle": "Monitor user activity, sessions, and system changes",
+      "showActiveSessions": "Show Active Sessions",
+      "hideActiveSessions": "Hide Active Sessions",
+      "filters": "Filters",
+      "filterByAction": "Filter by Action",
+      "filterByTable": "Filter by Table",
+      "allActions": "All Actions",
+      "tablePlaceholder": "companies, users, etc.",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "clearFilters": "Clear Filters",
+      "searchPlaceholder": "Search by user, table, action...",
+      "noLogsFound": "No audit logs found",
+      "exportCSV": "Export CSV",
+      "timestamp": "Timestamp",
+      "table": "Table",
+      "recordId": "Record ID",
+      "notes": "Notes",
+      "actions": {
+        "CREATE": "CREATE",
+        "UPDATE": "UPDATE",
+        "DELETE": "DELETE",
+        "LOGIN": "LOGIN",
+        "LOGOUT": "LOGOUT",
+        "LOGIN_FAILED": "LOGIN_FAILED",
+        "APPROVE": "APPROVE",
+        "REJECT": "REJECT"
+      }
     }
   },
   "home": {
@@ -118,6 +186,777 @@
       },
       "cta": "Contact Sales"
     }
+  },
+  "company": {
+    "createCompany": "Create Company",
+    "getStarted": "Get started",
+    "currentCompany": "Current Company",
+    "addCompany": "Add company",
+    "searchCompanies": "Search companies...",
+    "found": "Found {{count}}",
+    "companiesCount": "Companies ({{count}})",
+    "moreCompanies": "+{{count}} more companies (use search)",
+    "noCompaniesFound": "No companies found",
+    "dashboard": {
+      "title": "Company Dashboard",
+      "loading": "Loading dashboard...",
+      "overview": "Overview of {{company}}",
+      "yourCompany": "your company",
+      "payrollForecast": "Payroll Forecast",
+      "payrollDescription": "18-month projection based on approved organizational structure",
+      "noOrgChart": "No approved organizational chart found.",
+      "createOrgChart": "Create and approve an org chart to see payroll forecasts.",
+      "loadError": "Failed to load payroll forecast"
+    },
+    "members": {
+      "title": "Team Members",
+      "subtitle": "Manage your team members and their roles",
+      "noCompany": "Please select a company first",
+      "loading": "Loading members...",
+      "membersCount": "Members ({{count}})",
+      "peopleInfo": "People who have access to {{company}}",
+      "noMembers": "No members found",
+      "you": "You",
+      "joined": "Joined {{date}}",
+      "roles": {
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "loadError": "Failed to load team members",
+      "removeConfirm": "Are you sure you want to remove {{name}} from {{company}}? They will lose access to all company data.",
+      "roleUpdated": "Role updated successfully",
+      "roleUpdateError": "Failed to update role",
+      "memberRemoved": "Member removed successfully",
+      "memberRemoveError": "Failed to remove member"
+    },
+    "settings": {
+      "title": "Company Settings",
+      "subtitle": "Configure regional, financial, and security settings for {{company}}",
+      "noCompany": "No active company selected",
+      "noCompanySelected": "No company selected",
+      "regional": {
+        "title": "Regional Settings",
+        "subtitle": "Configure location, timezone, language, and format preferences",
+        "applyDefaults": "Apply defaults from {{country}}",
+        "country": "Country",
+        "countryHelp": "Primary country of operation (set from company residence)",
+        "timezone": "Timezone",
+        "timezoneCount": "{{count}} zones available for {{country}}",
+        "language": "Language",
+        "dateFormat": "Date Format",
+        "numberFormat": "Number Format"
+      },
+      "financial": {
+        "title": "Financial Settings",
+        "subtitle": "Configure fiscal year and currency settings for financial operations",
+        "fiscalYear": "Fiscal Year",
+        "fiscalYearHelp": "Define your company's fiscal year period",
+        "presets": {
+          "calendar": "Calendar Year",
+          "ukTax": "UK Tax Year",
+          "usFederal": "US Federal",
+          "australia": "Australia",
+          "india": "India"
+        },
+        "startDate": "Start Date (MM-DD)",
+        "endDate": "End Date (MM-DD)",
+        "workingCurrency": "Working Currency",
+        "workingCurrencyHelp": "Primary currency for daily operations",
+        "reportingCurrency": "Reporting Currency",
+        "reportingCurrencyHelp": "Currency for financial reporting and statements",
+        "additionalCurrencies": "Additional Currencies",
+        "additionalCurrenciesHelp": "Other currencies used in operations (for multi-currency support)",
+        "selectCurrency": "Select currency to add",
+        "currencyAlreadyAdded": "Currency already added",
+        "fiscalYearApplied": "Applied {{preset}} fiscal year"
+      },
+      "tax": {
+        "title": "Tax Settings",
+        "subtitle": "Configure default tax rates and labels",
+        "defaultRate": "Default Tax Rate (%)",
+        "defaultRateHelp": "Default VAT/GST/Tax rate percentage (e.g., 20 for 20%)",
+        "taxIdLabel": "Tax ID Label",
+        "taxIdLabelHelp": "How to label tax identification (VAT, GST, Tax ID, etc.)"
+      },
+      "security": {
+        "title": "Security Settings",
+        "subtitle": "Configure authentication and security policies",
+        "require2FA": "Require Two-Factor Authentication",
+        "require2FAHelp": "Force all team members to enable 2FA",
+        "deadline2FA": "2FA Enforcement Deadline",
+        "deadline2FAHelp": "Date by which all users must enable 2FA (optional)",
+        "passwordChangePeriod": "Password Change Period (days)",
+        "passwordChangePeriodHelp": "Require password change every X days (0 to disable)"
+      },
+      "saveButton": "Save Settings",
+      "saved": "Settings updated successfully",
+      "saveError": "Failed to update settings",
+      "noResidenceData": "No residence country data available",
+      "defaultsApplied": "Applied defaults from {{country}}"
+    },
+    "addressBook": {
+      "title": "Employee Directory",
+      "subtitle": "View and search employee contact information for {{company}}",
+      "noCompany": "No Company Selected",
+      "noCompanyPrompt": "Please select a company to view the employee directory",
+      "loading": "Loading employees...",
+      "searchPlaceholder": "Search employees...",
+      "noEmployees": "No employees found in the directory.",
+      "loadError": "Failed to load employee directory",
+      "columns": {
+        "employee": "Employee",
+        "email": "Email",
+        "phone": "Phone",
+        "department": "Department",
+        "position": "Position",
+        "address": "Address",
+        "role": "Role"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      }
+    }
+  },
+  "orgchart": {
+    "view": {
+      "title": "Organizational Chart",
+      "loading": "Loading organizational chart...",
+      "loadError": "Failed to load organizational chart",
+      "version": "v{{version}}",
+      "addDepartment": "Add Department",
+      "save": "Save",
+      "exportPDF": "PDF",
+      "exportExcel": "Excel",
+      "payrollForecast": "Payroll Forecast",
+      "payrollSubtitle": "18-month payroll projection based on current organizational structure",
+      "submitApproval": "Submit for Approval",
+      "approve": "Approve",
+      "status": {
+        "draft": "draft",
+        "pending_approval": "pending_approval",
+        "approved": "approved",
+        "revoked": "revoked"
+      },
+      "searchPlaceholder": "Search org chart...",
+      "showLabel": "Show:",
+      "viewOptions": {
+        "departments": "Departments",
+        "positions": "Positions",
+        "appointments": "Appointments"
+      },
+      "selectPrompt": "Select an item from the tree to view details",
+      "actions": {
+        "createSubDept": "Create Sub-Department",
+        "createPosition": "Create Position",
+        "createAppointment": "Create Appointment",
+        "duplicate": "Duplicate {{type}}",
+        "delete": "Delete {{type}}"
+      },
+      "vacant": "Vacant",
+      "reportsTo": "Reports to: {{position}}",
+      "deleteConfirm": "Delete {{name}}? This will cascade delete all children.",
+      "messages": {
+        "subDeptCreated": "Sub-department created",
+        "deptCreated": "Department created",
+        "positionCreated": "Position created with auto-generated code",
+        "positionCreateError": "Failed to create position",
+        "deptCreateError": "Failed to create department",
+        "deleted": "Deleted successfully",
+        "deleteError": "Failed to delete",
+        "deptDuplicated": "Department duplicated",
+        "positionDuplicated": "Position duplicated",
+        "appointmentDuplicated": "Appointment duplicated",
+        "duplicateError": "Failed to duplicate",
+        "submitted": "Submitted for approval",
+        "submitError": "Failed to submit",
+        "approvalNote": "Approval workflow is now managed through the Tasks page. Please check your tasks.",
+        "saved": "Organizational chart saved",
+        "saveError": "Failed to save",
+        "pdfGenerated": "PDF generated successfully",
+        "pdfError": "Failed to generate PDF",
+        "excelGenerated": "Excel file generated successfully",
+        "excelError": "Failed to generate Excel file",
+        "forecastError": "Failed to load payroll forecast",
+        "invalidDrop": "Cannot drop {{sourceType}} on {{targetType}}",
+        "moveDeptNotSupported": "Moving departments not yet supported",
+        "movePositionNote": "Moving positions between departments requires recreation",
+        "moveAppointmentNote": "Moving appointments between positions requires recreation",
+        "moveError": "Failed to move item",
+        "autoCreateNote": "Appointments are auto-created with positions",
+        "updated": "Updated successfully",
+        "updateError": "Failed to update"
+      },
+      "newItems": {
+        "subDept": "New Sub-Department",
+        "dept": "New Department",
+        "position": "New Position"
+      }
+    },
+    "list": {
+      "title": "Organizational Charts",
+      "subtitle": "Manage your organizational structures and hierarchies",
+      "loading": "Loading organizational charts...",
+      "createButton": "Create OrgChart",
+      "columns": {
+        "version": "Version",
+        "title": "Title",
+        "description": "Description",
+        "status": "Status",
+        "enforced": "Enforced",
+        "revoked": "Revoked",
+        "created": "Created"
+      },
+      "defaultTitle": "Organizational Chart {{year}}",
+      "defaultDescription": "New organizational structure",
+      "messages": {
+        "created": "Organizational chart created",
+        "createError": "Failed to create orgchart",
+        "duplicated": "Organizational chart duplicated successfully",
+        "duplicateError": "Failed to duplicate orgchart",
+        "onlyDraftApproval": "Only draft charts can be sent for approval",
+        "sentForApproval": "Organizational chart sent for approval",
+        "approvalError": "Failed to send for approval",
+        "renamed": "Organizational chart renamed successfully",
+        "renameError": "Failed to rename orgchart"
+      },
+      "renameDialog": {
+        "title": "Rename Organizational Chart",
+        "subtitle": "Update the title and description of your organizational chart.",
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "titlePlaceholder": "Enter title...",
+        "descriptionPlaceholder": "Enter description...",
+        "cancel": "Cancel",
+        "save": "Save Changes"
+      },
+      "actions": {
+        "view": "View",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "sendApproval": "Send for Approval"
+      },
+      "noCharts": "No organizational charts yet. Create your first one to get started."
+    }
+  },
+  "doa": {
+    "matrix": {
+      "loading": "Loading...",
+      "redirecting": "Redirecting...",
+      "createTitle": "Create Approval Matrix",
+      "editTitle": "Edit Approval Matrix",
+      "subtitle": "Define approval workflow rules and approvers",
+      "modifySubtitle": "Modify approval matrix: {{name}}",
+      "newMatrix": "New Matrix",
+      "columns": {
+        "documentType": "Document Type",
+        "status": "Status",
+        "created": "Created"
+      },
+      "messages": {
+        "created": "Matrix created successfully",
+        "updated": "Matrix updated successfully",
+        "loadError": "Failed to load approval matrix"
+      }
+    },
+    "list": {
+      "title": "Authorisation Matrix",
+      "subtitle": "Define approval workflows and rules for organizational processes",
+      "loading": "Loading approval matrices...",
+      "loadError": "Failed to load approval matrices",
+      "searchPlaceholder": "Search matrices...",
+      "newMatrix": "New Matrix",
+      "columns": {
+        "name": "Name",
+        "documentType": "Document Type",
+        "status": "Status",
+        "approvalBlocks": "Approval Blocks",
+        "totalApprovers": "Total Approvers",
+        "description": "Description"
+      },
+      "blocksCount": "{{count}} block(s)",
+      "approversCount": "{{count}}",
+      "actions": {
+        "viewEdit": "View/Edit",
+        "delete": "Delete"
+      },
+      "deleteConfirm": "Are you sure you want to delete this approval matrix?",
+      "messages": {
+        "deleted": "Approval matrix deleted successfully",
+        "deleteError": "Failed to delete approval matrix"
+      },
+      "noMatrices": "No approval matrices found. Create one to define approval workflows.",
+      "note": "Note: Approval matrices must be defined before submitting org charts for approval. Without an active approval matrix of type 'orgchart', submissions will fail.",
+      "status": {
+        "active": "ACTIVE",
+        "inactive": "INACTIVE"
+      }
+    }
+  },
+  "task": {
+    "approval": {
+      "title": "Approval Workflow",
+      "loading": "Loading task details...",
+      "notFound": "Task not found",
+      "backToTasks": "Back to Tasks",
+      "documentType": "Document Type",
+      "currentLevel": "Current Level",
+      "status": "Status",
+      "submitted": "Submitted",
+      "level": "Level {{number}}",
+      "na": "N/A",
+      "history": {
+        "title": "Approval History",
+        "levelDecision": "Level {{number}} - {{decision}}"
+      },
+      "documentDetails": {
+        "title": "Document Details",
+        "titleLabel": "Title",
+        "version": "Version",
+        "versionNumber": "v{{version}}"
+      },
+      "yourDecision": {
+        "title": "Your Decision",
+        "subtitle": "Review the document and provide your approval decision",
+        "commentsLabel": "Comments (optional for approval, required for decline)",
+        "commentsPlaceholder": "Add your comments here...",
+        "approveButton": "Approve",
+        "declineButton": "Decline",
+        "acknowledgeButton": "Acknowledge",
+        "acknowledgeHelp": "Mark this notification as read"
+      },
+      "messages": {
+        "approved": "Document approved successfully",
+        "approveError": "Failed to approve document",
+        "commentsRequired": "Please provide comments when declining",
+        "declined": "Document declined",
+        "declineError": "Failed to decline document",
+        "acknowledged": "Task acknowledged",
+        "acknowledgeError": "Failed to acknowledge task"
+      },
+      "documentTypes": {
+        "purchaseOrder": "Purchase Order",
+        "salesOrder": "Sales Order",
+        "invoice": "Invoice",
+        "payment": "Payment",
+        "contract": "Contract",
+        "departmentCharter": "Department Charter",
+        "jobDescription": "Job Description",
+        "jobOffer": "Job Offer",
+        "employmentContract": "Employment Contract",
+        "terminationNotice": "Termination Notice",
+        "orgchart": "Organizational Chart",
+        "other": "Other Document"
+      }
+    },
+    "orgchartApproval": {
+      "loading": "Loading task details...",
+      "notFound": "Task or OrgChart not found",
+      "taskInfo": {
+        "title": "Task Information",
+        "type": "Type",
+        "priority": "Priority",
+        "created": "Created",
+        "completed": "Completed"
+      },
+      "orgchartDetails": {
+        "title": "Organizational Chart Details",
+        "subtitle": "Review the organizational structure",
+        "titleLabel": "Title",
+        "version": "Version",
+        "status": "Status",
+        "description": "Description",
+        "viewFullChart": "View Full Organizational Chart"
+      },
+      "timeline": {
+        "title": "Approval Timeline",
+        "subtitle": "Track the approval process",
+        "submittedFor": "Submitted for Approval",
+        "approved": "Approved",
+        "declined": "Declined",
+        "comments": "Comments:"
+      },
+      "actions": {
+        "title": "Actions",
+        "subtitle": "Review and make your decision",
+        "commentsLabel": "Comments (Optional for approval, required for decline)",
+        "commentsPlaceholder": "Add your comments...",
+        "approveButton": "Approve",
+        "declineButton": "Decline"
+      },
+      "messages": {
+        "approved": "Approved successfully",
+        "approveError": "Failed to approve",
+        "commentsRequired": "Please provide comments when declining",
+        "declined": "Declined successfully",
+        "declineError": "Failed to decline",
+        "acknowledged": "Task acknowledged",
+        "acknowledgeError": "Failed to acknowledge",
+        "chartApproved": "Your organizational chart has been approved",
+        "chartDeclined": "Your organizational chart has been declined"
+      },
+      "acknowledgeButton": "Acknowledge",
+      "taskCompleted": {
+        "title": "Task Completed",
+        "subtitle": "This task has been completed on {{date}}"
+      },
+      "statusLabels": {
+        "completed": "Completed",
+        "pending": "Pending"
+      }
+    },
+    "form": {
+      "breadcrumb": "Tasks",
+      "newTask": "New Task",
+      "editTask": "Edit Task",
+      "createTitle": "Create Task",
+      "editTitle": "Edit Task",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "deadlineLabel": "Deadline",
+      "titlePlaceholder": "Enter task title",
+      "descriptionPlaceholder": "Enter task description",
+      "assignees": {
+        "label": "Assignees (Responsible)",
+        "help": "Select users, positions, or departments responsible for this task",
+        "addUser": "Add User",
+        "addPosition": "Add Position",
+        "addDepartment": "Add Department"
+      },
+      "approvers": {
+        "label": "Approvers (Optional)",
+        "help": "Select users who must approve task completion (in order)",
+        "addApprover": "Add Approver"
+      },
+      "attachments": {
+        "label": "Attachments (Optional)",
+        "help": "Upload files (max 5MB total)",
+        "total": "Total: {{size}} / 5 MB"
+      },
+      "updateButton": "Update Task",
+      "createButton": "Create Task",
+      "cancelButton": "Cancel",
+      "savingButton": "Saving...",
+      "noCompany": {
+        "title": "No Company Selected",
+        "subtitle": "Please select a company to create tasks.",
+        "button": "Go to Dashboard"
+      },
+      "messages": {
+        "updated": "Task updated successfully",
+        "created": "Task created successfully",
+        "saveError": "Failed to save task",
+        "fileTooLarge": "File {{name}} exceeds 5MB limit",
+        "totalTooLarge": "Total attachment size exceeds 5MB limit",
+        "noPermission": "You don't have permission to edit this task",
+        "systemTaskReadonly": "System-generated tasks cannot be edited",
+        "loadError": "Failed to load task",
+        "selectCompany": "Please select a company first"
+      }
+    },
+    "detail": {
+      "title": "Task Details",
+      "notImplemented": "Not Implemented",
+      "description": "This page is for generic DOA (Delegation of Authority) task details.",
+      "orgchartNote": "For Orgchart Approval Tasks, please use the dedicated page at /task/orgchart/:taskId",
+      "required": "Required to implement:",
+      "requirements": [
+        "Create @/lib/api-client module",
+        "Create @/api/db/schema with database types",
+        "Implement /api/tasks API endpoints",
+        "Implement DOA workflow system"
+      ],
+      "backButton": "Back to Tasks"
+    },
+    "list": {
+      "title": "My Tasks",
+      "subtitle": "{{pending}} pending, {{completed}} completed",
+      "loading": "Loading tasks...",
+      "createTask": "Create Task",
+      "hideCompleted": "Hide Completed",
+      "showCompleted": "Show Completed",
+      "searchPlaceholder": "Search tasks...",
+      "noTasks": "All caught up! You have no pending tasks.",
+      "columns": {
+        "assignees": "Assignees",
+        "approvers": "Approvers",
+        "deadline": "Deadline",
+        "status": "Status",
+        "created": "Created"
+      },
+      "approversCount": "{{count}} approver(s)",
+      "approvalStatus": {
+        "approved": "✓ Approved",
+        "rejected": "✗ Rejected"
+      },
+      "statusLabels": {
+        "completed": "Completed",
+        "pending": "Pending"
+      },
+      "actions": {
+        "edit": "Edit",
+        "markIncomplete": "Mark Incomplete",
+        "markComplete": "Mark Complete",
+        "delete": "Delete",
+        "viewDetails": "View Details"
+      },
+      "deleteDialog": {
+        "title": "Delete Task",
+        "description": "Are you sure you want to delete '{{title}}'? This action cannot be undone.",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      },
+      "messages": {
+        "deleted": "Task deleted successfully",
+        "deleteError": "Failed to delete task",
+        "markedIncomplete": "Task marked as incomplete",
+        "markedComplete": "Task completed",
+        "updateError": "Failed to update task",
+        "loadError": "Failed to load tasks"
+      },
+      "untitled": "Untitled Task"
+    }
+  },
+  "auth": {
+    "user": {
+      "invite": {
+        "backButton": "Back to Users",
+        "title": "Invite User",
+        "subtitle": "Send an invitation email to a new user",
+        "userDetails": {
+          "title": "User Details",
+          "subtitle": "Enter the email address of the user you want to invite",
+          "emailLabel": "Email Address",
+          "emailHelp": "The user will receive an invitation email with a 6-digit verification code"
+        },
+        "companyAccess": {
+          "title": "Company Access (Optional)",
+          "subtitle": "Select which companies this user should have access to",
+          "noCompanies": "No companies available",
+          "createCompany": "Create a company",
+          "selected": "Selected {{count}} of {{total}} companies"
+        },
+        "sendButton": "Send Invitation",
+        "sendingButton": "Sending invitation...",
+        "cancelButton": "Cancel",
+        "whatNext": {
+          "title": "What happens next?",
+          "steps": [
+            "The user will receive an email with a 6-digit verification code and invitation link",
+            "New users will need to create a password when accepting the invitation",
+            "Existing users will confirm with just the 6-digit code",
+            "The invitation code expires in 24 hours",
+            "They will have access to the companies you selected"
+          ]
+        },
+        "messages": {
+          "success": "{{message}}",
+          "error": "Failed to invite user"
+        },
+        "companyTypes": {
+          "workspace": "Workspace",
+          "supplier": "Supplier",
+          "customer": "Customer",
+          "company": "Company",
+          "serviceProvider": "Service Provider",
+          "productVendor": "Product Vendor",
+          "partner": "Partner",
+          "contractor": "Contractor",
+          "freelancer": "Freelancer",
+          "consultant": "Consultant",
+          "other": "Other"
+        }
+      },
+      "list": {
+        "noCompany": {
+          "title": "No Company Selected",
+          "subtitle": "Please select a company to manage users"
+        },
+        "loading": "Loading users...",
+        "title": "User Management",
+        "subtitle": "Manage users for {{company}}",
+        "stats": {
+          "totalUsers": "Total Users",
+          "verified": "Verified",
+          "unverified": "Unverified",
+          "recent": "Recent (30d)"
+        },
+        "columns": {
+          "name": "Name",
+          "email": "Email",
+          "status": "Status",
+          "twoFA": "2FA",
+          "created": "Created"
+        },
+        "statusLabels": {
+          "verified": "Verified",
+          "unverified": "Unverified"
+        },
+        "twoFALabels": {
+          "enabled": "Enabled",
+          "disabled": "Disabled"
+        },
+        "inviteButton": "Invite User",
+        "searchPlaceholder": "Search users by name, email...",
+        "noUsers": "No users found",
+        "actions": {
+          "viewDetails": "View Details",
+          "manageCompanies": "Manage Companies",
+          "resendInvitation": "Resend Invitation",
+          "blockUser": "Block User",
+          "unblockUser": "Unblock User",
+          "deleteUser": "Delete User"
+        },
+        "deleteConfirm": "Are you sure you want to delete user {{email}}?",
+        "actionConfirm": "Are you sure you want to {{action}} user {{email}}?",
+        "messages": {
+          "deleted": "User deleted successfully",
+          "deleteError": "Failed to delete user",
+          "actionSuccess": "User {{action}}ed successfully",
+          "actionError": "Failed to {{action}} user",
+          "resendingInvite": "Resending invitation to {{email}}...",
+          "exported": "Exported {{count}} users",
+          "bulkDeleted": "{{count}} users deleted successfully",
+          "bulkDeleteError": "Failed to delete users"
+        }
+      }
+    },
+    "account": {
+      "title": "Account Settings",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security",
+        "contact": "Contact",
+        "language": "Language"
+      },
+      "selectSection": "Select a section from the menu",
+      "language": {
+        "title": "Language Settings",
+        "description": "Choose your preferred language for the interface",
+        "preferredLanguage": "Preferred Language",
+        "subtitle": "Select the language you want to use throughout the application",
+        "selectLanguage": "Choose Language",
+        "currentLanguage": "Current language",
+        "saved": "Language preference saved successfully!",
+        "saveError": "Failed to save language preference"
+      },
+      "profile": {
+        "title": "Profile",
+        "subtitle": "Manage your profile information",
+        "uploadAvatar": "Upload Avatar",
+        "uploading": "Uploading...",
+        "avatarHelp": "JPG, PNG or GIF (max 5MB)",
+        "emailLabel": "Email",
+        "emailHelp": "Email cannot be changed",
+        "fullNameLabel": "Full Name",
+        "dateOfBirthLabel": "Date of Birth",
+        "dateOfBirthPlaceholder": "Select date",
+        "genderLabel": "Gender",
+        "genderPlaceholder": "Select gender",
+        "genderOptions": {
+          "male": "Male",
+          "female": "Female",
+          "other": "Other",
+          "preferNotToSay": "Prefer not to say"
+        },
+        "saveButton": "Save Changes",
+        "savingButton": "Saving...",
+        "messages": {
+          "invalidFile": "Please upload an image file",
+          "fileTooLarge": "File size must be less than 5MB",
+          "avatarUploaded": "Avatar uploaded successfully!",
+          "avatarError": "Failed to upload avatar",
+          "userNotFound": "User not found",
+          "updated": "Profile updated successfully!",
+          "updateError": "Failed to update profile"
+        }
+      },
+      "security": {
+        "loading": "Loading...",
+        "changePassword": {
+          "title": "Change Password",
+          "subtitle": "Update your account password",
+          "currentPasswordLabel": "Current Password",
+          "currentPasswordRequired": "Current password is required",
+          "newPasswordLabel": "New Password",
+          "newPasswordMinLength": "Password must be at least 8 characters",
+          "confirmPasswordLabel": "Confirm New Password",
+          "confirmPasswordRequired": "Please confirm your password",
+          "passwordsDontMatch": "Passwords don't match",
+          "changeButton": "Change Password",
+          "changingButton": "Changing...",
+          "success": "Password changed successfully!",
+          "error": "Failed to change password"
+        },
+        "twoFA": {
+          "title": "Two-Factor Authentication",
+          "subtitle": "Add an extra layer of security to your account",
+          "enabled": "2FA is enabled",
+          "disabled": "2FA is disabled",
+          "required": "Your organization requires two-factor authentication.",
+          "deadline": "Deadline: {{date}}",
+          "cannotDisable": "2FA is required by your organization and cannot be disabled.",
+          "setupInstructions": "Use Google Authenticator or any compatible TOTP app to scan the QR code and enable two-factor authentication.",
+          "enableButton": "Enable 2FA",
+          "scanQR": "Scan this QR code with your authenticator app:",
+          "manualEntry": "Or enter this secret key manually:",
+          "continueButton": "Continue to Verification",
+          "enterCode": "Enter the 6-digit code from your authenticator app:",
+          "verifyButton": "Verify and Enable",
+          "cancelButton": "Cancel",
+          "disableTitle": "Disable Two-Factor Authentication",
+          "disableInstructions": "Enter a code from your authenticator app to disable 2FA:",
+          "disableButton": "Disable 2FA"
+        },
+        "messages": {
+          "qrGenerated": "QR code generated successfully!",
+          "setupError": "Failed to setup 2FA",
+          "userNotFound": "User not found",
+          "invalidCode": "Please enter a 6-digit code",
+          "enabled": "2FA enabled successfully!",
+          "invalidCodeError": "Invalid code. Please try again.",
+          "disabled": "2FA disabled successfully",
+          "disableError": "Failed to disable 2FA",
+          "loadError": "Failed to load 2FA status"
+        }
+      },
+      "contact": {
+        "title": "Contact Information",
+        "subtitle": "Manage your contact details",
+        "phoneLabel": "Phone",
+        "addressLabel": "Address",
+        "addressPlaceholder": "123 Main St",
+        "cityLabel": "City",
+        "cityPlaceholder": "New York",
+        "stateLabel": "State",
+        "statePlaceholder": "NY",
+        "zipCodeLabel": "Zip Code",
+        "zipCodePlaceholder": "10001",
+        "countryLabel": "Country",
+        "countryPlaceholder": "Select country...",
+        "countrySearch": "Search country...",
+        "noCountry": "No country found.",
+        "saveButton": "Save Changes",
+        "savingButton": "Saving...",
+        "messages": {
+          "userNotFound": "User not found",
+          "updated": "Contact information updated successfully!",
+          "updateError": "Failed to update contact information"
+        }
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "personnelManagement": "Personnel management",
+    "addressBook": "Address Book",
+    "doaMatrix": "DOA Matrix",
+    "documents": "Documents",
+    "users": "Users",
+    "auditLogs": "Audit Logs",
+    "settings": "Settings"
   },
   "footer": {
     "copyright": "© {{year}} YSollo. All rights reserved.",

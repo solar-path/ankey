@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 import * as v from "valibot";
 import { Button } from "@/lib/ui/button";
 import {
@@ -15,39 +17,40 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { AuthService } from "@/modules/auth/auth-service";
 
-const passwordSchema = v.pipe(
-  v.object({
-    currentPassword: v.pipe(
-      v.string(),
-      v.minLength(1, "Current password is required")
-    ),
-    newPassword: v.pipe(
-      v.string(),
-      v.minLength(8, "Password must be at least 8 characters")
-    ),
-    confirmPassword: v.pipe(
-      v.string(),
-      v.minLength(1, "Please confirm your password")
-    ),
-  }),
-  v.forward(
-    v.partialCheck(
-      [["newPassword"], ["confirmPassword"]],
-      (input) => input.newPassword === input.confirmPassword,
-      "Passwords don't match"
-    ),
-    ["confirmPassword"]
-  )
-);
-
-type PasswordFormData = v.InferOutput<typeof passwordSchema>;
-
 interface ChangePasswordFormProps {
   onSuccess?: () => void;
 }
 
 export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
+
+  const passwordSchema = useMemo(() => v.pipe(
+    v.object({
+      currentPassword: v.pipe(
+        v.string(),
+        v.minLength(1, t('auth.account.security.changePassword.currentPasswordRequired'))
+      ),
+      newPassword: v.pipe(
+        v.string(),
+        v.minLength(8, t('auth.account.security.changePassword.newPasswordMinLength'))
+      ),
+      confirmPassword: v.pipe(
+        v.string(),
+        v.minLength(1, t('auth.account.security.changePassword.confirmPasswordRequired'))
+      ),
+    }),
+    v.forward(
+      v.partialCheck(
+        [["newPassword"], ["confirmPassword"]],
+        (input) => input.newPassword === input.confirmPassword,
+        t('auth.account.security.changePassword.passwordsDontMatch')
+      ),
+      ["confirmPassword"]
+    )
+  ), [t]);
+
+  type PasswordFormData = v.InferOutput<typeof passwordSchema>;
   const form = useForm<PasswordFormData>({
     resolver: valibotResolver(passwordSchema),
   });
@@ -55,7 +58,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
   const onSubmit = async (data: PasswordFormData) => {
     try {
       if (!user?._id) {
-        toast.error("User not found");
+        toast.error(t('auth.account.security.messages.userNotFound'));
         return;
       }
 
@@ -65,12 +68,12 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         data.newPassword
       );
 
-      toast.success("Password changed successfully!");
+      toast.success(t('auth.account.security.changePassword.success'));
       form.reset();
       onSuccess?.();
     } catch (error: any) {
       console.error("Password change error:", error);
-      toast.error(error.message || "Failed to change password");
+      toast.error(error.message || t('auth.account.security.changePassword.error'));
     }
   };
 
@@ -82,7 +85,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
           name="currentPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Current Password</FormLabel>
+              <FormLabel>{t('auth.account.security.changePassword.currentPasswordLabel')}</FormLabel>
               <FormControl>
                 <QPassword {...field} />
               </FormControl>
@@ -96,7 +99,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
           name="newPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel>{t('auth.account.security.changePassword.newPasswordLabel')}</FormLabel>
               <FormControl>
                 <QPassword
                   {...field}
@@ -119,7 +122,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm New Password</FormLabel>
+              <FormLabel>{t('auth.account.security.changePassword.confirmPasswordLabel')}</FormLabel>
               <FormControl>
                 <QPassword {...field} />
               </FormControl>
@@ -129,7 +132,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         />
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Changing..." : "Change Password"}
+          {form.formState.isSubmitting ? t('auth.account.security.changePassword.changingButton') : t('auth.account.security.changePassword.changeButton')}
         </Button>
       </form>
     </Form>
