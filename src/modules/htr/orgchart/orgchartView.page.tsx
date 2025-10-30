@@ -301,16 +301,9 @@ export default function OrgChartViewPage() {
         }
 
         case "appointment": {
-          const appt = row.original as unknown as Appointment;
-          await OrgChartService.createAppointment(activeCompany.id, user._id, {
-            orgChartId: id,
-            departmentId: appt.departmentId,
-            positionId: appt.positionId,
-            userId: appt.userId,
-            isVacant: appt.isVacant,
-            jobOffer: appt.jobOffer,
-          });
-          toast.success("Appointment duplicated");
+          // NOTE: Appointment duplication is not supported yet
+          // createAppointment requires fullname and email which are not in Appointment type
+          toast.error("Appointment duplication is not supported yet");
           break;
         }
       }

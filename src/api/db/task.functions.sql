@@ -206,14 +206,23 @@ $$;
 -- ============================================
 CREATE OR REPLACE FUNCTION task.get_user_tasks(
   _user_id TEXT,
-  _company_id UUID,
+  _company_id TEXT,
   _include_completed BOOLEAN DEFAULT false
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
   v_tasks JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
   SELECT jsonb_agg(
     jsonb_build_object(
       '_id', _id,
@@ -252,7 +261,7 @@ BEGIN
       created_at DESC
   ) INTO v_tasks
   FROM tasks
-  WHERE company_id = _company_id
+  WHERE company_id = v_company_uuid
     AND (
       -- User is in assignees
       assignees @> jsonb_build_array(jsonb_build_object('id', _user_id))
@@ -368,7 +377,7 @@ $$;
 -- ============================================
 CREATE OR REPLACE FUNCTION task.get_pending_tasks(
   _user_id TEXT,
-  _company_id UUID
+  _company_id TEXT
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$

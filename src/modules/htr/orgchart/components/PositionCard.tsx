@@ -176,7 +176,7 @@ export function PositionCard({
     setIsEditing(false);
   }, [position]);
 
-  const selectedReportsToPosition = availablePositions.find((p) => p._id.split(":").pop() === formData.reportsToPositionId);
+  const selectedReportsToPosition = availablePositions.find((p) => p._id?.split(":").pop() === formData.reportsToPositionId);
 
   return (
     <Card>
@@ -252,7 +252,8 @@ export function PositionCard({
                             No manager (top position)
                           </CommandItem>
                           {availablePositions.map((pos) => {
-                            const posId = pos._id.split(":").pop()!;
+                            const posId = pos._id?.split(":").pop();
+                            if (!posId) return null;
                             return (
                               <CommandItem
                                 key={pos._id}

@@ -1,15 +1,11 @@
 /**
  * Task Service
  *
- * ⚠️ MIGRATION NEEDED: This module needs PostgreSQL migration
- * TODO: Migrate to PostgreSQL-centered architecture following ARCHITECTURE.md
- * - Create src/modules/task/task.sql with PostgreSQL functions
- * - Update this service to thin client pattern (API calls only)
- * - Remove direct database access
- *
- * TEMPORARY: All methods return empty/placeholder data until migration is complete
+ * PostgreSQL-centered architecture - thin client layer
+ * All business logic in PostgreSQL functions (src/api/db/task.functions.sql)
  */
 
+import { callFunction } from "@/lib/api";
 import type { TaskInput, Assignee, Approver, Attachment } from "./task.valibot";
 
 export interface Task {
@@ -125,13 +121,15 @@ export class TaskService {
 
   /**
    * Get pending tasks for a user in a specific company
-   * TODO: Implement via PostgreSQL function call
    */
   static async getPendingTasks(
-    _userId: string,
-    _tenantId: string
+    userId: string,
+    companyId: string
   ): Promise<Task[]> {
-    console.warn("[TaskService] getPendingTasks: Not implemented - awaiting PostgreSQL migration");
-    return [];
+    const result = await callFunction("task.get_pending_tasks", {
+      user_id: userId,
+      company_id: companyId,
+    });
+    return result as Task[];
   }
 }

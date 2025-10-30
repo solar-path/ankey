@@ -25,7 +25,7 @@ export function CompanyDashboardPage() {
       const orgCharts = await OrgChartService.getCompanyOrgCharts(activeCompany._id);
       const approvedOrgChart = orgCharts.find((o) => o.status === "approved");
 
-      if (approvedOrgChart) {
+      if (approvedOrgChart && approvedOrgChart._id) {
         const data = await OrgChartService.getPayrollForecast(
           activeCompany._id,
           approvedOrgChart._id.split(":").pop()!

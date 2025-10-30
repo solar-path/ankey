@@ -16,9 +16,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Get Supabase connection string from environment
-const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+const connectionStringRaw = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
 
-if (!connectionString) {
+if (!connectionStringRaw) {
   console.error('❌ Error: SUPABASE_DB_URL environment variable is required');
   console.error('');
   console.error('Usage:');
@@ -26,6 +26,8 @@ if (!connectionString) {
   process.exit(1);
 }
 
+// TypeScript assertion: connectionString is definitely string here (process.exit(1) prevents undefined)
+const connectionString: string = connectionStringRaw;
 const pool = new Pool({ connectionString });
 
 // Migration files in correct order

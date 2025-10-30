@@ -1,25 +1,22 @@
 /**
  * DOA (Delegation of Authority) Service
  *
- * ⚠️ MIGRATION NEEDED: This module needs PostgreSQL migration
- * TODO: Migrate to PostgreSQL-centered architecture following ARCHITECTURE.md
- * - Create src/modules/doa/doa.sql with PostgreSQL functions
- * - Update this service to thin client pattern (API calls only)
- * - Remove direct database access
- *
- * TEMPORARY: All methods return empty data until migration is complete
+ * PostgreSQL-centered architecture - thin client layer
+ * All business logic in PostgreSQL functions (src/api/db/doa.functions.sql)
  */
 
+import { callFunction } from "@/lib/api";
 import type { ApprovalMatrix } from "@/modules/shared/types/database.types";
 
 export class DOAService {
   /**
    * Get all approval matrices for a company
-   * TODO: Implement via PostgreSQL function call
    */
-  static async getMatrices(_companyId: string): Promise<ApprovalMatrix[]> {
-    console.warn("[DOAService] getMatrices: Not implemented - awaiting PostgreSQL migration");
-    return [];
+  static async getMatrices(companyId: string): Promise<ApprovalMatrix[]> {
+    const result = await callFunction("doa.get_matrices", {
+      company_id: companyId,
+    });
+    return result as ApprovalMatrix[];
   }
 
   /**

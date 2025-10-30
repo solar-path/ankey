@@ -19,6 +19,7 @@ export interface User {
   resetTokenExpires?: number;
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
+  preferredLanguage?: string; // Top-level for quick access
   createdAt: number;
   updatedAt: number;
   profile?: {
@@ -29,7 +30,7 @@ export interface User {
     state?: string;
     zipCode?: string;
     country?: string;
-    preferredLanguage?: string;
+    preferredLanguage?: string; // Also in profile for backward compatibility
   };
 }
 

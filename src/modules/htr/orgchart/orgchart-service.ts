@@ -5,36 +5,15 @@
  * This service just calls Hono API which executes SQL functions
  */
 
+import { callFunction } from "@/lib/api";
 import type {
   OrgChart,
   Department,
   Position,
-  AppointmentHistory,
 } from "./orgchart.types";
 
 // TODO: OrgChartNode type should be exported from orgchart.types.ts
 type OrgChartNode = OrgChart | Department | Position | any;
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-/**
- * Helper function to call Postgres functions via Hono API
- */
-async function callFunction(functionName: string, params: Record<string, any> = {}) {
-  const response = await fetch(`${API_URL}/api/${functionName}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(params),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || `Failed to call ${functionName}`);
-  }
-
-  return response.json();
-}
 
 export class OrgChartService {
   /**
