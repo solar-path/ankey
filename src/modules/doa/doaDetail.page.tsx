@@ -23,12 +23,12 @@ export default function DOADetailPage() {
   const isNewMatrix = matrixId === "new";
 
   useEffect(() => {
-    if (!isNewMatrix) {
+    if (!isNewMatrix && activeCompany) {
       loadMatrix();
     } else {
       setLoading(false);
     }
-  }, [matrixId]);
+  }, [matrixId, activeCompany?._id]);
 
   // Update breadcrumb with matrix name or "New Matrix"
   useEffect(() => {

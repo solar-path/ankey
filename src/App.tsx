@@ -31,7 +31,6 @@ import OrgChartApprovalTaskPage from "./modules/task/orgchartApprovalTask.page";
 import ApprovalTaskPage from "./modules/task/approvalTask.page";
 import DOAPage from "./modules/doa/doa.page";
 import DOADetailPage from "./modules/doa/doaDetail.page";
-import DOAMatrixFormPage from "./modules/doa/doaMatrixForm.page";
 import { AuditLogsPage } from "./modules/audit/pages/AuditLogsPage";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth-context";
@@ -108,9 +107,8 @@ function App() {
                   <Route path="/address-book" component={AddressBookPage} />
                   <Route path="/orgchart/:id" component={OrgChartViewPage} />
                   <Route path="/orgchart" component={OrgChartListPage} />
-                  <Route path="/doa/matrix/new" component={DOAMatrixFormPage} />
-                  <Route path="/doa/matrix/:id" component={DOAMatrixFormPage} />
-                  <Route path="/doa/:id" component={DOADetailPage} />
+                  <Route path="/doa/matrix/new" component={DOADetailPage} />
+                  <Route path="/doa/matrix/:matrixId" component={DOADetailPage} />
                   <Route path="/doa" component={DOAPage} />
                   <Route path="/task/approval/:taskId" component={ApprovalTaskPage} />
                   <Route path="/task/orgchart/:taskId" component={OrgChartApprovalTaskPage} />

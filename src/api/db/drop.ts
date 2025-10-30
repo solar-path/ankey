@@ -41,6 +41,9 @@ async function drop() {
       'companies',
       'users',
       'audit_log',
+      // Reference tables
+      'countries',
+      'industries',
     ];
 
     for (const table of tables) {

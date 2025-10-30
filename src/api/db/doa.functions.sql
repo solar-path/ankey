@@ -195,7 +195,60 @@ END;
 $$;
 
 -- ============================================
--- 4. GET ACTIVE MATRIX FOR DOCUMENT TYPE
+-- 4. GET SINGLE MATRIX BY ID
+-- ============================================
+CREATE OR REPLACE FUNCTION doa.get_matrix(
+  _company_id TEXT,
+  _matrix_id TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_company_uuid UUID;
+  v_matrix RECORD;
+BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Get matrix by _id (text ID)
+  SELECT * INTO v_matrix
+  FROM approval_matrices
+  WHERE company_id = v_company_uuid
+    AND _id = _matrix_id;
+
+  IF v_matrix.id IS NULL THEN
+    RAISE EXCEPTION 'Matrix not found: %', _matrix_id;
+  END IF;
+
+  RETURN jsonb_build_object(
+    '_id', v_matrix._id,
+    'id', v_matrix.id,
+    'type', v_matrix.type,
+    'companyId', v_matrix.company_id,
+    'name', v_matrix.name,
+    'description', v_matrix.description,
+    'documentType', v_matrix.document_type,
+    'status', v_matrix.status,
+    'isActive', v_matrix.is_active,
+    'minAmount', v_matrix.min_amount,
+    'maxAmount', v_matrix.max_amount,
+    'currency', v_matrix.currency,
+    'approvalBlocks', v_matrix.approval_blocks,
+    'createdBy', v_matrix.created_by,
+    'createdAt', EXTRACT(EPOCH FROM v_matrix.created_at)::BIGINT * 1000,
+    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000
+  );
+END;
+$$;
+
+-- ============================================
+-- 5. GET ACTIVE MATRIX FOR DOCUMENT TYPE
 -- ============================================
 CREATE OR REPLACE FUNCTION doa.get_active_matrix_for_type(
   _company_id UUID,
@@ -254,10 +307,11 @@ END;
 $$;
 
 -- ============================================
--- 5. UPDATE MATRIX
+-- 6. UPDATE MATRIX
 -- ============================================
 CREATE OR REPLACE FUNCTION doa.update_matrix(
-  _matrix_id UUID,
+  _company_id TEXT,
+  _matrix_id TEXT,
   _name TEXT DEFAULT NULL,
   _description TEXT DEFAULT NULL,
   _approval_blocks JSONB DEFAULT NULL,
@@ -269,8 +323,18 @@ CREATE OR REPLACE FUNCTION doa.update_matrix(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
   v_matrix RECORD;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
   UPDATE approval_matrices
   SET
     name = COALESCE(_name, name),
@@ -281,12 +345,16 @@ BEGIN
     min_amount = COALESCE(_min_amount, min_amount),
     max_amount = COALESCE(_max_amount, max_amount),
     updated_at = NOW()
-  WHERE id = _matrix_id;
+  WHERE company_id = v_company_uuid
+    AND _id = _matrix_id;
 
-  SELECT * INTO v_matrix FROM approval_matrices WHERE id = _matrix_id;
+  SELECT * INTO v_matrix
+  FROM approval_matrices
+  WHERE company_id = v_company_uuid
+    AND _id = _matrix_id;
 
   IF v_matrix.id IS NULL THEN
-    RAISE EXCEPTION 'Matrix not found';
+    RAISE EXCEPTION 'Matrix not found: %', _matrix_id;
   END IF;
 
   RETURN jsonb_build_object(
@@ -311,13 +379,29 @@ END;
 $$;
 
 -- ============================================
--- 6. DELETE MATRIX
+-- 7. DELETE MATRIX
 -- ============================================
-CREATE OR REPLACE FUNCTION doa.delete_matrix(_matrix_id UUID)
+CREATE OR REPLACE FUNCTION doa.delete_matrix(
+  _company_id TEXT,
+  _matrix_id TEXT
+)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_company_uuid UUID;
 BEGIN
-  DELETE FROM approval_matrices WHERE id = _matrix_id;
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  DELETE FROM approval_matrices
+  WHERE company_id = v_company_uuid
+    AND _id = _matrix_id;
 
   RETURN jsonb_build_object('success', TRUE, 'message', 'Matrix deleted successfully');
 END;
@@ -334,6 +418,7 @@ $$;
 COMMENT ON FUNCTION doa.initialize_default_matrices IS 'Initialize default DoA matrices for a new company';
 COMMENT ON FUNCTION doa.create_matrix IS 'Create a new approval matrix';
 COMMENT ON FUNCTION doa.get_matrices IS 'Get all approval matrices for a company';
+COMMENT ON FUNCTION doa.get_matrix IS 'Get a single approval matrix by ID';
 COMMENT ON FUNCTION doa.get_active_matrix_for_type IS 'Get active matrix for a document type (with optional amount filtering)';
 COMMENT ON FUNCTION doa.update_matrix IS 'Update an approval matrix';
 COMMENT ON FUNCTION doa.delete_matrix IS 'Delete an approval matrix';

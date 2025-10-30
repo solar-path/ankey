@@ -6,6 +6,67 @@
 
 ---
 
+## 🔐 RBAC (Role-Based Access Control)
+
+**Новая система управления правами доступа для Ankey.**
+
+**Документация:**
+- [docs/RBAC_ARCHITECTURE.md](docs/RBAC_ARCHITECTURE.md) - Полная архитектура RBAC
+- [docs/RBAC_IMPLEMENTATION_CHECKLIST.md](docs/RBAC_IMPLEMENTATION_CHECKLIST.md) - Чеклист внедрения
+- [docs/RBAC_DEVELOPER_GUIDE.md](docs/RBAC_DEVELOPER_GUIDE.md) - Руководство для разработчиков
+- [docs/RBAC_SUMMARY.md](docs/RBAC_SUMMARY.md) - Краткое резюме
+
+**Ключевые принципы:**
+1. **Двухуровневая система прав**: Роли (owner/admin/member/guest) + Permissions (module.action)
+2. **PostgreSQL как Permission Server**: Все проверки прав в SQL функциях через `rbac.has_permission()`
+3. **RLS для автоматической изоляции**: Данные фильтруются по `company_id` автоматически
+4. **Динамическое управление правами**: Выдача/отзыв прав через `rbac.grant_permission()` / `rbac.revoke_permission()`
+5. **Интеграция с audit logging**: Все изменения прав логируются
+
+**Быстрый пример:**
+```sql
+-- SQL функция с проверкой прав
+CREATE OR REPLACE FUNCTION task.create_task(
+  _user_id TEXT,
+  _company_id UUID,
+  _title TEXT
+)
+RETURNS JSONB AS $$
+BEGIN
+  -- 1. Установить контекст для RLS
+  PERFORM rbac.set_user_context(_user_id, _company_id);
+
+  -- 2. Проверить права
+  IF NOT rbac.has_permission(_user_id, _company_id, 'task.create') THEN
+    RAISE EXCEPTION 'Permission denied: task.create';
+  END IF;
+
+  -- 3. Выполнить операцию
+  INSERT INTO tasks (...) VALUES (...);
+
+  -- 4. Audit log
+  PERFORM audit.log_action(...);
+
+  RETURN jsonb_build_object('success', TRUE);
+END;
+$$;
+```
+
+```tsx
+// React компонент с проверкой прав
+import { PermissionGuard } from "@/modules/shared/components/PermissionGuard";
+
+export function CreateTaskButton() {
+  return (
+    <PermissionGuard permission="task.create">
+      <Button onClick={handleCreate}>Create Task</Button>
+    </PermissionGuard>
+  );
+}
+```
+
+---
+
 ## 1. Postgres-Центричная Архитектура
 
 ### Принцип

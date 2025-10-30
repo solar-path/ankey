@@ -55,7 +55,7 @@ export default function OrgChartListPage() {
 
     try {
       setLoading(true);
-      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany.id);
+      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany._id);
       setOrgCharts(charts);
     } catch (error) {
       console.error("Failed to load orgcharts:", error);
@@ -69,7 +69,7 @@ export default function OrgChartListPage() {
     if (!activeCompany || !user) return;
 
     try {
-      await OrgChartService.createOrgChart(activeCompany.id, user._id, {
+      await OrgChartService.createOrgChart(activeCompany._id, user._id, {
         title: `Organizational Chart ${new Date().getFullYear()}`,
         description: "New organizational structure",
       });
@@ -90,7 +90,7 @@ export default function OrgChartListPage() {
     if (!activeCompany || !user) return;
 
     try {
-      await OrgChartService.duplicateOrgChart(activeCompany.id, chart.id, user._id);
+      await OrgChartService.duplicateOrgChart(activeCompany._id, chart.id, user._id);
       toast.success("Organizational chart duplicated successfully");
       await loadOrgCharts();
     } catch (error: any) {
@@ -111,7 +111,7 @@ export default function OrgChartListPage() {
     try {
       // Use the new approval service
       const { OrgChartApprovalService } = await import("./orgchart-approval.service");
-      await OrgChartApprovalService.submitForApproval(activeCompany.id, chart.id, user._id);
+      await OrgChartApprovalService.submitForApproval(activeCompany._id, chart.id, user._id);
 
       toast.success("Organizational chart sent for approval");
       await loadOrgCharts();

@@ -162,6 +162,21 @@ const FUNCTION_PARAMS: Record<string, string[]> = {
   "users.get_stats": ["company_id"],
   "users.toggle_block": ["user_id", "block"],
   "users.delete": ["user_id"],
+
+  // DoA functions
+  "doa.get_matrices": ["company_id"],
+  "doa.get_matrix_by_id": ["matrix_id"],
+  "doa.create_matrix": ["company_id", "document_type", "approval_blocks", "description"],
+  "doa.update_matrix": ["matrix_id", "approval_blocks", "description", "status"],
+  "doa.delete_matrix": ["matrix_id"],
+
+  // Task functions
+  "task.get_user_tasks": ["user_id", "company_id", "include_completed"],
+  "task.get_pending_tasks": ["user_id", "company_id"],
+  "task.create_manual_task": ["company_id", "title", "description", "assignee_ids", "deadline"],
+  "task.update_task_status": ["task_id", "status"],
+  "task.complete_task": ["task_id", "user_id"],
+  "task.delete_task": ["task_id"],
 };
 
 /**
