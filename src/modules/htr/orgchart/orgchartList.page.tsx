@@ -13,7 +13,10 @@ import { QTable } from "@/lib/ui/QTable.ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/lib/ui/badge";
 import { Button } from "@/lib/ui/button";
-import { Plus, Eye, MoreHorizontal, Copy, Send } from "lucide-react";
+import { Input } from "@/lib/ui/input";
+import { Label } from "@/lib/ui/label";
+import { Textarea } from "@/lib/ui/textarea";
+import { Plus, Eye, MoreHorizontal, Copy, Send, Edit } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -23,6 +26,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/lib/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/lib/ui/dialog";
 
 export default function OrgChartListPage() {
   const { user } = useAuth();
@@ -30,6 +41,10 @@ export default function OrgChartListPage() {
   const [, setLocation] = useLocation();
   const [orgCharts, setOrgCharts] = useState<OrgChart[]>([]);
   const [loading, setLoading] = useState(true);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<OrgChart | null>(null);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [renameDescription, setRenameDescription] = useState("");
 
   useEffect(() => {
     loadOrgCharts();
@@ -40,7 +55,7 @@ export default function OrgChartListPage() {
 
     try {
       setLoading(true);
-      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany._id);
+      const charts = await OrgChartService.getCompanyOrgCharts(activeCompany.id);
       setOrgCharts(charts);
     } catch (error) {
       console.error("Failed to load orgcharts:", error);
@@ -54,7 +69,7 @@ export default function OrgChartListPage() {
     if (!activeCompany || !user) return;
 
     try {
-      await OrgChartService.createOrgChart(activeCompany._id, user._id, {
+      await OrgChartService.createOrgChart(activeCompany.id, user._id, {
         title: `Organizational Chart ${new Date().getFullYear()}`,
         description: "New organizational structure",
       });
@@ -67,8 +82,7 @@ export default function OrgChartListPage() {
   };
 
   const handleRowClick = (chart: OrgChart) => {
-    const chartId = chart._id.split(":").pop()!;
-    setLocation(`/orgchart/${chartId}`);
+    setLocation(`/orgchart/${chart.id}`);
   };
 
   const handleDuplicate = async (chart: OrgChart, e: React.MouseEvent) => {
@@ -76,8 +90,7 @@ export default function OrgChartListPage() {
     if (!activeCompany || !user) return;
 
     try {
-      const chartId = chart._id.split(":").pop()!;
-      await OrgChartService.duplicateOrgChart(activeCompany._id, chartId, user._id);
+      await OrgChartService.duplicateOrgChart(activeCompany.id, chart.id, user._id);
       toast.success("Organizational chart duplicated successfully");
       await loadOrgCharts();
     } catch (error: any) {
@@ -96,16 +109,36 @@ export default function OrgChartListPage() {
     }
 
     try {
-      const chartId = chart._id.split(":").pop()!;
-
       // Use the new approval service
       const { OrgChartApprovalService } = await import("./orgchart-approval.service");
-      await OrgChartApprovalService.submitForApproval(activeCompany._id, chartId, user._id);
+      await OrgChartApprovalService.submitForApproval(activeCompany.id, chart.id, user._id);
 
       toast.success("Organizational chart sent for approval");
       await loadOrgCharts();
     } catch (error: any) {
       toast.error(error.message || "Failed to send for approval");
+    }
+  };
+
+  const handleOpenRenameDialog = (chart: OrgChart, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedChart(chart);
+    setRenameTitle(chart.title);
+    setRenameDescription(chart.description || "");
+    setRenameDialogOpen(true);
+  };
+
+  const handleRename = async () => {
+    if (!selectedChart) return;
+
+    try {
+      const chartId = selectedChart.id;
+      await OrgChartService.renameOrgChart(chartId, renameTitle, renameDescription);
+      toast.success("Organizational chart renamed successfully");
+      setRenameDialogOpen(false);
+      await loadOrgCharts();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to rename orgchart");
     }
   };
 
@@ -231,6 +264,10 @@ export default function OrgChartListPage() {
                 View
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={(e) => handleOpenRenameDialog(chart, e)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Rename
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => handleDuplicate(chart, e)}>
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
@@ -248,6 +285,47 @@ export default function OrgChartListPage() {
         emptyMessage="No organizational charts yet. Create your first one to get started."
         enableRowSelection={false}
       />
+
+      {/* Rename Dialog */}
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Organizational Chart</DialogTitle>
+            <DialogDescription>
+              Update the title and description of your organizational chart.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={renameTitle}
+                onChange={(e) => setRenameTitle(e.target.value)}
+                placeholder="Enter title..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={renameDescription}
+                onChange={(e) => setRenameDescription(e.target.value)}
+                placeholder="Enter description..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} disabled={!renameTitle.trim()}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

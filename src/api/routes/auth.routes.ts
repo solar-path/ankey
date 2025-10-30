@@ -143,6 +143,7 @@ const FUNCTION_PARAMS: Record<string, string[]> = {
   ],
   "orgchart.delete_node": ["node_id", "cascade"],
   "orgchart.remove_appointment": ["position_id"],
+  "orgchart.duplicate_orgchart": ["company_id", "orgchart_id", "new_title"],
   "orgchart.set_company_context": ["company_id"],
 
   // Reference functions

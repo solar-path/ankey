@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
   _title TEXT,
   _description TEXT DEFAULT NULL,
   _code TEXT DEFAULT NULL,
-  _version TEXT DEFAULT '1.0',
+  _version TEXT DEFAULT NULL,
   _status TEXT DEFAULT 'draft'
 )
 RETURNS JSONB
@@ -22,10 +22,24 @@ LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_orgchart_id UUID;
   v_orgchart RECORD;
+  v_next_version NUMERIC;
+  v_version_text TEXT;
 BEGIN
   -- Validate status
   IF _status NOT IN ('draft', 'pending_approval', 'approved', 'revoked') THEN
     RAISE EXCEPTION 'Invalid status. Must be one of: draft, pending_approval, approved, revoked';
+  END IF;
+
+  -- Auto-calculate next version if not provided
+  IF _version IS NULL THEN
+    SELECT COALESCE(MAX(version::NUMERIC), 0) + 0.1
+    INTO v_next_version
+    FROM orgcharts
+    WHERE company_id = _company_id AND type = 'orgchart';
+
+    v_version_text := v_next_version::TEXT;
+  ELSE
+    v_version_text := _version;
   END IF;
 
   -- Generate ID
@@ -37,7 +51,7 @@ BEGIN
     status, level, sort_order, created_at, updated_at
   ) VALUES (
     v_orgchart_id, _company_id, 'orgchart', _title, _description,
-    _code, _version, _status, 0, 0, NOW(), NOW()
+    _code, v_version_text, _status, 0, 0, NOW(), NOW()
   ) RETURNING * INTO v_orgchart;
 
   RETURN jsonb_build_object(
@@ -505,6 +519,90 @@ END;
 $$;
 
 -- ============================================
+-- 11. DUPLICATE ORGCHART
+-- ============================================
+CREATE OR REPLACE FUNCTION orgchart.duplicate_orgchart(
+  _company_id UUID,
+  _orgchart_id UUID,
+  _new_title TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_source_orgchart RECORD;
+  v_new_orgchart_id UUID;
+  v_new_version NUMERIC;
+  v_version_text TEXT;
+  v_title TEXT;
+  v_new_orgchart RECORD;
+BEGIN
+  -- Get source orgchart
+  SELECT * INTO v_source_orgchart
+  FROM orgcharts
+  WHERE id = _orgchart_id AND company_id = _company_id AND type = 'orgchart';
+
+  IF v_source_orgchart.id IS NULL THEN
+    RAISE EXCEPTION 'Source orgchart not found';
+  END IF;
+
+  -- Calculate next version
+  SELECT COALESCE(MAX(version::NUMERIC), 0) + 0.1
+  INTO v_new_version
+  FROM orgcharts
+  WHERE company_id = _company_id AND type = 'orgchart';
+
+  v_version_text := v_new_version::TEXT;
+
+  -- Determine title
+  IF _new_title IS NOT NULL THEN
+    v_title := _new_title;
+  ELSE
+    v_title := v_source_orgchart.title || ' (Copy)';
+  END IF;
+
+  -- Generate new ID
+  v_new_orgchart_id := gen_random_uuid();
+
+  -- Create new orgchart with same properties
+  INSERT INTO orgcharts (
+    id, company_id, type, title, description, code, version,
+    status, level, sort_order, created_at, updated_at
+  ) VALUES (
+    v_new_orgchart_id,
+    _company_id,
+    'orgchart',
+    v_title,
+    v_source_orgchart.description,
+    v_source_orgchart.code,
+    v_version_text,
+    'draft', -- Always create duplicates as draft
+    0,
+    0,
+    NOW(),
+    NOW()
+  ) RETURNING * INTO v_new_orgchart;
+
+  -- TODO: In the future, we could also duplicate the entire tree structure (departments, positions)
+  -- For now, we just duplicate the root orgchart
+
+  RETURN jsonb_build_object(
+    'id', v_new_orgchart.id,
+    'companyId', v_new_orgchart.company_id,
+    'type', v_new_orgchart.type,
+    'title', v_new_orgchart.title,
+    'description', v_new_orgchart.description,
+    'code', v_new_orgchart.code,
+    'version', v_new_orgchart.version,
+    'status', v_new_orgchart.status,
+    'level', v_new_orgchart.level,
+    'sortOrder', v_new_orgchart.sort_order,
+    'createdAt', EXTRACT(EPOCH FROM v_new_orgchart.created_at)::BIGINT * 1000,
+    'updatedAt', EXTRACT(EPOCH FROM v_new_orgchart.updated_at)::BIGINT * 1000
+  );
+END;
+$$;
+
+-- ============================================
 -- COMMENTS
 -- ============================================
 COMMENT ON FUNCTION orgchart.create_orgchart IS 'Create root organizational chart';
@@ -517,3 +615,4 @@ COMMENT ON FUNCTION orgchart.update_node IS 'Update any node (orgchart/departmen
 COMMENT ON FUNCTION orgchart.delete_node IS 'Delete node (with optional cascade)';
 COMMENT ON FUNCTION orgchart.get_all_orgcharts IS 'Get all orgcharts for company';
 COMMENT ON FUNCTION orgchart.update_status IS 'Update orgchart status (approval workflow)';
+COMMENT ON FUNCTION orgchart.duplicate_orgchart IS 'Duplicate orgchart with auto-incremented version';

@@ -21,17 +21,41 @@ BEGIN
   -- Determine action
   IF (TG_OP = 'INSERT') THEN
     v_action := 'CREATE';
-    v_record_id := COALESCE(NEW._id, NEW.id::TEXT);
+    -- Try to get _id first, fall back to id if _id doesn't exist
+    BEGIN
+      v_record_id := (to_jsonb(NEW)->>'_id');
+      IF v_record_id IS NULL THEN
+        v_record_id := (to_jsonb(NEW)->>'id');
+      END IF;
+    EXCEPTION WHEN OTHERS THEN
+      v_record_id := (to_jsonb(NEW)->>'id');
+    END;
     v_new_values := row_to_json(NEW)::JSONB;
     v_old_values := NULL;
   ELSIF (TG_OP = 'UPDATE') THEN
     v_action := 'UPDATE';
-    v_record_id := COALESCE(NEW._id, NEW.id::TEXT);
+    -- Try to get _id first, fall back to id if _id doesn't exist
+    BEGIN
+      v_record_id := (to_jsonb(NEW)->>'_id');
+      IF v_record_id IS NULL THEN
+        v_record_id := (to_jsonb(NEW)->>'id');
+      END IF;
+    EXCEPTION WHEN OTHERS THEN
+      v_record_id := (to_jsonb(NEW)->>'id');
+    END;
     v_old_values := row_to_json(OLD)::JSONB;
     v_new_values := row_to_json(NEW)::JSONB;
   ELSIF (TG_OP = 'DELETE') THEN
     v_action := 'DELETE';
-    v_record_id := COALESCE(OLD._id, OLD.id::TEXT);
+    -- Try to get _id first, fall back to id if _id doesn't exist
+    BEGIN
+      v_record_id := (to_jsonb(OLD)->>'_id');
+      IF v_record_id IS NULL THEN
+        v_record_id := (to_jsonb(OLD)->>'id');
+      END IF;
+    EXCEPTION WHEN OTHERS THEN
+      v_record_id := (to_jsonb(OLD)->>'id');
+    END;
     v_old_values := row_to_json(OLD)::JSONB;
     v_new_values := NULL;
   END IF;

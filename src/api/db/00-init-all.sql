@@ -61,9 +61,27 @@
 \echo ''
 
 -- ============================================
--- 6. REFERENCE DATA MODULE
+-- 6. DOA (DELEGATION OF AUTHORITY) MODULE
 -- ============================================
-\echo '6. Installing Reference Data Module...'
+\echo '6. Installing DoA Module...'
+\i doa.definition.sql
+\i doa.functions.sql
+\echo '   ✓ DoA module installed'
+\echo ''
+
+-- ============================================
+-- 7. TASK MODULE
+-- ============================================
+\echo '7. Installing Task Module...'
+\i task.definition.sql
+\i task.functions.sql
+\echo '   ✓ Task module installed'
+\echo ''
+
+-- ============================================
+-- 8. REFERENCE DATA MODULE
+-- ============================================
+\echo '8. Installing Reference Data Module...'
 \i reference.definition.sql
 \i reference.functions.sql
 \echo '   ✓ Reference data module installed'
@@ -71,17 +89,17 @@
 \echo ''
 
 -- ============================================
--- 7. USERS MODULE
+-- 9. USERS MODULE
 -- ============================================
-\echo '7. Installing Users Module...'
+\echo '9. Installing Users Module...'
 \i users.functions.sql
 \echo '   ✓ Users module installed'
 \echo ''
 
 -- ============================================
--- 8. APPLY AUDIT TRIGGERS
+-- 10. APPLY AUDIT TRIGGERS
 -- ============================================
-\echo '8. Applying audit triggers to existing tables...'
+\echo '10. Applying audit triggers to existing tables...'
 
 -- Companies
 DROP TRIGGER IF EXISTS audit_companies_trigger ON companies;
@@ -119,19 +137,37 @@ CREATE TRIGGER audit_orgchart_approvals_trigger
   AFTER INSERT OR UPDATE OR DELETE ON orgchart_approvals
   FOR EACH ROW EXECUTE FUNCTION audit.trigger_audit_log();
 
+-- Approval matrices
+DROP TRIGGER IF EXISTS audit_approval_matrices_trigger ON approval_matrices;
+CREATE TRIGGER audit_approval_matrices_trigger
+  AFTER INSERT OR UPDATE OR DELETE ON approval_matrices
+  FOR EACH ROW EXECUTE FUNCTION audit.trigger_audit_log();
+
+-- Approval workflows
+DROP TRIGGER IF EXISTS audit_approval_workflows_trigger ON approval_workflows;
+CREATE TRIGGER audit_approval_workflows_trigger
+  AFTER INSERT OR UPDATE OR DELETE ON approval_workflows
+  FOR EACH ROW EXECUTE FUNCTION audit.trigger_audit_log();
+
+-- Tasks
+DROP TRIGGER IF EXISTS audit_tasks_trigger ON tasks;
+CREATE TRIGGER audit_tasks_trigger
+  AFTER INSERT OR UPDATE OR DELETE ON tasks
+  FOR EACH ROW EXECUTE FUNCTION audit.trigger_audit_log();
+
 \echo '   ✓ Audit triggers applied'
 \echo ''
 
 -- ============================================
--- 9. VERIFY INSTALLATION
+-- 11. VERIFY INSTALLATION
 -- ============================================
-\echo '9. Verifying installation...'
+\echo '11. Verifying installation...'
 \echo ''
 
 -- Count schemas
 \echo '   Schemas:'
 SELECT '     - ' || nspname AS " " FROM pg_namespace
-WHERE nspname IN ('auth', 'company', 'inquiry', 'orgchart', 'audit')
+WHERE nspname IN ('auth', 'company', 'inquiry', 'orgchart', 'doa', 'task', 'audit')
 ORDER BY nspname;
 
 \echo ''
@@ -139,17 +175,18 @@ ORDER BY nspname;
 SELECT '     - ' || schemaname || '.' || tablename AS " "
 FROM pg_tables
 WHERE schemaname IN ('public', 'audit')
-  AND tablename IN ('users', 'sessions', 'companies', 'user_companies', 'inquiries', 'orgcharts', 'orgchart_approvals', 'countries', 'industries', 'log', 'soft_deletes', 'sessions', 'reports')
+  AND tablename IN ('users', 'sessions', 'companies', 'user_companies', 'inquiries', 'orgcharts', 'orgchart_approvals', 'approval_matrices', 'approval_workflows', 'tasks', 'countries', 'industries', 'log', 'soft_deletes', 'sessions', 'reports')
 ORDER BY schemaname, tablename;
 
 \echo ''
 \echo '   Functions:'
 SELECT '     - ' || schemaname || '.' || routinename AS " "
 FROM information_schema.routines
-WHERE schemaname IN ('auth', 'company', 'inquiry', 'orgchart', 'audit')
+WHERE schemaname IN ('auth', 'company', 'inquiry', 'orgchart', 'doa', 'task', 'audit')
   AND routinename NOT LIKE 'update_%_updated_at'
+  AND routinename NOT LIKE 'set_%'
 ORDER BY schemaname, routinename
-LIMIT 20;
+LIMIT 30;
 
 \echo ''
 \echo '=========================================='

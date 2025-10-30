@@ -53,7 +53,7 @@ export default function OrgChartViewPage() {
 
     try {
       setLoading(true);
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany.id, id);
 
       setOrgChartRows(rows);
 
@@ -154,13 +154,13 @@ export default function OrgChartViewPage() {
     try {
       switch (row.type) {
         case "department":
-          await OrgChartService.updateDepartment(activeCompany._id, docId, user._id, updates);
+          await OrgChartService.updateDepartment(activeCompany.id, docId, user._id, updates);
           break;
         case "position":
-          await OrgChartService.updatePosition(activeCompany._id, docId, user._id, updates);
+          await OrgChartService.updatePosition(activeCompany.id, docId, user._id, updates);
           break;
         case "appointment":
-          await OrgChartService.updateAppointment(activeCompany._id, docId, user._id, updates);
+          await OrgChartService.updateAppointment(activeCompany.id, docId, user._id, updates);
           break;
       }
 
@@ -180,7 +180,7 @@ export default function OrgChartViewPage() {
       const parentId = parent?.type === "department" ? parent._id.split(":").pop() : undefined;
 
       // Create empty department with default values
-      const result = await OrgChartService.createDepartment(activeCompany._id, user._id, {
+      const result = await OrgChartService.createDepartment(activeCompany.id, user._id, {
         orgChartId: id,
         title: parentId ? "New Sub-Department" : "New Department",
         description: "",
@@ -192,7 +192,7 @@ export default function OrgChartViewPage() {
       toast.success(parentId ? "Sub-department created" : "Department created");
 
       // Reload and auto-select the newly created department
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany.id, id);
       setOrgChartRows(rows);
 
       const newDeptRow = rows.find(
@@ -215,7 +215,7 @@ export default function OrgChartViewPage() {
     try {
       const deptId = parent._id.split(":").pop()!;
 
-      const result = await OrgChartService.createPosition(activeCompany._id, user._id, {
+      const result = await OrgChartService.createPosition(activeCompany.id, user._id, {
         orgChartId: id,
         departmentId: deptId,
         title: "New Position",
@@ -229,7 +229,7 @@ export default function OrgChartViewPage() {
       toast.success("Position created with auto-generated code");
 
       // Reload and auto-select the newly created position
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany.id, id);
       setOrgChartRows(rows);
 
       const newPosRow = rows.find(
@@ -253,13 +253,13 @@ export default function OrgChartViewPage() {
     try {
       switch (row.type) {
         case "department":
-          await OrgChartService.deleteDepartment(activeCompany._id, docId);
+          await OrgChartService.deleteDepartment(activeCompany.id, docId);
           break;
         case "position":
-          await OrgChartService.deletePosition(activeCompany._id, docId);
+          await OrgChartService.deletePosition(activeCompany.id, docId);
           break;
         case "appointment":
-          await OrgChartService.deleteAppointment(activeCompany._id, docId);
+          await OrgChartService.deleteAppointment(activeCompany.id, docId);
           break;
       }
 
@@ -278,7 +278,7 @@ export default function OrgChartViewPage() {
       switch (row.type) {
         case "department": {
           const dept = row.original as unknown as Department;
-          await OrgChartService.createDepartment(activeCompany._id, user._id, {
+          await OrgChartService.createDepartment(activeCompany.id, user._id, {
             orgChartId: id,
             title: `${dept.title} (Copy)`,
             description: dept.description || "",
@@ -292,7 +292,7 @@ export default function OrgChartViewPage() {
 
         case "position": {
           const pos = row.original as unknown as Position;
-          await OrgChartService.createPosition(activeCompany._id, user._id, {
+          await OrgChartService.createPosition(activeCompany.id, user._id, {
             orgChartId: id,
             departmentId: pos.departmentId,
             title: `${pos.title} (Copy)`,
@@ -308,7 +308,7 @@ export default function OrgChartViewPage() {
 
         case "appointment": {
           const appt = row.original as unknown as Appointment;
-          await OrgChartService.createAppointment(activeCompany._id, user._id, {
+          await OrgChartService.createAppointment(activeCompany.id, user._id, {
             orgChartId: id,
             departmentId: appt.departmentId,
             positionId: appt.positionId,
@@ -333,7 +333,7 @@ export default function OrgChartViewPage() {
     try {
       // Use the new approval service
       const { OrgChartApprovalService } = await import("./orgchart-approval.service");
-      await OrgChartApprovalService.submitForApproval(activeCompany._id, id, user._id);
+      await OrgChartApprovalService.submitForApproval(activeCompany.id, id, user._id);
 
       toast.success("Submitted for approval");
       await loadOrgChart(true); // Preserve expanded state
@@ -408,7 +408,7 @@ export default function OrgChartViewPage() {
     if (!activeCompany || !id) return;
 
     try {
-      const data = await OrgChartService.getPayrollForecast(activeCompany._id, id);
+      const data = await OrgChartService.getPayrollForecast(activeCompany.id, id);
       setPayrollForecastData(data);
       setShowPayrollForecast(true);
     } catch (error: any) {

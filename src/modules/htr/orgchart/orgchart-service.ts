@@ -207,6 +207,17 @@ export class OrgChartService {
   }
 
   /**
+   * Rename orgchart
+   */
+  static async renameOrgChart(
+    orgchartId: string,
+    title: string,
+    description?: string
+  ): Promise<any> {
+    return this.updateNode(orgchartId, { title, description });
+  }
+
+  /**
    * Delete node (with optional cascade)
    */
   static async deleteNode(nodeId: string, cascade: boolean = false): Promise<void> {
@@ -277,11 +288,9 @@ export class OrgChartService {
 
   /**
    * Get all orgcharts for company
-   * TODO: Implement via PostgreSQL function call
    */
-  static async getCompanyOrgCharts(_companyId: string): Promise<OrgChart[]> {
-    console.warn("[OrgChartService] getCompanyOrgCharts: Not fully implemented - awaiting complete migration");
-    return [];
+  static async getCompanyOrgCharts(companyId: string): Promise<OrgChart[]> {
+    return this.getAllOrgCharts(companyId);
   }
 
   /**
@@ -364,11 +373,13 @@ export class OrgChartService {
 
   /**
    * Duplicate orgchart
-   * TODO: Implement via PostgreSQL function call
    */
-  static async duplicateOrgChart(_companyId: string, _orgChartId: string, _userId: string, _newTitle?: string): Promise<OrgChart> {
-    console.warn("[OrgChartService] duplicateOrgChart: Not fully implemented - awaiting complete migration");
-    throw new Error("Method not yet migrated to PostgreSQL");
+  static async duplicateOrgChart(companyId: string, orgChartId: string, _userId: string, newTitle?: string): Promise<OrgChart> {
+    return callFunction("orgchart.duplicate_orgchart", {
+      company_id: companyId,
+      orgchart_id: orgChartId,
+      new_title: newTitle,
+    });
   }
 
   /**

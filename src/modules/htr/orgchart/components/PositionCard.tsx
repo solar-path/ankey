@@ -88,7 +88,7 @@ export function PositionCard({
 
     try {
       setLoadingPositions(true);
-      const hierarchy = await OrgChartService.getOrgChartHierarchy(activeCompany._id, position.orgChartId);
+      const hierarchy = await OrgChartService.getOrgChartHierarchy(activeCompany.id, position.orgChartId);
 
       // Filter only positions, exclude current position
       const positions = hierarchy

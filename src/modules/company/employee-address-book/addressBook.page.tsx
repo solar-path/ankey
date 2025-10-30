@@ -54,8 +54,8 @@ export default function AddressBookPage() {
           ? `${member.address}${member.city ? ', ' + member.city : ''}${member.state ? ', ' + member.state : ''}${member.zipCode ? ' ' + member.zipCode : ''}`
           : undefined,
         avatar: member.avatar,
-        position: undefined, // TODO: Get from orgchart appointments
-        department: undefined, // TODO: Get from orgchart departments
+        position: member.position,
+        department: member.department,
         role: member.role,
       }));
 
@@ -106,11 +106,6 @@ export default function AddressBookPage() {
             </Avatar>
             <div className="flex flex-col">
               <span className="font-medium">{employee.fullname}</span>
-              {employee.position && (
-                <span className="text-sm text-muted-foreground">
-                  {employee.position}
-                </span>
-              )}
             </div>
           </div>
         );
@@ -152,6 +147,19 @@ export default function AddressBookPage() {
         const department = row.original.department;
         return department ? (
           <span>{department}</span>
+        ) : null;
+      },
+    },
+    {
+      id: "position",
+      header: ({ column }) => (
+        <SortableHeader column={column}>Position</SortableHeader>
+      ),
+      accessorKey: "position",
+      cell: ({ row }) => {
+        const position = row.original.position;
+        return position ? (
+          <span>{position}</span>
         ) : null;
       },
     },

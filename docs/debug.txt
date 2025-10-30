@@ -26,3 +26,51 @@ Modified /Users/work/apps/ankey/src/lib/company-context.tsx:
 ✓ TypeScript compilation successful (no errors)
 ✓ Companies will now load automatically after successful login
 ✓ Dashboard will show company list immediately after authentication
+
+---
+
+## FEATURE: Added Position and Department to Employee Address Book (2025-10-30)
+
+### Enhancement
+Added position (job title) and department information to the employee address book page.
+Now shows the position each user was appointed to in the organizational chart.
+
+### Changes Made
+
+1. **Database Function** - src/api/db/company.functions.sql (Lines 289-326)
+   - Updated `company.get_company_members()` function
+   - Added LEFT JOIN with `orgcharts` table
+   - Returns position title and parent department name
+   - Joins on: appointee_user_id, company_id, type='position', is_vacant=FALSE
+
+2. **TypeScript Interface** - src/modules/company/company-members-service.ts (Lines 10-19)
+   - Added `position?: string` to CompanyMember interface
+   - Added `department?: string` to CompanyMember interface
+
+3. **UI Component** - src/modules/company/employee-address-book/addressBook.page.tsx
+   - Updated employee data mapping to use position from service (Lines 57-58)
+   - Updated employee data mapping to use department from service (Lines 57-58)
+   - Removed TODO comments
+   - Removed position from under employee name (Lines 107-109)
+   - Added Position as separate column after Department (Lines 153-165)
+
+### Table Column Order
+1. Employee (with avatar and name)
+2. Email
+3. Phone
+4. Department
+5. Position ← NEW COLUMN
+6. Address
+7. Role
+
+### Database Changes Applied
+✓ PostgreSQL function `company.get_company_members` updated successfully
+✓ Database now returns position and department in member queries
+
+### Result
+✓ TypeScript compilation successful (no errors)
+✓ Employee address book now displays user positions from orgchart
+✓ Employee address book now displays departments
+✓ Position shown in dedicated sortable column after Department
+✓ Department shown in dedicated sortable column
+✓ Clean table layout with proper data organization

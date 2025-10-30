@@ -27,6 +27,8 @@ DECLARE
   v_company_id UUID;
   v_company_text_id TEXT;
   v_user_company_id UUID;
+  v_doa_result JSONB;
+  v_tasks_result JSONB;
 BEGIN
   -- Generate UUIDs
   v_company_id := gen_random_uuid();
@@ -57,6 +59,22 @@ BEGIN
       NOW(),
       NOW()
     );
+
+    -- Initialize default DoA matrices for owner
+    BEGIN
+      v_doa_result := doa.initialize_default_matrices(v_company_id, _user_id);
+      RAISE NOTICE 'DoA matrices initialized: %', v_doa_result;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE WARNING 'Failed to initialize DoA matrices: %', SQLERRM;
+    END;
+
+    -- Initialize review tasks for owner
+    BEGIN
+      v_tasks_result := task.initialize_review_tasks(v_company_id, _user_id);
+      RAISE NOTICE 'Review tasks initialized: %', v_tasks_result;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE WARNING 'Failed to initialize review tasks: %', SQLERRM;
+    END;
   END IF;
 
   -- Return created company
@@ -299,7 +317,15 @@ BEGIN
       'zipCode', u.profile->'zipCode',
       'country', u.profile->'country',
       'role', uc.role,
-      'joinedAt', EXTRACT(EPOCH FROM uc.joined_at)::BIGINT * 1000
+      'joinedAt', EXTRACT(EPOCH FROM uc.joined_at)::BIGINT * 1000,
+      'position', o.title,
+      'department', (
+        SELECT title
+        FROM orgcharts
+        WHERE id = o.parent_id
+          AND type IN ('department', 'division', 'unit')
+        LIMIT 1
+      )
     )
     ORDER BY
       CASE uc.role
@@ -311,6 +337,10 @@ BEGIN
   ) INTO v_members
   FROM user_companies uc
   JOIN users u ON u._id = uc.user_id
+  LEFT JOIN orgcharts o ON o.appointee_user_id = u.id
+    AND o.company_id = v_uuid
+    AND o.type = 'position'
+    AND o.is_vacant = FALSE
   WHERE uc.company_id = v_uuid;
 
   RETURN COALESCE(v_members, '[]'::JSONB);

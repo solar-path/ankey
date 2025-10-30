@@ -14,6 +14,8 @@ export interface CompanyMember {
   avatar?: string;
   role: CompanyRole;
   joinedAt: number;
+  position?: string;
+  department?: string;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
