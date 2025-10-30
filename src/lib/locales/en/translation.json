@@ -1,4 +1,9 @@
 {
+  "common": {
+    "account": "Account",
+    "language": "Language",
+    "logout": "Log out"
+  },
   "audit": {
     "trail": {
       "title": "Audit Trail",

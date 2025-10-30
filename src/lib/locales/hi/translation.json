@@ -1,4 +1,9 @@
 {
+  "common": {
+    "account": "खाता",
+    "language": "भाषा",
+    "logout": "लॉग आउट"
+  },
   "audit": {
     "trail": {
       "title": "ऑडिट ट्रेल",

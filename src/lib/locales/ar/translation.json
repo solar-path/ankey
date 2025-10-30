@@ -1,4 +1,9 @@
 {
+  "common": {
+    "account": "الحساب",
+    "language": "اللغة",
+    "logout": "تسجيل الخروج"
+  },
   "audit": {
     "trail": {
       "title": "سجل التدقيق",

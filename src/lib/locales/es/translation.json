@@ -1,4 +1,9 @@
 {
+  "common": {
+    "account": "Cuenta",
+    "language": "Idioma",
+    "logout": "Cerrar sesión"
+  },
   "audit": {
     "trail": {
       "title": "Historial de Auditoría",

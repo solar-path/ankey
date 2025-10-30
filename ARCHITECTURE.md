@@ -469,14 +469,18 @@ src/api/db/
 ### Правила
 
 #### ✅ ОБЯЗАТЕЛЬНО:
-1. **Все CRUD операции логируются** в `audit_log` (таблица в public schema)
-2. **Soft Delete Pattern**: используй `audit.soft_delete()` вместо физического удаления
-3. **Session Tracking**: все сессии в `audit_sessions` (таблица в public schema)
-4. **Audit Trail**: возможность получить историю изменений любой записи
-5. **Retention Policy**: логи хранятся минимум 7 лет (SOX требование)
-6. **IP и User-Agent tracking**: для всех login/logout операций
-7. **Автоматические триггеры**: для критичных таблиц (companies, users, orgcharts, etc.)
-8. **Frontend UI**: страница `/audit` для просмотра логов и сессий
+1. **Все SQL функции, изменяющие данные, ДОЛЖНЫ вызывать `audit.log_action()`**
+   - Даже если есть автоматический триггер, критичные операции требуют явного вызова
+   - Обязательно передавать `old_values` и `new_values` для отслеживания изменений
+   - Пример: `auth.update_profile()`, `auth.signin()`, `auth.signout()`, `auth.change_password()`
+2. **Все CRUD операции логируются** в `audit_log` (таблица в public schema)
+3. **Soft Delete Pattern**: используй `audit.soft_delete()` вместо физического удаления
+4. **Session Tracking**: все сессии в `audit_sessions` (таблица в public schema)
+5. **Audit Trail**: возможность получить историю изменений любой записи
+6. **Retention Policy**: логи хранятся минимум 7 лет (SOX требование)
+7. **IP и User-Agent tracking**: для всех login/logout операций
+8. **Автоматические триггеры**: для критичных таблиц (companies, users, orgcharts, etc.)
+9. **Frontend UI**: страница `/audit` для просмотра логов и сессий
 
 #### ❌ ЗАПРЕЩЕНО:
 1. Физическое удаление без soft delete
@@ -488,21 +492,69 @@ src/api/db/
 ### Структура Audit Логов
 
 ```sql
--- Пример автоматического логирования
+-- Пример автоматического логирования (для таблиц)
 CREATE TRIGGER audit_companies_trigger
   AFTER INSERT OR UPDATE OR DELETE ON companies
   FOR EACH ROW EXECUTE FUNCTION audit.trigger_audit_log();
 
--- Пример ручного логирования
-PERFORM audit.log_action(
-  _user_id => 'user_1234567890_uuid',
-  _action => 'APPROVE',
-  _table_name => 'orgcharts',
-  _record_id => _orgchart_id,
-  _company_id => _company_id,
-  _old_values => row_to_json(OLD)::JSONB,
-  _new_values => row_to_json(NEW)::JSONB
-);
+-- Пример ручного логирования в SQL функции (ОБЯЗАТЕЛЬНО)
+CREATE OR REPLACE FUNCTION auth.update_profile(
+  _user_id TEXT,
+  _fullname TEXT DEFAULT NULL,
+  _profile JSONB DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_old_user RECORD;
+  v_user RECORD;
+  v_old_values JSONB;
+  v_new_values JSONB;
+BEGIN
+  -- 1. Получить старые значения ДО изменения
+  SELECT * INTO v_old_user FROM users WHERE _id = _user_id;
+
+  IF v_old_user.id IS NULL THEN
+    RAISE EXCEPTION 'User not found';
+  END IF;
+
+  -- 2. Выполнить изменения
+  UPDATE users
+  SET
+    fullname = COALESCE(_fullname, fullname),
+    profile = COALESCE(_profile, profile),
+    updated_at = NOW()
+  WHERE _id = _user_id
+  RETURNING * INTO v_user;
+
+  -- 3. ОБЯЗАТЕЛЬНО: Логировать изменения
+  v_old_values := jsonb_build_object(
+    'fullname', v_old_user.fullname,
+    'profile', v_old_user.profile
+  );
+
+  v_new_values := jsonb_build_object(
+    'fullname', v_user.fullname,
+    'profile', v_user.profile
+  );
+
+  PERFORM audit.log_action(
+    _user_id,
+    'UPDATE',
+    'users',
+    _user_id,
+    NULL,  -- company_id
+    v_old_values,
+    v_new_values,
+    NULL,  -- ip_address
+    NULL,  -- user_agent
+    NULL,  -- session_id
+    'User profile updated'
+  );
+
+  RETURN jsonb_build_object('success', TRUE, 'user', row_to_json(v_user));
+END;
+$$;
 ```
 
 ### Soft Delete Pattern
@@ -675,6 +727,10 @@ POST /api/audit/restore/:table/:recordId  // Восстановление зап
 - [ ] **Функции возвращают JSONB**
 - [ ] **SECURITY DEFINER** установлен
 - [ ] **Валидация данных** в PostgreSQL функции
+- [ ] **⚠️ AUDIT LOGGING**: все SQL функции, изменяющие данные, ДОЛЖНЫ вызывать `audit.log_action()`
+  - Передавать `old_values` и `new_values` для отслеживания изменений
+  - Использовать корректный `action` тип (CREATE, UPDATE, DELETE, LOGIN, etc.)
+  - Проверить, что логи появляются в `audit_log` таблице
 - [ ] **RLS политики** для multi-tenancy (если нужно)
 - [ ] **Hono route** добавлен или используется универсальный роутер
 - [ ] **⚠️ FUNCTION_PARAMS маппинг** добавлен для новой функции ([см. docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md))

@@ -56,7 +56,7 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ onSuccess }: ContactFormProps) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [phone, setPhone] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
@@ -102,6 +102,9 @@ export function ContactForm({ onSuccess }: ContactFormProps) {
         ...(user.profile || {}),
         ...data,
       } as any);
+
+      // Refresh user data to show updated information
+      await refreshUser();
 
       toast.success("Contact information updated successfully!");
       onSuccess?.();

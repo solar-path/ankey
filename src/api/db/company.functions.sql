@@ -263,18 +263,41 @@ $$;
 -- ============================================
 -- 8. GET COMPANY MEMBERS
 -- ============================================
-CREATE OR REPLACE FUNCTION company.get_company_members(_company_id UUID)
+CREATE OR REPLACE FUNCTION company.get_company_members(_company_id TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_members JSONB;
+  v_uuid UUID;
 BEGIN
+  -- Validation
+  IF _company_id IS NULL OR _company_id = '' THEN
+    RAISE EXCEPTION 'Company ID is required';
+  END IF;
+
+  -- Extract UUID from _id if needed (e.g., 'company_1234_uuid' -> 'uuid')
+  BEGIN
+    IF _company_id LIKE 'company_%' THEN
+      v_uuid := SPLIT_PART(_company_id, '_', 3)::UUID;
+    ELSE
+      v_uuid := _company_id::UUID;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    RAISE EXCEPTION 'Invalid company ID format: %', _company_id;
+  END;
+
   SELECT jsonb_agg(
     jsonb_build_object(
       'userId', u._id,
       'email', u.email,
       'fullname', u.fullname,
       'avatar', u.profile->'avatar',
+      'phone', u.profile->'phone',
+      'address', u.profile->'address',
+      'city', u.profile->'city',
+      'state', u.profile->'state',
+      'zipCode', u.profile->'zipCode',
+      'country', u.profile->'country',
       'role', uc.role,
       'joinedAt', EXTRACT(EPOCH FROM uc.joined_at)::BIGINT * 1000
     )
@@ -287,8 +310,8 @@ BEGIN
       uc.joined_at
   ) INTO v_members
   FROM user_companies uc
-  JOIN users u ON u.id = uc.user_id
-  WHERE uc.company_id = _company_id;
+  JOIN users u ON u._id = uc.user_id
+  WHERE uc.company_id = v_uuid;
 
   RETURN COALESCE(v_members, '[]'::JSONB);
 END;

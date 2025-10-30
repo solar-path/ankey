@@ -73,7 +73,7 @@ BEGIN
   UPDATE users
   SET verified = TRUE,
       verification_code = NULL,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE verification_code = _code AND type = 'user';
 
   GET DIAGNOSTICS v_user_count = ROW_COUNT;
@@ -341,7 +341,7 @@ BEGIN
   UPDATE users
   SET reset_token = v_reset_token,
       reset_token_expiry = v_reset_token_expiry,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE email = _email AND type = 'user';
 
   -- Don't reveal if user exists
@@ -372,17 +372,20 @@ RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_user RECORD;
+  v_old_user RECORD;
   v_profile JSONB;
+  v_old_values JSONB;
+  v_new_values JSONB;
 BEGIN
-  -- Get current user
-  SELECT * INTO v_user FROM users WHERE _id = _user_id;
+  -- Get current user (for old values)
+  SELECT * INTO v_old_user FROM users WHERE _id = _user_id;
 
-  IF v_user._id IS NULL THEN
+  IF v_old_user._id IS NULL THEN
     RAISE EXCEPTION 'User not found';
   END IF;
 
   -- Build profile JSON
-  v_profile := COALESCE(v_user.profile, '{}'::JSONB);
+  v_profile := COALESCE(v_old_user.profile, '{}'::JSONB);
 
   IF _dob IS NOT NULL THEN
     v_profile := jsonb_set(v_profile, '{dob}', to_jsonb(_dob));
@@ -424,11 +427,37 @@ BEGIN
   UPDATE users
   SET fullname = COALESCE(_fullname, fullname),
       profile = v_profile,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE _id = _user_id;
 
-  -- Return updated user
+  -- Get updated user
   SELECT * INTO v_user FROM users WHERE _id = _user_id;
+
+  -- Prepare audit log values
+  v_old_values := jsonb_build_object(
+    'fullname', v_old_user.fullname,
+    'profile', v_old_user.profile
+  );
+
+  v_new_values := jsonb_build_object(
+    'fullname', v_user.fullname,
+    'profile', v_user.profile
+  );
+
+  -- Log profile update action
+  PERFORM audit.log_action(
+    _user_id,                    -- user who made the change
+    'UPDATE',                    -- action type
+    'users',                     -- table name
+    _user_id,                    -- record id (self-update)
+    NULL,                        -- company_id (users are global)
+    v_old_values,                -- old values
+    v_new_values,                -- new values
+    NULL,                        -- ip_address (not available in this context)
+    NULL,                        -- user_agent (not available in this context)
+    NULL,                        -- request_id
+    'User profile updated'       -- notes
+  );
 
   RETURN jsonb_build_object(
     '_id', v_user._id,
@@ -436,7 +465,9 @@ BEGIN
     'fullname', v_user.fullname,
     'verified', v_user.verified,
     'profile', v_user.profile,
-    'created_at', v_user.created_at
+    'createdAt', EXTRACT(EPOCH FROM v_user.created_at)::BIGINT * 1000,
+    'updatedAt', EXTRACT(EPOCH FROM v_user.updated_at)::BIGINT * 1000,
+    'twoFactorEnabled', v_user.two_factor_enabled
   );
 END;
 $$;
@@ -476,7 +507,7 @@ BEGIN
   -- Update password
   UPDATE users
   SET password = v_new_hashed,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE _id = _user_id;
 
   RETURN jsonb_build_object('success', TRUE);
@@ -510,7 +541,7 @@ BEGIN
   -- Save secret
   UPDATE users
   SET two_factor_secret = v_secret,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE _id = _user_id;
 
   RETURN jsonb_build_object('secret', v_secret);
@@ -549,7 +580,7 @@ BEGIN
   -- Enable 2FA
   UPDATE users
   SET two_factor_enabled = TRUE,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE _id = _user_id;
 
   RETURN jsonb_build_object('success', TRUE);
@@ -585,7 +616,7 @@ BEGIN
   UPDATE users
   SET two_factor_enabled = FALSE,
       two_factor_secret = NULL,
-      updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+      updated_at = NOW()
   WHERE _id = _user_id;
 
   RETURN jsonb_build_object('success', TRUE);
@@ -667,7 +698,7 @@ BEGIN
     UPDATE users
     SET invitation_token = v_invitation_code,
         invitation_expiry = v_invitation_expiry,
-        updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+        updated_at = NOW()
     WHERE _id = v_user_id;
   END IF;
 
@@ -740,14 +771,14 @@ BEGIN
         verified = TRUE,
         invitation_token = NULL,
         invitation_expiry = NULL,
-        updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+        updated_at = NOW()
     WHERE _id = v_user._id;
   ELSE
     UPDATE users
     SET verified = TRUE,
         invitation_token = NULL,
         invitation_expiry = NULL,
-        updated_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+        updated_at = NOW()
     WHERE _id = v_user._id;
   END IF;
 

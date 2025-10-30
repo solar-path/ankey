@@ -39,20 +39,21 @@ export default function AddressBookPage() {
         return;
       }
 
-      // Get company members from database
+      // Get company members from database (with full user details via JOIN)
       const members = await CompanyMembersService.getCompanyMembers(
         activeCompany._id
       );
 
-      // TODO: Migrate to PostgreSQL - CompanyMembersService should return full user details with JOIN
-      // For now, use basic member data
-      const employeesData: Employee[] = members.map((member) => ({
+      // Map members to employee data with full user information
+      const employeesData: Employee[] = members.map((member: any) => ({
         _id: member.userId,
-        fullname: member.userId, // TODO: Get from user table via PostgreSQL join
-        email: member.userId, // TODO: Get from user table via PostgreSQL join
-        phone: undefined,
-        address: undefined,
-        avatar: undefined,
+        fullname: member.fullname || member.email,
+        email: member.email,
+        phone: member.phone,
+        address: member.address
+          ? `${member.address}${member.city ? ', ' + member.city : ''}${member.state ? ', ' + member.state : ''}${member.zipCode ? ' ' + member.zipCode : ''}`
+          : undefined,
+        avatar: member.avatar,
         position: undefined, // TODO: Get from orgchart appointments
         department: undefined, // TODO: Get from orgchart departments
         role: member.role,
