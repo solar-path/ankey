@@ -114,8 +114,8 @@ export default function OrgChartViewPage() {
           orgChartRows
             .filter(row => row.parentId === parentId)
             .forEach(row => {
-              idsToRemove.add(row._id);
-              collectDescendants(row._id);
+              idsToRemove.add(row.id);
+              collectDescendants(row.id);
             });
         };
 
@@ -149,18 +149,16 @@ export default function OrgChartViewPage() {
   const handleInlineEdit = async (row: OrgChartRow, updates: Partial<any>) => {
     if (!activeCompany || !user) return;
 
-    const docId = row._id.split(":").pop()!;
-
     try {
       switch (row.type) {
         case "department":
-          await OrgChartService.updateDepartment(activeCompany.id, docId, user._id, updates);
+          await OrgChartService.updateDepartment(activeCompany.id, row.id, user._id, updates);
           break;
         case "position":
-          await OrgChartService.updatePosition(activeCompany.id, docId, user._id, updates);
+          await OrgChartService.updatePosition(activeCompany.id, row.id, user._id, updates);
           break;
         case "appointment":
-          await OrgChartService.updateAppointment(activeCompany.id, docId, user._id, updates);
+          await OrgChartService.updateAppointment(activeCompany.id, row.id, user._id, updates);
           break;
       }
 
@@ -177,7 +175,7 @@ export default function OrgChartViewPage() {
 
     try {
       setSaving(true);
-      const parentId = parent?.type === "department" ? parent._id.split(":").pop() : undefined;
+      const parentId = parent?.type === "department" ? parent.id : undefined;
 
       // Create empty department with default values
       const result = await OrgChartService.createDepartment(activeCompany.id, user._id, {
@@ -196,7 +194,7 @@ export default function OrgChartViewPage() {
       setOrgChartRows(rows);
 
       const newDeptRow = rows.find(
-        (r) => r.type === "department" && r._id === result.department._id
+        (r) => r.type === "department" && r.id === result.department.id
       );
 
       if (newDeptRow) {
@@ -213,11 +211,9 @@ export default function OrgChartViewPage() {
     if (!activeCompany || !user || !id || parent.type !== "department") return;
 
     try {
-      const deptId = parent._id.split(":").pop()!;
-
       const result = await OrgChartService.createPosition(activeCompany.id, user._id, {
         orgChartId: id,
-        departmentId: deptId,
+        departmentId: parent.id,
         title: "New Position",
         description: "",
         salaryMin: 1, // Default minimum salary
@@ -233,7 +229,7 @@ export default function OrgChartViewPage() {
       setOrgChartRows(rows);
 
       const newPosRow = rows.find(
-        (r) => r.type === "position" && r._id === result._id
+        (r) => r.type === "position" && r.id === result.id
       );
 
       if (newPosRow) {
@@ -248,18 +244,16 @@ export default function OrgChartViewPage() {
   const handleDelete = async (row: OrgChartRow) => {
     if (!activeCompany || !confirm(`Delete ${row.title}? This will cascade delete all children.`)) return;
 
-    const docId = row._id.split(":").pop()!;
-
     try {
       switch (row.type) {
         case "department":
-          await OrgChartService.deleteDepartment(activeCompany.id, docId);
+          await OrgChartService.deleteDepartment(activeCompany.id, row.id);
           break;
         case "position":
-          await OrgChartService.deletePosition(activeCompany.id, docId);
+          await OrgChartService.deletePosition(activeCompany.id, row.id);
           break;
         case "appointment":
-          await OrgChartService.deleteAppointment(activeCompany.id, docId);
+          await OrgChartService.deleteAppointment(activeCompany.id, row.id);
           break;
       }
 
@@ -435,7 +429,7 @@ export default function OrgChartViewPage() {
     if (!draggedRow || !activeCompany || !user) return;
 
     // Prevent dropping on self
-    if (draggedRow._id === targetRow._id) {
+    if (draggedRow.id === targetRow.id) {
       setDraggedRow(null);
       return;
     }
@@ -559,7 +553,7 @@ export default function OrgChartViewPage() {
 
         case "position": {
           const pos = row.original as unknown as Position;
-          const dept = orgChartRows.find((r) => r.type === "department" && r._id === row.parentId);
+          const dept = orgChartRows.find((r) => r.type === "department" && r.id === row.parentId);
           if (dept) {
             PDFGeneratorFactory.generateJobDescription(
               pos,
@@ -573,9 +567,9 @@ export default function OrgChartViewPage() {
 
         case "appointment": {
           const appt = row.original as unknown as Appointment;
-          const pos = orgChartRows.find((r) => r.type === "position" && r._id === row.parentId);
+          const pos = orgChartRows.find((r) => r.type === "position" && r.id === row.parentId);
           if (pos) {
-            const dept = orgChartRows.find((r) => r.type === "department" && r._id === pos.parentId);
+            const dept = orgChartRows.find((r) => r.type === "department" && r.id === pos.parentId);
             if (dept && !appt.isVacant) {
               // Get user name from title (format: "User: {name}") or fallback to userId
               const userName = row.title.startsWith("User: ")
@@ -651,10 +645,10 @@ export default function OrgChartViewPage() {
   // ============================================================================
 
   const TreeRow = ({ row, level = 0 }: { row: OrgChartRow; level?: number }) => {
-    const isExpanded = expandedIds.has(row._id);
-    const isSelected = selectedRow?._id === row._id;
-    const isDragging = draggedRow?._id === row._id;
-    const children = buildTree(filteredRows, row._id);
+    const isExpanded = expandedIds.has(row.id);
+    const isSelected = selectedRow?.id === row.id;
+    const isDragging = draggedRow?.id === row.id;
+    const children = buildTree(filteredRows, row.id);
 
     const typeIcons = {
       orgchart: <Building2 className="size-4 text-blue-500" />,
@@ -675,7 +669,7 @@ export default function OrgChartViewPage() {
     const getReportsToPosition = () => {
       if (row.type === "position" && row.reportsToPositionId) {
         const manager = orgChartRows.find(
-          (r) => r.type === "position" && r._id.split(":").pop() === row.reportsToPositionId
+          (r) => r.type === "position" && r.id === row.reportsToPositionId
         );
         return manager;
       }
@@ -705,7 +699,7 @@ export default function OrgChartViewPage() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleExpand(row._id);
+                toggleExpand(row.id);
               }}
               className="p-0.5 hover:bg-accent rounded"
             >
@@ -977,7 +971,7 @@ export default function OrgChartViewPage() {
               )}
 
               {selectedRow.type === "appointment" && (() => {
-                const pos = orgChartRows.find((r) => r.type === "position" && r._id === selectedRow.parentId);
+                const pos = orgChartRows.find((r) => r.type === "position" && r.id === selectedRow.parentId);
                 if (!pos) return null;
                 return (
                   <AppointmentCard

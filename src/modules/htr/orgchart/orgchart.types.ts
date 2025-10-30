@@ -20,14 +20,15 @@ export type SalaryFrequency = "monthly" | "weekly" | "daily" | "hourly" | "per_j
 // ============================================================================
 
 export interface BaseOrgDocument {
-  _id: string;
+  id: string; // UUID from PostgreSQL
+  _id?: string; // Legacy CouchDB ID (optional for backwards compatibility)
   _rev?: string;
   type: "orgchart" | "department" | "position" | "appointment";
   companyId: string;
   createdAt: number;
   updatedAt: number;
-  createdBy: string;
-  updatedBy: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 // ============================================================================
@@ -161,7 +162,8 @@ export interface Appointment extends BaseOrgDocument {
 // ============================================================================
 
 export interface OrgChartRow {
-  _id: string;
+  id: string; // UUID from PostgreSQL
+  _id?: string; // Legacy CouchDB ID (optional for backwards compatibility)
   _rev?: string;
   type: "orgchart" | "department" | "position" | "appointment";
   companyId: string;

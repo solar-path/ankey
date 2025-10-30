@@ -79,9 +79,7 @@ export class OrgChartService {
   ): Promise<{ department: Department; headPosition: Position }> {
     return callFunction("orgchart.create_department", {
       company_id: companyId,
-      user_id: userId,
-      orgchart_id: data.orgChartId,
-      parent_department_id: data.parentDepartmentId,
+      parent_id: data.parentDepartmentId || data.orgChartId, // Use orgChartId if no parent
       title: data.title,
       description: data.description,
       code: data.code,
@@ -295,11 +293,9 @@ export class OrgChartService {
 
   /**
    * Get orgchart hierarchy (tree structure)
-   * TODO: Implement via PostgreSQL function call
    */
-  static async getOrgChartHierarchy(_companyId: string, _orgChartId: string): Promise<any[]> {
-    console.warn("[OrgChartService] getOrgChartHierarchy: Not fully implemented - awaiting complete migration");
-    return [];
+  static async getOrgChartHierarchy(companyId: string, orgChartId: string): Promise<any[]> {
+    return this.getOrgChartTree(companyId, orgChartId);
   }
 
   /**
