@@ -21,6 +21,7 @@ import { Plus, Trash2, GripVertical, Check, ChevronsUpDown, ChevronDown, AlertCi
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { callFunction } from "@/lib/api";
 import {
   DndContext,
   closestCenter,
@@ -167,6 +168,49 @@ export function DOAMatrixForm({ companyId, matrix, onSuccess, onCancel }: DOAMat
   const { user } = useAuth();
   const isEditing = !!matrix;
 
+  // Convert existing approval blocks from database format to form format
+  const convertApprovalBlocks = (blocks?: any[]): any[] => {
+    if (!blocks || blocks.length === 0) {
+      return [createDefaultBlock()];
+    }
+
+    return blocks.map((block, index) => ({
+      id: crypto.randomUUID(),
+      order: block.order || index + 1,
+      mode: "sequential" as const, // Default mode since old format doesn't have this
+      approvers: Array.isArray(block.approvers)
+        ? block.approvers.map((approver: string | any, approverIndex: number) => {
+            // If approver is a string (user ID), convert to form format
+            if (typeof approver === 'string') {
+              return {
+                id: crypto.randomUUID(),
+                order: approverIndex + 1,
+                type: "user" as const,
+                value: approver,
+                label: approver, // Will be replaced when users are loaded
+                required: true,
+                timeframe: null,
+                financialLimits: undefined,
+                functionalAreas: [],
+              };
+            }
+            // If approver is an object, convert to form format
+            return {
+              id: crypto.randomUUID(),
+              order: approverIndex + 1,
+              type: "user" as const,
+              value: approver.userId || approver.value || "",
+              label: approver.name || approver.label || "",
+              required: true,
+              timeframe: null,
+              financialLimits: undefined,
+              functionalAreas: [],
+            };
+          })
+        : [createDefaultApprover()],
+    }));
+  };
+
   const {
     handleSubmit,
     formState: { errors },
@@ -183,7 +227,7 @@ export function DOAMatrixForm({ companyId, matrix, onSuccess, onCancel }: DOAMat
       effectiveFrom: undefined,
       effectiveTo: undefined,
       conditions: { functionalAreas: [], departments: [], categories: [] },
-      approvalBlocks: [createDefaultBlock()],
+      approvalBlocks: convertApprovalBlocks(matrix?.approvalBlocks as any),
     },
   });
 
@@ -192,23 +236,67 @@ export function DOAMatrixForm({ companyId, matrix, onSuccess, onCancel }: DOAMat
     name: "approvalBlocks",
   });
 
-  // Fetch users - simplified version using company context
+  // Fetch users and orgchart data
   useEffect(() => {
     const fetchData = async () => {
+      if (!companyId) return;
+
       try {
         console.log("Fetching users for companyId:", companyId);
 
-        // For now, we'll use a simplified approach
-        // TODO: Create proper API endpoints
-        setUsers([]);
+        // Fetch company members
+        const membersResult = await callFunction("company.get_company_members", {
+          company_id: companyId,
+        });
+
+        if (membersResult && Array.isArray(membersResult)) {
+          const formattedUsers = membersResult.map((member: any) => ({
+            _id: member.userId || member.user_id,
+            email: member.email || "",
+            fullname: member.fullname || member.fullName || member.email,
+          }));
+          setUsers(formattedUsers);
+          console.log("Loaded users:", formattedUsers);
+        }
+
+        // TODO: Fetch active orgchart for position selection
+        // For now, orgchart is not available
         setHasActiveOrgchart(false);
         setPositions([]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        toast.error("Failed to load users");
       }
     };
     fetchData();
   }, [companyId]);
+
+  // Update approver labels when users are loaded
+  useEffect(() => {
+    if (users.length === 0) return;
+
+    const currentBlocks = watch("approvalBlocks");
+    let updated = false;
+
+    currentBlocks.forEach((block, blockIndex) => {
+      block.approvers.forEach((approver, approverIndex) => {
+        if (approver.type === "user" && approver.value) {
+          const user = users.find((u) => u._id === approver.value);
+          if (user && approver.label !== user.fullname) {
+            setValue(
+              `approvalBlocks.${blockIndex}.approvers.${approverIndex}.label`,
+              user.fullname || user.email
+            );
+            updated = true;
+          }
+        }
+      });
+    });
+
+    if (updated) {
+      console.log("Updated approver labels with user names");
+    }
+  }, [users, watch, setValue]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -679,7 +767,6 @@ function SortableApproverCard({
             setValue(`${basePath}.value`, "");
             setValue(`${basePath}.label`, "");
           }}
-          disabled={!hasActiveOrgchart}
         >
           <SelectTrigger className="h-7 w-[100px]">
             <SelectValue />

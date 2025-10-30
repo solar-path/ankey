@@ -37,7 +37,8 @@ BEGIN
     INSERT INTO approval_matrices (
       id, _id, type, company_id, name, description,
       document_type, status, is_active, currency,
-      approval_blocks, created_by, created_at, updated_at
+      approval_blocks, created_by, created_at, updated_at,
+      effective_from, effective_to
     ) VALUES (
       v_matrix_id,
       v_matrix_text_id,
@@ -60,7 +61,9 @@ BEGIN
       ),
       _owner_user_id,
       NOW(),
-      NOW()
+      NOW(),
+      NOW(),  -- effective_from = created_at
+      NULL    -- effective_to = unlimited
     );
 
     -- Add to result array
@@ -183,7 +186,13 @@ BEGIN
       'approvalBlocks', approval_blocks,
       'createdBy', created_by,
       'createdAt', EXTRACT(EPOCH FROM created_at)::BIGINT * 1000,
-      'updatedAt', EXTRACT(EPOCH FROM updated_at)::BIGINT * 1000
+      'updatedAt', EXTRACT(EPOCH FROM updated_at)::BIGINT * 1000,
+      'effectiveFrom', CASE WHEN effective_from IS NOT NULL
+        THEN EXTRACT(EPOCH FROM effective_from)::BIGINT * 1000
+        ELSE NULL END,
+      'effectiveTo', CASE WHEN effective_to IS NOT NULL
+        THEN EXTRACT(EPOCH FROM effective_to)::BIGINT * 1000
+        ELSE NULL END
     )
     ORDER BY document_type, created_at DESC
   ) INTO v_matrices
@@ -242,7 +251,13 @@ BEGIN
     'approvalBlocks', v_matrix.approval_blocks,
     'createdBy', v_matrix.created_by,
     'createdAt', EXTRACT(EPOCH FROM v_matrix.created_at)::BIGINT * 1000,
-    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000
+    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000,
+    'effectiveFrom', CASE WHEN v_matrix.effective_from IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_from)::BIGINT * 1000
+      ELSE NULL END,
+    'effectiveTo', CASE WHEN v_matrix.effective_to IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_to)::BIGINT * 1000
+      ELSE NULL END
   );
 END;
 $$;
@@ -301,7 +316,13 @@ BEGIN
     'approvalBlocks', v_matrix.approval_blocks,
     'createdBy', v_matrix.created_by,
     'createdAt', EXTRACT(EPOCH FROM v_matrix.created_at)::BIGINT * 1000,
-    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000
+    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000,
+    'effectiveFrom', CASE WHEN v_matrix.effective_from IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_from)::BIGINT * 1000
+      ELSE NULL END,
+    'effectiveTo', CASE WHEN v_matrix.effective_to IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_to)::BIGINT * 1000
+      ELSE NULL END
   );
 END;
 $$;
@@ -373,7 +394,13 @@ BEGIN
     'approvalBlocks', v_matrix.approval_blocks,
     'createdBy', v_matrix.created_by,
     'createdAt', EXTRACT(EPOCH FROM v_matrix.created_at)::BIGINT * 1000,
-    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000
+    'updatedAt', EXTRACT(EPOCH FROM v_matrix.updated_at)::BIGINT * 1000,
+    'effectiveFrom', CASE WHEN v_matrix.effective_from IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_from)::BIGINT * 1000
+      ELSE NULL END,
+    'effectiveTo', CASE WHEN v_matrix.effective_to IS NOT NULL
+      THEN EXTRACT(EPOCH FROM v_matrix.effective_to)::BIGINT * 1000
+      ELSE NULL END
   );
 END;
 $$;

@@ -165,10 +165,11 @@ const FUNCTION_PARAMS: Record<string, string[]> = {
 
   // DoA functions
   "doa.get_matrices": ["company_id"],
+  "doa.get_matrix": ["company_id", "matrix_id"],
   "doa.get_matrix_by_id": ["matrix_id"],
-  "doa.create_matrix": ["company_id", "document_type", "approval_blocks", "description"],
-  "doa.update_matrix": ["matrix_id", "approval_blocks", "description", "status"],
-  "doa.delete_matrix": ["matrix_id"],
+  "doa.create_matrix": ["company_id", "name", "document_type", "approval_blocks", "created_by", "description", "min_amount", "max_amount", "currency", "is_active"],
+  "doa.update_matrix": ["company_id", "matrix_id", "name", "description", "approval_blocks", "is_active", "status", "min_amount", "max_amount"],
+  "doa.delete_matrix": ["company_id", "matrix_id"],
 
   // Task functions
   "task.get_user_tasks": ["user_id", "company_id", "include_completed"],
