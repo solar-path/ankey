@@ -240,6 +240,8 @@ export interface ApprovalMatrix {
   currency: string;
   approvalBlocks: ApprovalBlock[];
   isActive: boolean;
+  effectiveFrom?: number;
+  effectiveTo?: number | null;
   createdAt: number;
   updatedAt: number;
   createdBy: string;

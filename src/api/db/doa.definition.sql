@@ -58,6 +58,10 @@ CREATE TABLE IF NOT EXISTS approval_matrices (
   --   "minApprovals": 1
   -- }]
 
+  -- Effective dates
+  effective_from TIMESTAMP,
+  effective_to TIMESTAMP,
+
   -- Metadata
   created_by TEXT NOT NULL REFERENCES users(_id),
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
