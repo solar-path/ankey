@@ -193,17 +193,23 @@ export class AuditService {
    * @param limit - Number of logs to return (default: 100)
    * @param action - Filter by action type (optional)
    * @param table - Filter by table name (optional)
+   * @param startDate - Filter by start date (optional)
+   * @param endDate - Filter by end date (optional)
    * @returns Array of audit logs
    */
   static async getRecentLogs(
     limit: number = 100,
     action?: string,
-    table?: string
+    table?: string,
+    startDate?: Date,
+    endDate?: Date
   ): Promise<AuditLog[]> {
     const params = new URLSearchParams();
     params.set("limit", limit.toString());
     if (action) params.set("action", action);
     if (table) params.set("table", table);
+    if (startDate) params.set("start_date", startDate.toISOString());
+    if (endDate) params.set("end_date", endDate.toISOString());
 
     const response = await fetch(
       `${API_URL}/api/audit/logs/recent?${params}`,

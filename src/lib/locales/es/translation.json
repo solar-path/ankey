@@ -2,7 +2,12 @@
   "common": {
     "account": "Cuenta",
     "language": "Idioma",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "pricing": "Precios",
+    "learn": "Aprender",
+    "contact": "Contacto",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse"
   },
   "audit": {
     "trail": {
@@ -48,5 +53,76 @@
       "soc2": "SOC 2",
       "sox": "Sarbanes-Oxley"
     }
+  },
+  "home": {
+    "hero": {
+      "title": "Bienvenido a YSollo",
+      "subtitle": "Una plataforma SaaS moderna de múltiples inquilinos con soporte de subdominios y funciones personalizables",
+      "getStarted": "Comenzar",
+      "learnMore": "Saber más"
+    },
+    "features": {
+      "title": "Características principales",
+      "multiTenancy": {
+        "title": "Soporte Multi-Inquilino",
+        "description": "Administre sin problemas múltiples organizaciones con completo aislamiento y seguridad de datos"
+      },
+      "subdomain": {
+        "title": "Subdominios Personalizados",
+        "description": "Cada organización obtiene su propio subdominio de marca para una experiencia profesional"
+      },
+      "customizable": {
+        "title": "Totalmente Personalizable",
+        "description": "Adapte la plataforma a sus necesidades con opciones de configuración flexibles"
+      }
+    }
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "subtitle": "Elija el plan adecuado para su negocio",
+    "starter": {
+      "name": "Inicial",
+      "description": "Perfecto para equipos pequeños que comienzan",
+      "price": "$9",
+      "period": "/mes",
+      "features": {
+        "users": "Hasta 5 usuarios",
+        "storage": "10 GB de almacenamiento",
+        "support": "Soporte por correo electrónico"
+      },
+      "cta": "Comenzar"
+    },
+    "professional": {
+      "badge": "Más Popular",
+      "name": "Profesional",
+      "description": "Para empresas en crecimiento",
+      "price": "$29",
+      "period": "/mes",
+      "features": {
+        "users": "Hasta 20 usuarios",
+        "storage": "100 GB de almacenamiento",
+        "prioritySupport": "Soporte prioritario",
+        "analytics": "Análisis avanzados"
+      },
+      "cta": "Comenzar"
+    },
+    "enterprise": {
+      "name": "Empresa",
+      "description": "Para grandes organizaciones",
+      "custom": "Personalizado",
+      "features": {
+        "users": "Usuarios ilimitados",
+        "storage": "Almacenamiento ilimitado",
+        "phoneSupport": "Soporte telefónico",
+        "integrations": "Integraciones personalizadas"
+      },
+      "cta": "Contactar Ventas"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} YSollo. Todos los derechos reservados.",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "cookies": "Política de Cookies"
   }
 }

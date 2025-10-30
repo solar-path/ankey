@@ -1,3 +1,28 @@
-src/api/middleware/audit-context.middleware.ts(1,10): error TS1485: 'Context' resolves to a type-only declaration and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/api/middleware/audit-context.middleware.ts(1,19): error TS1484: 'Next' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/api/routes/audit.routes.ts(1,16): error TS1485: 'Context' resolves to a type-only declaration and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+## FIXED: Companies Not Loading After Login (2025-10-30)
+
+### Problem
+User itgroup.luck@gmail.com logged in successfully but company list was not loaded.
+Browser console showed: "[CompanyProvider] No session token, skipping company load"
+
+### Root Cause
+The CompanyProvider only loaded companies once on mount. It didn't react to authentication state changes.
+When a user logged in, the sessionToken was set, but CompanyProvider's initial useEffect had already run.
+
+### Solution
+Modified /Users/work/apps/ankey/src/lib/company-context.tsx:
+1. Added import: useAuthStore from auth.store
+2. Added isAuthenticated state from useAuthStore
+3. Updated useEffect to watch isAuthenticated state
+4. Now companies automatically reload when user logs in
+5. Companies automatically clear when user logs out
+
+### Changes Made
+- File: src/lib/company-context.tsx
+  - Line 4: Added useAuthStore import
+  - Line 28: Added isAuthenticated selector
+  - Line 160-170: Updated useEffect to depend on isAuthenticated
+
+### Result
+✓ TypeScript compilation successful (no errors)
+✓ Companies will now load automatically after successful login
+✓ Dashboard will show company list immediately after authentication

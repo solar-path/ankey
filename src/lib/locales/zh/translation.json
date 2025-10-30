@@ -2,7 +2,12 @@
   "common": {
     "account": "账户",
     "language": "语言",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "pricing": "价格",
+    "learn": "了解",
+    "contact": "联系",
+    "signIn": "登录",
+    "signUp": "注册"
   },
   "audit": {
     "trail": {
@@ -48,5 +53,76 @@
       "soc2": "SOC 2",
       "sox": "萨班斯-奥克斯利法案"
     }
+  },
+  "home": {
+    "hero": {
+      "title": "欢迎来到 YSollo",
+      "subtitle": "一个现代化的多租户SaaS平台，支持子域名和可自定义功能",
+      "getStarted": "开始使用",
+      "learnMore": "了解更多"
+    },
+    "features": {
+      "title": "核心功能",
+      "multiTenancy": {
+        "title": "多租户支持",
+        "description": "无缝管理多个组织，具有完整的数据隔离和安全性"
+      },
+      "subdomain": {
+        "title": "自定义子域名",
+        "description": "每个组织都可以拥有自己的品牌子域名，提供专业体验"
+      },
+      "customizable": {
+        "title": "完全可定制",
+        "description": "通过灵活的配置选项，根据您的需求定制平台"
+      }
+    }
+  },
+  "pricing": {
+    "title": "简单透明的价格",
+    "subtitle": "选择适合您业务的计划",
+    "starter": {
+      "name": "入门版",
+      "description": "非常适合刚起步的小团队",
+      "price": "$9",
+      "period": "/月",
+      "features": {
+        "users": "最多5个用户",
+        "storage": "10 GB 存储空间",
+        "support": "邮件支持"
+      },
+      "cta": "开始使用"
+    },
+    "professional": {
+      "badge": "最受欢迎",
+      "name": "专业版",
+      "description": "适合成长型企业",
+      "price": "$29",
+      "period": "/月",
+      "features": {
+        "users": "最多20个用户",
+        "storage": "100 GB 存储空间",
+        "prioritySupport": "优先支持",
+        "analytics": "高级分析"
+      },
+      "cta": "开始使用"
+    },
+    "enterprise": {
+      "name": "企业版",
+      "description": "适合大型组织",
+      "custom": "定制",
+      "features": {
+        "users": "无限用户",
+        "storage": "无限存储",
+        "phoneSupport": "电话支持",
+        "integrations": "定制集成"
+      },
+      "cta": "联系销售"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} YSollo. 保留所有权利。",
+    "terms": "服务条款",
+    "privacy": "隐私政策",
+    "cookies": "Cookie政策"
   }
 }

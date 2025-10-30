@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { CompanyService } from "@/modules/company/company-service";
 import type { Company as DBCompany } from "@/modules/shared/types/database.types";
+import { useAuthStore } from "@/modules/shared/stores/auth.store";
 
 // Re-export full Company type
 export type Company = DBCompany;
@@ -24,6 +25,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const [activeCompany, setActiveCompanyState] = useState<Company | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   /**
    * Convert DB Company to UI Company (now just returns the full DB company)
@@ -153,11 +155,19 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   }, [activeCompany]);
 
   /**
-   * Initialize companies on mount
+   * Initialize companies on mount and reload when authentication changes
    */
   useEffect(() => {
-    reloadCompanies();
-  }, []);
+    if (isAuthenticated) {
+      // User is authenticated - load companies
+      reloadCompanies();
+    } else {
+      // User is not authenticated - clear companies
+      setCompanies([]);
+      setActiveCompanyState(null);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, reloadCompanies]);
 
   const setActiveCompany = useCallback((company: Company | null) => {
     if (company) {

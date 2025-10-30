@@ -2,7 +2,12 @@
   "common": {
     "account": "Account",
     "language": "Language",
-    "logout": "Log out"
+    "logout": "Log out",
+    "pricing": "Pricing",
+    "learn": "Learn",
+    "contact": "Contact",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
   },
   "audit": {
     "trail": {
@@ -48,5 +53,76 @@
       "soc2": "SOC 2",
       "sox": "Sarbanes-Oxley"
     }
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to YSollo",
+      "subtitle": "A modern multi-tenant SaaS platform with subdomain support and customizable features",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Key Features",
+      "multiTenancy": {
+        "title": "Multi-Tenancy Support",
+        "description": "Seamlessly manage multiple organizations with complete data isolation and security"
+      },
+      "subdomain": {
+        "title": "Custom Subdomains",
+        "description": "Each organization gets its own branded subdomain for a professional experience"
+      },
+      "customizable": {
+        "title": "Fully Customizable",
+        "description": "Tailor the platform to your needs with flexible configuration options"
+      }
+    }
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that's right for your business",
+    "starter": {
+      "name": "Starter",
+      "description": "Perfect for small teams getting started",
+      "price": "$9",
+      "period": "/month",
+      "features": {
+        "users": "Up to 5 users",
+        "storage": "10 GB storage",
+        "support": "Email support"
+      },
+      "cta": "Get Started"
+    },
+    "professional": {
+      "badge": "Most Popular",
+      "name": "Professional",
+      "description": "For growing businesses",
+      "price": "$29",
+      "period": "/month",
+      "features": {
+        "users": "Up to 20 users",
+        "storage": "100 GB storage",
+        "prioritySupport": "Priority support",
+        "analytics": "Advanced analytics"
+      },
+      "cta": "Get Started"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For large organizations",
+      "custom": "Custom",
+      "features": {
+        "users": "Unlimited users",
+        "storage": "Unlimited storage",
+        "phoneSupport": "Phone support",
+        "integrations": "Custom integrations"
+      },
+      "cta": "Contact Sales"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} YSollo. All rights reserved.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Policy"
   }
 }

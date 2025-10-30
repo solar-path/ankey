@@ -211,6 +211,8 @@ app.get("/sessions/suspicious", async (c: Context) => {
  * @query limit - Number of logs to return (default: 100)
  * @query action - Filter by action type (optional)
  * @query table - Filter by table name (optional)
+ * @query start_date - Filter by start date (ISO string, optional)
+ * @query end_date - Filter by end date (ISO string, optional)
  * @returns Array of audit log records
  */
 app.get("/logs/recent", async (c: Context) => {
@@ -218,6 +220,8 @@ app.get("/logs/recent", async (c: Context) => {
     const limit = parseInt(c.req.query("limit") || "100");
     const action = c.req.query("action");
     const table = c.req.query("table");
+    const startDate = c.req.query("start_date");
+    const endDate = c.req.query("end_date");
 
     let query = `
       SELECT
@@ -251,6 +255,18 @@ app.get("/logs/recent", async (c: Context) => {
     if (table) {
       query += ` AND table_name = $${paramIndex}`;
       params.push(table);
+      paramIndex++;
+    }
+
+    if (startDate) {
+      query += ` AND created_at >= $${paramIndex}::TIMESTAMP`;
+      params.push(startDate);
+      paramIndex++;
+    }
+
+    if (endDate) {
+      query += ` AND created_at <= $${paramIndex}::TIMESTAMP`;
+      params.push(endDate);
       paramIndex++;
     }
 

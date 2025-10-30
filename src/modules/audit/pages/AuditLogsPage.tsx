@@ -1,5 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Download, Eye, Calendar } from "lucide-react";
+import { QTable, SortableHeader } from "@/lib/ui/QTable.ui";
+import { Button } from "@/lib/ui/button";
+import { Input } from "@/lib/ui/input";
+import { Label } from "@/lib/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/lib/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/lib/ui/collapsible";
 import { ActiveSessions } from "../components/ActiveSessions";
 import { AuditService, type AuditLog } from "../audit-service";
 
@@ -7,27 +25,35 @@ import { AuditService, type AuditLog } from "../audit-service";
  * Audit Logs Page
  *
  * Main page for viewing and monitoring audit logs and user sessions.
- * Displays recent activity, active sessions, and provides filtering capabilities.
+ * Displays recent activity with filtering, date range, and export capabilities.
  */
 export function AuditLogsPage() {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSessions, setShowSessions] = useState(false);
+
   const [filters, setFilters] = useState({
     action: "",
     table: "",
-    limit: 50,
+    startDate: "",
+    endDate: "",
   });
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      const startDate = filters.startDate ? new Date(filters.startDate) : undefined;
+      const endDate = filters.endDate ? new Date(filters.endDate) : undefined;
+
       const data = await AuditService.getRecentLogs(
-        filters.limit,
+        1000, // Load more records for filtering
         filters.action || undefined,
-        filters.table || undefined
+        filters.table || undefined,
+        startDate,
+        endDate
       );
       setLogs(data);
     } catch (err: any) {
@@ -35,10 +61,165 @@ export function AuditLogsPage() {
     } finally {
       setLoading(false);
     }
+  }, [filters]);
+
+  // Load logs on mount and when filters change (with debounce for table filter)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadLogs();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [loadLogs]);
+
+  // Export logs to CSV
+  const exportLogs = () => {
+    if (logs.length === 0) return;
+
+    const headers = [
+      "Timestamp",
+      "Action",
+      "Table",
+      "Record ID",
+      "User Email",
+      "User ID",
+      "IP Address",
+      "User Agent",
+      "Notes",
+      "Old Values",
+      "New Values",
+    ];
+
+    const rows = logs.map((log) => [
+      new Date(log.created_at).toISOString(),
+      log.action,
+      log.table_name,
+      log.record_id,
+      log.user_email || "",
+      log.user_id || "",
+      log.ip_address || "",
+      log.user_agent || "",
+      log.notes || "",
+      log.old_values ? JSON.stringify(log.old_values) : "",
+      log.new_values ? JSON.stringify(log.new_values) : "",
+    ]);
+
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `audit-logs-${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
+  // Define columns for QTable
+  const columns = useMemo<ColumnDef<AuditLog>[]>(
+    () => [
+      {
+        accessorKey: "created_at",
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            {t("audit.trail.timestamp", "Timestamp")}
+          </SortableHeader>
+        ),
+        cell: ({ row }) => (
+          <div className="whitespace-nowrap text-sm">
+            {new Date(row.original.created_at).toLocaleString()}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "action",
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            {t("audit.trail.action", "Action")}
+          </SortableHeader>
+        ),
+        cell: ({ row }) => (
+          <span
+            className={`px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(
+              row.original.action
+            )}`}
+          >
+            {row.original.action}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "table_name",
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            {t("audit.page.table", "Table")}
+          </SortableHeader>
+        ),
+        cell: ({ row }) => (
+          <div className="text-sm text-gray-600">{row.original.table_name}</div>
+        ),
+      },
+      {
+        accessorKey: "record_id",
+        header: t("audit.trail.recordId", "Record ID"),
+        cell: ({ row }) => (
+          <div className="text-sm font-mono text-gray-500 max-w-[120px] truncate">
+            {row.original.record_id}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "user_email",
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            {t("audit.trail.user", "User")}
+          </SortableHeader>
+        ),
+        cell: ({ row }) => (
+          <div className="text-sm">
+            <div className="text-gray-900">
+              {row.original.user_email || t("audit.trail.systemUser", "System")}
+            </div>
+            {row.original.user_role && (
+              <div className="text-xs text-gray-500">{row.original.user_role}</div>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "ip_address",
+        header: t("audit.trail.ipAddress", "IP Address"),
+        cell: ({ row }) => (
+          <div className="text-sm text-gray-500">
+            {row.original.ip_address || "-"}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "notes",
+        header: t("audit.page.notes", "Notes"),
+        cell: ({ row }) => (
+          <div className="text-sm text-gray-600 max-w-md truncate">
+            {row.original.notes || "-"}
+          </div>
+        ),
+      },
+    ],
+    [t]
+  );
+
   return (
-    <div className="audit-logs-page max-w-7xl mx-auto p-6 space-y-8">
+    <div className="audit-logs-page max-w-full mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="border-b pb-4">
         <h1 className="text-3xl font-bold text-gray-900">
@@ -52,158 +233,169 @@ export function AuditLogsPage() {
         </p>
       </div>
 
-      {/* Active Sessions Section */}
-      <section className="bg-white rounded-lg shadow p-6">
-        <ActiveSessions />
-      </section>
+      {/* Active Sessions (Collapsible) */}
+      <Collapsible open={showSessions} onOpenChange={setShowSessions}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full">
+            <Eye className="mr-2 size-4" />
+            {showSessions
+              ? t("audit.sessions.hide", "Hide Active Sessions")
+              : t("audit.sessions.show", "Show Active Sessions")}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4">
+          <div className="bg-white rounded-lg shadow p-6">
+            <ActiveSessions />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
-      {/* Recent Logs Section */}
-      <section className="bg-white rounded-lg shadow p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {t("audit.page.recentLogs", "Recent Activity")}
-          </h2>
-          <button
-            onClick={loadLogs}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {loading
-              ? t("audit.page.loading", "Loading...")
-              : t("audit.page.loadLogs", "Load Logs")}
-          </button>
-        </div>
+      {/* Filters Section */}
+      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">
+          {t("audit.page.filters", "Filters")}
+        </h2>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Action Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="action-filter">
               {t("audit.page.filterAction", "Filter by Action")}
-            </label>
-            <select
-              value={filters.action}
-              onChange={(e) =>
-                setFilters({ ...filters, action: e.target.value })
+            </Label>
+            <Select
+              value={filters.action || "ALL"}
+              onValueChange={(value) =>
+                setFilters({ ...filters, action: value === "ALL" ? "" : value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded"
             >
-              <option value="">{t("audit.page.allActions", "All Actions")}</option>
-              <option value="CREATE">CREATE</option>
-              <option value="UPDATE">UPDATE</option>
-              <option value="DELETE">DELETE</option>
-              <option value="LOGIN">LOGIN</option>
-              <option value="LOGOUT">LOGOUT</option>
-              <option value="LOGIN_FAILED">LOGIN_FAILED</option>
-            </select>
+              <SelectTrigger id="action-filter">
+                <SelectValue
+                  placeholder={t("audit.page.allActions", "All Actions")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">
+                  {t("audit.page.allActions", "All Actions")}
+                </SelectItem>
+                <SelectItem value="CREATE">CREATE</SelectItem>
+                <SelectItem value="UPDATE">UPDATE</SelectItem>
+                <SelectItem value="DELETE">DELETE</SelectItem>
+                <SelectItem value="LOGIN">LOGIN</SelectItem>
+                <SelectItem value="LOGOUT">LOGOUT</SelectItem>
+                <SelectItem value="LOGIN_FAILED">LOGIN_FAILED</SelectItem>
+                <SelectItem value="APPROVE">APPROVE</SelectItem>
+                <SelectItem value="REJECT">REJECT</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* Table Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="table-filter">
               {t("audit.page.filterTable", "Filter by Table")}
-            </label>
-            <input
+            </Label>
+            <Input
+              id="table-filter"
               type="text"
               value={filters.table}
               onChange={(e) =>
                 setFilters({ ...filters, table: e.target.value })
               }
               placeholder="companies, users, etc."
-              className="w-full px-3 py-2 border border-gray-300 rounded"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t("audit.page.limit", "Limit")}
-            </label>
-            <select
-              value={filters.limit}
+          {/* Start Date Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="start-date">
+              <Calendar className="inline mr-1 size-4" />
+              {t("audit.page.startDate", "Start Date")}
+            </Label>
+            <Input
+              id="start-date"
+              type="date"
+              value={filters.startDate}
               onChange={(e) =>
-                setFilters({ ...filters, limit: parseInt(e.target.value) })
+                setFilters({ ...filters, startDate: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded"
-            >
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="250">250</option>
-            </select>
+            />
+          </div>
+
+          {/* End Date Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="end-date">
+              <Calendar className="inline mr-1 size-4" />
+              {t("audit.page.endDate", "End Date")}
+            </Label>
+            <Input
+              id="end-date"
+              type="date"
+              value={filters.endDate}
+              onChange={(e) =>
+                setFilters({ ...filters, endDate: e.target.value })
+              }
+            />
           </div>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
+        {/* Filter Actions */}
+        <div className="flex gap-2 items-center">
+          {loading && (
+            <span className="text-sm text-gray-500">
+              {t("audit.page.loading", "Loading...")}
+            </span>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFilters({
+                action: "",
+                table: "",
+                startDate: "",
+                endDate: "",
+              });
+            }}
+            disabled={!filters.action && !filters.table && !filters.startDate && !filters.endDate}
+          >
+            {t("audit.page.clearFilters", "Clear Filters")}
+          </Button>
+        </div>
+      </div>
 
-        {/* Logs Table */}
-        {logs.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.trail.timestamp")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.trail.action")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.page.table", "Table")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.trail.user")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.trail.ipAddress")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    {t("audit.page.notes", "Notes")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(
-                          log.action
-                        )}`}
-                      >
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {log.table_name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {log.user_email || t("audit.trail.systemUser")}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                      {log.ip_address || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-md truncate">
-                      {log.notes || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Error Display */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
 
-        {logs.length === 0 && !loading && !error && (
-          <div className="p-8 text-center text-gray-500">
-            {t("audit.page.noLogs", "Click 'Load Logs' to view recent activity")}
-          </div>
-        )}
-      </section>
+      {/* Audit Logs Table */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <QTable
+          columns={columns}
+          data={logs}
+          searchable={true}
+          searchPlaceholder={t(
+            "audit.page.searchPlaceholder",
+            "Search by user, table, action..."
+          )}
+          filterable={true}
+          pageSizes={[25, 50, 100, 250]}
+          defaultPageSize={50}
+          enableRowSelection={false}
+          emptyMessage={
+            loading
+              ? t("audit.page.loading", "Loading...")
+              : t("audit.page.noLogs", "No audit logs found")
+          }
+          mainButton={{
+            label: t("audit.page.export", "Export CSV"),
+            icon: <Download className="mr-2 size-4" />,
+            onClick: exportLogs,
+          }}
+          className="mt-4"
+        />
+      </div>
     </div>
   );
 }
