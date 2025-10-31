@@ -13,7 +13,20 @@ export type OrgChartStatus = "draft" | "pending_approval" | "approved" | "revoke
 // Salary Frequency
 // ============================================================================
 
-export type SalaryFrequency = "monthly" | "weekly" | "daily" | "hourly" | "per_job" | "annual";
+export type SalaryFrequency =
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "biweekly"
+  | "semimonthly"
+  | "monthly"
+  | "quarterly"
+  | "semiannual"
+  | "annual"
+  | "per_project"
+  | "per_job"
+  | "commission"
+  | "one_time";
 
 // ============================================================================
 // Appointment End Reason

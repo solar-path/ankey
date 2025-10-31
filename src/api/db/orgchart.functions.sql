@@ -1343,7 +1343,7 @@ COMMENT ON FUNCTION orgchart.create_position(TEXT, TEXT, UUID, TEXT, TEXT, INTEG
 COMMENT ON FUNCTION orgchart.create_appointment(TEXT, TEXT, UUID, TEXT, TEXT, TEXT, UUID, INTEGER, TIMESTAMP, TEXT[], TEXT[]) IS 'Appoint user to position';
 COMMENT ON FUNCTION orgchart.remove_appointment(TEXT, TEXT, UUID, TEXT) IS 'Remove appointment from position';
 COMMENT ON FUNCTION orgchart.get_tree(TEXT, UUID) IS 'Get complete orgchart tree with all descendants';
-COMMENT ON FUNCTION orgchart.update_node(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, INTEGER, TEXT, INTEGER, INTEGER, TEXT) IS 'Update any node (orgchart/department/position)';
+COMMENT ON FUNCTION orgchart.update_node(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, INTEGER, TEXT, INTEGER, INTEGER, TEXT, TEXT, TEXT, UUID) IS 'Update any node (orgchart/department/position)';
 COMMENT ON FUNCTION orgchart.delete_node(UUID, BOOLEAN) IS 'Delete node (with optional cascade)';
 COMMENT ON FUNCTION orgchart.get_all_orgcharts(TEXT) IS 'Get all orgcharts for company';
 COMMENT ON FUNCTION orgchart.update_status(UUID, TEXT) IS 'Update orgchart status (approval workflow)';

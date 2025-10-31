@@ -1,10 +1,14 @@
-/**
- * Position Detail Card Component
- * Editable card for position details
- */
-
 import { useState, useEffect } from "react";
-import { Users, Save, Trash2, FileDown, Check, ChevronsUpDown } from "lucide-react";
+import {
+  Users,
+  Save,
+  Trash2,
+  FileDown,
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  Edit3,
+} from "lucide-react";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
 import { Textarea } from "@/lib/ui/textarea";
@@ -31,15 +35,37 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/lib/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { Position, OrgChartStatus, SalaryFrequency } from "../orgchart.types";
 import { getPositionPermissions } from "../orgchart.types";
 import { OrgChartService } from "../orgchart-service";
 import { useCompany } from "@/lib/company-context";
-import { cn } from "@/lib/utils";
+
+// Helper function to get human-readable salary frequency label
+function getSalaryFrequencyLabel(frequency: SalaryFrequency): string {
+  const labels: Record<SalaryFrequency, string> = {
+    hourly: "Hourly (per hour)",
+    daily: "Daily (per day)",
+    weekly: "Weekly (per week)",
+    biweekly: "Bi-weekly (every 2 weeks)",
+    semimonthly: "Semi-monthly (twice a month)",
+    monthly: "Monthly (per month)",
+    quarterly: "Quarterly (every 3 months)",
+    semiannual: "Semi-annual (every 6 months)",
+    annual: "Annual (per year)",
+    per_project: "Per Project",
+    per_job: "Per Job",
+    commission: "Commission",
+    one_time: "One-time Payment",
+  };
+  return labels[frequency] || frequency;
+}
 
 interface PositionCardProps {
   position: Position;
   orgChartStatus: OrgChartStatus;
+  mode?: "view" | "edit" | "create";
   onSave: (updates: Partial<Position>) => Promise<void>;
   onDelete: () => void;
   onGeneratePDF: () => void;
@@ -48,215 +74,193 @@ interface PositionCardProps {
 export function PositionCard({
   position,
   orgChartStatus,
+  mode = "view",
   onSave,
   onDelete,
   onGeneratePDF,
 }: PositionCardProps) {
   const { activeCompany } = useCompany();
   const permissions = getPositionPermissions(orgChartStatus);
+
+  const [isEditing, setIsEditing] = useState(mode === "create" || mode === "edit");
   const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
-  const [loadingPositions, setLoadingPositions] = useState(false);
   const [positionSelectOpen, setPositionSelectOpen] = useState(false);
 
-  const [originalData, setOriginalData] = useState({
-    title: position.title,
+  const [formData, setFormData] = useState({
+    title: position.title || "",
     description: position.description || "",
     reportsToPositionId: position.reportsToPositionId || "",
-    salaryMin: position.salaryMin,
-    salaryMax: position.salaryMax,
-    salaryCurrency: position.salaryCurrency,
-    salaryFrequency: position.salaryFrequency,
+    salaryMin: position.salaryMin || 0,
+    salaryMax: position.salaryMax || 0,
+    salaryCurrency: position.salaryCurrency || "USD",
+    salaryFrequency: position.salaryFrequency || "monthly",
     summary: position.jobDescription?.summary || "",
     responsibilities: position.jobDescription?.responsibilities?.join("\n") || "",
     requirements: position.jobDescription?.requirements?.join("\n") || "",
     qualifications: position.jobDescription?.qualifications?.join("\n") || "",
   });
 
-  const [formData, setFormData] = useState(originalData);
+  const [originalData, setOriginalData] = useState(formData);
 
-  // Load available positions for reporting relationship
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+
+  const selectedReportsToPosition = availablePositions.find(
+    (p) => p._id?.split(":").pop() === formData.reportsToPositionId
+  );
+
   useEffect(() => {
     if (activeCompany && position.orgChartId) {
       loadAvailablePositions();
     }
   }, [activeCompany, position.orgChartId]);
 
-  const loadAvailablePositions = async () => {
-    if (!activeCompany || !position.orgChartId) return;
+  async function loadAvailablePositions() {
+    if (!activeCompany) return;
 
     try {
-      setLoadingPositions(true);
       const hierarchy = await OrgChartService.getOrgChartHierarchy(activeCompany._id, position.orgChartId);
-
-      // Filter only positions, exclude current position
       const positions = hierarchy
         .filter((row) => row.type === "position" && row._id !== position._id)
         .map((row) => row.original as Position);
-
       setAvailablePositions(positions);
-    } catch (error) {
-      console.error("Failed to load positions:", error);
-    } finally {
-      setLoadingPositions(false);
+    } catch (e) {
+      console.error("Failed to load positions", e);
     }
+  }
+
+  // Validation errors
+  const validationErrors = {
+    title: formData.title.trim() === "",
+    salaryMin: formData.salaryMin <= 0,
+    salaryMax: formData.salaryMax <= 0 || formData.salaryMax <= formData.salaryMin,
   };
 
-  // Check if form has changes
-  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+  const isValid = !validationErrors.title && !validationErrors.salaryMin && !validationErrors.salaryMax;
 
-  // Validate required fields
-  const isValid =
-    formData.title.trim() !== "" &&
-    formData.salaryMin > 0 &&
-    formData.salaryMax > 0 &&
-    formData.salaryMax > formData.salaryMin; // Max must be greater than Min
-
-  const handleSave = async () => {
-    if (!isValid) {
-      return;
-    }
-
+  async function handleSave() {
+    if (!isValid) return;
     setIsSaving(true);
-    try {
-      await onSave({
-        title: formData.title,
-        description: formData.description,
-        reportsToPositionId: formData.reportsToPositionId || undefined,
-        // Code is auto-generated and readonly
-        salaryMin: formData.salaryMin,
-        salaryMax: formData.salaryMax,
-        salaryCurrency: formData.salaryCurrency,
-        salaryFrequency: formData.salaryFrequency,
-        jobDescription: {
-          summary: formData.summary,
-          responsibilities: formData.responsibilities.split("\n").filter(Boolean),
-          requirements: formData.requirements.split("\n").filter(Boolean),
-          qualifications: formData.qualifications.split("\n").filter(Boolean),
-        },
-      });
+    await onSave({
+      title: formData.title,
+      description: formData.description,
+      reportsToPositionId: formData.reportsToPositionId || undefined,
+      salaryMin: formData.salaryMin,
+      salaryMax: formData.salaryMax,
+      salaryCurrency: formData.salaryCurrency,
+      salaryFrequency: formData.salaryFrequency,
+      jobDescription: {
+        summary: formData.summary,
+        responsibilities: formData.responsibilities.split("\n").filter(Boolean),
+        requirements: formData.requirements.split("\n").filter(Boolean),
+        qualifications: formData.qualifications.split("\n").filter(Boolean),
+      },
+    });
+    setOriginalData(formData);
+    setIsEditing(false);
+    setIsSaving(false);
+  }
 
-      // Update original data and exit editing mode
-      setOriginalData(formData);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
+  function handleCancel() {
     setFormData(originalData);
     setIsEditing(false);
-  };
-
-  const handleFieldClick = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-  };
-
-  // Sync with position changes
-  useEffect(() => {
-    const newData = {
-      title: position.title,
-      description: position.description || "",
-      reportsToPositionId: position.reportsToPositionId || "",
-      salaryMin: position.salaryMin,
-      salaryMax: position.salaryMax,
-      salaryCurrency: position.salaryCurrency,
-      salaryFrequency: position.salaryFrequency,
-      summary: position.jobDescription?.summary || "",
-      responsibilities: position.jobDescription?.responsibilities?.join("\n") || "",
-      requirements: position.jobDescription?.requirements?.join("\n") || "",
-      qualifications: position.jobDescription?.qualifications?.join("\n") || "",
-    };
-    setOriginalData(newData);
-    setFormData(newData);
-    setIsEditing(false);
-  }, [position]);
-
-  const selectedReportsToPosition = availablePositions.find((p) => p._id?.split(":").pop() === formData.reportsToPositionId);
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="size-5 text-orange-500" />
+    <TooltipProvider>
+      <Card
+        className={cn(
+          "transition-all duration-300",
+          isEditing
+            ? "border-blue-400 shadow-md shadow-blue-100"
+            : "border-border hover:shadow-sm",
+          mode === "create" && "border-green-400 shadow-green-100"
+        )}
+      >
+        {/* Header */}
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Users className="text-orange-500 h-5 w-5" />
             <div>
-              <CardTitle>{position.title}</CardTitle>
-              <CardDescription>Position</CardDescription>
+              <CardTitle>{formData.title || "New Position"}</CardTitle>
+              <CardDescription>
+                {mode === "create" ? "Creating position" : "Position details"}
+              </CardDescription>
             </div>
           </div>
-          <Badge variant="outline">Level {position.level}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground">Basic Information</h3>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className={cn(
+                orgChartStatus === "draft" && "bg-yellow-50 text-yellow-700"
+              )}
+            >
+              {orgChartStatus}
+            </Badge>
 
-          <div>
-            <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
-            {isEditing ? (
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className={formData.title.trim() === "" ? "border-destructive" : ""}
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-              >
-                <p className="text-sm font-medium">{formData.title}</p>
-              </div>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing((e) => !e)}
+                >
+                  {isEditing ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Edit3 className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isEditing ? "Done editing" : "Edit"}
+              </TooltipContent>
+            </Tooltip>
           </div>
+        </CardHeader>
 
-          <div>
-            <Label htmlFor="description">Description</Label>
-            {isEditing ? (
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={2}
-                placeholder="Brief position description..."
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[60px]"
-              >
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {formData.description || "No description"}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Content */}
+        <CardContent className="space-y-6 transition-all duration-300 ease-in-out">
+          {/* Validation Summary */}
+          {isEditing && !isValid && hasChanges && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+              <p className="text-sm font-medium text-destructive">Please fix the following errors:</p>
+              <ul className="mt-2 list-disc list-inside text-xs text-destructive/80 space-y-1">
+                {validationErrors.title && <li>Title is required</li>}
+                {validationErrors.salaryMin && <li>Minimum salary must be greater than 0</li>}
+                {validationErrors.salaryMax && <li>Maximum salary must be greater than minimum salary</li>}
+              </ul>
+            </div>
+          )}
 
-        {/* Reporting Structure */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground">Reporting Structure</h3>
+          {/* Section: Basic Info */}
+          <Section title="Basic Information">
+            <Field
+              label="Title"
+              required
+              editable={isEditing}
+              value={formData.title}
+              onChange={(v) => setFormData({ ...formData, title: v })}
+              error={isEditing && validationErrors.title}
+              errorMessage="Title is required"
+            />
+            <Field
+              label="Description"
+              editable={isEditing}
+              textarea
+              value={formData.description}
+              onChange={(v) => setFormData({ ...formData, description: v })}
+            />
+          </Section>
 
-          <div>
-            <Label htmlFor="reportsTo">Reports To (Manager)</Label>
+          {/* Section: Reporting */}
+          <Section title="Reporting Structure">
             {isEditing ? (
               <Popover open={positionSelectOpen} onOpenChange={setPositionSelectOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={positionSelectOpen}
-                    className="w-full justify-between"
-                    disabled={loadingPositions}
-                  >
+                  <Button variant="outline" role="combobox" className="w-full justify-between">
                     {formData.reportsToPositionId
-                      ? selectedReportsToPosition?.title || formData.reportsToPositionId
+                      ? selectedReportsToPosition?.title
                       : "No manager (top position)"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -267,43 +271,23 @@ export function PositionCard({
                     <CommandList>
                       <CommandEmpty>No position found.</CommandEmpty>
                       <CommandGroup>
-                        <CommandItem
-                          value=""
-                          onSelect={() => {
-                            setFormData({ ...formData, reportsToPositionId: "" });
-                            setPositionSelectOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              !formData.reportsToPositionId ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          No manager (top position)
-                        </CommandItem>
                         {availablePositions.map((pos) => {
-                          const posId = pos._id?.split(":").pop();
-                          if (!posId) return null;
+                          const id = pos._id?.split(":").pop();
                           return (
                             <CommandItem
-                              key={pos._id}
-                              value={posId}
+                              key={id}
                               onSelect={() => {
-                                setFormData({ ...formData, reportsToPositionId: posId });
+                                setFormData({ ...formData, reportsToPositionId: id || "" });
                                 setPositionSelectOpen(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  formData.reportsToPositionId === posId ? "opacity-100" : "opacity-0"
+                                  formData.reportsToPositionId === id ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              <div className="flex flex-col">
-                                <span>{pos.title}</span>
-                                {pos.code && <span className="text-xs text-muted-foreground">{pos.code}</span>}
-                              </div>
+                              {pos.title}
                             </CommandItem>
                           );
                         })}
@@ -313,268 +297,244 @@ export function PositionCard({
                 </PopoverContent>
               </Popover>
             ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-              >
-                <p className="text-sm font-medium">
-                  {formData.reportsToPositionId
-                    ? selectedReportsToPosition?.title || formData.reportsToPositionId
-                    : "No manager (top position)"}
-                </p>
-              </div>
+              <ReadOnlyBlock
+                value={
+                  selectedReportsToPosition?.title ||
+                  "No manager (top position)"
+                }
+              />
             )}
-          </div>
-        </div>
+          </Section>
 
-        {/* Compensation */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground">Compensation</h3>
-
-          <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="salaryMin">Min Salary <span className="text-destructive">*</span></Label>
-                  {isEditing ? (
-                    <Input
-                      id="salaryMin"
-                      type="number"
-                      value={formData.salaryMin || 0}
-                      onChange={(e) => setFormData({ ...formData, salaryMin: parseFloat(e.target.value) })}
-                      className={(formData.salaryMin || 0) <= 0 ? "border-destructive" : ""}
-                    />
-                  ) : (
-                    <div
-                      onClick={handleFieldClick}
-                      className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-                    >
-                      <p className="text-sm font-medium">
-                        {formData.salaryMin ? formData.salaryMin.toLocaleString() : '0'} {formData.salaryCurrency}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="salaryMax">Max Salary <span className="text-destructive">*</span></Label>
-                  {isEditing ? (
-                    <>
-                      <Input
-                        id="salaryMax"
-                        type="number"
-                        value={formData.salaryMax || 0}
-                        onChange={(e) => setFormData({ ...formData, salaryMax: parseFloat(e.target.value) })}
-                        className={(formData.salaryMax || 0) <= 0 || (formData.salaryMax || 0) <= (formData.salaryMin || 0) ? "border-destructive" : ""}
-                      />
-                      {(formData.salaryMax || 0) <= (formData.salaryMin || 0) && (formData.salaryMax || 0) > 0 && (
-                        <p className="text-xs text-destructive mt-1">Must be greater than Min Salary</p>
-                      )}
-                    </>
-                  ) : (
-                    <div
-                      onClick={handleFieldClick}
-                      className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-                    >
-                      <p className="text-sm font-medium">
-                        {formData.salaryMax ? formData.salaryMax.toLocaleString() : '0'} {formData.salaryCurrency}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="salaryCurrency">Currency</Label>
-              {isEditing ? (
-                <Input
-                  id="salaryCurrency"
-                  value={formData.salaryCurrency}
-                  onChange={(e) => setFormData({ ...formData, salaryCurrency: e.target.value })}
-                  placeholder="USD"
-                />
-              ) : (
-                <div
-                  onClick={handleFieldClick}
-                  className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-                >
-                  <p className="text-sm font-medium">{formData.salaryCurrency}</p>
-                </div>
-              )}
+          {/* Section: Compensation */}
+          <Section title="Compensation">
+            <div className="grid grid-cols-2 gap-4">
+              <Field
+                label="Min Salary"
+                required
+                editable={isEditing}
+                type="number"
+                value={formData.salaryMin.toString()}
+                onChange={(v) =>
+                  setFormData({ ...formData, salaryMin: parseFloat(v) || 0 })
+                }
+                error={isEditing && validationErrors.salaryMin}
+                errorMessage="Min salary must be greater than 0"
+              />
+              <Field
+                label="Max Salary"
+                required
+                editable={isEditing}
+                type="number"
+                value={formData.salaryMax.toString()}
+                onChange={(v) =>
+                  setFormData({ ...formData, salaryMax: parseFloat(v) || 0 })
+                }
+                error={isEditing && validationErrors.salaryMax}
+                errorMessage="Max salary must be greater than min salary"
+              />
             </div>
+
+            <Field
+              label="Currency"
+              editable={isEditing}
+              value={formData.salaryCurrency}
+              onChange={(v) =>
+                setFormData({ ...formData, salaryCurrency: v })
+              }
+            />
+
             <div>
-              <Label htmlFor="salaryFrequency">Frequency</Label>
+              <Label>Frequency</Label>
               {isEditing ? (
                 <Select
                   value={formData.salaryFrequency}
-                  onValueChange={(value: SalaryFrequency) =>
-                    setFormData({ ...formData, salaryFrequency: value })
+                  onValueChange={(v: SalaryFrequency) =>
+                    setFormData({ ...formData, salaryFrequency: v })
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="hourly">Hourly (per hour)</SelectItem>
+                    <SelectItem value="daily">Daily (per day)</SelectItem>
+                    <SelectItem value="weekly">Weekly (per week)</SelectItem>
+                    <SelectItem value="biweekly">Bi-weekly (every 2 weeks)</SelectItem>
+                    <SelectItem value="semimonthly">Semi-monthly (twice a month)</SelectItem>
+                    <SelectItem value="monthly">Monthly (per month)</SelectItem>
+                    <SelectItem value="quarterly">Quarterly (every 3 months)</SelectItem>
+                    <SelectItem value="semiannual">Semi-annual (every 6 months)</SelectItem>
+                    <SelectItem value="annual">Annual (per year)</SelectItem>
+                    <SelectItem value="per_project">Per Project</SelectItem>
                     <SelectItem value="per_job">Per Job</SelectItem>
+                    <SelectItem value="commission">Commission</SelectItem>
+                    <SelectItem value="one_time">One-time Payment</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
-                <div
-                  onClick={handleFieldClick}
-                  className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
-                >
-                  <p className="text-sm font-medium capitalize">
-                    {formData.salaryFrequency ? formData.salaryFrequency.replace('_', ' ') : 'Monthly'}
-                  </p>
-                </div>
+                <ReadOnlyBlock value={getSalaryFrequencyLabel(formData.salaryFrequency)} />
               )}
             </div>
-          </div>
-        </div>
+          </Section>
 
-        {/* Job Description */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground">Job Description</h3>
+          {/* Section: Job Description */}
+          <Section title="Job Description">
+            <Field
+              label="Summary"
+              editable={isEditing}
+              textarea
+              value={formData.summary}
+              onChange={(v) => setFormData({ ...formData, summary: v })}
+            />
+            <Field
+              label="Responsibilities (one per line)"
+              editable={isEditing}
+              textarea
+              value={formData.responsibilities}
+              onChange={(v) => setFormData({ ...formData, responsibilities: v })}
+            />
+            <Field
+              label="Requirements (one per line)"
+              editable={isEditing}
+              textarea
+              value={formData.requirements}
+              onChange={(v) => setFormData({ ...formData, requirements: v })}
+            />
+            <Field
+              label="Qualifications (one per line)"
+              editable={isEditing}
+              textarea
+              value={formData.qualifications}
+              onChange={(v) => setFormData({ ...formData, qualifications: v })}
+            />
+          </Section>
 
-          <div>
-            <Label htmlFor="summary">Summary</Label>
-            {isEditing ? (
-              <Textarea
-                id="summary"
-                value={formData.summary}
-                onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                rows={2}
-                placeholder="Brief summary of the role..."
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[60px]"
-              >
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {formData.summary || "No summary"}
-                </p>
-              </div>
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-3 border-t pt-4">
+            {hasChanges && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleSave} disabled={!isValid || isSaving}>
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" /> Save
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  {!isValid && (
+                    <TooltipContent>
+                      Please fix validation errors before saving
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+              </>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" onClick={onGeneratePDF}>
+                  <FileDown className="mr-2 h-4 w-4" /> Job Description
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Download as PDF</TooltipContent>
+            </Tooltip>
+
+            {permissions.canDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="destructive" size="sm" onClick={onDelete}>
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete this position</TooltipContent>
+              </Tooltip>
             )}
           </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
+  );
+}
 
-          <div>
-            <Label htmlFor="responsibilities">Responsibilities (one per line)</Label>
-            {isEditing ? (
-              <Textarea
-                id="responsibilities"
-                value={formData.responsibilities}
-                onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-                rows={3}
-                placeholder="Enter each responsibility on a new line..."
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
-              >
-                {formData.responsibilities ? (
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    {formData.responsibilities.split('\n').filter(Boolean).map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No responsibilities</p>
-                )}
-              </div>
-            )}
-          </div>
+/* ---------- Subcomponents ---------- */
 
-          <div>
-            <Label htmlFor="requirements">Requirements (one per line)</Label>
-            {isEditing ? (
-              <Textarea
-                id="requirements"
-                value={formData.requirements}
-                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                rows={3}
-                placeholder="Enter each requirement on a new line..."
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
-              >
-                {formData.requirements ? (
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    {formData.requirements.split('\n').filter(Boolean).map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No requirements</p>
-                )}
-              </div>
-            )}
-          </div>
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="border rounded-xl p-4 bg-background/60 backdrop-blur-sm">
+      <h3 className="text-sm font-semibold text-muted-foreground mb-3">{title}</h3>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
 
-          <div>
-            <Label htmlFor="qualifications">Qualifications (one per line)</Label>
-            {isEditing ? (
-              <Textarea
-                id="qualifications"
-                value={formData.qualifications}
-                onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                rows={3}
-                placeholder="Enter each qualification on a new line..."
-              />
-            ) : (
-              <div
-                onClick={handleFieldClick}
-                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
-              >
-                {formData.qualifications ? (
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    {formData.qualifications.split('\n').filter(Boolean).map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No qualifications</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
-          {hasChanges && (
-            <>
-              <Button onClick={handleSave} disabled={isSaving || !isValid}>
-                <Save className="size-4 mr-2" />
-                Save
-              </Button>
-              <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
-                Cancel
-              </Button>
-            </>
+function Field({
+  label,
+  value,
+  onChange,
+  editable,
+  textarea,
+  required,
+  type = "text",
+  error,
+  errorMessage,
+}: {
+  label: string;
+  value: string;
+  onChange?: (val: string) => void;
+  editable?: boolean;
+  textarea?: boolean;
+  required?: boolean;
+  type?: string;
+  error?: boolean;
+  errorMessage?: string;
+}) {
+  return (
+    <div className="flex flex-col space-y-1.5">
+      <Label>
+        {label} {required && <span className="text-destructive">*</span>}
+      </Label>
+      {editable ? (
+        <>
+          {textarea ? (
+            <Textarea
+              value={value}
+              onChange={(e) => onChange?.(e.target.value)}
+              className={cn(error && "border-destructive focus-visible:ring-destructive")}
+            />
+          ) : (
+            <Input
+              type={type}
+              value={value}
+              onChange={(e) => onChange?.(e.target.value)}
+              className={cn(error && "border-destructive focus-visible:ring-destructive")}
+            />
           )}
-          {!isValid && isEditing && (
-            <p className="text-sm text-destructive">
-              * Title, Min Salary, and Max Salary are required. Max Salary must be greater than Min Salary.
-            </p>
+          {error && errorMessage && (
+            <p className="text-xs text-destructive">{errorMessage}</p>
           )}
-          <Button onClick={onGeneratePDF} variant="outline" size="sm">
-            <FileDown className="size-4 mr-2" />
-            Job Description
-          </Button>
-          {permissions.canDelete && (
-            <Button onClick={onDelete} variant="destructive" size="sm">
-              <Trash2 className="size-4 mr-2" />
-              Delete Position
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        </>
+      ) : (
+        <ReadOnlyBlock value={value} />
+      )}
+    </div>
+  );
+}
+
+function ReadOnlyBlock({ value }: { value: string }) {
+  return (
+    <div className="px-3 py-2 rounded-md border bg-muted/40 hover:bg-accent/50 cursor-pointer transition group relative">
+      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+        {value || "—"}
+      </p>
+      <Edit3 className="absolute right-2 top-2 h-3.5 w-3.5 opacity-0 group-hover:opacity-100 text-muted-foreground transition" />
+    </div>
   );
 }
