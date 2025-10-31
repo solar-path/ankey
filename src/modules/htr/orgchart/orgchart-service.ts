@@ -200,7 +200,10 @@ export class OrgChartService {
       charter?: string;
       salaryMin?: number;
       salaryMax?: number;
+      salaryCurrency?: string;
+      salaryFrequency?: string;
       jobDescription?: string;
+      reportsToPositionId?: string;
     }
   ): Promise<any> {
     return callFunction("orgchart.update_node", {
@@ -214,7 +217,10 @@ export class OrgChartService {
       charter: data.charter,
       salary_min: data.salaryMin,
       salary_max: data.salaryMax,
+      salary_currency: data.salaryCurrency,
+      salary_frequency: data.salaryFrequency,
       job_description: data.jobDescription,
+      reports_to_position_id: data.reportsToPositionId,
     });
   }
 
@@ -328,16 +334,35 @@ export class OrgChartService {
 
   /**
    * Update position
-   * TODO: Implement via PostgreSQL function call
    */
   static async updatePosition(
     _companyId: string,
-    _positionId: string,
+    positionId: string,
     _userId: string,
-    _data: Partial<Position>
+    data: Partial<Position>
   ): Promise<Position> {
-    console.warn("[OrgChartService] updatePosition: Not fully implemented - awaiting complete migration");
-    throw new Error("Method not yet migrated to PostgreSQL");
+    // Convert Position fields to updateNode format
+    const updateData: any = {
+      title: data.title,
+      description: data.description,
+    };
+
+    // Handle salary fields
+    if (data.salaryMin !== undefined) updateData.salaryMin = data.salaryMin;
+    if (data.salaryMax !== undefined) updateData.salaryMax = data.salaryMax;
+    if (data.salaryCurrency !== undefined) updateData.salaryCurrency = data.salaryCurrency;
+    if (data.salaryFrequency !== undefined) updateData.salaryFrequency = data.salaryFrequency;
+
+    // Handle reporting relationship
+    if (data.reportsToPositionId !== undefined) updateData.reportsToPositionId = data.reportsToPositionId;
+
+    // Handle job description - convert to JSONB string
+    if (data.jobDescription) {
+      updateData.jobDescription = JSON.stringify(data.jobDescription);
+    }
+
+    const result = await this.updateNode(positionId, updateData);
+    return result as Position;
   }
 
   /**

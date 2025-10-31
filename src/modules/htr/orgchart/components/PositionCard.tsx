@@ -192,98 +192,146 @@ export function PositionCard({
           <Badge variant="outline">Level {position.level}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
+        {/* Basic Information */}
         <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
-                {isEditing ? (
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className={formData.title.trim() === "" ? "border-destructive" : ""}
-                  />
-                ) : (
-                  <div
-                    onClick={handleFieldClick}
-                    className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+          <h3 className="text-sm font-semibold text-muted-foreground">Basic Information</h3>
+
+          <div>
+            <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+            {isEditing ? (
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className={formData.title.trim() === "" ? "border-destructive" : ""}
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+              >
+                <p className="text-sm font-medium">{formData.title}</p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description</Label>
+            {isEditing ? (
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={2}
+                placeholder="Brief position description..."
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[60px]"
+              >
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {formData.description || "No description"}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reporting Structure */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">Reporting Structure</h3>
+
+          <div>
+            <Label htmlFor="reportsTo">Reports To (Manager)</Label>
+            {isEditing ? (
+              <Popover open={positionSelectOpen} onOpenChange={setPositionSelectOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={positionSelectOpen}
+                    className="w-full justify-between"
+                    disabled={loadingPositions}
                   >
-                    <p className="text-sm font-medium">{formData.title}</p>
-                  </div>
-                )}
+                    {formData.reportsToPositionId
+                      ? selectedReportsToPosition?.title || formData.reportsToPositionId
+                      : "No manager (top position)"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search positions..." />
+                    <CommandList>
+                      <CommandEmpty>No position found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value=""
+                          onSelect={() => {
+                            setFormData({ ...formData, reportsToPositionId: "" });
+                            setPositionSelectOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !formData.reportsToPositionId ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          No manager (top position)
+                        </CommandItem>
+                        {availablePositions.map((pos) => {
+                          const posId = pos._id?.split(":").pop();
+                          if (!posId) return null;
+                          return (
+                            <CommandItem
+                              key={pos._id}
+                              value={posId}
+                              onSelect={() => {
+                                setFormData({ ...formData, reportsToPositionId: posId });
+                                setPositionSelectOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.reportsToPositionId === posId ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span>{pos.title}</span>
+                                {pos.code && <span className="text-xs text-muted-foreground">{pos.code}</span>}
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+              >
+                <p className="text-sm font-medium">
+                  {formData.reportsToPositionId
+                    ? selectedReportsToPosition?.title || formData.reportsToPositionId
+                    : "No manager (top position)"}
+                </p>
               </div>
+            )}
+          </div>
+        </div>
 
-              <div>
-                <Label htmlFor="reportsTo">Reports To (Manager)</Label>
-                <Popover open={positionSelectOpen} onOpenChange={setPositionSelectOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={positionSelectOpen}
-                      className="w-full justify-between"
-                      disabled={loadingPositions}
-                    >
-                      {formData.reportsToPositionId
-                        ? selectedReportsToPosition?.title || formData.reportsToPositionId
-                        : "No manager (top position)"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search positions..." />
-                      <CommandList>
-                        <CommandEmpty>No position found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value=""
-                            onSelect={() => {
-                              setFormData({ ...formData, reportsToPositionId: "" });
-                              setPositionSelectOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                !formData.reportsToPositionId ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            No manager (top position)
-                          </CommandItem>
-                          {availablePositions.map((pos) => {
-                            const posId = pos._id?.split(":").pop();
-                            if (!posId) return null;
-                            return (
-                              <CommandItem
-                                key={pos._id}
-                                value={posId}
-                                onSelect={() => {
-                                  setFormData({ ...formData, reportsToPositionId: posId });
-                                  setPositionSelectOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    formData.reportsToPositionId === posId ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <div className="flex flex-col">
-                                  <span>{pos.title}</span>
-                                  {pos.code && <span className="text-xs text-muted-foreground">{pos.code}</span>}
-                                </div>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+        {/* Compensation */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">Compensation</h3>
 
-              <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="salaryMin">Min Salary <span className="text-destructive">*</span></Label>
                   {isEditing ? (
@@ -333,89 +381,170 @@ export function PositionCard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="salaryCurrency">Currency</Label>
-                  <Input
-                    id="salaryCurrency"
-                    value={formData.salaryCurrency}
-                    onChange={(e) => setFormData({ ...formData, salaryCurrency: e.target.value })}
-                    placeholder="USD"
-                  />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="salaryCurrency">Currency</Label>
+              {isEditing ? (
+                <Input
+                  id="salaryCurrency"
+                  value={formData.salaryCurrency}
+                  onChange={(e) => setFormData({ ...formData, salaryCurrency: e.target.value })}
+                  placeholder="USD"
+                />
+              ) : (
+                <div
+                  onClick={handleFieldClick}
+                  className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+                >
+                  <p className="text-sm font-medium">{formData.salaryCurrency}</p>
                 </div>
-                <div>
-                  <Label htmlFor="salaryFrequency">Frequency</Label>
-                  <Select
-                    value={formData.salaryFrequency}
-                    onValueChange={(value: SalaryFrequency) =>
-                      setFormData({ ...formData, salaryFrequency: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="annual">Annual</SelectItem>
-                      <SelectItem value="per_job">Per Job</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="summary">Job Summary</Label>
-                <Textarea
-                  id="summary"
-                  value={formData.summary}
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="responsibilities">Responsibilities (one per line)</Label>
-                <Textarea
-                  id="responsibilities"
-                  value={formData.responsibilities}
-                  onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="requirements">Requirements (one per line)</Label>
-                <Textarea
-                  id="requirements"
-                  value={formData.requirements}
-                  onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="qualifications">Qualifications (one per line)</Label>
-                <Textarea
-                  id="qualifications"
-                  value={formData.qualifications}
-                  onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                  rows={3}
-                />
-              </div>
+              )}
             </div>
+            <div>
+              <Label htmlFor="salaryFrequency">Frequency</Label>
+              {isEditing ? (
+                <Select
+                  value={formData.salaryFrequency}
+                  onValueChange={(value: SalaryFrequency) =>
+                    setFormData({ ...formData, salaryFrequency: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">Hourly</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="per_job">Per Job</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div
+                  onClick={handleFieldClick}
+                  className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
+                >
+                  <p className="text-sm font-medium capitalize">
+                    {formData.salaryFrequency ? formData.salaryFrequency.replace('_', ' ') : 'Monthly'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Job Description */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">Job Description</h3>
+
+          <div>
+            <Label htmlFor="summary">Summary</Label>
+            {isEditing ? (
+              <Textarea
+                id="summary"
+                value={formData.summary}
+                onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+                rows={2}
+                placeholder="Brief summary of the role..."
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[60px]"
+              >
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {formData.summary || "No summary"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="responsibilities">Responsibilities (one per line)</Label>
+            {isEditing ? (
+              <Textarea
+                id="responsibilities"
+                value={formData.responsibilities}
+                onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+                rows={3}
+                placeholder="Enter each responsibility on a new line..."
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
+              >
+                {formData.responsibilities ? (
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    {formData.responsibilities.split('\n').filter(Boolean).map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No responsibilities</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="requirements">Requirements (one per line)</Label>
+            {isEditing ? (
+              <Textarea
+                id="requirements"
+                value={formData.requirements}
+                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                rows={3}
+                placeholder="Enter each requirement on a new line..."
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
+              >
+                {formData.requirements ? (
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    {formData.requirements.split('\n').filter(Boolean).map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No requirements</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="qualifications">Qualifications (one per line)</Label>
+            {isEditing ? (
+              <Textarea
+                id="qualifications"
+                value={formData.qualifications}
+                onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
+                rows={3}
+                placeholder="Enter each qualification on a new line..."
+              />
+            ) : (
+              <div
+                onClick={handleFieldClick}
+                className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors min-h-[80px]"
+              >
+                {formData.qualifications ? (
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    {formData.qualifications.split('\n').filter(Boolean).map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No qualifications</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
           {hasChanges && (

@@ -728,13 +728,56 @@ CREATE OR REPLACE FUNCTION orgchart.update_node(
   _charter TEXT DEFAULT NULL,
   _salary_min INTEGER DEFAULT NULL,
   _salary_max INTEGER DEFAULT NULL,
-  _job_description TEXT DEFAULT NULL
+  _salary_currency TEXT DEFAULT NULL,
+  _salary_frequency TEXT DEFAULT NULL,
+  _job_description TEXT DEFAULT NULL,
+  _reports_to_position_id UUID DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_node RECORD;
+  v_compensation_data JSONB;
+  v_job_description_data JSONB;
 BEGIN
+  -- Get current node to merge compensation and job description data
+  SELECT * INTO v_node FROM orgcharts WHERE id = _node_id;
+
+  IF v_node.id IS NULL THEN
+    RAISE EXCEPTION 'Node not found';
+  END IF;
+
+  -- Update compensation_data if any salary fields provided
+  IF _salary_min IS NOT NULL OR _salary_max IS NOT NULL OR _salary_currency IS NOT NULL OR _salary_frequency IS NOT NULL THEN
+    v_compensation_data := COALESCE(v_node.compensation_data, '{}'::JSONB);
+
+    IF _salary_min IS NOT NULL THEN
+      v_compensation_data := jsonb_set(v_compensation_data, '{salary_min}', to_jsonb(_salary_min));
+    END IF;
+
+    IF _salary_max IS NOT NULL THEN
+      v_compensation_data := jsonb_set(v_compensation_data, '{salary_max}', to_jsonb(_salary_max));
+    END IF;
+
+    IF _salary_currency IS NOT NULL THEN
+      v_compensation_data := jsonb_set(v_compensation_data, '{currency}', to_jsonb(_salary_currency));
+    END IF;
+
+    IF _salary_frequency IS NOT NULL THEN
+      v_compensation_data := jsonb_set(v_compensation_data, '{frequency}', to_jsonb(_salary_frequency));
+    END IF;
+  ELSE
+    v_compensation_data := v_node.compensation_data;
+  END IF;
+
+  -- Update job_description_data if provided (as JSONB text)
+  IF _job_description IS NOT NULL THEN
+    v_job_description_data := _job_description::JSONB;
+  ELSE
+    v_job_description_data := v_node.job_description_data;
+  END IF;
+
+  -- Update node
   UPDATE orgcharts
   SET
     title = COALESCE(_title, title),
@@ -746,14 +789,12 @@ BEGIN
     charter = COALESCE(_charter, charter),
     salary_min = COALESCE(_salary_min, salary_min),
     salary_max = COALESCE(_salary_max, salary_max),
-    job_description = COALESCE(_job_description, job_description),
+    compensation_data = v_compensation_data,
+    job_description_data = v_job_description_data,
+    parent_id = COALESCE(_reports_to_position_id, parent_id),
     updated_at = NOW()
   WHERE id = _node_id
   RETURNING * INTO v_node;
-
-  IF v_node.id IS NULL THEN
-    RAISE EXCEPTION 'Node not found';
-  END IF;
 
   RETURN jsonb_build_object(
     'id', v_node.id,
