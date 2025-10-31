@@ -16,7 +16,7 @@ import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
 import { Label } from "@/lib/ui/label";
 import { Textarea } from "@/lib/ui/textarea";
-import { Plus, Eye, MoreHorizontal, Copy, Send, Edit } from "lucide-react";
+import { Plus, Eye, MoreHorizontal, Copy, Send, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -140,6 +140,29 @@ export default function OrgChartListPage() {
       await loadOrgCharts();
     } catch (error: any) {
       toast.error(error.message || "Failed to duplicate orgchart");
+    }
+  };
+
+  const handleDelete = async (chart: OrgChart, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeCompany) return;
+
+    // Only draft charts can be deleted
+    if (chart.status !== "draft") {
+      toast.error("Only draft charts can be deleted");
+      return;
+    }
+
+    if (!confirm(`Delete "${chart.title}"? This will permanently delete the orgchart and all its contents.`)) {
+      return;
+    }
+
+    try {
+      await OrgChartService.deleteNode(chart.id, true); // Cascade delete
+      toast.success("Organizational chart deleted successfully");
+      await loadOrgCharts();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete orgchart");
     }
   };
 
@@ -345,6 +368,18 @@ export default function OrgChartListPage() {
                 <Send className="mr-2 h-4 w-4" />
                 Send for Approval
               </DropdownMenuItem>
+              {chart.status === "draft" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => handleDelete(chart, e)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
