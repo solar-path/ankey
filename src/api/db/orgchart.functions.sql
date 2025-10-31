@@ -10,8 +10,8 @@ CREATE SCHEMA IF NOT EXISTS orgchart;
 -- 1. CREATE ORGCHART (Root level)
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
-  _company_id UUID,
-  _user_id UUID,
+  _company_id TEXT,
+  _user_id TEXT,
   _title TEXT,
   _description TEXT DEFAULT NULL,
   _code TEXT DEFAULT NULL,
@@ -21,12 +21,32 @@ CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_user_uuid UUID;
   v_orgchart_id UUID;
   v_orgchart RECORD;
   v_next_version NUMERIC;
   v_version_text TEXT;
   v_metadata JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup user UUID from _id (TEXT)
+  SELECT id INTO v_user_uuid
+  FROM users
+  WHERE _id = _user_id;
+
+  IF v_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'User not found: %', _user_id;
+  END IF;
+
   -- Validate status
   IF _status NOT IN ('draft', 'pending_approval', 'approved', 'revoked') THEN
     RAISE EXCEPTION 'Invalid status. Must be one of: draft, pending_approval, approved, revoked';
@@ -37,7 +57,7 @@ BEGIN
     SELECT COALESCE(MAX((metadata->>'version')::NUMERIC), 0) + 0.1
     INTO v_next_version
     FROM orgcharts
-    WHERE company_id = _company_id AND type = 'orgchart';
+    WHERE company_id = v_company_uuid AND type = 'orgchart';
 
     v_version_text := v_next_version::TEXT;
   ELSE
@@ -59,17 +79,17 @@ BEGIN
     id, company_id, type, title, metadata,
     status, level, sort_order, created_at, updated_at
   ) VALUES (
-    v_orgchart_id, _company_id, 'orgchart', _title, v_metadata,
+    v_orgchart_id, v_company_uuid, 'orgchart', _title, v_metadata,
     _status, 0, 0, NOW(), NOW()
   ) RETURNING * INTO v_orgchart;
 
   -- Audit logging
   PERFORM audit.log_action(
-    _user_id,
+    _user_id,           -- TEXT ID, не UUID
     'CREATE',
     'orgcharts',
     v_orgchart_id::TEXT,
-    _company_id,
+    v_company_uuid,
     NULL,
     row_to_json(v_orgchart)::JSONB,
     NULL, NULL, NULL,
@@ -95,8 +115,8 @@ $$;
 -- 2. CREATE DEPARTMENT
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_department(
-  _company_id UUID,
-  _user_id UUID,
+  _company_id TEXT,
+  _user_id TEXT,
   _parent_id UUID,
   _title TEXT,
   _description TEXT DEFAULT NULL,
@@ -110,6 +130,8 @@ CREATE OR REPLACE FUNCTION orgchart.create_department(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_user_uuid UUID;
   v_department_id UUID;
   v_head_position_id UUID;
   v_parent_level INT;
@@ -118,6 +140,24 @@ DECLARE
   v_metadata JSONB;
   v_charter_data JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup user UUID from _id (TEXT)
+  SELECT id INTO v_user_uuid
+  FROM users
+  WHERE _id = _user_id;
+
+  IF v_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'User not found: %', _user_id;
+  END IF;
+
   -- Get parent level
   SELECT level INTO v_parent_level FROM orgcharts WHERE id = _parent_id;
 
@@ -143,34 +183,41 @@ BEGIN
   v_department_id := gen_random_uuid();
   v_head_position_id := gen_random_uuid();
 
-  -- Insert department
+  -- Insert department WITHOUT head_position_id first (to avoid FK constraint violation)
   INSERT INTO orgcharts (
     id, company_id, type, title, metadata, parent_id,
     headcount, headcount_filled, headcount_unfilled, charter_data,
-    level, sort_order, head_position_id, created_at, updated_at
+    level, sort_order, created_at, updated_at
   ) VALUES (
-    v_department_id, _company_id, 'department', _title, v_metadata, _parent_id,
+    v_department_id, v_company_uuid, 'department', _title, v_metadata, _parent_id,
     _headcount, 0, _headcount, v_charter_data,
-    v_parent_level + 1, 0, v_head_position_id, NOW(), NOW()
-  ) RETURNING * INTO v_department;
+    v_parent_level + 1, 0, NOW(), NOW()
+  );
 
   -- Auto-create head position
   INSERT INTO orgcharts (
     id, company_id, type, title, parent_id, is_vacant,
     level, sort_order, created_at, updated_at
   ) VALUES (
-    v_head_position_id, _company_id, 'position',
+    v_head_position_id, v_company_uuid, 'position',
     'Head of ' || _title, v_department_id, TRUE,
     v_parent_level + 2, 0, NOW(), NOW()
   ) RETURNING * INTO v_head_position;
 
+  -- Now update department with head_position_id
+  UPDATE orgcharts
+  SET head_position_id = v_head_position_id,
+      updated_at = NOW()
+  WHERE id = v_department_id
+  RETURNING * INTO v_department;
+
   -- Audit logging
   PERFORM audit.log_action(
-    _user_id,
+    _user_id,           -- TEXT ID, не UUID
     'CREATE',
     'orgcharts',
     v_department_id::TEXT,
-    _company_id,
+    v_company_uuid,
     NULL,
     row_to_json(v_department)::JSONB,
     NULL, NULL, NULL,
@@ -208,8 +255,8 @@ $$;
 -- 3. CREATE POSITION
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_position(
-  _company_id UUID,
-  _user_id UUID,
+  _company_id TEXT,
+  _user_id TEXT,
   _parent_id UUID,
   _title TEXT,
   _description TEXT DEFAULT NULL,
@@ -226,6 +273,8 @@ CREATE OR REPLACE FUNCTION orgchart.create_position(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_user_uuid UUID;
   v_position_id UUID;
   v_parent_level INT;
   v_position RECORD;
@@ -233,6 +282,24 @@ DECLARE
   v_compensation_data JSONB;
   v_job_description_data JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup user UUID from _id (TEXT)
+  SELECT id INTO v_user_uuid
+  FROM users
+  WHERE _id = _user_id;
+
+  IF v_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'User not found: %', _user_id;
+  END IF;
+
   SELECT level INTO v_parent_level FROM orgcharts WHERE id = _parent_id;
 
   IF v_parent_level IS NULL THEN
@@ -268,18 +335,18 @@ BEGIN
     compensation_data, job_description_data, is_vacant,
     level, sort_order, created_at, updated_at
   ) VALUES (
-    v_position_id, _company_id, 'position', _title, v_metadata, _parent_id,
+    v_position_id, v_company_uuid, 'position', _title, v_metadata, _parent_id,
     v_compensation_data, v_job_description_data, TRUE,
     v_parent_level + 1, 0, NOW(), NOW()
   ) RETURNING * INTO v_position;
 
   -- Audit logging
   PERFORM audit.log_action(
-    _user_id,
+    _user_id,           -- TEXT ID, не UUID
     'CREATE',
     'orgcharts',
     v_position_id::TEXT,
-    _company_id,
+    v_company_uuid,
     NULL,
     row_to_json(v_position)::JSONB,
     NULL, NULL, NULL,
@@ -308,10 +375,10 @@ $$;
 -- 4. CREATE APPOINTMENT
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.create_appointment(
-  _company_id UUID,
-  _acting_user_id UUID,
+  _company_id TEXT,
+  _acting_user_id TEXT,
   _position_id UUID,
-  _user_id UUID,
+  _user_id TEXT,
   _appointee_fullname TEXT,
   _appointee_email TEXT,
   _reports_to_position_id UUID DEFAULT NULL,
@@ -323,12 +390,42 @@ CREATE OR REPLACE FUNCTION orgchart.create_appointment(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_acting_user_uuid UUID;
+  v_user_uuid UUID;
   v_position RECORD;
   v_orgchart_id UUID;
   v_appointment_data JSONB;
   v_job_offer JSONB;
   v_history_id UUID;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup acting user UUID from _id (TEXT)
+  SELECT id INTO v_acting_user_uuid
+  FROM users
+  WHERE _id = _acting_user_id;
+
+  IF v_acting_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'Acting user not found: %', _acting_user_id;
+  END IF;
+
+  -- Lookup appointee user UUID from _id (TEXT)
+  SELECT id INTO v_user_uuid
+  FROM users
+  WHERE _id = _user_id;
+
+  IF v_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'Appointee user not found: %', _user_id;
+  END IF;
+
   -- Check if position exists and is vacant
   SELECT * INTO v_position FROM orgcharts WHERE id = _position_id AND type = 'position';
 
@@ -343,7 +440,7 @@ BEGIN
   -- Get orgchart_id (root parent)
   SELECT id INTO v_orgchart_id
   FROM orgcharts
-  WHERE company_id = _company_id AND type = 'orgchart' AND parent_id IS NULL
+  WHERE company_id = v_company_uuid AND type = 'orgchart' AND parent_id IS NULL
   LIMIT 1;
 
   -- Build job_offer JSONB
@@ -356,7 +453,7 @@ BEGIN
 
   -- Build appointment_data JSONB
   v_appointment_data := jsonb_build_object(
-    'user_id', _user_id::TEXT,
+    'user_id', _user_id,
     'fullname', _appointee_fullname,
     'email', _appointee_email,
     'appointed_at', EXTRACT(EPOCH FROM NOW())::BIGINT * 1000,
@@ -367,7 +464,7 @@ BEGIN
   -- Update position with appointment (JSONB + legacy columns)
   UPDATE orgcharts
   SET
-    appointee_user_id = _user_id,
+    appointee_user_id = v_user_uuid,
     appointee_fullname = _appointee_fullname,
     appointee_email = _appointee_email,
     is_vacant = FALSE,
@@ -383,7 +480,7 @@ BEGIN
     fullname, email, reports_to_position_id, job_offer_data,
     appointed_at, created_at, updated_at
   ) VALUES (
-    _company_id, v_orgchart_id, _position_id, _user_id,
+    v_company_uuid, v_orgchart_id, _position_id, v_user_uuid,
     _appointee_fullname, _appointee_email, _reports_to_position_id, v_job_offer,
     NOW(), NOW(), NOW()
   ) RETURNING id INTO v_history_id;
@@ -398,11 +495,11 @@ BEGIN
 
   -- Audit logging
   PERFORM audit.log_action(
-    _acting_user_id,
+    _acting_user_id,    -- TEXT ID, не UUID
     'CREATE',
     'orgchart_appointment_history',
     v_history_id::TEXT,
-    _company_id,
+    v_company_uuid,
     NULL,
     v_appointment_data,
     NULL, NULL, NULL,
@@ -422,17 +519,36 @@ $$;
 -- 5. REMOVE APPOINTMENT
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.remove_appointment(
-  _company_id UUID,
-  _acting_user_id UUID,
+  _company_id TEXT,
+  _acting_user_id TEXT,
   _position_id UUID,
   _end_reason TEXT DEFAULT 'resigned'
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_acting_user_uuid UUID;
   v_position RECORD;
   v_old_appointment_data JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup acting user UUID from _id (TEXT)
+  SELECT id INTO v_acting_user_uuid
+  FROM users
+  WHERE _id = _acting_user_id;
+
+  IF v_acting_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'Acting user not found: %', _acting_user_id;
+  END IF;
   SELECT * INTO v_position FROM orgcharts WHERE id = _position_id AND type = 'position';
 
   IF v_position.id IS NULL THEN
@@ -478,11 +594,11 @@ BEGIN
 
   -- Audit logging
   PERFORM audit.log_action(
-    _acting_user_id,
+    _acting_user_id,    -- TEXT ID, не UUID
     'DELETE',
     'orgcharts',
     _position_id::TEXT,
-    _company_id,
+    v_company_uuid,
     v_old_appointment_data,
     NULL,
     NULL, NULL, NULL,
@@ -500,12 +616,22 @@ $$;
 -- ============================================
 -- 6. GET ORGCHART TREE
 -- ============================================
-CREATE OR REPLACE FUNCTION orgchart.get_tree(_company_id UUID, _orgchart_id UUID)
+CREATE OR REPLACE FUNCTION orgchart.get_tree(_company_id TEXT, _orgchart_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
   v_tree JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
   WITH RECURSIVE org_tree AS (
     -- Root node
     SELECT
@@ -516,7 +642,7 @@ BEGIN
       is_vacant, appointed_at, level, sort_order, created_at, updated_at,
       ARRAY[id] AS path
     FROM orgcharts
-    WHERE id = _orgchart_id AND company_id = _company_id
+    WHERE id = _orgchart_id AND company_id = v_company_uuid
 
     UNION ALL
 
@@ -530,11 +656,19 @@ BEGIN
       ot.path || o.id
     FROM orgcharts o
     INNER JOIN org_tree ot ON o.parent_id = ot.id
-    WHERE o.company_id = _company_id
+    WHERE o.company_id = v_company_uuid
   )
   SELECT jsonb_agg(
     jsonb_build_object(
       'id', id,
+      '_id',
+        CASE type
+          WHEN 'orgchart' THEN 'orgchart_' || id::TEXT
+          WHEN 'department' THEN 'department_' || id::TEXT
+          WHEN 'position' THEN 'position_' || id::TEXT
+          WHEN 'appointment' THEN 'appointment_' || id::TEXT
+          ELSE id::TEXT
+        END,
       'companyId', company_id,
       'type', type,
       'title', title,
@@ -561,6 +695,11 @@ BEGIN
       'level', level,
       'sortOrder', sort_order,
       'path', path,
+      'hasChildren', EXISTS(
+        SELECT 1 FROM orgcharts children
+        WHERE children.parent_id = org_tree.id
+        AND children.company_id = v_company_uuid
+      ),
       'createdAt', EXTRACT(EPOCH FROM created_at)::BIGINT * 1000,
       'updatedAt', EXTRACT(EPOCH FROM updated_at)::BIGINT * 1000
     )
@@ -726,13 +865,14 @@ $$;
 -- 11. DUPLICATE ORGCHART
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.duplicate_orgchart(
-  _company_id UUID,
+  _company_id TEXT,
   _orgchart_id UUID,
   _new_title TEXT DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
   v_source_orgchart RECORD;
   v_new_orgchart_id UUID;
   v_new_version NUMERIC;
@@ -740,10 +880,19 @@ DECLARE
   v_title TEXT;
   v_new_orgchart RECORD;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
   -- Get source orgchart
   SELECT * INTO v_source_orgchart
   FROM orgcharts
-  WHERE id = _orgchart_id AND company_id = _company_id AND type = 'orgchart';
+  WHERE id = _orgchart_id AND company_id = v_company_uuid AND type = 'orgchart';
 
   IF v_source_orgchart.id IS NULL THEN
     RAISE EXCEPTION 'Source orgchart not found';
@@ -753,7 +902,7 @@ BEGIN
   SELECT COALESCE(MAX(version::NUMERIC), 0) + 0.1
   INTO v_new_version
   FROM orgcharts
-  WHERE company_id = _company_id AND type = 'orgchart';
+  WHERE company_id = v_company_uuid AND type = 'orgchart';
 
   v_version_text := v_new_version::TEXT;
 
@@ -773,7 +922,7 @@ BEGIN
     status, level, sort_order, created_at, updated_at
   ) VALUES (
     v_new_orgchart_id,
-    _company_id,
+    v_company_uuid,
     'orgchart',
     v_title,
     v_source_orgchart.description,
@@ -924,8 +1073,8 @@ $$;
 -- 15. TRANSFER APPOINTMENT (Move user to different position)
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.transfer_appointment(
-  _company_id UUID,
-  _acting_user_id UUID,
+  _company_id TEXT,
+  _acting_user_id TEXT,
   _from_position_id UUID,
   _to_position_id UUID,
   _transfer_reason TEXT DEFAULT 'transferred',
@@ -935,13 +1084,33 @@ CREATE OR REPLACE FUNCTION orgchart.transfer_appointment(
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_acting_user_uuid UUID;
   v_from_position RECORD;
   v_to_position RECORD;
   v_user_id UUID;
+  v_user_text_id TEXT;
   v_fullname TEXT;
   v_email TEXT;
   v_appointment_data JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup acting user UUID from _id (TEXT)
+  SELECT id INTO v_acting_user_uuid
+  FROM users
+  WHERE _id = _acting_user_id;
+
+  IF v_acting_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'Acting user not found: %', _acting_user_id;
+  END IF;
   -- Get source position
   SELECT * INTO v_from_position
   FROM orgcharts
@@ -973,6 +1142,11 @@ BEGIN
   v_fullname := v_from_position.appointee_fullname;
   v_email := v_from_position.appointee_email;
 
+  -- Get user TEXT ID
+  SELECT _id INTO v_user_text_id
+  FROM users
+  WHERE id = v_user_id;
+
   -- Remove from old position
   PERFORM orgchart.remove_appointment(
     _company_id,
@@ -986,7 +1160,7 @@ BEGIN
     _company_id,
     _acting_user_id,
     _to_position_id,
-    v_user_id,
+    v_user_text_id,
     v_fullname,
     v_email,
     COALESCE(_new_reports_to_position_id, (v_from_position.appointment_data->>'reports_to_position_id')::UUID),
@@ -998,11 +1172,11 @@ BEGIN
 
   -- Audit logging
   PERFORM audit.log_action(
-    _acting_user_id,
+    _acting_user_id,    -- TEXT ID, не UUID
     'UPDATE',
     'orgcharts',
     _to_position_id::TEXT,
-    _company_id,
+    v_company_uuid,
     NULL,
     jsonb_build_object(
       'action', 'transfer',
@@ -1029,18 +1203,37 @@ $$;
 -- 16. UPDATE JOB OFFER FOR CURRENT APPOINTMENT
 -- ============================================
 CREATE OR REPLACE FUNCTION orgchart.update_job_offer(
-  _company_id UUID,
-  _acting_user_id UUID,
+  _company_id TEXT,
+  _acting_user_id TEXT,
   _position_id UUID,
   _job_offer_data JSONB
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
+  v_company_uuid UUID;
+  v_acting_user_uuid UUID;
   v_position RECORD;
   v_old_appointment_data JSONB;
   v_new_appointment_data JSONB;
 BEGIN
+  -- Lookup company UUID from _id (TEXT)
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- Lookup acting user UUID from _id (TEXT)
+  SELECT id INTO v_acting_user_uuid
+  FROM users
+  WHERE _id = _acting_user_id;
+
+  IF v_acting_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'Acting user not found: %', _acting_user_id;
+  END IF;
   -- Get position
   SELECT * INTO v_position
   FROM orgcharts
@@ -1078,11 +1271,11 @@ BEGIN
 
   -- Audit logging
   PERFORM audit.log_action(
-    _acting_user_id,
+    _acting_user_id,    -- TEXT ID, не UUID
     'UPDATE',
     'orgcharts',
     _position_id::TEXT,
-    _company_id,
+    v_company_uuid,
     v_old_appointment_data,
     v_new_appointment_data,
     NULL, NULL, NULL,
@@ -1100,19 +1293,19 @@ $$;
 -- ============================================
 -- COMMENTS
 -- ============================================
-COMMENT ON FUNCTION orgchart.create_orgchart IS 'Create root organizational chart';
-COMMENT ON FUNCTION orgchart.create_department IS 'Create department (auto-creates head position)';
-COMMENT ON FUNCTION orgchart.create_position IS 'Create position within department';
-COMMENT ON FUNCTION orgchart.create_appointment IS 'Appoint user to position';
-COMMENT ON FUNCTION orgchart.remove_appointment IS 'Remove appointment from position';
-COMMENT ON FUNCTION orgchart.get_tree IS 'Get complete orgchart tree with all descendants';
-COMMENT ON FUNCTION orgchart.update_node IS 'Update any node (orgchart/department/position)';
-COMMENT ON FUNCTION orgchart.delete_node IS 'Delete node (with optional cascade)';
-COMMENT ON FUNCTION orgchart.get_all_orgcharts IS 'Get all orgcharts for company';
-COMMENT ON FUNCTION orgchart.update_status IS 'Update orgchart status (approval workflow)';
-COMMENT ON FUNCTION orgchart.duplicate_orgchart IS 'Duplicate orgchart with auto-incremented version';
-COMMENT ON FUNCTION orgchart.get_appointment_history IS 'Get appointment history for a position';
-COMMENT ON FUNCTION orgchart.get_direct_reports IS 'Get direct reports for a position (hierarchical reporting)';
-COMMENT ON FUNCTION orgchart.get_reporting_chain IS 'Get full reporting chain from position to top';
-COMMENT ON FUNCTION orgchart.transfer_appointment IS 'Transfer appointment from one position to another';
-COMMENT ON FUNCTION orgchart.update_job_offer IS 'Update job offer for current appointment';
+COMMENT ON FUNCTION orgchart.create_orgchart(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) IS 'Create root organizational chart';
+COMMENT ON FUNCTION orgchart.create_department(TEXT, TEXT, UUID, TEXT, TEXT, TEXT, INTEGER, TEXT, TEXT[], TEXT[], TEXT[]) IS 'Create department (auto-creates head position)';
+COMMENT ON FUNCTION orgchart.create_position(TEXT, TEXT, UUID, TEXT, TEXT, INTEGER, INTEGER, TEXT, TEXT, TEXT, TEXT[], TEXT[], TEXT[], TEXT[]) IS 'Create position within department';
+COMMENT ON FUNCTION orgchart.create_appointment(TEXT, TEXT, UUID, TEXT, TEXT, TEXT, UUID, INTEGER, TIMESTAMP, TEXT[], TEXT[]) IS 'Appoint user to position';
+COMMENT ON FUNCTION orgchart.remove_appointment(TEXT, TEXT, UUID, TEXT) IS 'Remove appointment from position';
+COMMENT ON FUNCTION orgchart.get_tree(TEXT, UUID) IS 'Get complete orgchart tree with all descendants';
+COMMENT ON FUNCTION orgchart.update_node(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, INTEGER, TEXT, INTEGER, INTEGER, TEXT) IS 'Update any node (orgchart/department/position)';
+COMMENT ON FUNCTION orgchart.delete_node(UUID, BOOLEAN) IS 'Delete node (with optional cascade)';
+COMMENT ON FUNCTION orgchart.get_all_orgcharts(TEXT) IS 'Get all orgcharts for company';
+COMMENT ON FUNCTION orgchart.update_status(UUID, TEXT) IS 'Update orgchart status (approval workflow)';
+COMMENT ON FUNCTION orgchart.duplicate_orgchart(TEXT, UUID, TEXT) IS 'Duplicate orgchart with auto-incremented version';
+COMMENT ON FUNCTION orgchart.get_appointment_history(UUID) IS 'Get appointment history for a position';
+COMMENT ON FUNCTION orgchart.get_direct_reports(UUID) IS 'Get direct reports for a position (hierarchical reporting)';
+COMMENT ON FUNCTION orgchart.get_reporting_chain(UUID) IS 'Get full reporting chain from position to top';
+COMMENT ON FUNCTION orgchart.transfer_appointment(TEXT, TEXT, UUID, UUID, TEXT, UUID, JSONB) IS 'Transfer appointment from one position to another';
+COMMENT ON FUNCTION orgchart.update_job_offer(TEXT, TEXT, UUID, JSONB) IS 'Update job offer for current appointment';

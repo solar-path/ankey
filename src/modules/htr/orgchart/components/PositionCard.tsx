@@ -290,9 +290,9 @@ export function PositionCard({
                     <Input
                       id="salaryMin"
                       type="number"
-                      value={formData.salaryMin}
+                      value={formData.salaryMin || 0}
                       onChange={(e) => setFormData({ ...formData, salaryMin: parseFloat(e.target.value) })}
-                      className={formData.salaryMin <= 0 ? "border-destructive" : ""}
+                      className={(formData.salaryMin || 0) <= 0 ? "border-destructive" : ""}
                     />
                   ) : (
                     <div
@@ -300,7 +300,7 @@ export function PositionCard({
                       className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
                     >
                       <p className="text-sm font-medium">
-                        {formData.salaryMin.toLocaleString()} {formData.salaryCurrency}
+                        {formData.salaryMin ? formData.salaryMin.toLocaleString() : '0'} {formData.salaryCurrency}
                       </p>
                     </div>
                   )}
@@ -312,11 +312,11 @@ export function PositionCard({
                       <Input
                         id="salaryMax"
                         type="number"
-                        value={formData.salaryMax}
+                        value={formData.salaryMax || 0}
                         onChange={(e) => setFormData({ ...formData, salaryMax: parseFloat(e.target.value) })}
-                        className={formData.salaryMax <= 0 || formData.salaryMax <= formData.salaryMin ? "border-destructive" : ""}
+                        className={(formData.salaryMax || 0) <= 0 || (formData.salaryMax || 0) <= (formData.salaryMin || 0) ? "border-destructive" : ""}
                       />
-                      {formData.salaryMax <= formData.salaryMin && formData.salaryMax > 0 && (
+                      {(formData.salaryMax || 0) <= (formData.salaryMin || 0) && (formData.salaryMax || 0) > 0 && (
                         <p className="text-xs text-destructive mt-1">Must be greater than Min Salary</p>
                       )}
                     </>
@@ -326,7 +326,7 @@ export function PositionCard({
                       className="px-3 py-2 rounded-md border border-transparent hover:border-input hover:bg-accent/50 cursor-pointer transition-colors"
                     >
                       <p className="text-sm font-medium">
-                        {formData.salaryMax.toLocaleString()} {formData.salaryCurrency}
+                        {formData.salaryMax ? formData.salaryMax.toLocaleString() : '0'} {formData.salaryCurrency}
                       </p>
                     </div>
                   )}

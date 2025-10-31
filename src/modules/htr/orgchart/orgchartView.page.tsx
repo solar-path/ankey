@@ -53,7 +53,13 @@ export default function OrgChartViewPage() {
 
     try {
       setLoading(true);
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+
+      // Transform rows to include 'original' field required by OrgChartRow type
+      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
+        ...row,
+        original: row, // Store the original object for editing
+      }));
 
       setOrgChartRows(rows);
 
@@ -80,7 +86,10 @@ export default function OrgChartViewPage() {
   // ============================================================================
 
   const filteredRows = orgChartRows.filter((row) => {
-    // Type filter
+    // Always include orgchart root (don't filter it)
+    if (row.type === "orgchart") return true;
+
+    // Type filter for other types
     if (!typeFilter.has(row.type)) return false;
 
     // Search filter
@@ -97,9 +106,15 @@ export default function OrgChartViewPage() {
   });
 
   // Build tree structure
-  const buildTree = (rows: OrgChartRow[], parentId?: string): OrgChartRow[] => {
+  const buildTree = (rows: OrgChartRow[], parentId?: string | null): OrgChartRow[] => {
     return rows
-      .filter((row) => row.parentId === parentId)
+      .filter((row) => {
+        // For root level, match both null and undefined
+        if (parentId === undefined || parentId === null) {
+          return row.parentId === null || row.parentId === undefined;
+        }
+        return row.parentId === parentId;
+      })
       .sort((a, b) => a.sortOrder - b.sortOrder);
   };
 
@@ -190,7 +205,11 @@ export default function OrgChartViewPage() {
       toast.success(parentId ? "Sub-department created" : "Department created");
 
       // Reload and auto-select the newly created department
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
+        ...row,
+        original: row,
+      }));
       setOrgChartRows(rows);
 
       const newDeptRow = rows.find(
@@ -225,7 +244,11 @@ export default function OrgChartViewPage() {
       toast.success("Position created with auto-generated code");
 
       // Reload and auto-select the newly created position
-      const rows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
+      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
+        ...row,
+        original: row,
+      }));
       setOrgChartRows(rows);
 
       const newPosRow = rows.find(

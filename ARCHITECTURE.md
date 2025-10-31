@@ -80,22 +80,75 @@ export function CreateTaskButton() {
 3. **Функции возвращают JSONB** для единообразия API
 4. **Используем транзакции** для целостности данных
 5. **RLS (Row Level Security)** для изоляции данных по компаниям
+6. **⚠️ TEXT ID Pattern**: Все PostgreSQL функции **ОБЯЗАТЕЛЬНО** принимают `company_id` и `user_id` как **TEXT** (не UUID) и конвертируют внутри функции
 
 #### ❌ ЗАПРЕЩЕНО:
 1. Писать бизнес-логику в TypeScript сервисах
 2. Прямые SQL запросы из TypeScript (только через функции)
 3. Обход транзакционных границ
 4. Игнорирование multi-tenancy изоляции
+5. **❌ UUID параметры для company_id/user_id** - используй только TEXT!
 
 ### Структура SQL Функций
 
-```sql
--- Пример: src/modules/auth/auth.sql
+#### ⚠️ КРИТИЧНО: TEXT ID Pattern
 
--- 1. Создание схемы (если нужно)
+**Все функции ДОЛЖНЫ принимать `company_id` и `user_id` как TEXT** и конвертировать в UUID внутри:
+
+```sql
+-- ✅ ПРАВИЛЬНО - TEXT параметры с конвертацией внутри
+CREATE OR REPLACE FUNCTION doa.get_matrix(
+  _company_id TEXT,  -- ✅ TEXT, не UUID!
+  _matrix_id TEXT    -- ✅ TEXT, не UUID!
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_company_uuid UUID;
+  v_matrix RECORD;
+BEGIN
+  -- 1. Конвертировать TEXT ID в UUID
+  SELECT id INTO v_company_uuid
+  FROM companies
+  WHERE _id = _company_id;
+
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  -- 2. Использовать UUID для внутренних операций
+  SELECT * INTO v_matrix
+  FROM approval_matrices
+  WHERE company_id = v_company_uuid
+    AND _id = _matrix_id;
+
+  RETURN jsonb_build_object('id', v_matrix.id, ...);
+END;
+$$;
+```
+
+```sql
+-- ❌ НЕПРАВИЛЬНО - UUID параметры
+CREATE OR REPLACE FUNCTION bad_example(
+  _company_id UUID,  -- ❌ ПЛОХО! Должно быть TEXT
+  _user_id UUID      -- ❌ ПЛОХО! Должно быть TEXT
+)
+RETURNS JSONB AS $$
+BEGIN
+  -- Это вызовет ошибку:
+  -- "invalid input syntax for type uuid: 'company_1761831574_...'"
+END;
+$$;
+```
+
+#### Пример функции с полной валидацией:
+
+```sql
+-- Пример: src/api/db/auth.functions.sql
+
 CREATE SCHEMA IF NOT EXISTS auth;
 
--- 2. Функция с бизнес-логикой
+-- Функция с бизнес-логикой
 CREATE OR REPLACE FUNCTION auth.signup(
   _email TEXT,
   _password TEXT,
@@ -785,6 +838,9 @@ POST /api/audit/restore/:table/:recordId  // Восстановление зап
 Перед добавлением новой функциональности проверь:
 
 - [ ] **SQL функции созданы** в соответствующем модуле (например, `auth.sql`)
+- [ ] **⚠️ TEXT ID Pattern**: параметры `company_id` и `user_id` принимаются как **TEXT** (не UUID!)
+  - Конвертация TEXT → UUID внутри функции через lookup в `companies`/`users` таблицах
+  - RAISE EXCEPTION если company/user не найдены
 - [ ] **Функции возвращают JSONB**
 - [ ] **SECURITY DEFINER** установлен
 - [ ] **Валидация данных** в PostgreSQL функции
@@ -794,7 +850,8 @@ POST /api/audit/restore/:table/:recordId  // Восстановление зап
   - Проверить, что логи появляются в `audit_log` таблице
 - [ ] **RLS политики** для multi-tenancy (если нужно)
 - [ ] **Hono route** добавлен или используется универсальный роутер
-- [ ] **⚠️ FUNCTION_PARAMS маппинг** добавлен для новой функции ([см. docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md))
+- [ ] **⚠️ FUNCTION_PARAMS маппинг** добавлен для новой функции с правильным порядком параметров ([см. docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md))
+  - Порядок параметров в маппинге ДОЛЖЕН точно соответствовать сигнатуре SQL функции!
 - [ ] **Client service** создан как thin wrapper
 - [ ] **TypeScript интерфейсы** определены
 - [ ] **Valibot схемы** для клиентской валидации
@@ -808,7 +865,59 @@ POST /api/audit/restore/:table/:recordId  // Восстановление зап
 
 ## 🚫 Антипаттерны (Что НЕ делать)
 
-### ❌ 0. Object.values() для параметров PostgreSQL функций
+### ❌ 0. UUID параметры вместо TEXT для company_id/user_id
+
+```sql
+-- ❌ ПЛОХО - UUID параметры
+CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
+  _company_id UUID,  -- ❌ Вызовет ошибку с TEXT ID!
+  _user_id UUID,     -- ❌ Вызовет ошибку с TEXT ID!
+  _title TEXT
+)
+RETURNS JSONB AS $$
+BEGIN
+  -- Это НЕ РАБОТАЕТ, потому что из API приходят TEXT ID
+  -- Ошибка: "invalid input syntax for type uuid: 'company_1761831574_...'"
+  INSERT INTO orgcharts (company_id, ...) VALUES (_company_id, ...);
+END;
+$$;
+```
+
+```sql
+-- ✅ ХОРОШО - TEXT параметры с конвертацией
+CREATE OR REPLACE FUNCTION orgchart.create_orgchart(
+  _company_id TEXT,  -- ✅ Принимаем TEXT ID
+  _user_id TEXT,     -- ✅ Принимаем TEXT ID
+  _title TEXT
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_company_uuid UUID;
+  v_user_uuid UUID;
+BEGIN
+  -- Конвертируем TEXT → UUID
+  SELECT id INTO v_company_uuid FROM companies WHERE _id = _company_id;
+  IF v_company_uuid IS NULL THEN
+    RAISE EXCEPTION 'Company not found: %', _company_id;
+  END IF;
+
+  SELECT id INTO v_user_uuid FROM users WHERE _id = _user_id;
+  IF v_user_uuid IS NULL THEN
+    RAISE EXCEPTION 'User not found: %', _user_id;
+  END IF;
+
+  -- Используем UUID внутри
+  INSERT INTO orgcharts (company_id, ...) VALUES (v_company_uuid, ...);
+END;
+$$;
+```
+
+**Почему это важно:**
+- API получает TEXT ID из клиента (например: `"company_1761831574_87c81657-9fa0-432a-8367-d9020fb1943b"`)
+- PostgreSQL UUID тип не может распарсить TEXT ID с префиксом
+- Функция ДОЛЖНА принять TEXT и найти соответствующий UUID в таблице
+
+### ❌ 1. Object.values() для параметров PostgreSQL функций
 ```typescript
 // ПЛОХО - Object.values() НЕ гарантирует порядок!
 app.post("/:fn", async (c) => {
@@ -836,7 +945,166 @@ app.post("/:fn", async (c) => {
 
 **См.:** [docs/API_PARAMETER_ORDER.md](docs/API_PARAMETER_ORDER.md)
 
-### ❌ 1. Бизнес-логика в TypeScript
+### ❌ 2. Несоответствие FUNCTION_PARAMS и сигнатуры SQL функции
+
+```typescript
+// ❌ ПЛОХО - параметры не соответствуют!
+const FUNCTION_PARAMS = {
+  // user_id пропущен! ❌
+  "orgchart.create_orgchart": ["company_id", "title", "description", ...]
+};
+```
+
+```sql
+-- SQL функция ожидает:
+CREATE FUNCTION orgchart.create_orgchart(
+  _company_id TEXT,
+  _user_id TEXT,     -- ❗ Этот параметр пропущен в маппинге!
+  _title TEXT,
+  ...
+)
+```
+
+**Результат:** API передает `title` вместо `user_id`, функция получает неправильные параметры!
+```
+[Hono] Params: ["company_123", "Organizational Chart 2025", ...]
+error: User not found: Organizational Chart 2025  ❌
+```
+
+```typescript
+// ✅ ХОРОШО - точное соответствие
+const FUNCTION_PARAMS = {
+  "orgchart.create_orgchart": [
+    "company_id",  // ✅ Соответствует _company_id
+    "user_id",     // ✅ Соответствует _user_id
+    "title",       // ✅ Соответствует _title
+    ...
+  ]
+};
+```
+
+**Правило:** Порядок и названия параметров в `FUNCTION_PARAMS` **ОБЯЗАТЕЛЬНО** должны точно соответствовать сигнатуре SQL функции!
+
+### ❌ 3. Неправильный вызов audit.log_action
+
+```sql
+-- ❌ ПЛОХО - передаем UUID вместо TEXT для user_id
+CREATE FUNCTION some_function(
+  _company_id TEXT,
+  _user_id TEXT,
+  ...
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_company_uuid UUID;
+  v_user_uuid UUID;
+BEGIN
+  -- Конвертируем TEXT → UUID
+  SELECT id INTO v_company_uuid FROM companies WHERE _id = _company_id;
+  SELECT id INTO v_user_uuid FROM users WHERE _id = _user_id;
+
+  -- ❌ ОШИБКА: передаем UUID, но audit.log_action ожидает TEXT для user_id!
+  PERFORM audit.log_action(
+    v_user_uuid,        -- ❌ UUID - вызовет ошибку!
+    'CREATE',
+    'table_name',
+    v_record_id::TEXT,
+    v_company_uuid,     -- ✅ UUID - правильно
+    ...
+  );
+END;
+$$;
+```
+
+```sql
+-- ✅ ХОРОШО - передаем TEXT ID для user_id
+PERFORM audit.log_action(
+  _user_id,           -- ✅ TEXT ID из параметра функции
+  'CREATE',
+  'table_name',
+  v_record_id::TEXT,
+  v_company_uuid,     -- ✅ UUID - правильно
+  NULL,               -- old_values
+  row_to_json(v_record)::JSONB,  -- new_values
+  NULL, NULL, NULL,
+  'Record created'
+);
+```
+
+**Сигнатура audit.log_action:**
+```sql
+audit.log_action(
+  _user_id TEXT,           -- ⚠️ TEXT, не UUID!
+  _action TEXT,
+  _table_name TEXT,
+  _record_id TEXT,
+  _company_id UUID,        -- ⚠️ UUID, не TEXT!
+  _old_values JSONB,
+  _new_values JSONB,
+  _ip_address INET,
+  _user_agent TEXT,
+  _request_id UUID,
+  _notes TEXT
+)
+```
+
+**Правило:** `audit.log_action` принимает `_user_id` как **TEXT**, но `_company_id` как **UUID**!
+
+### ❌ 4. Нарушение Foreign Key при циклических ссылках
+
+```sql
+-- ❌ ПЛОХО - вставка с несуществующим FK
+CREATE FUNCTION create_department(...) AS $$
+DECLARE
+  v_department_id UUID;
+  v_head_position_id UUID;
+BEGIN
+  v_department_id := gen_random_uuid();
+  v_head_position_id := gen_random_uuid();
+
+  -- ❌ ОШИБКА: head_position_id еще не существует!
+  INSERT INTO orgcharts (..., head_position_id)
+  VALUES (..., v_head_position_id);
+
+  -- Позиция создается ПОСЛЕ департамента
+  INSERT INTO orgcharts (id, ...)
+  VALUES (v_head_position_id, ...);
+END;
+$$;
+```
+
+**Ошибка:** `insert or update on table "orgcharts" violates foreign key constraint "orgcharts_head_position_id_fkey"`
+
+```sql
+-- ✅ ХОРОШО - сначала создать без FK, потом обновить
+CREATE FUNCTION create_department(...) AS $$
+DECLARE
+  v_department_id UUID;
+  v_head_position_id UUID;
+BEGIN
+  v_department_id := gen_random_uuid();
+  v_head_position_id := gen_random_uuid();
+
+  -- 1. Вставить department БЕЗ head_position_id
+  INSERT INTO orgcharts (id, company_id, type, title, ...)
+  VALUES (v_department_id, _company_id, 'department', _title, ...);
+
+  -- 2. Создать head position
+  INSERT INTO orgcharts (id, company_id, type, title, parent_id, ...)
+  VALUES (v_head_position_id, _company_id, 'position', 'Head of ' || _title, v_department_id, ...);
+
+  -- 3. Обновить department с head_position_id
+  UPDATE orgcharts
+  SET head_position_id = v_head_position_id
+  WHERE id = v_department_id
+  RETURNING * INTO v_department;
+END;
+$$;
+```
+
+**Правило:** При создании записей с циклическими FK (A→B, B→A), сначала создать обе записи без FK, потом обновить с FK.
+
+### ❌ 5. Бизнес-логика в TypeScript
 ```typescript
 // ПЛОХО
 static async signUp(data: SignUpInput) {

@@ -35,11 +35,22 @@ import {
   DialogTitle,
 } from "@/lib/ui/dialog";
 
+// Extended OrgChart type with statistics
+interface OrgChartWithStats extends OrgChart {
+  stats?: {
+    departments: number;
+    positions: number;
+    appointments: number;
+    totalHeadcount: number;
+    vacancies: number;
+  };
+}
+
 export default function OrgChartListPage() {
   const { user } = useAuth();
   const { activeCompany } = useCompany();
   const [, setLocation] = useLocation();
-  const [orgCharts, setOrgCharts] = useState<OrgChart[]>([]);
+  const [orgCharts, setOrgCharts] = useState<OrgChartWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [selectedChart, setSelectedChart] = useState<OrgChart | null>(null);
@@ -56,7 +67,41 @@ export default function OrgChartListPage() {
     try {
       setLoading(true);
       const charts = await OrgChartService.getCompanyOrgCharts(activeCompany._id);
-      setOrgCharts(charts);
+
+      // Load statistics for each orgchart
+      const chartsWithStats = await Promise.all(
+        charts.map(async (chart) => {
+          try {
+            const hierarchy = await OrgChartService.getOrgChartHierarchy(activeCompany._id, chart.id);
+
+            const departments = hierarchy.filter((n: any) => n.type === 'department').length;
+            const positions = hierarchy.filter((n: any) => n.type === 'position').length;
+            const appointments = hierarchy.filter((n: any) => n.type === 'position' && !n.isVacant).length;
+            const vacancies = hierarchy.filter((n: any) => n.type === 'position' && n.isVacant).length;
+
+            // Calculate total headcount from all departments
+            const totalHeadcount = hierarchy
+              .filter((n: any) => n.type === 'department')
+              .reduce((sum: number, dept: any) => sum + (dept.headcount || 0), 0);
+
+            return {
+              ...chart,
+              stats: {
+                departments,
+                positions,
+                appointments,
+                totalHeadcount,
+                vacancies,
+              },
+            } as OrgChartWithStats;
+          } catch (error) {
+            console.error(`Failed to load stats for orgchart ${chart.id}:`, error);
+            return chart as OrgChartWithStats;
+          }
+        })
+      );
+
+      setOrgCharts(chartsWithStats);
     } catch (error) {
       console.error("Failed to load orgcharts:", error);
       toast.error("Failed to load organizational charts");
@@ -157,7 +202,7 @@ export default function OrgChartListPage() {
     );
   };
 
-  const columns: ColumnDef<OrgChart>[] = [
+  const columns: ColumnDef<OrgChartWithStats>[] = [
     {
       accessorKey: "version",
       header: "Version",
@@ -176,33 +221,54 @@ export default function OrgChartListPage() {
       ),
     },
     {
+      accessorKey: "stats.departments",
+      header: "Depts",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium">
+          {row.original.stats?.departments ?? "-"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "stats.positions",
+      header: "Positions",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium">
+          {row.original.stats?.positions ?? "-"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "stats.appointments",
+      header: "Filled",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium text-green-600">
+          {row.original.stats?.appointments ?? "-"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "stats.vacancies",
+      header: "Vacant",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium text-orange-600">
+          {row.original.stats?.vacancies ?? "-"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "stats.totalHeadcount",
+      header: "Headcount",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium">
+          {row.original.stats?.totalHeadcount ?? "-"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => getStatusBadge(row.original.status),
-    },
-    {
-      accessorKey: "enforcedAt",
-      header: "Enforced",
-      cell: ({ row }) =>
-        row.original.enforcedAt ? (
-          <span className="text-sm">
-            {new Date(row.original.enforcedAt).toLocaleDateString()}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        ),
-    },
-    {
-      accessorKey: "revokedAt",
-      header: "Revoked",
-      cell: ({ row }) =>
-        row.original.revokedAt ? (
-          <span className="text-sm text-red-600">
-            {new Date(row.original.revokedAt).toLocaleDateString()}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        ),
     },
     {
       accessorKey: "createdAt",
