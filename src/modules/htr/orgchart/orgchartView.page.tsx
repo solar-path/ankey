@@ -48,18 +48,51 @@ export default function OrgChartViewPage() {
     loadOrgChart();
   }, [activeCompany, id]);
 
+  // Transform raw API data to OrgChartRows with virtual appointments
+  const transformOrgChartData = (rawRows: any[]): OrgChartRow[] => {
+    // Transform rows to include 'original' field required by OrgChartRow type
+    let rows: OrgChartRow[] = rawRows.map((row: any) => ({
+      ...row,
+      original: row, // Store the original object for editing
+    }));
+
+    // Add virtual appointment nodes for vacant positions and update hasChildren
+    const appointmentRows: OrgChartRow[] = [];
+    rows = rows.map((row) => {
+      if (row.type === 'position' && row.isVacant) {
+        // Mark position as having children (the vacant appointment)
+        row.hasChildren = true;
+
+        // Create virtual appointment row for vacant position
+        appointmentRows.push({
+          id: `${row.id}_appointment`,
+          _id: `appointment_${row.id}`,
+          type: 'appointment',
+          title: 'Vacant',
+          parentId: row.id,
+          isVacant: true,
+          level: (row.level || 0) + 1,
+          sortOrder: 0,
+          hasChildren: false,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          original: row.original,
+        } as OrgChartRow);
+      }
+      return row;
+    });
+
+    // Merge original rows with virtual appointments
+    return [...rows, ...appointmentRows];
+  };
+
   const loadOrgChart = async (preserveExpandedState = false) => {
     if (!activeCompany || !id || !user) return;
 
     try {
       setLoading(true);
       const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
-
-      // Transform rows to include 'original' field required by OrgChartRow type
-      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
-        ...row,
-        original: row, // Store the original object for editing
-      }));
+      const rows = transformOrgChartData(rawRows);
 
       setOrgChartRows(rows);
 
@@ -206,10 +239,7 @@ export default function OrgChartViewPage() {
 
       // Reload and auto-select the newly created department
       const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
-      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
-        ...row,
-        original: row,
-      }));
+      const rows = transformOrgChartData(rawRows);
       setOrgChartRows(rows);
 
       const newDeptRow = rows.find(
@@ -245,10 +275,7 @@ export default function OrgChartViewPage() {
 
       // Reload and auto-select the newly created position
       const rawRows = await OrgChartService.getOrgChartHierarchy(activeCompany._id, id);
-      const rows: OrgChartRow[] = rawRows.map((row: any) => ({
-        ...row,
-        original: row,
-      }));
+      const rows = transformOrgChartData(rawRows);
       setOrgChartRows(rows);
 
       const newPosRow = rows.find(
@@ -708,7 +735,13 @@ export default function OrgChartViewPage() {
             isDragging && "opacity-50"
           )}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
-          onClick={() => setSelectedRow(row)}
+          onClick={() => {
+            setSelectedRow(row);
+            // Auto-expand when selecting a row with children
+            if (row.hasChildren && !isExpanded) {
+              toggleExpand(row.id);
+            }
+          }}
         >
           {/* Expand/Collapse */}
           {row.hasChildren ? (
@@ -743,12 +776,7 @@ export default function OrgChartViewPage() {
             </div>
           )}
 
-          {/* Badges */}
-          {row.isVacant && (
-            <Badge variant="outline" className="text-xs">
-              Vacant
-            </Badge>
-          )}
+          {/* Badges - removed Vacant badge as it's redundant */}
 
           {/* Quick Actions */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

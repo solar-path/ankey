@@ -328,12 +328,12 @@ export function AppointmentCard({
               onChange={(e) =>
                 setFormData({ ...formData, salary: parseFloat(e.target.value) })
               }
-              min={position.salaryMin}
-              max={position.salaryMax}
+              min={position.salaryMin || 0}
+              max={position.salaryMax || 0}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Range: {position.salaryMin.toLocaleString()} -{" "}
-              {position.salaryMax.toLocaleString()} {position.salaryCurrency}
+              Range: {position.salaryMin ? position.salaryMin.toLocaleString() : '0'} -{" "}
+              {position.salaryMax ? position.salaryMax.toLocaleString() : '0'} {position.salaryCurrency}
             </p>
           </div>
 
