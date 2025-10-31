@@ -355,30 +355,24 @@ export class OrgChartService {
   }
 
   /**
-   * Delete department
-   * TODO: Implement via PostgreSQL function call
+   * Delete department (with cascade)
    */
-  static async deleteDepartment(_companyId: string, _departmentId: string): Promise<void> {
-    console.warn("[OrgChartService] deleteDepartment: Not fully implemented - awaiting complete migration");
-    throw new Error("Method not yet migrated to PostgreSQL");
+  static async deleteDepartment(_companyId: string, departmentId: string): Promise<void> {
+    await this.deleteNode(departmentId, true); // Cascade delete
   }
 
   /**
-   * Delete position
-   * TODO: Implement via PostgreSQL function call
+   * Delete position (with cascade)
    */
-  static async deletePosition(_companyId: string, _positionId: string): Promise<void> {
-    console.warn("[OrgChartService] deletePosition: Not fully implemented - awaiting complete migration");
-    throw new Error("Method not yet migrated to PostgreSQL");
+  static async deletePosition(_companyId: string, positionId: string): Promise<void> {
+    await this.deleteNode(positionId, true); // Cascade delete
   }
 
   /**
    * Delete appointment
-   * TODO: Implement via PostgreSQL function call
    */
-  static async deleteAppointment(_companyId: string, _appointmentId: string): Promise<void> {
-    console.warn("[OrgChartService] deleteAppointment: Not fully implemented - awaiting complete migration");
-    throw new Error("Method not yet migrated to PostgreSQL");
+  static async deleteAppointment(_companyId: string, appointmentId: string): Promise<void> {
+    await this.deleteNode(appointmentId, false); // No cascade for appointments
   }
 
   /**

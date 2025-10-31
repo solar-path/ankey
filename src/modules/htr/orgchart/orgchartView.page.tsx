@@ -223,7 +223,15 @@ export default function OrgChartViewPage() {
 
     try {
       setSaving(true);
-      const parentId = parent?.type === "department" ? parent.id : undefined;
+
+      // Determine parent ID based on parent type
+      // Department can be created under: orgchart root, department, or position
+      let parentId: string | undefined;
+      if (parent?.type === "department" || parent?.type === "position") {
+        parentId = parent.id;
+      } else if (parent?.type === "orgchart") {
+        parentId = undefined; // Root level department
+      }
 
       // Create empty department with default values
       const result = await OrgChartService.createDepartment(activeCompany._id, user._id, {
@@ -257,12 +265,15 @@ export default function OrgChartViewPage() {
   };
 
   const handleAddPosition = async (parent: OrgChartRow) => {
-    if (!activeCompany || !user || !id || parent.type !== "department") return;
+    if (!activeCompany || !user || !id) return;
+
+    // Position can be created under: orgchart root, department, or position
+    if (parent.type !== "orgchart" && parent.type !== "department" && parent.type !== "position") return;
 
     try {
       const result = await OrgChartService.createPosition(activeCompany._id, user._id, {
         orgChartId: id,
-        departmentId: parent.id,
+        departmentId: parent.id, // Will be parent ID (department, position, or orgchart)
         title: "New Position",
         description: "",
         salaryMin: 1, // Default minimum salary
@@ -531,6 +542,13 @@ export default function OrgChartViewPage() {
     setContextMenu(null);
 
     switch (action) {
+      case "create-department":
+        // Create department under orgchart root or position
+        if (row.type === "orgchart" || row.type === "position") {
+          await handleAddDepartment(row);
+        }
+        break;
+
       case "create-subdepartment":
         if (row.type === "department") {
           await handleAddDepartment(row);
@@ -538,7 +556,8 @@ export default function OrgChartViewPage() {
         break;
 
       case "create-position":
-        if (row.type === "department") {
+        // Create position under orgchart root, department, or position
+        if (row.type === "orgchart" || row.type === "department" || row.type === "position") {
           await handleAddPosition(row);
         }
         break;
@@ -547,10 +566,6 @@ export default function OrgChartViewPage() {
         if (row.type === "position") {
           toast.info("Appointments are auto-created with positions");
         }
-        break;
-
-      case "duplicate":
-        await handleDuplicate(row);
         break;
 
       case "delete":
@@ -780,7 +795,7 @@ export default function OrgChartViewPage() {
 
           {/* Quick Actions */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {row.type === "department" && getDepartmentPermissions(orgChartStatus).canCreate && (
+            {(row.type === "department" || row.type === "position") && getDepartmentPermissions(orgChartStatus).canCreate && (
               <>
                 <Button
                   size="sm"
@@ -790,7 +805,7 @@ export default function OrgChartViewPage() {
                     e.stopPropagation();
                     handleAddDepartment(row);
                   }}
-                  title="Add Sub-Department"
+                  title={row.type === "department" ? "Add Sub-Department" : "Add Department"}
                 >
                   <Building2 className="size-3" />
                 </Button>
@@ -855,18 +870,6 @@ export default function OrgChartViewPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {getDepartmentPermissions(orgChartStatus).canCreate && (
-              <Button onClick={() => handleAddDepartment()} variant="outline" size="sm">
-                <Building2 className="size-4 mr-2" />
-                Add Department
-              </Button>
-            )}
-
-            <Button onClick={handleSaveOrgChart} variant="outline" size="sm">
-              <Save className="size-4 mr-2" />
-              Save
-            </Button>
-
             {/* Reports Menu */}
             <Button onClick={handleExportToPDF} variant="outline" size="sm" title="Export to PDF">
               <FileDown className="size-4 mr-2" />
@@ -1047,6 +1050,27 @@ export default function OrgChartViewPage() {
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Orgchart root menu */}
+          {contextMenu.row.type === "orgchart" && getDepartmentPermissions(orgChartStatus).canCreate && (
+            <>
+              <button
+                className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+                onClick={() => handleContextMenuAction("create-department", contextMenu.row)}
+              >
+                <Building2 className="size-4" />
+                Create Department
+              </button>
+              <button
+                className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+                onClick={() => handleContextMenuAction("create-position", contextMenu.row)}
+              >
+                <Plus className="size-4" />
+                Create Position
+              </button>
+            </>
+          )}
+
+          {/* Department menu */}
           {contextMenu.row.type === "department" && getDepartmentPermissions(orgChartStatus).canCreate && (
             <>
               <button
@@ -1066,27 +1090,28 @@ export default function OrgChartViewPage() {
             </>
           )}
 
-          {contextMenu.row.type === "position" && (
-            <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
-              onClick={() => handleContextMenuAction("create-appointment", contextMenu.row)}
-            >
-              <UserCheck className="size-4" />
-              Create Appointment
-            </button>
+          {/* Position menu - can create departments AND appointments */}
+          {contextMenu.row.type === "position" && getDepartmentPermissions(orgChartStatus).canCreate && (
+            <>
+              <button
+                className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+                onClick={() => handleContextMenuAction("create-department", contextMenu.row)}
+              >
+                <Building2 className="size-4" />
+                Create Department
+              </button>
+              <button
+                className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+                onClick={() => handleContextMenuAction("create-appointment", contextMenu.row)}
+              >
+                <UserCheck className="size-4" />
+                Create Appointment
+              </button>
+            </>
           )}
 
-          {/* Duplicate option for all types */}
-          <div className="border-t my-1" />
-          <button
-            className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
-            onClick={() => handleContextMenuAction("duplicate", contextMenu.row)}
-          >
-            <Copy className="size-4" />
-            Duplicate {contextMenu.row.type}
-          </button>
-
-          {((contextMenu.row.type === "department" && getDepartmentPermissions(orgChartStatus).canDelete) ||
+          {/* Delete option */}
+          {contextMenu.row.type !== "orgchart" && ((contextMenu.row.type === "department" && getDepartmentPermissions(orgChartStatus).canDelete) ||
             (contextMenu.row.type === "position") ||
             (contextMenu.row.type === "appointment")) && (
             <>

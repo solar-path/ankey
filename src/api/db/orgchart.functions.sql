@@ -64,7 +64,7 @@ BEGIN
     v_version_text := _version;
   END IF;
 
-  -- Build metadata JSONB
+  -- Build metadata JSONB (keeping for backwards compatibility)
   v_metadata := jsonb_build_object(
     'description', _description,
     'code', _code,
@@ -76,10 +76,10 @@ BEGIN
 
   -- Insert orgchart
   INSERT INTO orgcharts (
-    id, company_id, type, title, metadata,
+    id, company_id, type, title, description, code, version, metadata,
     status, level, sort_order, created_at, updated_at
   ) VALUES (
-    v_orgchart_id, v_company_uuid, 'orgchart', _title, v_metadata,
+    v_orgchart_id, v_company_uuid, 'orgchart', _title, _description, _code, v_version_text, v_metadata,
     _status, 0, 0, NOW(), NOW()
   ) RETURNING * INTO v_orgchart;
 
@@ -101,6 +101,9 @@ BEGIN
     'companyId', v_orgchart.company_id,
     'type', v_orgchart.type,
     'title', v_orgchart.title,
+    'description', v_orgchart.description,
+    'code', v_orgchart.code,
+    'version', v_orgchart.version,
     'metadata', v_orgchart.metadata,
     'status', v_orgchart.status,
     'level', v_orgchart.level,
